@@ -12,6 +12,8 @@ import { DateTimePickerModule } from 'ng-pick-datetime';
 import { DndModule } from 'ng2-dnd';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import { GridsterModule } from 'angular-gridster2';
+import { ChartsModule } from 'ng2-charts';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -41,6 +43,8 @@ import { MessagesModalComponent } from './messages/messages.modal.component';
 
 import { KeysPipe } from './pipes/keys.pipe';
 import { UtilitiesService } from './utilities.service';
+import { ManageInterfacesComponent } from './interfaces/manage.interfaces.component';
+import { WidgetModalComponent } from './interfaces/widget.modal.component';
 
 @NgModule({
 	imports: [
@@ -61,7 +65,9 @@ import { UtilitiesService } from './utilities.service';
 		DateTimePickerModule,
 		DndModule.forRoot(),
 	    BrowserAnimationsModule,
-		ToastrModule.forRoot({ positionClass: 'toast-bottom-right' })
+		ToastrModule.forRoot({ positionClass: 'toast-bottom-right' }),
+		GridsterModule,
+		ChartsModule
 	],
 	declarations: [
 		//Main component
@@ -91,6 +97,8 @@ import { UtilitiesService } from './utilities.service';
 		SettingsRolesComponent,
 		// Pipes
 		KeysPipe,
+		ManageInterfacesComponent,
+		WidgetModalComponent,
 	],
 	providers: [
 		UtilitiesService,
@@ -114,7 +122,8 @@ import { UtilitiesService } from './utilities.service';
 		SettingsRoleModalComponent,
 		MessagesModalComponent,
 		ExecutionVariableModalComponent,
-		PlaybookEnvironmentVariableModalComponent
+		PlaybookEnvironmentVariableModalComponent,
+		WidgetModalComponent
 	],
 	bootstrap: [MainComponent],
 })

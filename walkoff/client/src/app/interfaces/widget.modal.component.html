@@ -1,0 +1,47 @@
+<div class="modal-header">
+    <h4 class="modal-title">Configure Widget</h4>
+</div>
+<div class="modal-body">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="form-group">
+                    <label for="label">Heading</label>
+                    <input label="label" type="text" [(ngModel)]="widget.label" class="form-control">
+                </div>
+            </div>
+            <div *ngIf="widget.type != 'text'" class="col-12">
+              <div class="form-group">
+                  <label for="workflow">Workflow</label>
+                  <div>
+                      <select class="custom-select">
+                          <option *ngFor="let x of availableWorkflows" [value]="x.id">{{x.text}}</option>
+                      </select>
+                  </div>
+              </div>
+            </div>
+            <div *ngIf="widget.type != 'text'" class="col-12">
+                <div class="form-group">
+                    <label for="results">Results</label>
+                    <div>
+                        <select class="custom-select">
+                            <option *ngIf="widget.type == 'bar'" [selected]="true" [value]="'a'">Top 10 Talkers</option>
+                            <option *ngIf="widget.type == 'pie'" [selected]="true" [value]="'b'">Top Protocols</option>
+                            <option [value]="'c'">Top 10 Remote Ports</option>
+                        </select>
+                    </div>
+                </div>
+              </div>
+            <div *ngIf="widget.type == 'text'" class="col-12">
+                <div class="form-group">
+                    <label for="text">Text</label>
+                    <textarea name="text" rows="4" [(ngModel)]="widget.text" class="form-control"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Close</button>
+    <button type="button" class="btn btn-primary" (click)="activeModal.close(widget)">Save</button>
+</div>

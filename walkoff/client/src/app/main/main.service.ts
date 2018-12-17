@@ -5,6 +5,7 @@ import { plainToClass } from 'class-transformer';
 import { Message } from '../models/message/message';
 import { MessageListing } from '../models/message/messageListing';
 import { UtilitiesService } from '../utilities.service';
+import { InterfaceService } from '../interfaces/interface.service';
 
 @Injectable()
 export class MainService {

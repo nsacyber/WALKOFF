@@ -1,3 +1,51 @@
-<div id="main" class="interfacesMain" #interfacesMain>
+<div id="main" class="interfacesMain" [ngClass]="{ customInterface: !interface }" #interfacesMain>
 	<!-- interface iframe goes here -->
+	<div *ngIf="interface">
+		<div class="pl-3">
+			<h1 class="mb-0">
+				{{ interface.name }}
+				<div class="float-right d-print-none" data-html2canvas-ignore>
+					<a class="btn btn-primary btn-sm mr-1" [routerLink]="['/edit-interface', interfaceName]">Edit</a>
+					<button class="btn btn-primary btn-sm" (click)="savePDF()">Save as PDF</button>
+				</div>
+			</h1>
+		</div>
+		<div class="row">
+			<div class="col-12">
+				<div id="grid" class="gridster-container m-auto" [style.width]="getGridWidth()" [style.height]="getGridHeight()">
+					<gridster class="displayGrid" [options]="options">
+						<gridster-item [item]="item" *ngFor="let item of interface.widgets" class="p-3">
+							<!-- your content here -->
+							<h3 class="text-center">{{ item.label }}</h3>
+
+							<div *ngIf="item.type == 'bar'">
+								<canvas baseChart [datasets]="barChartData" [labels]="barChartLabels" [options]="barChartOptions" [legend]="barChartLegend"
+								 [chartType]="'bar'">
+								</canvas>
+							</div>
+
+							<div *ngIf="item.type == 'line'">
+								<canvas baseChart [datasets]="lineChartData" [labels]="lineChartLabels" [options]="lineChartOptions" [legend]="lineChartLegend"
+								 [chartType]="'line'">
+								</canvas>
+							</div>
+
+							<div *ngIf="item.type == 'pie'">
+								<canvas baseChart [data]="pieChartData" [labels]="pieChartLabels" [chartType]="'pie'">
+								</canvas>
+							</div>
+
+							<div *ngIf="item.type == 'text'">
+								<p *ngIf="item.text">{{ item.text }}</p>
+							</div>
+
+							<div *ngIf="item.type == 'kibana'">
+								<iframe class="kibana" src="http://localhost:5601/app/kibana#/visualize/edit/top_10_talkers?embed=true&_g=(refreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3Anow-15y%2Cmode%3Arelative%2Cto%3Anow))"></iframe>
+							</div>
+						</gridster-item>
+					</gridster>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>

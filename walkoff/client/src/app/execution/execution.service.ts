@@ -9,7 +9,9 @@ import { Workflow } from '../models/playbook/workflow';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { UtilitiesService } from '../utilities.service';
 
-@Injectable()
+@Injectable({
+	providedIn: 'root'
+})
 export class ExecutionService {
 	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 

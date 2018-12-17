@@ -20,12 +20,16 @@
               <i class="fa fa-area-chart"></i><span class="navLink">Interfaces</span>
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a *ngFor="let interfaceName of interfaceNames" class="dropdown-item installedInterface" routerLink="/interfaces/{{interfaceName}}">
+              <a *ngFor="let interfaceName of interfaces" class="dropdown-item installedInterface" routerLink="/interface/{{interfaceName}}">
                 <span>{{interfaceName}}</span>
               </a>
-              <span *ngIf="!interfaceNames || !interfaceNames.length" class="dropdown-item installedInterface">
+              <span *ngIf="!interfaces || !interfaces.length" class="dropdown-item installedInterface">
                 No custom WALKOFF interfaces are installed.
               </span>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item installedInterface" routerLink="/new-interface">
+                <span><i>Create New...</i></span>
+              </a>
             </div>
           </li>
           <li class="nav-item">

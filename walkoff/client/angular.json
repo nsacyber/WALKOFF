@@ -10,7 +10,12 @@
       "prefix": "",
       "schematics": {
         "@schematics/angular:component": {
-          "styleext": "scss"
+          "styleext": "scss",
+          "spec": false,
+          "flat": true
+        },
+        "@schematics/angular:service": {
+          "spec": false
         }
       },
       "targets": {
@@ -33,7 +38,8 @@
             "scripts": [
               "./node_modules/jquery/dist/jquery.min.js",
               "./node_modules/bootstrap/dist/js/bootstrap.js",
-              "./node_modules/select2/dist/js/select2.js"
+              "./node_modules/select2/dist/js/select2.js",
+              "./node_modules/chart.js/dist/Chart.bundle.js"
             ]
           },
           "configurations": {

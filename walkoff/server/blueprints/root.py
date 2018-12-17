@@ -34,14 +34,17 @@ def client_app_folder(filename):
 @root_page.route('messages')
 @root_page.route('metrics')
 @root_page.route('settings')
+@root_page.route('new-interface')
 def default():
     return send_from_directory(os.path.abspath(walkoff.config.Config.CLIENT_PATH), "dist/index.html")
     # return render_template("index.html")
 
 
-@root_page.route('interfaces/<interface_name>')
+@root_page.route('interface/<interface_name>')
+@root_page.route('edit-interface/<interface_name>')
 def app_page(interface_name):
-    return render_template("index.html")
+    return send_from_directory(os.path.abspath(walkoff.config.Config.CLIENT_PATH), "dist/index.html")
+    # return render_template("index.html")
 
 
 @root_page.route('login')

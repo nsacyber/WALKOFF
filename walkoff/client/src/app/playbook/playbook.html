@@ -379,7 +379,7 @@
                             <option *ngFor="let i of playbooks" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
                         </select>
                         <input type="text" *ngIf="modalParams.selectedPlaybookId === '' || !modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
-                            class="form-control" placeholder="Enter a new playbook name">
+                            class="form-control mt-2" placeholder="Enter a new playbook name">
                     </div>
                     <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
                         <h6>Enter a Workflow</h6>
