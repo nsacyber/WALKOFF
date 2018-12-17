@@ -17,6 +17,8 @@ class TestZmqCommunicationServer(ServerTestCase):
     patch = False
 
     def test_execute_workflow(self):
+        print("Starting Exec")
+
         workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
         workflow_id = str(workflow.id)
 
@@ -35,7 +37,16 @@ class TestZmqCommunicationServer(ServerTestCase):
         current_app.running_context.executor.wait_and_reset(1)
         self.assertSetEqual(set(response.keys()), {'id'})
 
+        import sys
+        sys.stdout.flush()
+        sys.stderr.flush()
+        print("Done Exec")
+        sys.stdout.flush()
+        sys.stderr.flush()
+
     def test_execute_workflow_change_arguments(self):
+        print("Starting Change Args")
+
         workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
 
         result = {'count': 0}
@@ -57,7 +68,15 @@ class TestZmqCommunicationServer(ServerTestCase):
         self.assertEqual(result['count'], 1)
         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
 
+        import sys
+        sys.stdout.flush()
+        sys.stderr.flush()
+        print("Done Change Args")
+        sys.stdout.flush()
+        sys.stderr.flush()
+
     def test_execute_invalid_workflow(self):
+        print("Starting Invalid")
         workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
         workflow.is_valid = False
         from walkoff.executiondb import ExecutionDatabase
@@ -66,10 +85,25 @@ class TestZmqCommunicationServer(ServerTestCase):
         self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=INVALID_INPUT_ERROR,
                                     content_type="application/json")
 
+        import sys
+        sys.stdout.flush()
+        sys.stderr.flush()
+        print("Done Invalid")
+        sys.stdout.flush()
+        sys.stderr.flush()
+
     def test_execute_workflow_change_to_invalid_arguments(self):
+        print("Starting Change Invalid Args")
         workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
         data = {"workflow_id": str(workflow.id),
                 "arguments": [{"name": "call"}]}
 
         self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=INVALID_INPUT_ERROR,
                                     content_type="application/json", data=json.dumps(data))
+
+        import sys
+        sys.stdout.flush()
+        sys.stderr.flush()
+        print("Done Change Invalid Args")
+        sys.stdout.flush()
+        sys.stderr.flush()

@@ -25,7 +25,8 @@ class ZmqWorkflowResultsSender(object):
         self.results_sock = None
 
         if socket_id is not None:
-            self.results_sock = zmq.Context().socket(zmq.PUSH)
+            ctx = zmq.Context()
+            self.results_sock = ctx.socket(zmq.PUSH)
             self.results_sock.identity = socket_id
             self.results_sock.curve_secretkey = walkoff.config.Config.CLIENT_PRIVATE_KEY
             self.results_sock.curve_publickey = walkoff.config.Config.CLIENT_PUBLIC_KEY
@@ -98,7 +99,8 @@ class ZmqWorkflowResultsSender(object):
 class ZmqWorkflowCommunicationSender(object):
 
     def __init__(self, message_converter=ProtobufWorkflowCommunicationConverter):
-        self.comm_socket = zmq.Context.instance().socket(zmq.PUB)
+        ctx = zmq.Context.instance()
+        self.comm_socket = ctx.socket(zmq.PUB)
         self.comm_socket.curve_secretkey = walkoff.config.Config.SERVER_PRIVATE_KEY
         self.comm_socket.curve_publickey = walkoff.config.Config.SERVER_PUBLIC_KEY
         self.comm_socket.curve_server = True
