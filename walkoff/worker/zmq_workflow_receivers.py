@@ -11,11 +11,10 @@ from zmq import ZMQError
 
 import walkoff.cache
 import walkoff.config
-from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
+from walkoff.executiondb.schemas import ArgumentSchema
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
 from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl, ExecuteWorkflowMessage
-from walkoff.executiondb.schemas import ArgumentSchema
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +43,8 @@ class ZmqWorkflowCommunicationReceiver(object):
         self._ready = False
         self._exit = False
 
-        self.comm_sock = zmq.Context().socket(zmq.SUB)
+        ctx = zmq.Context.instance()
+        self.comm_sock = ctx.socket(zmq.SUB)
         self.comm_sock.identity = socket_id
         self.comm_sock.curve_secretkey = walkoff.config.Config.CLIENT_PRIVATE_KEY
         self.comm_sock.curve_publickey = walkoff.config.Config.CLIENT_PUBLIC_KEY
