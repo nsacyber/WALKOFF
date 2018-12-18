@@ -83,6 +83,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	loadedWorkflow: Workflow;
 	playbooks: Playbook[] = [];
 	cy: any;
+	edgeHandler: any;
 	ur: any;
 	appApis: AppApi[] = [];
 	offset: GraphPosition = { x: -330, y: -170 };
@@ -533,7 +534,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.cy.panzoom({});
 
 		// Extension for drawing edges
-		this.cy.edgehandles({
+		this.edgeHandler = this.cy.edgehandles({
+			handleNodes: (el) => el.isNode() && !el.hasClass('just-created'),
 			preview: false,
 			toggleOffOnLeave: true,
 			complete: (sourceNode: any, targetNodes: any[], addedEntities: any[]) => {
@@ -582,6 +584,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 					// Add our branch to the actual loadedWorkflow model
 					this.loadedWorkflow.branches.push(newBranch);
+
+					targetNodes[i].addClass('just-created');
 				}
 
 				this.cy.remove(addedEntities);
@@ -591,6 +595,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 				// Re-add with the undo-redo extension.
 				this.ur.do('add', addedEntities); // Added back in using undo/redo extension
+
 			},
 		});
 
@@ -669,6 +674,19 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.cy.on('add', 'node', (e: any) => this.onNodeAdded(e));
 		this.cy.on('remove', 'node', (e: any) => this.onNodeRemoved(e));
 		this.cy.on('remove', 'edge', (e: any) => this.onEdgeRemove(e));
+
+		// Allow right clicking to create an edge
+		this.cy.on('mouseover mouseout', 'node', (e: any) => e.target.removeClass('just-created'));
+		this.cy.on('cxttapstart', 'node', (e: any) => this.edgeHandler.start(e.target));
+		this.cy.on('cxttapend', 'node', (e: any) => this.edgeHandler.stop());
+		this.cy.on('cxtdragover', 'node', (e: any) => this.edgeHandler.preview(e.target));
+		this.cy.on('cxtdragout', 'node', (e: any) => {
+			if (this.edgeHandler.options.snap && e.target.same(this.edgeHandler.targetNode)) {
+				// then keep the preview
+			} else {
+				this.edgeHandler.unpreview(e.target);
+			}
+		})
 
 		// this.cyJsonData = JSON.stringify(this.loadedWorkflow, null, 2);
 	}
