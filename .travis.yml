@@ -67,6 +67,7 @@ matrix:
 
     - language: python
       os: linux
+      dist: xenial
       python: "3.7"
       name: "Python 3.7 Unit Tests"
       services:
@@ -155,7 +156,6 @@ matrix:
 
     - language: python
       os: linux
-      dist: xenial
       python: "3.6"
       name: "Python 3.6 Runtime Unit Tests"
       services:
@@ -178,6 +178,7 @@ matrix:
 
     - language: python
       os: linux
+      dist: xenial
       python: "3.7"
       name: "Python 3.7 Runtime Unit Tests"
       services:
