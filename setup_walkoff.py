@@ -1,8 +1,7 @@
 import subprocess
 import sys
-import redis
-import click
 import os
+import argparse
 
 
 def write_redis_info(rh, rp):
@@ -10,25 +9,30 @@ def write_redis_info(rh, rp):
     Config.load_config()
     Config.CACHE = {'type': 'redis', 'host': rh, 'port': rp}
     Config.write_values_to_file(keys=["CACHE"])
+    print('\nWrote Redis cache info to {}'.format(Config.CONFIG_PATH))
 
 
-@click.command()
-@click.option('--unattended', default=False)
-def main(unattended):
-    click.echo('\nChecking if pip is installed:')
+def install_deps():
+    print('\nChecking if pip is installed:')
     try:
-        click.echo(subprocess.check_output([sys.executable, "-m", "pip", "--version"]))
+        print(subprocess.check_output([sys.executable, "-m", "pip", "--version"]))
     except subprocess.CalledProcessError:
-        click.echo("\nPlease install pip first, before running this installer.")
+        print("\nPlease install pip first, before running this installer.")
         return
 
-    click.echo('\nInstalling Python Dependencies...')
+    print('\nInstalling Python Dependencies...')
     subprocess.call([sys.executable, "-m", "pip", "install", "-U", "-r", "requirements.txt"])
     subprocess.call([sys.executable, "scripts/install_dependencies.py"])
 
-    click.echo('\nGenerating Certificates...')
+
+def gen_zmq_certs():
+    print('\nGenerating Certificates...')
     subprocess.call([sys.executable, "scripts/generate_certificates.py"])
 
+
+def check_redis(unattended):
+    import click
+    import redis
     retry = False if (os.environ.get("CACHE", None) or unattended) else True
 
     while retry:
@@ -50,4 +54,10 @@ def main(unattended):
 
 
 if __name__ == '__main__':
-    main()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--unattended", action='store_true', default=False)
+    args = ap.parse_args()
+
+    install_deps()
+    gen_zmq_certs()
+    check_redis(args.unattended)

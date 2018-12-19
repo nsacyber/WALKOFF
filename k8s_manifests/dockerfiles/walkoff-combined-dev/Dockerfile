@@ -30,9 +30,8 @@ RUN git clone -b development --single-branch --progress --verbose https://www.gi
 
 WORKDIR /app/walkoff
 
-RUN pip install redis
 RUN pip install psycopg2
-RUN python setup_walkoff.py
+RUN python setup_walkoff.py --unattended
 
 EXPOSE 8080 5556 5557
 
