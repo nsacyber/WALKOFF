@@ -155,6 +155,7 @@ matrix:
 
     - language: python
       os: linux
+      dist: xenial
       python: "3.6"
       name: "Python 3.6 Runtime Unit Tests"
       services:
