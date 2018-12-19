@@ -28,6 +28,8 @@ services:
 #    entrypoint:
 #    - "sleep"
 #    - "36000"
+#    volumes:
+#    - /path/to/host/apps:/app/walkoff/apps
   walkoff-redis:
     image: "redis"
   walkoff-postgres:
