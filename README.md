@@ -127,8 +127,13 @@ cd WALKOFF/k8s_manifests/dockerfiles/walkoff-combined
 
 Once you have configured the Compose file as desired and are in the same directory as it, you can start the containers (use Ctrl+C to stop them):
 ```
-# Start containers
-docker-compose up
+# Start containers (detached mode)
+docker-compose up -d
+
+# Check logs (following, ctrl+c to close logs)
+docker-compose logs -f
+
+You can now access the web interface at localhost:8080
 ```
 
 #### Passwords
