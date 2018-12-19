@@ -193,8 +193,9 @@ class Config(object):
                         for key, value in config.items():
                             if value:
                                 setattr(cls, key.upper(), value)
+                        logger.info('Loaded config from {}.'.format(cls.CONFIG_PATH))
                 else:
-                    logger.warning('Config path {} is not a file.'.format(cls.CONFIG_PATH))
+                    logger.info('Config path {} is not a file.'.format(cls.CONFIG_PATH))
             except (IOError, OSError, ValueError):
                 logger.warning('Could not read config file.', exc_info=True)
 
@@ -214,6 +215,7 @@ class Config(object):
 
         with open(cls.CONFIG_PATH, 'w') as config_file:
             config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
+            logger.info("Wrote config to {}".format(cls.CONFIG_PATH))
 
     @classmethod
     def load_env_vars(cls):
@@ -224,6 +226,7 @@ class Config(object):
                     setattr(cls, field, json.loads(os.environ.get(field)))
                 else:
                     setattr(cls, field, var_type(os.environ.get(field)))
+                logger.info("Loading field {} from environment variables.".format(field))
 
         cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
                                                      'WALKOFF_DB_PASSWORD', cls.WALKOFF_DB_HOST)
