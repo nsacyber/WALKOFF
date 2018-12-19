@@ -42,7 +42,7 @@ class CallbackContainer(object):
             yield weak_callback
         for strong_callback in self.strong:
             yield strong_callback
-        raise StopIteration
+        return
 
     def iter_strong(self):
         """Iterates over all the strong references
@@ -52,7 +52,7 @@ class CallbackContainer(object):
         """
         for strong_callback in self.strong:
             yield strong_callback
-        raise StopIteration
+        return
 
     def iter_weak(self):
         """Iterates over all the weak references
@@ -62,7 +62,7 @@ class CallbackContainer(object):
         """
         for weak_callback in self.weak:
             yield weak_callback
-        raise StopIteration
+        return
 
     def is_registered(self, func):
         """Is a function registered?
@@ -160,7 +160,7 @@ class AppActionEventDispatcher(object):
             if device_id != 'all':
                 for callback in self._event_router[event].get(device_id, []):
                     yield callback
-        raise StopIteration
+        return
 
     def is_registered(self, event, device_id, func):
         """Is a function registered?
