@@ -48,7 +48,7 @@ class KafkaWorkflowCommunicationReceiver(object):
             else:
                 break
 
-        raise StopIteration
+        return
 
     def is_ready(self):
         return self._ready
