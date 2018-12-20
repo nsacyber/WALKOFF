@@ -203,3 +203,15 @@
 #executionResultsModal > .modal-dialog {
 	max-width: 95%;
 }
+
+#console {
+	background-color: black;
+	// background-image: radial-gradient(
+	//   rgba(0, 150, 0, 0.75), black 120%
+	// );
+	height: 20vh;
+	color: white;
+	font: 1rem Inconsolata, monospace;
+	text-shadow: 0 0 5px #C8C8C8;
+	overflow: scroll;
+  }

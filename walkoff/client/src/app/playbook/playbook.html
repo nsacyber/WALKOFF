@@ -244,8 +244,8 @@
             <li *ngIf="loadedWorkflow?.environment_variables?.length > 0" class="nav-item"><a class="nav-link" data-toggle="tab" href="#environmentVariableLogA">Environment Variables</a></li>
         </ul>
         <div class="tab-content">
-            <div id="console" #consoleContainer class="tab-pane fade show active" *ngIf="!loadedWorkflow?.has_errors">
-                 <ngx-datatable #consoleTable class='material expandable' [columnMode]="'flex'" [rows]="consoleLog" [sortType]="'multi'"
+            <div id="console" #consoleContainer class="tab-pane fade show active p-2" *ngIf="!loadedWorkflow?.has_errors">
+                 <!-- <ngx-datatable #consoleTable class='material expandable' [columnMode]="'flex'" [rows]="consoleLog" [sortType]="'multi'"
                         [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]"
                         [limit]="10">
 
@@ -273,13 +273,13 @@
                          </ng-template>
                      </ngx-datatable-column>
          
-                 </ngx-datatable>
+                 </ngx-datatable> -->
             </div>
             <div id="executionLog" class="tab-pane fade" *ngIf="!loadedWorkflow?.has_errors">
                 <div id="executionResultsModal">
                     <div #workflowResultsContainer>
                         <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="actionStatuses" [sortType]="'multi'"
-                        [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]" [limit]="10">
+                        [footerHeight]="25" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]" [limit]="10">
                         <!-- Column Templates -->
                         <ngx-datatable-column name="Action IDs" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>

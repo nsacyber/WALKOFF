@@ -226,6 +226,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
 		this.consoleLog.push(newConsoleLog);
 
+		this.appendConsoleMessage(newConsoleLog.message);
+
 		// Induce change detection by slicing array
 		this.consoleLog = this.consoleLog.slice();
     }
@@ -1787,6 +1789,15 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
 			argument.reference = variable.id;
 		}).catch(() => argument.reference = '')
+	}
+
+	appendConsoleMessage(message: string) {
+		let consoleContainer = this.consoleContainer.nativeElement;
+		let shouldScroll = consoleContainer.scrollTop + consoleContainer.clientHeight === consoleContainer.scrollHeight;
+		$(consoleContainer).append(`
+			<div class="row my-2"><div class="col">${ message }</div></div>
+		`)
+		if (shouldScroll) this.consoleContainer.nativeElement.scrollTop = this.consoleContainer.nativeElement.scrollHeight;
 	}
 
 }
