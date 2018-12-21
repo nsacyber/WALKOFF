@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 import 'rxjs/Rx';
 import { saveAs } from 'file-saver';
 import { plainToClass, classToClass } from 'class-transformer';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbTabChangeEvent } from '@ng-bootstrap/ng-bootstrap';
 import { FormControl } from '@angular/forms';
 
 import * as cytoscape from 'cytoscape';
@@ -61,16 +61,11 @@ import { WorkflowStatus } from '../models/execution/workflowStatus';
 })
 export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;
-	@ViewChild('workflowResultsContainer') workflowResultsContainer: ElementRef;
 	@ViewChild('workflowResultsTable') workflowResultsTable: DatatableComponent;
 	@ViewChild('consoleContainer') consoleContainer: ElementRef;
 	@ViewChild('consoleTable') consoleTable: DatatableComponent;
-	@ViewChild('errorLogContainer') errorLogContainer: ElementRef;
 	@ViewChild('errorLogTable') errorLogTable: DatatableComponent;
-	@ViewChild('environmentVariableContainerA') environmentVariableContainerA: ElementRef;
-	@ViewChild('environmentVariableTableA') environmentVariableTableA: DatatableComponent;
-	@ViewChild('environmentVariableContainerB') environmentVariableContainerB: ElementRef;
-    @ViewChild('environmentVariableTableB') environmentVariableTableB: DatatableComponent;
+	@ViewChild('environmentVariableTable') environmentVariableTable: DatatableComponent;
 	@ViewChild('importFile') importFile: ElementRef;
     @ViewChild('accordion') apps_actions: ElementRef;
 
@@ -164,9 +159,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.recalculateRelativeTimes();
 		});
 
-		this.recalculateConsoleTableCallback = (e: any) => this.recalculateConsoleTable(e);
-		$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateConsoleTableCallback)
-
 		/**
 		 * Filter app list by application and action names
 		 */
@@ -187,12 +179,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	ngAfterViewChecked(): void {
 		// Check if the table size has changed,
-		if (this.workflowResultsTable && this.workflowResultsTable.recalculate && 
-			(this.workflowResultsContainer.nativeElement.clientWidth !== this.executionResultsComponentWidth)) {
-			this.executionResultsComponentWidth = this.workflowResultsContainer.nativeElement.clientWidth;
-			this.workflowResultsTable.recalculate();
-			this.cdr.detectChanges();
-		}
+		// if (this.workflowResultsTable && this.workflowResultsTable.recalculate && 
+		// 	(this.workflowResultsContainer.nativeElement.clientWidth !== this.executionResultsComponentWidth)) {
+		// 	this.executionResultsComponentWidth = this.workflowResultsContainer.nativeElement.clientWidth;
+		// 	this.workflowResultsTable.recalculate();
+		// 	this.cdr.detectChanges();
+		// }
 	}
 
 	/**
@@ -201,7 +193,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	ngOnDestroy(): void {
 		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
 		if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
-		if (this.recalculateConsoleTableCallback) { $(document).off('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateConsoleTableCallback); }
 	}
 
     ///------------------------------------------------------------------------------------------------------
@@ -224,12 +215,18 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
     consoleEventHandler(message: any): void {
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
-		this.consoleLog.push(newConsoleLog);
 
-		this.appendConsoleMessage(newConsoleLog.message);
+		const shouldScroll = (this.consoleContainer && this.consoleContainer.nativeElement) &&
+			(this.consoleContainer.nativeElement.scrollTop + this.consoleContainer.nativeElement.clientHeight 
+				=== this.consoleContainer.nativeElement.scrollHeight);
 
 		// Induce change detection by slicing array
+		this.consoleLog.push(newConsoleLog);
 		this.consoleLog = this.consoleLog.slice();
+
+		setImmediate(() => {
+			if (shouldScroll) this.consoleContainer.nativeElement.scrollTop = this.consoleContainer.nativeElement.scrollHeight;
+		})
     }
 
 
@@ -1731,29 +1728,31 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	/**
 	 * This function is used primarily to recalculate column widths for execution results table.
 	 */
-	recalculateConsoleTable(e: any) {
+	recalculateConsoleTable($e: NgbTabChangeEvent) {
 		let table: DatatableComponent;
-		switch(e.target.getAttribute('href')) {
-			case '#console':
-				table = this.consoleTable;
-				break;
-			case '#executionLog':
-				table = this.workflowResultsTable;
-				break;
-			case '#errorLog':
-				table = this.errorLogTable;
-				break;
-			case '#environmentVariableLogA':
-				table = this.environmentVariableTableA;
-				break;
-			case '#environmentVariableLogB':
-				table = this.environmentVariableTableB;
-		}
-		if (table && table.recalculate) { 
-			this.cdr.detectChanges();
-			if (Array.isArray(table.rows)) table.rows = [...table.rows];
-			table.recalculate(); 
-		}
+		setImmediate(() => {
+			switch($e.nextId) {
+				case 'console-tab':
+					table = this.consoleTable;
+					break;
+				case 'execution-tab':
+					table = this.workflowResultsTable;
+					break;
+				case 'error-tab':
+					table = this.errorLogTable;
+					break;
+				case 'variable-tab':
+					table = this.environmentVariableTable;
+					break;
+			}
+
+			if (table && table.recalculate) { 
+				console.log('changing: ' + $e.nextId)
+				this.cdr.detectChanges();
+				if (Array.isArray(table.rows)) table.rows = [...table.rows];
+				table.recalculate(); 
+			}
+		})
 	}
 
 	/**
@@ -1790,14 +1789,4 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			argument.reference = variable.id;
 		}).catch(() => argument.reference = '')
 	}
-
-	appendConsoleMessage(message: string) {
-		let consoleContainer = this.consoleContainer.nativeElement;
-		let shouldScroll = consoleContainer.scrollTop + consoleContainer.clientHeight === consoleContainer.scrollHeight;
-		$(consoleContainer).append(`
-			<div class="row my-2"><div class="col">${ message }</div></div>
-		`)
-		if (shouldScroll) this.consoleContainer.nativeElement.scrollTop = this.consoleContainer.nativeElement.scrollHeight;
-	}
-
 }
