@@ -161,6 +161,9 @@ class Action(ExecutionElement, Execution_Base):
             return result.status
 
         if is_app_action_bound(self.app_name, self._run):
+            if not instance:
+                result = ActionResult("App instance was not created successfully. Check logs for more details.",
+                                      "UnhandledException")
             result = action_execution_strategy.execute(self, accumulator, args, instance=instance)
         else:
             result = action_execution_strategy.execute(self, accumulator, args)
