@@ -251,7 +251,7 @@
         <ngb-tab *ngIf="loadedWorkflow?.id && !loadedWorkflow?.has_errors" title="Console" id="console-tab">
             <ng-template ngbTabContent>
                 <div id="console" #consoleContainer class="p-2 mb-3">
-                    <div *ngFor="let log of consoleLog" class="row my-2"><div class="col">{{ log.message }}</div></div>
+                    <div *ngFor="let log of consoleLog" class="my-1">{{ log.message }}</div>
                 </div>
             </ng-template>
         </ngb-tab>

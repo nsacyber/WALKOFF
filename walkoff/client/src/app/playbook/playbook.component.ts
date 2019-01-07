@@ -105,7 +105,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	actionFilter: string = '';
 	actionFilterControl = new FormControl();
 	
-
 	// Simple bootstrap modal params
 	modalParams: {
 		title: string,
@@ -224,9 +223,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.consoleLog.push(newConsoleLog);
 		this.consoleLog = this.consoleLog.slice();
 
-		setImmediate(() => {
+		setTimeout(() => {
 			if (shouldScroll) this.consoleContainer.nativeElement.scrollTop = this.consoleContainer.nativeElement.scrollHeight;
-		})
+		}, 100)
     }
 
 
