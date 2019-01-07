@@ -132,8 +132,8 @@ class ConditionalExpressionSchema(ExecutionElementBaseSchema):
         ConditionalExpression,
         'operator',
         default='and',
-        validates=OneOf(*valid_operators),
-        missing='and')
+        validates=OneOf(*valid_operators)
+    )
     is_negated = field_for(ConditionalExpression, 'is_negated', default=False)
 
     class Meta:
