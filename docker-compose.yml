@@ -1,0 +1,63 @@
+version: '3.4'
+services:
+#  walkoff:
+#    container_name: walkoff
+#    build: ./walkoff
+#    ports:
+#    - "8080:8080"
+#    image: "walkoffcyber/walkoff:combinedv1"
+#    environment:
+#    - "CACHE={\"type\": \"redis\", \"host\": \"redis\", \"port\": 6379}"
+#    - "HOST=0.0.0.0"
+#    - "PORT=8080"
+#    - "ZMQ_RESULTS_ADDRESS=tcp://0.0.0.0:5556"
+#    - "ZMQ_COMMUNICATION_ADDRESS=tcp://0.0.0.0:5557"
+#    - "WALKOFF_DB_TYPE=postgresql"
+#    - "EXECUTION_DB_TYPE=postgresql"
+#    - "DB_PATH=walkoff"
+#    - "EXECUTION_DB_PATH=execution"
+#    - "WALKOFF_DB_HOST=postgres"
+#    - "EXECUTION_DB_HOST=postgres"
+#    - "EXECUTION_DB_USERNAME=walkoff"
+#    - "EXECUTION_DB_PASSWORD=walkoff"
+#    - "WALKOFF_DB_USERNAME=walkoff"
+#    - "WALKOFF_DB_PASSWORD=walkoff"
+#    depends_on:
+#    - redis
+#    - postgres
+
+  worker:
+#    container_name: worker
+    build:
+      context: ./
+      dockerfile: worker/Dockerfile
+    depends_on:
+      - redis
+
+  test-app:
+#    container_name: test-app
+    build:
+      context: ./
+      dockerfile: apps/TestApp/v0.1.1/Dockerfile
+    env_file:
+      - apps/TestApp/v0.1.1/env.txt
+    depends_on:
+      - redis
+
+  redis:
+    container_name: redis
+    image: "redis"
+    ports:
+      - "6379:6379"
+
+  postgres:
+    container_name: postgres
+    image: "postgres"
+    environment:
+    - "POSTGRES_USER=walkoff"
+    - "POSTGRES_PASSWORD=walkoff"
+    volumes:
+      - postgres_database:/var/lib/postgresql/data
+
+volumes:
+  postgres_database:

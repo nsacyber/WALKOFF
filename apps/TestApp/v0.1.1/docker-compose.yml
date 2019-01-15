@@ -1,0 +1,13 @@
+version: '3.4'
+services:
+  test-app:
+    build: ./
+    env_file:
+      - env.txt
+    depends_on:
+      - redis
+  redis:
+    container_name: redis
+    image: "redis"
+    ports:
+      - "6379:6379"
