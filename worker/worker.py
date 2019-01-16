@@ -90,6 +90,8 @@ class Worker:
 
 if __name__ == "__main__":
     import sys
+    from common import config
+
 
     async def run_worker(workflow):
         # Setup worker launch the event loop

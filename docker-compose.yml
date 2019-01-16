@@ -27,7 +27,6 @@ services:
 #    - postgres
 
   worker:
-#    container_name: worker
     build:
       context: ./
       dockerfile: worker/Dockerfile
@@ -35,7 +34,6 @@ services:
       - redis
 
   test-app:
-#    container_name: test-app
     build:
       context: ./
       dockerfile: apps/TestApp/v0.1.1/Dockerfile
@@ -50,14 +48,14 @@ services:
     ports:
       - "6379:6379"
 
-  postgres:
-    container_name: postgres
-    image: "postgres"
-    environment:
-    - "POSTGRES_USER=walkoff"
-    - "POSTGRES_PASSWORD=walkoff"
-    volumes:
-      - postgres_database:/var/lib/postgresql/data
+#  postgres:
+#    container_name: postgres
+#    image: "postgres"
+#    environment:
+#    - "POSTGRES_USER=walkoff"
+#    - "POSTGRES_PASSWORD=walkoff"
+#    volumes:
+#      - postgres_database:/var/lib/postgresql/data
 
 volumes:
   postgres_database:
