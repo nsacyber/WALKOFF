@@ -1,0 +1,13 @@
+redis:
+  redis_uri: redis://localhost:6379
+
+umpire:
+  backend: docker  # Select either docker or kubernetes as the base orchestration framework
+  app_repo_path:
+  docker_compose_env:
+    # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
+    # See: https://docs.docker.com/compose/reference/envvars/ for more information.
+    COMPOSE_PROJECT_NAME: WALKOFF
+    DOCKER_HOST: tcp://localhost:2376
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: ~/.docker
