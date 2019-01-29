@@ -57,7 +57,7 @@ import { WorkflowStatus } from '../models/execution/workflowStatus';
 		'../../../node_modules/ng2-dnd/bundles/style.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [PlaybookService, AuthService, DevicesService, SettingsService, ExecutionService],
+	providers: [AuthService, DevicesService, SettingsService],
 })
 export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;

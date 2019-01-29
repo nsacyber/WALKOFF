@@ -3,6 +3,8 @@ import { Type, Exclude } from 'class-transformer';
 import { ActionStatus } from './actionStatus';
 import { CurrentAction } from './currentAction';
 
+import * as moment from 'moment';
+
 export class WorkflowStatus {
 	
 	id?: string;
@@ -40,4 +42,20 @@ export class WorkflowStatus {
 
 	@Exclude({ toPlainOnly: true })
 	localized_completed_at?: string;
+
+	get completed_at_local() : string {
+		return moment(this.completed_at).format('LL LTS');
+	}
+
+	get completed_at_relative() : string {
+		return moment(this.completed_at).fromNow();
+	}
+
+	get started_at_local() : string {
+		return moment(this.started_at).format('LL LTS');
+	}
+
+	get started_at_relative() : string {
+		return moment(this.started_at).fromNow();
+	}
 }

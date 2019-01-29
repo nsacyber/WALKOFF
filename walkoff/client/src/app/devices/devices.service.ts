@@ -6,7 +6,9 @@ import { Device } from '../models/device';
 import { AppApi } from '../models/api/appApi';
 import { UtilitiesService } from '../utilities.service';
 
-@Injectable()
+@Injectable({
+	providedIn: 'root'
+})
 export class DevicesService {
 	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 

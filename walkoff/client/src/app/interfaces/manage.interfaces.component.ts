@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GridsterConfig, GridsterItem, GridType, CompactType } from 'angular-gridster2';
-import { InterfaceWidget, PieChartWidget, LineChartWidget, TextWidget, KibanaWidget } from '../models/interface/interfaceWidget';
+import { InterfaceWidget, BarChartWidget, PieChartWidget, LineChartWidget, TextWidget, KibanaWidget, TableWidget } from '../models/interface/interfaceWidget';
 import { Interface } from '../models/interface/interface';
 import { InterfaceService } from './interface.service';
 import { ToastrService } from 'ngx-toastr';
@@ -26,36 +26,6 @@ export class ManageInterfacesComponent implements OnInit {
     gridGutterSize = 10;
     gridDefaultCols = 3;
 
-    public barChartOptions: any = {
-        scaleShowVerticalLines: false,
-        responsive: true
-    };
-    public barChartLabels: string[] = ['192.168.1.105', '192.168.1.103', '192.168.1.102', '192.168.1.104', '192.168.1.1', 'fe80::219:e3ff:fee7:5d23', 'fe80::2c23:b96c:78d:e116', '169.254.225.22', '0.0.0.0', '255.255.255.255'];
-    public barChartType: string = 'bar';
-    public barChartLegend: boolean = true;
-
-    public barChartData: any[] = [
-        { data: [951, 914, 896, 81, 427, 35, 34, 28, 4, 1, 1], label: 'Yesterday' },
-        { data: [560, 800, 1200, 43, 500, 80, 25, 50, 10, 0, 0], label: 'Today' },
-    ];
-
-    public lineChartOptions: any = {
-        scaleShowVerticalLines: false,
-        responsive: true
-    };
-    public lineChartLabels: string[] = ['80', '53', '138', '137', '67', '5353', '443', '547', '995', '37']
-    public lineChartType: string = 'line';
-    public lineChartLegend: boolean = true;
-
-    public lineChartData: any[] = [
-        { data: [1316, 1271, 270, 159, 71, 68, 44, 17, 17, 16], label: 'Count' },
-    ];
-
-    // Pie
-    public pieChartLabels: string[] = ['UDP', 'TCP', 'ICMP'];
-    public pieChartData: number[] = [1881, 1408, 2];
-    public pieChartType: string = 'pie';
-
     constructor(
         private interfaceService: InterfaceService, 
         private toastrService: ToastrService,
@@ -68,13 +38,17 @@ export class ManageInterfacesComponent implements OnInit {
         this.activeRoute.params.subscribe(params => {
             if (params.interfaceName) {
                 this.existingInterface = true;
-                this.interface = this.interfaceService.getInterface(params.interfaceName);
+                this.interfaceService.getInterfaceWithMetadata(params.interfaceName).then(face => {
+                    this.interface = face;
+                });
             }
-        })
 
+            this.initGrid();
+        })
+    }
+
+    initGrid() {
         this.options = {
-            itemChangeCallback: ManageInterfacesComponent.itemChange,
-            itemResizeCallback: ManageInterfacesComponent.itemResize,
             gridType: GridType.Fixed,
             compactType: CompactType.None,
             pushItems: true,
@@ -107,18 +81,23 @@ export class ManageInterfacesComponent implements OnInit {
         return this.gridRows * Math.ceil(this.gridColSize * 3/4 + this.gridGutterSize) + this.gridGutterSize + 'px';
     }
 
+    getItemHeight(item: InterfaceWidget) {
+        return item.rows * Math.ceil(this.gridColSize * 3/4 + this.gridGutterSize) - 80;
+    }
+
     changedOptions() {
         this.options.api.optionsChanged();
     }
 
-    removeItem($event: Event, item) {
-        console.log(arguments);
+    editWidget($event: Event, widget) {
         $event.preventDefault();
-        this.interface.widgets.splice(this.interface.widgets.indexOf(item), 1);
+        const modalRef = this.modalService.open(WidgetModalComponent);
+		modalRef.componentInstance.widget = widget;
     }
 
-    addItem() {
-        this.interface.widgets.push(new InterfaceWidget());
+    removeWidget($event: Event, widget) {
+        $event.preventDefault();
+        this.interface.widgets.splice(this.interface.widgets.indexOf(widget), 1);
     }
 
     addWidget(type: string): void {
@@ -126,19 +105,22 @@ export class ManageInterfacesComponent implements OnInit {
 
         switch (type) {
             case "bar":
-                widget = new InterfaceWidget('Top 10 Talkers');
+                widget = new BarChartWidget();
             break;
             case "line":
-                widget = new LineChartWidget('Top 10 Remote Ports');
+                widget = new LineChartWidget();
             break;
             case "pie":
-                widget = new PieChartWidget('Top Protocols');
+                widget = new PieChartWidget();
             break;
             case "text":
-                widget = new TextWidget('');
+                widget = new TextWidget();
+            break;
+            case "table":
+                widget = new TableWidget();
             break;
             case "kibana":
-                widget = new KibanaWidget('Kibana');
+                widget = new KibanaWidget();
             break;
         }
 
@@ -151,9 +133,8 @@ export class ManageInterfacesComponent implements OnInit {
     
     save() {
         if (!this.interface.name) return this.toastrService.error('Enter a name for the interface');
-        console.log(this.interfaceService.getInterfaces());
+
         this.interfaceService.saveInterface(this.interface);
-        console.log(this.interfaceService.getInterfaces());
         this.toastrService.success(`"${ this.interface.name }" Saved`);
 
         this.router.navigate(['/interface', this.interface.name]);
@@ -166,13 +147,5 @@ export class ManageInterfacesComponent implements OnInit {
             this.toastrService.success(`"${ interfaceName }" Deleted`);
             this.router.navigate(['/new-interface']);
         }
-    }
-
-    static itemChange(item, itemComponent) {
-        console.info('itemChanged', item, itemComponent);
-    }
-
-    static itemResize(item, itemComponent) {
-        console.info('itemResized', item, itemComponent);
     }
 }

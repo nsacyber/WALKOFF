@@ -17,7 +17,9 @@ import { UtilitiesService } from '../utilities.service';
 
 import { Observable } from 'rxjs/Observable';
 
-@Injectable()
+@Injectable({
+	providedIn: 'root'
+})
 export class PlaybookService {
 	constructor(private http: HttpClient, private utils: UtilitiesService, private executionService: ExecutionService,
 				private devicesService: DevicesService, private settingsService: SettingsService) {}

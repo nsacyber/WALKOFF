@@ -8,7 +8,9 @@ import { Role } from '../models/role';
 import { AvailableResourceAction } from '../models/availableResourceAction';
 import { UtilitiesService } from '../utilities.service';
 
-@Injectable()
+@Injectable({
+	providedIn: 'root'
+})
 export class SettingsService {
 	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 

@@ -10,6 +10,7 @@ import { HttpClient } from '@angular/common/http';
 import { InterfaceService } from './interface.service';
 import { GridsterConfig, GridType, CompactType } from 'angular-gridster2';
 import { Interface } from '../models/interface/interface';
+import { InterfaceWidget } from '../models/interface/interfaceWidget';
 
 @Component({
 	selector: 'interfaces-component',
@@ -25,7 +26,6 @@ export class InterfacesComponent implements OnInit {
 	activeIFrame: any;
 
 	options: GridsterConfig;
-
 	interface: Interface;
 
 	gridRows = 0;
@@ -33,37 +33,7 @@ export class InterfacesComponent implements OnInit {
 	gridColSize = 125;
 	gridGutterSize = 10;
 	gridDefaultCols = 3;
-
-	public barChartOptions: any = {
-        scaleShowVerticalLines: false,
-        responsive: true
-    };
-    public barChartLabels: string[] = ['192.168.1.105', '192.168.1.103', '192.168.1.102', '192.168.1.104', '192.168.1.1', 'fe80::219:e3ff:fee7:5d23', 'fe80::2c23:b96c:78d:e116', '169.254.225.22', '0.0.0.0', '255.255.255.255'];
-    public barChartType: string = 'bar';
-    public barChartLegend: boolean = true;
-
-    public barChartData: any[] = [
-        { data: [951, 914, 896, 81, 427, 35, 34, 28, 4, 1, 1], label: 'Yesterday' },
-        { data: [560, 800, 1200, 43, 500, 80, 25, 50, 10, 0, 0], label: 'Today' },
-	];
 	
-	public lineChartOptions: any = {
-        scaleShowVerticalLines: false,
-        responsive: true
-    };
-    public lineChartLabels: string[] = ['80', '53', '138', '137', '67', '5353', '443', '547', '995', '37']
-    public lineChartType: string = 'line';
-    public lineChartLegend: boolean = true;
-
-    public lineChartData: any[] = [
-        { data: [1316, 1271, 270, 159, 71, 68, 44, 17, 17, 16], label: 'Count' },
-    ];
-
-    // Pie
-    public pieChartLabels: string[] = ['UDP', 'TCP', 'ICMP'];
-    public pieChartData: number[] = [1881, 1408, 2];
-    public pieChartType: string = 'pie';
-
 	constructor(
 		private route: ActivatedRoute, private toastrService: ToastrService,
 		private http: HttpClient, private interfaceService: InterfaceService
@@ -75,39 +45,40 @@ export class InterfacesComponent implements OnInit {
 	ngOnInit() {
 		this.paramsSub = this.route.params.subscribe(params => {
 			this.interfaceName = params.interfaceName;
-			this.getInterface();
-
-			this.gridRows = 0;
-			this.interface.widgets.forEach(item => {
-				let widgetRows = item.y + item.rows;
-				if (widgetRows > this.gridRows) this.gridRows = widgetRows;
-			});
-
-			this.options = {
-				gridType: GridType.Fixed,
-				compactType: CompactType.None,
-				pushItems: true,
-				draggable: {
-					enabled: false
-				},
-				resizable: {
-					enabled: false
-				},
-				fixedColWidth: this.gridColSize * 4 / 3,
-				fixedRowHeight: this.gridColSize * 3 / 4,
-				minCols: this.gridColumns,
-				maxCols: this.gridColumns,
-				minRows: 1,
-				maxRows: this.gridRows,
-				maxItemCols: this.gridColumns,
-				minItemCols: 1,
-				maxItemRows: this.gridRows,
-				minItemRows: 1,
-				defaultItemCols: this.gridDefaultCols,
-				defaultItemRows: 1
-			};
-
+			this.getInterface().then(() => this.initGrid());
 		});
+	}
+
+	initGrid() {
+		this.gridRows = 0;
+		this.interface.widgets.forEach(item => {
+			let widgetRows = item.y + item.rows;
+			if (widgetRows > this.gridRows) this.gridRows = widgetRows;
+		});
+
+		this.options = {
+			gridType: GridType.Fixed,
+			compactType: CompactType.None,
+			pushItems: true,
+			draggable: {
+				enabled: false
+			},
+			resizable: {
+				enabled: false
+			},
+			fixedColWidth: this.gridColSize * 4 / 3,
+			fixedRowHeight: this.gridColSize * 3 / 4,
+			minCols: this.gridColumns,
+			maxCols: this.gridColumns,
+			minRows: 1,
+			maxRows: this.gridRows,
+			maxItemCols: this.gridColumns,
+			minItemCols: 1,
+			maxItemRows: this.gridRows,
+			minItemRows: 1,
+			defaultItemCols: this.gridDefaultCols,
+			defaultItemRows: 1
+		};
 	}
 
 	/**
@@ -116,8 +87,10 @@ export class InterfacesComponent implements OnInit {
 	 */
 	getInterface() {
 		this.clearInterface();
-		const savedInterface = this.interfaceService.getInterfaces().find(item => item.name == this.interfaceName);
-		(savedInterface) ? this.interface = savedInterface : this.getCustomInterface();
+
+		return this.interfaceService.getInterfaceWithMetadata(this.interfaceName).then(savedInterface => {
+			(savedInterface) ? this.interface = savedInterface : this.getCustomInterface();
+		})
 	}
 
 	clearInterface() {
@@ -151,6 +124,10 @@ export class InterfacesComponent implements OnInit {
 		//return '980px';
 		return this.gridRows * Math.ceil(this.gridColSize * 3 / 4 + this.gridGutterSize) + this.gridGutterSize  + 'px';
 	}
+
+	getItemHeight(item: InterfaceWidget) {
+        return item.rows * Math.ceil(this.gridColSize * 3/4 + this.gridGutterSize) - 80;
+    }
 
 	savePDF() {
 		return window.print();
