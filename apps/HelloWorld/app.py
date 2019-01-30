@@ -10,8 +10,7 @@ logger = logging.getLogger("apps")
 @action
 def hello_world():
     logger.debug("This is a test from {}".format(socket.gethostname()))
-    # return {"message": "HELLO WORLD FROM {}".format(socket.gethostname())}
-    return {"key": {"key": ["one", "two"]}}
+    return {"message": "HELLO WORLD FROM {}".format(socket.gethostname())}
 
 
 @action
