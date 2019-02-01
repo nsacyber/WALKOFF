@@ -16,6 +16,8 @@ import { SettingsService } from '../settings/settings.service';
 import { UtilitiesService } from '../utilities.service';
 
 import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/map';
 
 @Injectable({
 	providedIn: 'root'
