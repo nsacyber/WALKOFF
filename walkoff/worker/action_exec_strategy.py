@@ -97,10 +97,17 @@ class LocalActionExecutionStrategy(object):
                 result = executable_func(**arguments)
         except Exception as e:
             raise ExecutionError(e)
-        if context.is_action():
-            accumulator[context.id] = result.result
-        elif self.fully_cached:
-            accumulator[context.id] = result
+
+        try:
+            if context.is_action():
+                accumulator[context.id] = result.result
+            elif self.fully_cached:
+                accumulator[context.id] = result
+        except TypeError as e:
+            accumulator[context.id] = None
+            result.result = "An action cannot return a generator object ({}) because they cannot be pickled. " \
+                            "({})".format(result.result, e)
+            result.status = "UnhandledException"
         return result
 
 

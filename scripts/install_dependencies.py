@@ -38,7 +38,7 @@ if __name__ == '__main__':
         if os.path.isfile(path) is False:
             print("No requirements.txt file found in " + app + " folder. Skipping...")
             continue
-        subprocess.call(['pip', 'install', '-r', path])
+        subprocess.call([sys.executable, "-m", "pip", "install", "-U", "-r", path])
 
     for interface in interfaces:
         print("Installing dependencies for " + interface + " Interface...")
@@ -46,4 +46,4 @@ if __name__ == '__main__':
         if os.path.isfile(path) is False:
             print("No requirements.txt file found in " + interface + " folder. Skipping...")
             continue
-        subprocess.call(['pip', 'install', '-r', path])
+        subprocess.call([sys.executable, "-m", "pip", "install", "-U", "-r", path])

@@ -147,12 +147,16 @@ def format_exception_message(exception):
 
 
 def convert_action_argument(argument):
-    for field in ('value', 'selection'):
-        if field in argument:
-            try:
-                argument[field] = json.loads(argument[field])
-            except ValueError:
-                pass
+    if 'value' in argument:
+        try:
+            argument['value'] = json.loads(argument['value'])
+        except ValueError:
+            pass
+    if 'selection' in argument:
+        tmp = []
+        for arg in argument['selection']:
+            tmp.append(convert_action_argument(arg))
+        argument['selection'] = tmp
     return argument
 
 

@@ -1,4 +1,3 @@
-fakeredis >= 0.9.0
 mock
 requests-mock
 tzlocal

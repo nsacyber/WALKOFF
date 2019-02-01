@@ -19,6 +19,7 @@ from walkoff.senders_receivers_helpers import make_results_sender, make_communic
 from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
 from walkoff.worker.zmq_workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
     WorkflowReceiver
+import zmq
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class Worker(object):
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
-        if walkoff.config.Config.SEPARATE_WORKERS:
+        if walkoff.config.Config.SEPARATE_WORKERS or os.name == 'nt':
             walkoff.config.initialize(config_path=config_path)
         else:
             walkoff.config.Config.load_config(config_path)
@@ -110,6 +111,7 @@ class Worker(object):
         if self.comm_thread:
             self.comm_thread.join(timeout=2)
         self.workflow_results_sender.shutdown()
+        zmq.Context.instance().destroy()
         os._exit(0)
 
     def receive_workflows(self):

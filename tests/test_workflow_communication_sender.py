@@ -74,17 +74,16 @@ class TestWorkflowCommunicationSender(TestCase):
     def test_set_argumets_for_proto(self):
         message = ExecuteWorkflowMessage()
         uid = uuid4()
-        selection = [1, 'a', '32', 46]
+        selection = [Argument('test', 1), Argument('test', 'a'), Argument('test', '32'), Argument('test', 46)]
         arguments = [
             Argument('name1', value=32), Argument('name2', reference=uid, selection=selection)]
-        ProtobufWorkflowResultsConverter._add_arguments_to_proto(message, arguments)
+        ProtobufWorkflowResultsConverter._add_arguments_to_proto(message.arguments, arguments)
         self.assertEqual(len(message.arguments), len(arguments))
         self.assertEqual(message.arguments[0].name, arguments[0].name)
         self.assertEqual(message.arguments[0].value, str(arguments[0].value))
-        self.assertEqual(message.arguments[0].reference, '')
-        self.assertEqual(message.arguments[0].selection, '')
+        self.assertEqual(len(message.arguments[0].selection), 0)
 
         self.assertEqual(message.arguments[1].name, arguments[1].name)
         self.assertEqual(message.arguments[1].value, '')
         self.assertEqual(message.arguments[1].reference, str(uid))
-        self.assertEqual(message.arguments[1].selection, json.dumps(selection))
+        self.assertEqual(len(message.arguments[1].selection), len(selection))

@@ -37,13 +37,10 @@ class TestConsoleStream(ServerTestCase):
         mock_publish.assert_called_once_with(expected, event='log', subchannels=sender['execution_id'])
 
     def call_stream(self, execution_id=None):
-        post = self.test_client.post('/api/auth', content_type="application/json",
-                                     data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
-        key = json.loads(post.get_data(as_text=True))['access_token']
-        url = '/api/streams/console/log?access_token={}'.format(key)
+        url = '/api/streams/console/log'
         if execution_id:
-            url += '&workflow_execution_id={}'.format(execution_id)
-        return self.test_client.get(url)
+            url += '?workflow_execution_id={}'.format(execution_id)
+        return self.test_client.get(url, headers=self.headers)
 
     @patch.object(console_stream, 'stream')
     def test_stream_endpoint(self, mock_stream):

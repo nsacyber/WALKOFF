@@ -2,9 +2,9 @@ import logging
 from uuid import UUID
 
 from flask import request
+from flask_jwt_extended import jwt_required
 
 from walkoff.events import WalkoffEvent
-from walkoff.security import jwt_required_in_query
 from walkoff.server.problem import Problem
 from walkoff.server.returncodes import BAD_REQUEST
 from walkoff.sse import FilteredSseStream, StreamableBlueprint
@@ -34,7 +34,7 @@ def console_log_callback(sender, **kwargs):
 
 
 @console_page.route('/log', methods=['GET'])
-@jwt_required_in_query('access_token')
+@jwt_required
 def stream_console_events():
     workflow_execution_id = request.args.get('workflow_execution_id')
     if workflow_execution_id is None:

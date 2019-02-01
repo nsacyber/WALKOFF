@@ -60,7 +60,7 @@
                 	<option [ngValue]="''"></option>
                 	<option *ngFor="let i of getPreviousActions()" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 				</select>
-				<input type="text" class="form-control" [(ngModel)]="argument.selection" name="selection" placeholder="(Optional) Selection for object-based outputs">
+				<input type="text" class="form-control" [(ngModel)]="argument.selection" name="selection" placeholder="(Optional) Dot Notation selection into objects">
 			</ng-container>
 
 			<!-- Action select -->

@@ -32,7 +32,7 @@ class Action(ExecutionElement, Execution_Base):
     children = ('arguments', 'trigger')
 
     def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, trigger=None,
-                 position=None):
+                 position=None, errors=None):
         """Initializes a new Action object. A Workflow has one or more actions that it executes.
         Args:
             app_name (str): The name of the app associated with the Action
@@ -50,7 +50,7 @@ class Action(ExecutionElement, Execution_Base):
                 data is sent fulfilling the condition. Defaults to None.
             position (Position, optional): Position object for the Action. Defaults to None.
         """
-        ExecutionElement.__init__(self, id)
+        ExecutionElement.__init__(self, id, errors)
 
         self.trigger = trigger
 
@@ -161,6 +161,9 @@ class Action(ExecutionElement, Execution_Base):
             return result.status
 
         if is_app_action_bound(self.app_name, self._run):
+            if not instance:
+                result = ActionResult("App instance was not created successfully. Check logs for more details.",
+                                      "UnhandledException")
             result = action_execution_strategy.execute(self, accumulator, args, instance=instance)
         else:
             result = action_execution_strategy.execute(self, accumulator, args)

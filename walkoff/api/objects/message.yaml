@@ -33,11 +33,11 @@ Message:
     body:
       type: array
       items:
-        $ref: "#/definitions/MessageComponent"
+        $ref: "#/components/schemas/MessageComponent"
       description: The body of the message. Each component is rendered in order
       readOnly: true
     workflow_execution_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
       description: The UUID of the executing workflow which sent this message
       readOnly: true
     requires_reauthorization:

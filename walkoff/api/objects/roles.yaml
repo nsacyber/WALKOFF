@@ -14,7 +14,7 @@ AddRole:
         description: A list of resources that a user with this role can access
         type: array
         items:
-          $ref: '#/definitions/AddResource'
+          $ref: '#/components/schemas/AddResource'
 
 AddResource:
     type: object
@@ -52,7 +52,7 @@ Role:
         example: [/users, /cases, /playbooks]
         type: array
         items:
-          $ref: '#/definitions/Resource'
+          $ref: '#/components/schemas/Resource'
 
 Resource:
     type: object

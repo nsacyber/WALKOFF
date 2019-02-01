@@ -92,10 +92,9 @@ export class MainComponent implements OnInit, OnDestroy {
 	 * For existing messages, if they were responded to, remove the ! icon.
 	 */
 	getNotificationsSSE(): void {
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				this.eventSource = new (window as any)
-					.EventSource('/api/streams/messages/notifications?access_token=' + authToken);
+		this.authService.getEventSource('/api/streams/messages/notifications')
+			.then(eventSource => {
+				this.eventSource = eventSource;
 
 				this.eventSource.addEventListener('created', (message: any) => {
 					const newMessage = plainToClass(MessageListing, (JSON.parse(message.data) as object));
@@ -145,9 +144,6 @@ export class MainComponent implements OnInit, OnDestroy {
 					// 	(this.messageModalRef.componentInstance.message as Message).responded_by = update.username;
 					// 	(this.messageModalRef.componentInstance.message as Message).awaiting_response = false;
 					// }
-				});
-				this.eventSource.addEventListener('error', (err: Error) => {
-					console.error(err);
 				});
 			});
 	}

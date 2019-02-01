@@ -11,6 +11,7 @@ from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server.app import create_app
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
+from walkoff.server import workflowresults  # Need this import
 
 try:
     from importlib import reload

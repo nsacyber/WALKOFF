@@ -54,7 +54,7 @@ def load_playbooks(playbooks):
             if playbook.errors:
                 print(playbook.errors)
                 raise Exception('There be errors in yer playbooks')
-            execution_db.session.add(playbook.data)
+            execution_db.session.add(playbook)
     execution_db.session.commit()
 
 

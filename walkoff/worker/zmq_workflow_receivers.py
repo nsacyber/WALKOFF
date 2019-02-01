@@ -11,8 +11,8 @@ from zmq import ZMQError
 
 import walkoff.cache
 import walkoff.config
-from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
+from walkoff.executiondb.schemas import ArgumentSchema
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
 from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl, ExecuteWorkflowMessage
 
@@ -43,7 +43,8 @@ class ZmqWorkflowCommunicationReceiver(object):
         self._ready = False
         self._exit = False
 
-        self.comm_sock = zmq.Context().socket(zmq.SUB)
+        ctx = zmq.Context.instance()
+        self.comm_sock = ctx.socket(zmq.SUB)
         self.comm_sock.identity = socket_id
         self.comm_sock.curve_secretkey = walkoff.config.Config.CLIENT_PRIVATE_KEY
         self.comm_sock.curve_publickey = walkoff.config.Config.CLIENT_PUBLIC_KEY
@@ -166,7 +167,7 @@ class WorkflowReceiver(object):
                     if hasattr(message, 'arguments'):
                         for arg in message.arguments:
                             start_arguments.append(
-                                Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
+                                ArgumentSchema().load(MessageToDict(arg, preserving_proto_field_name=True)))
 
                     env_vars = []
                     if hasattr(message, 'environment_variables'):

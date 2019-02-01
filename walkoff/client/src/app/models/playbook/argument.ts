@@ -1,3 +1,6 @@
+import { Transform } from 'class-transformer';
+import { TransformationType } from 'class-transformer/TransformOperationExecutor';
+
 export class Argument {
 	id?: number;
 	// _action_id: number;
@@ -24,7 +27,19 @@ export class Argument {
 	 * Selection is currently specified in the UI as a string,
 	 * but is split and sent/ingested as an array containing strings and numbers
 	 */
-	selection?: string | Array<string | number>;
+	@Transform((value, obj, type) => {
+		switch(type) {
+			case TransformationType.CLASS_TO_PLAIN:
+				if (value) return value.split('.').map((v, i) => ({ name: 'selection_' + i, value: v }));
+				break;
+			case TransformationType.PLAIN_TO_CLASS:
+				if (Array.isArray(value)) return value.map(v => v.value).join('.');
+				break;
+			default:
+				if (value) return value;
+		}
+	})
+	selection?: string | Array<Argument>;
 
 	/**
 	 * Array of errors returned from the server for this Argument
@@ -73,22 +88,6 @@ export class Argument {
 		if (!this.reference) {
 			delete this.selection;
 			return;
-		}
-
-		if (this.selection == null) {
-			this.selection = [];
-		} else if (typeof (this.selection) === 'string') {
-			this.selection = this.selection.trim();
-			this.selection = this.selection.split('.');
-
-			if (this.selection[0] === '') {
-				this.selection = [];
-			} else {
-				// For each value, if it's a valid number, convert it to a number.
-				for (let i = 0; i < this.selection.length; i++) {
-					if (!isNaN(this.selection[i] as number)) { this.selection[i] = +this.selection[i]; }
-				}
-			}
 		}
 	}
 }

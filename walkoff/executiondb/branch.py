@@ -21,7 +21,7 @@ class Branch(ExecutionElement, Execution_Base):
     priority = Column(Integer)
     children = ('condition',)
 
-    def __init__(self, source_id, destination_id, id=None, status='Success', condition=None, priority=999):
+    def __init__(self, source_id, destination_id, id=None, status='Success', condition=None, priority=999, errors=None):
         """Initializes a new Branch object.
         
         Args:
@@ -38,7 +38,7 @@ class Branch(ExecutionElement, Execution_Base):
                 list of Branches should be executed if multiple have conditions resulting to True.
                 Defaults to 999 (lowest priority).
         """
-        ExecutionElement.__init__(self, id)
+        ExecutionElement.__init__(self, id, errors)
         self.source_id = source_id
         self.destination_id = destination_id
         self.status = status

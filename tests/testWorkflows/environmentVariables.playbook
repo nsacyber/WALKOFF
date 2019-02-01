@@ -24,8 +24,7 @@
                 {
                     "id": "d524843a-9caa-4fc1-aa0e-e8dfbdba7490",
                     "name": "call",
-                    "value": "CHANGE INPUT",
-                    "type": "str"
+                    "value": "CHANGE INPUT"
                 }
             ],
             "branches": [],

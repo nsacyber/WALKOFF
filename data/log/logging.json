@@ -72,7 +72,7 @@
       "handlers": [
         "file_handler"
       ], 
-      "level": "ERROR"
+      "level": "INFO"
     }, 
     "passlib": {
       "handlers": [
@@ -128,7 +128,7 @@
     "handlers": [
       "console"
     ], 
-    "level": "DEBUG"
+    "level": "INFO"
   }, 
   "version": 1
 }

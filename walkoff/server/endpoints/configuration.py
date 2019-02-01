@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from flask import current_app
+from flask import current_app, request
 from flask_jwt_extended import jwt_required
 
 import walkoff.config
@@ -34,19 +34,20 @@ def read_config_values():
     return __func()
 
 
-def update_configuration(configuration):
+def update_configuration():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('configuration', ['update']))
     def __func():
-        if not _reset_token_durations(access_token_duration=configuration.get('access_token_duration', None),
-                                      refresh_token_duration=configuration.get('refresh_token_duration', None)):
+        config_in = request.get_json()
+        if not _reset_token_durations(access_token_duration=config_in.get('access_token_duration', None),
+                                      refresh_token_duration=config_in.get('refresh_token_duration', None)):
             return Problem.from_crud_resource(
                 BAD_REQUEST,
                 'configuration',
                 'update',
                 'Access token duration must be less than refresh token duration.')
 
-        for config, config_value in configuration.items():
+        for config, config_value in config_in.items():
             if hasattr(walkoff.config.Config, config.upper()):
                 setattr(walkoff.config.Config, config.upper(), config_value)
             elif hasattr(current_app.config, config.upper()):
@@ -66,8 +67,8 @@ def update_configuration(configuration):
     return __func()
 
 
-def patch_configuration(configuration):
-    return update_configuration(configuration)
+def patch_configuration():
+    return update_configuration()
 
 
 def _reset_token_durations(access_token_duration=None, refresh_token_duration=None):

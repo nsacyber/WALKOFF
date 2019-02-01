@@ -49,7 +49,7 @@ Configuration:
         description: The number of threads per worker process for executing workflows.
         default: 3
       cache:
-        $ref: '#/definitions/CacheConfig'
+        $ref: '#/components/schemas/CacheConfig'
 
 CacheConfig:
   type: object

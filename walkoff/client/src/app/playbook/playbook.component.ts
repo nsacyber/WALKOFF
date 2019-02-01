@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 import 'rxjs/Rx';
 import { saveAs } from 'file-saver';
 import { plainToClass, classToClass } from 'class-transformer';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbTabChangeEvent } from '@ng-bootstrap/ng-bootstrap';
 import { FormControl } from '@angular/forms';
 
 import * as cytoscape from 'cytoscape';
@@ -61,16 +61,11 @@ import { WorkflowStatus } from '../models/execution/workflowStatus';
 })
 export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;
-	@ViewChild('workflowResultsContainer') workflowResultsContainer: ElementRef;
 	@ViewChild('workflowResultsTable') workflowResultsTable: DatatableComponent;
 	@ViewChild('consoleContainer') consoleContainer: ElementRef;
 	@ViewChild('consoleTable') consoleTable: DatatableComponent;
-	@ViewChild('errorLogContainer') errorLogContainer: ElementRef;
 	@ViewChild('errorLogTable') errorLogTable: DatatableComponent;
-	@ViewChild('environmentVariableContainerA') environmentVariableContainerA: ElementRef;
-	@ViewChild('environmentVariableTableA') environmentVariableTableA: DatatableComponent;
-	@ViewChild('environmentVariableContainerB') environmentVariableContainerB: ElementRef;
-    @ViewChild('environmentVariableTableB') environmentVariableTableB: DatatableComponent;
+	@ViewChild('environmentVariableTable') environmentVariableTable: DatatableComponent;
 	@ViewChild('importFile') importFile: ElementRef;
     @ViewChild('accordion') apps_actions: ElementRef;
 
@@ -83,6 +78,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	loadedWorkflow: Workflow;
 	playbooks: Playbook[] = [];
 	cy: any;
+	edgeHandler: any;
 	ur: any;
 	appApis: AppApi[] = [];
 	offset: GraphPosition = { x: -330, y: -170 };
@@ -108,7 +104,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	recalculateConsoleTableCallback: any;
 	actionFilter: string = '';
 	actionFilterControl = new FormControl();
-
+	
 	// Simple bootstrap modal params
 	modalParams: {
 		title: string,
@@ -162,9 +158,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.recalculateRelativeTimes();
 		});
 
-		this.recalculateConsoleTableCallback = (e: any) => this.recalculateConsoleTable(e);
-		$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateConsoleTableCallback)
-
 		/**
 		 * Filter app list by application and action names
 		 */
@@ -185,12 +178,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	ngAfterViewChecked(): void {
 		// Check if the table size has changed,
-		if (this.workflowResultsTable && this.workflowResultsTable.recalculate && 
-			(this.workflowResultsContainer.nativeElement.clientWidth !== this.executionResultsComponentWidth)) {
-			this.executionResultsComponentWidth = this.workflowResultsContainer.nativeElement.clientWidth;
-			this.workflowResultsTable.recalculate();
-			this.cdr.detectChanges();
-		}
+		// if (this.workflowResultsTable && this.workflowResultsTable.recalculate && 
+		// 	(this.workflowResultsContainer.nativeElement.clientWidth !== this.executionResultsComponentWidth)) {
+		// 	this.executionResultsComponentWidth = this.workflowResultsContainer.nativeElement.clientWidth;
+		// 	this.workflowResultsTable.recalculate();
+		// 	this.cdr.detectChanges();
+		// }
 	}
 
 	/**
@@ -199,7 +192,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	ngOnDestroy(): void {
 		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
 		if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
-		if (this.recalculateConsoleTableCallback) { $(document).off('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateConsoleTableCallback); }
 	}
 
     ///------------------------------------------------------------------------------------------------------
@@ -212,26 +204,28 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getConsoleSSE(workflowExecutionId: string): void {
 		if (this.consoleEventSource) this.consoleEventSource.close();
 
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				let url = `api/streams/console/log?access_token=${ authToken }&workflow_execution_id=${ workflowExecutionId }`;
-
-				this.consoleEventSource = new (window as any).EventSource(url);
+		this.authService.getEventSource(`/api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
+			.then(eventSource => {
+				this.consoleEventSource = eventSource
                 this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
-				this.consoleEventSource.onerror = (err: Error) => {
-					// this.toastrService.error(`Error retrieving workflow results: ${err.message}`);
-					console.error(err);
-				};
 			});
 	}
 
     consoleEventHandler(message: any): void {
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
-		this.consoleLog.push(newConsoleLog);
+
+		const shouldScroll = (this.consoleContainer && this.consoleContainer.nativeElement) &&
+			(this.consoleContainer.nativeElement.scrollTop + this.consoleContainer.nativeElement.clientHeight 
+				=== this.consoleContainer.nativeElement.scrollHeight);
 
 		// Induce change detection by slicing array
+		this.consoleLog.push(newConsoleLog);
 		this.consoleLog = this.consoleLog.slice();
+
+		setTimeout(() => {
+			if (shouldScroll) this.consoleContainer.nativeElement.scrollTop = this.consoleContainer.nativeElement.scrollHeight;
+		}, 100)
     }
 
 
@@ -247,20 +241,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getActionStatusSSE(workflowExecutionId: string): void {
 		if (this.eventSource) this.eventSource.close();
 
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				let url = `api/streams/workflowqueue/actions?access_token=${ authToken }&workflow_execution_id=${ workflowExecutionId }`;
-
-				this.eventSource = new (window as any).EventSource(url);
+		this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
+			.then(eventSource => {
+				this.eventSource = eventSource
 				this.eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
-
-				this.eventSource.onerror = (err: Error) => {
-					// this.toastrService.error(`Error retrieving workflow results: ${err.message}`);
-					console.error(err);
-				};
 			});
 	}
 
@@ -384,13 +371,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	setupGraph(): void {
 		// Convert our selection arrays to a string
 		if (!this.loadedWorkflow.actions) { this.loadedWorkflow.actions = []; }
-		this.loadedWorkflow.actions.forEach(action => {
-			action.arguments.forEach(argument => {
-				if (argument.selection && Array.isArray(argument.selection)) {
-					argument.selection = (argument.selection as Array<string | number>).join('.');
-				}
-			});
-		});
 
 		// Create the Cytoscape graph
 		this.cy = cytoscape({
@@ -552,7 +532,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.cy.panzoom({});
 
 		// Extension for drawing edges
-		this.cy.edgehandles({
+		this.edgeHandler = this.cy.edgehandles({
+			handleNodes: (el) => el.isNode() && !el.hasClass('just-created'),
 			preview: false,
 			toggleOffOnLeave: true,
 			complete: (sourceNode: any, targetNodes: any[], addedEntities: any[]) => {
@@ -601,6 +582,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 					// Add our branch to the actual loadedWorkflow model
 					this.loadedWorkflow.branches.push(newBranch);
+
+					targetNodes[i].addClass('just-created');
 				}
 
 				this.cy.remove(addedEntities);
@@ -610,6 +593,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 				// Re-add with the undo-redo extension.
 				this.ur.do('add', addedEntities); // Added back in using undo/redo extension
+
 			},
 		});
 
@@ -688,6 +672,19 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.cy.on('add', 'node', (e: any) => this.onNodeAdded(e));
 		this.cy.on('remove', 'node', (e: any) => this.onNodeRemoved(e));
 		this.cy.on('remove', 'edge', (e: any) => this.onEdgeRemove(e));
+
+		// Allow right clicking to create an edge
+		this.cy.on('mouseover mouseout', 'node', (e: any) => e.target.removeClass('just-created'));
+		this.cy.on('cxttapstart', 'node', (e: any) => this.edgeHandler.start(e.target));
+		this.cy.on('cxttapend', 'node', (e: any) => this.edgeHandler.stop());
+		this.cy.on('cxtdragover', 'node', (e: any) => this.edgeHandler.preview(e.target));
+		this.cy.on('cxtdragout', 'node', (e: any) => {
+			if (this.edgeHandler.options.snap && e.target.same(this.edgeHandler.targetNode)) {
+				// then keep the preview
+			} else {
+				this.edgeHandler.unpreview(e.target);
+			}
+		})
 
 		// this.cyJsonData = JSON.stringify(this.loadedWorkflow, null, 2);
 	}
@@ -852,22 +849,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			if (!argument.reference) {
 				delete argument.selection;
 				return;
-			}
-
-			if (argument.selection == null) {
-				argument.selection = [];
-			} else if (typeof (argument.selection) === 'string') {
-				argument.selection = argument.selection.trim();
-				argument.selection = argument.selection.split('.');
-
-				if (argument.selection[0] === '') {
-					argument.selection = [];
-				} else {
-					// For each value, if it's a valid number, convert it to a number.
-					for (let i = 0; i < argument.selection.length; i++) {
-						if (!isNaN(argument.selection[i] as number)) { argument.selection[i] = +argument.selection[i]; }
-					}
-				}
 			}
 		});
 	}
@@ -1680,7 +1661,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			if (element.value) { obj[element.name] = element.value; }
 			if (element.reference) { obj[element.name] = element.reference.toString(); }
 			if (element.selection && element.selection.length) {
-				const selectionString = (element.selection as any[]).join('.');
+				const selectionString = element.selection;
 				obj[element.name] = `${obj[element.name]} (${selectionString})`;
 			}
 		});
@@ -1746,29 +1727,31 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	/**
 	 * This function is used primarily to recalculate column widths for execution results table.
 	 */
-	recalculateConsoleTable(e: any) {
+	recalculateConsoleTable($e: NgbTabChangeEvent) {
 		let table: DatatableComponent;
-		switch(e.target.getAttribute('href')) {
-			case '#console':
-				table = this.consoleTable;
-				break;
-			case '#executionLog':
-				table = this.workflowResultsTable;
-				break;
-			case '#errorLog':
-				table = this.errorLogTable;
-				break;
-			case '#environmentVariableLogA':
-				table = this.environmentVariableTableA;
-				break;
-			case '#environmentVariableLogB':
-				table = this.environmentVariableTableB;
-		}
-		if (table && table.recalculate) { 
-			this.cdr.detectChanges();
-			if (Array.isArray(table.rows)) table.rows = [...table.rows];
-			table.recalculate(); 
-		}
+		setImmediate(() => {
+			switch($e.nextId) {
+				case 'console-tab':
+					table = this.consoleTable;
+					break;
+				case 'execution-tab':
+					table = this.workflowResultsTable;
+					break;
+				case 'error-tab':
+					table = this.errorLogTable;
+					break;
+				case 'variable-tab':
+					table = this.environmentVariableTable;
+					break;
+			}
+
+			if (table && table.recalculate) { 
+				console.log('changing: ' + $e.nextId)
+				this.cdr.detectChanges();
+				if (Array.isArray(table.rows)) table.rows = [...table.rows];
+				table.recalculate(); 
+			}
+		})
 	}
 
 	/**
@@ -1805,5 +1788,4 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			argument.reference = variable.id;
 		}).catch(() => argument.reference = '')
 	}
-
 }

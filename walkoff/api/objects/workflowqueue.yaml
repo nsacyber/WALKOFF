@@ -3,9 +3,9 @@ WorkflowStatus:
   required: [execution_id, workflow_id, name, status]
   properties:
     execution_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     workflow_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     name:
       description: The name of the workflow.
       type: string
@@ -29,16 +29,16 @@ WorkflowStatus:
       example: '2017-05-24T00:42:22.934058Z'
     current_action:
       description: The currently executing action
-      $ref: '#/definitions/ActionIdentification'
+      $ref: '#/components/schemas/ActionIdentification'
 
 FullWorkflowStatus:
   type: object
   required: [action_statuses, execution_id, workflow_id, name, status]
   properties:
     execution_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     workflow_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     name:
       description: The name of the workflow.
       type: string
@@ -64,7 +64,7 @@ FullWorkflowStatus:
       description: The statuses of the workflow actions
       type: array
       items:
-        $ref: '#/definitions/ActionStatus'
+        $ref: '#/components/schemas/ActionStatus'
 
 ActionStatus:
   type: object
@@ -72,9 +72,9 @@ ActionStatus:
   required: [action_id, execution_id, name, action_name, app_name, status, started_at]
   properties:
     execution_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     action_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     name:
       description: The name of the action
       type: string
@@ -118,9 +118,9 @@ ActionIdentification:
   required: [action_id, execution_id, name, action_name, app_name]
   properties:
     execution_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     action_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     name:
       description: The name of the action
       type: string
@@ -169,18 +169,18 @@ ExecuteWorkflow:
   required: [workflow_id]
   properties:
     workflow_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     start:
       description: The ID of the starting action
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     arguments:
       type: array
       items:
-        $ref: '#/definitions/Argument'
+        $ref: '#/components/schemas/Argument'
     environment_variables:
       type: array
       items:
-        $ref: '#/definitions/EnvironmentVariableExecute'
+        $ref: '#/components/schemas/EnvironmentVariableExecute'
 
 EnvironmentVariableExecute:
   type: object
@@ -188,7 +188,7 @@ EnvironmentVariableExecute:
   description: Additional environment variables to pass into the workflow execute. There is no need to pass the name.
   properties:
     id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     value:
       type: string
       description: The value for the environment variable
@@ -198,7 +198,7 @@ ControlWorkflow:
   required: [execution_id, status]
   properties:
     execution_id:
-      $ref: '#/definitions/Uuid'
+      $ref: '#/components/schemas/Uuid'
     status:
       description: The action to take on the executing workflow
       type: string

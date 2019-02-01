@@ -49,7 +49,7 @@ class ExecutionBaseSchema(ModelSchema):
 
 
 class ExecutionElementBaseSchema(ExecutionBaseSchema):
-    errors = fields.List(fields.String(), dump_only=True)
+    errors = fields.List(fields.String())
 
 
 class EnvironmentVariableSchema(ExecutionBaseSchema):
@@ -71,7 +71,7 @@ class ArgumentSchema(ExecutionElementBaseSchema):
     """
     name = field_for(Argument, 'name', required=True)
     value = fields.Raw()
-    selection = fields.List(fields.Raw())  # There should be some validation on this maybe
+    selection = fields.Nested('self', exclude=('selection',), many=True)  # There should be some validation on this?
 
     class Meta:
         model = Argument
@@ -132,8 +132,8 @@ class ConditionalExpressionSchema(ExecutionElementBaseSchema):
         ConditionalExpression,
         'operator',
         default='and',
-        validates=OneOf(*valid_operators),
-        missing='and')
+        validates=OneOf(*valid_operators)
+    )
     is_negated = field_for(ConditionalExpression, 'is_negated', default=False)
 
     class Meta:
@@ -183,7 +183,7 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     actions = fields.Nested(ActionSchema, many=True)
     branches = fields.Nested(BranchSchema, many=True)
     environment_variables = fields.Nested(EnvironmentVariableSchema, many=True)
-    is_valid = field_for(Workflow, 'is_valid', dump_only=True)
+    is_valid = field_for(Workflow, 'is_valid')
 
     class Meta:
         model = Workflow
@@ -222,4 +222,4 @@ def dump_element(element):
     Returns:
         dict: The serialized element
     """
-    return _schema_lookup[element.__class__]().dump(element).data
+    return _schema_lookup[element.__class__]().dump(element)

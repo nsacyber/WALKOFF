@@ -41,7 +41,7 @@ class JsonPlaybookLoader(object):
                                        'Cannot load.'.format(workflow_name, playbook_name))
                         return None
                     workflow = WorkflowSchema().load(workflow_json)
-                    return playbook_name, workflow.data
+                    return playbook_name, workflow
                 except ValueError as e:
                     logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
@@ -71,7 +71,7 @@ class JsonPlaybookLoader(object):
                     playbook_json = json.loads(workflow_loaded)
 
                     playbook = PlaybookSchema().load(playbook_json)
-                    return playbook.data
+                    return playbook
                 except ValueError as e:
                     logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:

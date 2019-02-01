@@ -23,13 +23,7 @@ class TestAppUtilities(unittest.TestCase):
         execution_db_help.tear_down_execution_db()
 
     def setUp(self):
-        from flask import current_app
         self.app_name = 'TestApp'
-        self.app = current_app.test_client(self)
-        self.app.testing = True
-
-        self.context = current_app.test_request_context()
-        self.context.push()
 
         self.device1 = Device('test1', [], [], 'type1')
         self.device2 = Device('test2', [], [], 'type1')

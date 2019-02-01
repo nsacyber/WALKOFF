@@ -5,26 +5,27 @@
     summary: Login and get access and refresh tokens
     description: ''
     operationId: walkoff.server.endpoints.auth.login
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: The username and password
-        required: true
-        schema:
-          $ref: '#/definitions/Authentication'
+    requestBody:
+      description: The username and password
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Authentication'
     responses:
       201:
         description: Success
-        schema:
-          $ref: '#/definitions/Token'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Token'
       401:
         description: Unauthorized
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security: []
 
 /auth/refresh:
   post:
@@ -33,17 +34,19 @@
     summary: Get a fresh access token
     description: ''
     operationId: walkoff.server.endpoints.auth.refresh
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/Token'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Token'
       401:
         description: Unauthorized
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
 
 /auth/logout:
   post:
@@ -51,26 +54,24 @@
       - Authorization
     summary: Logout of walkoff
     operationId: walkoff.server.endpoints.auth.logout
-    produces:
-      - application/json
-    consumes:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: The refresh token to be revoked
-        required: true
-        schema:
-          type: object
-          required: [refresh_token]
-          properties:
-            refresh_token:
-              type: string
-              description: the refresh token to be revoked
+    requestBody:
+      description: The refresh token to be revoked
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [refresh_token]
+            properties:
+              refresh_token:
+                type: string
+                description: the refresh token to be revoked
     responses:
       204:
         description: Success
       400:
         description: Invalid refresh token
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

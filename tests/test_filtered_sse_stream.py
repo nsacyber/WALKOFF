@@ -50,6 +50,7 @@ class TestSimpleFilteredSseStream(TestCase):
 
         @self.stream.push('event1')
         def pusher(a, ev, sub):
+            gevent.sleep(0.1)
             return {'a': a}, sub, ev
 
         subs = ('aaa', 'bbb')
@@ -73,6 +74,7 @@ class TestSimpleFilteredSseStream(TestCase):
 
         listen_threads = [gevent.spawn(listen, sub) for sub in subs]
         publish_threads = [gevent.spawn(publish, sub) for sub in subs]
+        gevent.sleep(0.1)
         gevent.joinall(listen_threads, timeout=2)
         gevent.joinall(publish_threads, timeout=2)
         for sub in subs:
@@ -84,6 +86,7 @@ class TestSimpleFilteredSseStream(TestCase):
 
         @self.stream.push('event1')
         def pusher(a, ev):
+            gevent.sleep(0.1)
             return {'a': a}, subs, ev
 
         result = {sub: [] for sub in subs}
@@ -105,6 +108,7 @@ class TestSimpleFilteredSseStream(TestCase):
 
         listen_threads = [gevent.spawn(listen, sub) for sub in subs]
         publish_thread = gevent.spawn(publish)
+        gevent.sleep(0.1)
         gevent.joinall(listen_threads, timeout=2)
         publish_thread.join(timeout=2)
         for sub in subs:
@@ -114,6 +118,7 @@ class TestSimpleFilteredSseStream(TestCase):
 
         @self.stream.push('event1')
         def pusher(a, ev, sub):
+            gevent.sleep(0.1)
             return {'a': a}, sub, ev
 
         subs = ('a', 'b')
@@ -138,6 +143,7 @@ class TestSimpleFilteredSseStream(TestCase):
 
         listen_threads = [gevent.spawn(listen, sub) for sub in subs]
         publish_threads = [gevent.spawn(publish, sub) for sub in subs]
+        gevent.sleep(0.1)
         gevent.joinall(listen_threads, timeout=2)
         gevent.joinall(publish_threads, timeout=2)
         for sub in subs:

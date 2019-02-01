@@ -146,7 +146,7 @@ class ProtobufWorkflowResultsConverter(object):
 
         arguments = arguments if arguments else sender.arguments
         if arguments:
-            ProtobufWorkflowResultsConverter._add_arguments_to_proto(action_packet.sender, arguments)
+            ProtobufWorkflowResultsConverter._add_arguments_to_proto(action_packet.sender.arguments, arguments)
 
         ProtobufWorkflowResultsConverter._add_workflow_to_proto(action_packet.workflow, workflow_ctx)
 
@@ -166,15 +166,15 @@ class ProtobufWorkflowResultsConverter(object):
         action_packet.sender.device_id = sender.get_resolved_device_id()
 
     @staticmethod
-    def _add_arguments_to_proto(message, arguments):
+    def _add_arguments_to_proto(message_arguments, arguments):
         """Adds Arguments to the Action protobuf packet
 
         Args:
-            message (protobuf): The protobuf packet
+            message_arguments (protobuf): The protobuf packet
             arguments (list[Argument]): The list of Arguments to add
         """
         for argument in arguments:
-            ProtobufWorkflowResultsConverter._set_argument_proto(message.arguments.add(), argument)
+            ProtobufWorkflowResultsConverter._set_argument_proto(message_arguments.add(), argument)
 
     @staticmethod
     def _set_argument_proto(arg_proto, arg_obj):
@@ -185,7 +185,7 @@ class ProtobufWorkflowResultsConverter(object):
             arg_obj (Argument): The Argument object
         """
         arg_proto.name = arg_obj.name
-        for field in ('value', 'reference', 'selection'):
+        for field in ('value', 'reference'):
             val = getattr(arg_obj, field)
             if val is not None:
                 if not isinstance(val, string_types):
@@ -195,6 +195,9 @@ class ProtobufWorkflowResultsConverter(object):
                         setattr(arg_proto, field, str(val))
                 else:
                     setattr(arg_proto, field, val)
+
+        if hasattr(arg_obj, 'selection'):
+            ProtobufWorkflowResultsConverter._add_arguments_to_proto(arg_proto.selection, arg_obj.selection)
 
     @staticmethod
     def add_env_vars_to_proto(packet, env_vars):
@@ -317,7 +320,7 @@ class ProtobufWorkflowResultsConverter(object):
         if start:
             message.start = str(start)
         if start_arguments:
-            ProtobufWorkflowResultsConverter._add_arguments_to_proto(message, start_arguments)
+            ProtobufWorkflowResultsConverter._add_arguments_to_proto(message.arguments, start_arguments)
         if environment_variables:
             ProtobufWorkflowResultsConverter.add_env_vars_to_proto(message, environment_variables)
         if user:
