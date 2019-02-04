@@ -1,142 +1,163 @@
 import asyncio
 import logging
 import re
-import json
 import os
-from contextlib import asynccontextmanager
+import sys
 
 import aioredis
 import docker
 import docker.tls
 import docker.errors
-from docker.models.images import Image
-from compose.cli.main import TopLevelCommand
-from compose.project import Project
-from compose.cli.command import set_parallel_limit, get_project
-from compose.config.environment import Environment
+import docker.types
+import docker.models.services
+from docker.types.services import SecretReference
+from compose.service import Service
 
-from common import config
 
-logging.basicConfig(level=logging.DEBUG, format="{asctime} - {name} - {levelname}:{message}", style='{')
+from common.config import load_config
+from common.helpers import connect_to_redis_pool, connect_to_docker, ServiceKwargs
+from umpire.app_repo import AppRepo
+
+logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("UMPIRE")
+logger.setLevel(logging.DEBUG)
+
+config = load_config()
+USING_DOCKER = config["UMPIRE"]["backend"].casefold() == "docker".casefold()
+USING_KUBERNETES = config["UMPIRE"]["backend"].casefold() == "kubernetes".casefold() \
+                or config["UMPIRE"]["backend"].casefold() == "k8s".casefold()
+
+if not (USING_DOCKER or USING_KUBERNETES):
+    logger.error("No valid orchestration selected. Please select either 'docker' or 'kubernetes'")
+    sys.exit(1)
 
 
-def load_env():
-    environment = os.environ
-    environment.update({key: val for key, val in config["umpire"]["docker_compose_env"].items() if val is not None})
-    return Environment(environment)
-
-
-def load_app_repo(path):
-    apps = {}
-    for app in os.listdir(path):
-        #  grabs only directories and ignores all __* directories i.e. __pycache__
-        if os.path.isdir(os.path.join(path, app)) and not re.fullmatch("(__.*)", app):
-            apps[app] = {}
-            app_path = os.path.join(path, app)
-            for version in os.listdir(app_path):
-                if re.fullmatch(r"(v(\d\.?)+)", version):  # grabs all valid version directories of form "v0.12.3.45..."
-                    version_path = os.path.join(app_path, version)
-                    if ORCHESTRATOR is Orchistrator.LOCAL:
-                        pass
-                    elif ORCHESTRATOR is Orchistrator.DOCKER_COMPOSE:
-                        pass
-                    elif ORCHESTRATOR is Orchistrator.DOCKER_SWARM:
-                        get_project(project_dir=version_path, environment=load_env())
-                        apps[app][version] = project_from_options(os.path.join(path, app, version), DOCKER_COMPOSE_OPTS)
-                        # apps[app] = {v for v in os.listdir(os.path.join(path, app)) if re.fullmatch(r"(v(\d\.?)+)", v)}
-                    elif ORCHESTRATOR is Orchistrator.KUBERNETES:
-                        pass
-
-
-
-                logger.debug(f"Loaded {app} versions: {apps[app].keys()}")
-    return apps
-
-
+# TODO: Add verification that AppRepo got initialized before use
 class Umpire:
-    def __init__(self, redis=None):
-        self.redis: aioredis.Redis = redis
-        self.docker: docker.DockerClient = None
-        self.kubernetes = None
-        self.app_repo = load_app_repo(config["umpire"]["app_repo_path"])
+    def __init__(self, docker_client=None, k8s_client=None, redis_client=None):
+        self.redis_client: aioredis.Redis = redis_client
+        self.docker_client: docker.DockerClient = docker_client
+        self.k8s_client = k8s_client
+        self.apps = dict()
 
-    @asynccontextmanager
-    async def connect_to_redis_pool(self, redis_uri) -> aioredis.Redis:
-        # Redis client bound to pool of connections (auto-reconnecting).
-        self.redis = await aioredis.create_redis_pool(redis_uri)
+    @classmethod
+    async def init(cls, docker_client=None, k8s_client=None, redis_client=None):
+        inst = cls(docker_client, k8s_client, redis_client)
+        inst.apps = await AppRepo.create(config["UMPIRE"]["apps_path"], redis_client)
+
+        if len(inst.apps) < 1:
+            logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
+            exit(1)
+        return inst
+
+    def launch_app(self, app, version):
+        logger.debug(f"Launching {app}-{version}")
+
+        repo = f"{config['UMPIRE']['DOCKER_REGISTRY']}/{config['UMPIRE']['DOCKER_REPOSITORY']}"
+        tag = f"{repo}:{app}-{version}"
+        secrets = self.load_secrets(app, version)
+
+        # see if we have an image and build one if not
         try:
-            yield self.redis
-        finally:
-            # gracefully close pool
-            self.redis.close()
-            await self.redis.wait_closed()
-            logger.info("Redis connection pool closed.")
+            self.docker_client.images.get(tag)
 
-    # def connect_to_docker(self, docker_url):
-    #     tls_config = docker.tls.TLSConfig(ca_cert=os.path.join(DOCKER_CERT_DIR, "ca.pem"),
-    #                                       client_cert=(os.path.join(DOCKER_CERT_DIR, "cert.pem"),
-    #                                                    os.path.join(DOCKER_CERT_DIR, "key.pem")))
-    #     self.docker = docker.DockerClient(base_url=docker_url, tls=tls_config)
-    #     try:
-    #         if self.docker.ping():
-    #             logger.debug(f"Connected to Docker Engine: v{self.docker.version()['Version']}")
-    #             return
-    #     except docker.errors.APIError as e:
-    #         logger.error(f"Docker API error during connect: {e}")
-    #         return
+        except docker.errors.ImageNotFound:
+            self.build_app(app, version)
 
-    async def get_messages(self, umpire_channel_key):
-        """ Continuously monitors the message queue """
-        channel: [aioredis.Channel] = (await self.redis.subscribe(umpire_channel_key))[0]
-        while True:
-            print(await self.redis.keys('*'))
-            msg = await channel.get_json()
-            if msg is None:
-                break  # channel was unsubbed
+        except docker.errors.APIError:
+            logger.exception(f"Docker API error during launch of {app}-{version}")
+            return
 
-            if msg["command"] == "query":
-                pass
-            elif msg["command"] == "build":
-                self.docker.images.build()
-        logger.info("Channel closed")
+        service_kwargs = ServiceKwargs().configure(service=self.apps[app][version].services[0], secrets=secrets)
+        service: docker.models.services.Service = self.docker_client.services.create(tag, **service_kwargs)
 
-    def launch_app(self, image: Image):
-        app = image.tags[-1]
-        logger.debug(f"Launching {app}")
-        env = None
-        if os.path.exists(os.path.join(*app.split(':'), "env.txt")):
-            with open(os.path.join(*app.split(':'), "env.txt")) as fp:
-                env = [line for line in fp if re.fullmatch("(\w+=\w+)", line)]
-        self.docker.containers.run(image, environment=env, detach=True, remove=True, auto_remove=True)
         logger.info(f"Launched {app}")
 
+    def load_secrets(self, app, version) -> [SecretReference]:
+        project = self.apps[app][version]
+        service: Service = project.services[0]
+        secret_references = []
+        for service_secret in service.secrets:
+            secret = service_secret["secret"]
+            filename = service_secret.get("file", secret.source)
+
+            # Compose doesn't parse external secrets so we'll assume there is one and build if it doesn't exist
+            try:
+                secret_id = self.docker_client.secrets.get(secret.source)
+
+            except docker.errors.NotFound:
+                with open(filename, 'rb') as fp:
+                    data = fp.read()
+
+                secret_id = self.docker_client.secrets.create(name=secret.source, data=data).id
+
+            except docker.errors.APIError:
+                logger.exception(f"Docker API error during retrival of secret: {secret.source}")
+                return
+
+            secret_references.append(SecretReference(secret_id=secret_id, secret_name=secret.source,
+                                                     filename=filename, uid=secret.uid, gid=secret.gid,
+                                                     mode=secret.mode))
+        return secret_references
+
     def build_app(self, app, version):
-        dockerfile_path = os.path.join(config["umpire"]["app_repo_path"], app, version)
+        repo = f"{config['UMPIRE']['DOCKER_REGISTRY']}/{config['UMPIRE']['DOCKER_REPOSITORY']}"
+        tag = f"{app}-{version}"
+        full_tag = f"{repo}:{tag}"
+
+        service: Service = self.apps[app][version].services[0]
+        build_opts = service.options.get('build', {})
+
         try:
-            image, logs = self.docker.images.build(path=dockerfile_path, tag=f"walkoff:{app}-{version}", rm=True,
-                                                   forcerm=True, pull=True)
+            logger.info(f"Building {app}-{version}")
+            path = build_opts.get("context", None)
+            image, logs = self.docker_client.images.build(path=path, tag=full_tag, rm=True, forcerm=True, pull=True)
             for line in logs:
-                logger.debug(line)
+                if "stream" in line and line["stream"].strip():
+                    logger.debug(line["stream"].strip())
+                elif "status" in line:
+                    logger.info(line["status"].strip())
+            logger.info(f"Pushing {app}-{version}")
+            for line in self.docker_client.images.push(repo, tag=tag, stream=True, decode=True):
+                if line.get("status", False):
+                    logger.debug(line["status"])
 
-            self.launch_app(image)
+            return image
 
-        except docker.errors.BuildError as e:
-            logger.error(f"Docker build error during {app}-{version} build: {e.build_log}")
+        except TypeError:
+            logger.exception(f"No build path specified for {app}-{version} build")
             return
 
-        except docker.errors.APIError as e:
-            logger.error(f"Docker API error during {app}-{version} build: {e}")
+        except docker.errors.BuildError:
+            logger.exception(f"Error during {app}-{version} build")
             return
+
+        except docker.errors.APIError:
+            logger.exception(f"Docker API error during {app}-{version} build")
+            return
+
+    async def monitor_queues(self):
+
+        while True:
+            # TODO: Come up with a more robust system of naming queues
+            # Find all redis keys matching our "{AppName}-{Priority}" pattern
+            keys = await self.redis_client.keys(pattern="[A-Z]*-[1-5]", encoding="utf-8")
+            services = self.docker_client.services.list()
+            logger.info(f"Redis keys: {keys}")
+            logger.info(f"Running apps: {services}")
+            await asyncio.sleep(10)
+            for key in keys:
+                workload = self.redis_client.llen(key)
+                # if workload > 0 and self.docker_client.services.get(key.split())
 
 
 if __name__ == "__main__":
-
     async def run_umpire():
-        ump = Umpire()
-        # ump.connect_to_docker()
-        async with ump.connect_to_redis_pool() as redis:
-            await ump.get_messages(config["umpire"]["apigateway2umpire_ch"])
+        async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis:
+            ump = await Umpire.init(docker_client=connect_to_docker(), redis_client=redis)
+            # ump.build_app("TestApp", "v0.1.1")
+            # ump.launch_app("TestApp", "v0.1.1")
+            await ump.monitor_queues()
 
         # Clean up any unfinished tasks (shouldn't really be any though)
         tasks = [t for t in asyncio.all_tasks() if t is not

@@ -7,14 +7,14 @@ RUN mkdir /install
 WORKDIR /install
 
 COPY requirements.txt /requirements.txt
-
 RUN pip install --prefix="/install" -r /requirements.txt
 
 FROM base
 
 COPY --from=builder /install /usr/local
-COPY ./ /app
+COPY src/app_sdk /app/app_sdk
+COPY src /app/
 
 WORKDIR /app
 
-CMD python -m worker.worker
+CMD python app.py --log-level DEBUG

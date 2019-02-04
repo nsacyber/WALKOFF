@@ -18,3 +18,4 @@ COPY src/app.py /app/
 WORKDIR /app
 
 CMD python app.py --log-level DEBUG
+#CMD printf "Hello World"

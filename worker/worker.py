@@ -1,37 +1,76 @@
-import uuid
 from collections import deque
 import asyncio
 import logging
-from contextlib import asynccontextmanager
 import json
+import sys
+import uuid
 
 import aioredis
 
-from common import config
-from common.workflow_types import Action, Branch, Workflow, Point
+from common.config import load_config
+from common.helpers import connect_to_redis_pool
+from common.workflow_types import Action, Workflow, WorkflowJSONEncoder, WorkflowJSONDecoder
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WORKER")
 
+config = load_config()
+
+
+def json_dumps(obj):
+    return json.dumps(obj, cls=WorkflowJSONEncoder)
+
+
+def json_loads(obj):
+    return json.dumps(obj, cls=WorkflowJSONDecoder)
+
 
 class Worker:
-    def __init__(self, workflow: Workflow, start_action=None):
+    def __init__(self, workflow: Workflow = None, start_action=None, redis=None):
         self.workflow = workflow
         self.start_action = start_action if start_action is not None else self.workflow.start
         self.accumulator = {}
         self.in_process = {}
+        self.redis = redis
 
-    @asynccontextmanager
-    async def connect_to_redis_pool(self, redis_uri) -> aioredis.Redis:
-        # Redis client bound to pool of connections (auto-reconnecting).
-        self.redis = await aioredis.create_redis_pool(redis_uri)
-        try:
-            yield self.redis
-        finally:
-            # gracefully close pool
-            self.redis.close()
-            await self.redis.wait_closed()
-            logger.info("Redis connection pool closed.")
+    @staticmethod
+    async def get_workflow(redis: aioredis.Redis):
+        """ Continuously monitors the workflow queue for new work """
+        while True:
+            # # Push test workflow in for now
+            # with open("data/workflows/hello.json") as fp:
+            #     wf = json.load(fp)
+            #     redis.lpush(config["REDIS"]["workflow_q"], json.dumps(wf))
+
+            workflow = await redis.brpoplpush(sourcekey=config["REDIS"]["workflow_q"],
+                                              destkey=config["REDIS"]["workflows_in_process"],
+                                              timeout=30)
+
+            if workflow is None:  # We've timed out with no work. Guess we'll die now...
+                sys.exit(1)
+
+            yield Workflow.from_json(json.loads(workflow))
+
+    @staticmethod
+    async def run():
+        async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis:
+            async for workflow in Worker.get_workflow(redis):
+
+                # Setup worker launch the event loop
+                worker = Worker(workflow, redis=redis)
+                await worker.execute_workflow()
+        await Worker.shutdown()
+
+    @staticmethod
+    async def shutdown():
+        # Clean up any unfinished tasks (shouldn't really be any though)
+        tasks = [t for t in asyncio.all_tasks() if t is not
+                 asyncio.current_task()]
+
+        [task.cancel() for task in tasks]
+
+        logger.info('Canceling outstanding tasks')
+        await asyncio.gather(*tasks)
 
     async def execute_workflow(self):
         """ Do a simple BFS to visit and schedule each action in the workflow """
@@ -41,11 +80,12 @@ class Worker:
 
         while queue:
             action = queue.pop()
-            parents = set(self.workflow.predecessors(action))
+            parents = set(self.workflow.predecessors(action)) if action is not self.start_action else {}
             children = self.workflow.successors(action)
             action.execution_id = str(uuid.uuid4())
+            action.workflow_execution_id = self.workflow.execution_id
 
-            self.in_process[action.execution_id] = action
+            self.in_process[action.id] = action
             tasks.append(asyncio.create_task(self.schedule_action(parents, action)))
 
             for child in sorted(children, reverse=True):
@@ -54,15 +94,35 @@ class Worker:
                     visited.add(child)
 
         # Launch the results accumulation task and wait for all the results to come in
-        tasks.append(asyncio.create_task(self.get_action_results(config["redis"]["action_results_ch"])))
+        tasks.append(asyncio.create_task(self.get_action_results(config["REDIS"]["action_results_ch"])))
         await asyncio.gather(*tasks)
+
+    async def dereference_params(self, action: Action):
+        global_vars = set(await self.redis.hkeys(config["REDIS"]["globals_key"]))
+
+        for param in action.params:
+            if param._is_reference:
+                if param.reference in self.accumulator:
+                    param.value = self.accumulator[param.reference]
+
+                elif param.reference in self.workflow.environment_variables:
+                    param.value = self.workflow.environment_variables[param.reference]
+
+                elif param.reference in global_vars:
+                    param.value = self.accumulator[param.reference]
+
+                param._is_reference = False
+                param.reference = None
 
     async def schedule_action(self, parents: {Action}, action: Action):
         """ Waits until all dependencies of an action are met and then schedules the action """
-        while not all(parent.execution_id in self.accumulator for parent in parents):
+        while not all(parent.id in self.accumulator for parent in parents):
             await asyncio.sleep(0)
-        await self.redis.lpush(f"{action.app_name}-{action.priority}", json.dumps(action.to_json()))
-        logger.info(f"Scheduled {action}-{action.execution_id}")
+
+        await self.dereference_params(action)
+
+        await self.redis.lpush(f"{action.app_name}-{action.priority}", json_dumps(action))
+        logger.info(f"Scheduled {action}")
 
     async def get_action_results(self, results_channel_key):
         """ Continuously monitors the results queue until all scheduled actions have been completed """
@@ -73,90 +133,27 @@ class Worker:
                 break  # channel was unsubbed
 
             # Ensure that the recieved ActionResult is for an action we launched
-            if msg["execution_id"] in self.in_process:
-                if msg["error"] is None:
-                    self.accumulator[msg["execution_id"]] = msg["result"]
+            if msg["workflow"]["execution_id"] == self.workflow.execution_id and msg["action_id"] in self.in_process:
+                # if msg["error"] is None and msg["result"] is not None:
+
+                if msg["status"] == "ActionStarted":
+                    logger.info(f"App started exectuion of: {msg['name']}-{msg['execution_id']}")
+
+                elif msg["status"] == "ActionExecutionSuccess":
+                    self.accumulator[msg["action_id"]] = msg["result"]
                     logger.info(f"Worker recieved result for: {msg['name']}-{msg['execution_id']}")
+
+                    # Remove the action from our local in_process queue as well as the one in redis
+                    action = self.in_process.pop(msg["action_id"])
+                    await self.redis.lrem(config["REDIS"]["actions_in_process"], 0, json_dumps(action))
+
                 else:
-                    self.accumulator[msg["execution_id"]] = msg["error"]
+                    self.accumulator[msg["action_id"]] = msg["error"]
                     logger.info(f"Worker recieved error \"{msg['error']}\" for: {msg['name']}-{msg['execution_id']}")
 
-                # Remove the action from our local in_process queue as well as the one in redis
-                action = self.in_process.pop(msg["execution_id"])
-                await self.redis.lrem(config["redis"]["in_process_q"], 0, json.dumps(action.to_json()))
-        
-        logger.info("Channel closed")
+        logger.info("Action-Results channel closed")
 
 
 if __name__ == "__main__":
-    import sys
-    from common import config
-
-
-    async def run_worker(workflow):
-        # Setup worker launch the event loop
-        worker = Worker(workflow)
-        async with worker.connect_to_redis_pool(config["redis"]["redis_uri"]) as redis:
-            await worker.execute_workflow()
-
-        # Clean up any unfinished tasks (shouldn't really be any though)
-        tasks = [t for t in asyncio.all_tasks() if t is not
-                 asyncio.current_task()]
-
-        [task.cancel() for task in tasks]
-
-        logger.info('Canceling outstanding tasks')
-        await asyncio.gather(*tasks)
-
-
-
-    # Design our workflow
-    a = Action("sleep_a", "sleep", "TestApp", {"sleep_time": 1}, 5, Point(5, 5))
-    b = Action("sleep_b", "sleep", "TestApp", {"sleep_time": 10}, 4, Point(4, 4))
-    c = Action("sleep_c", "sleep", "TestApp", {"sleep_time": 1}, 3, Point(6, 4))
-    d = Action("sleep_d", "sleep", "TestApp", {"sleep_time": 1}, 2, Point(5, 3))
-    e = Action("sleep_e", "sleep", "TestApp", {"sleep_time": 1}, 1, Point(6, 3))
-    f = Action("foo_f", "foo", "TestApp", {"bar": "spam"}, 5, Point(6, 2))
-    branches = {Branch(a, b), Branch(a, c), Branch(b, d), Branch(c, d), Branch(c, e), Branch(e, f)}
-    actions = {a, b, c, d, e, f}
-
-    # Flow network to test concurrent execution of n actions of varying priorities.
-    # n = 200
-    # a = Action("sleep_a", "sleep", "TestApp", {"sleep_time": 1}, 5, Point(5, 5))
-    # z = Action("sleep_z", "sleep", "TestApp", {"sleep_time": 1}, 5, Point(5, 3))
-    # actions = {Action(f"sleep_{i}", "sleep", "TestApp", {"sleep_time": 1}, i % 5 + 1, Point(i, 4)) for i in range(n)}
-    # branches = {Branch(src=src, dst=dst) for action in actions for src, dst in [(a, action), (action, z)]}
-
-    workflow = Workflow("TestWorkflow", start=a, actions=actions, branches=branches)
-
-    if sys.argv[-1] == "--local":
-        import multiprocessing
-        from apps.TestApp import app
-        import networkx as nx
-        import matplotlib.pyplot as plt
-
-        # Display our workflow
-        nx.draw_networkx(workflow, pos={action: (action.pos.x, action.pos.y) for action in workflow.nodes})
-        plt.show()
-
-        # Launch instances of  TestApp in other processes to simulate containerized instances
-        num_app_instances = 4
-        app_procs = []
-        for i in range(num_app_instances):
-            p = multiprocessing.Process(target=app.main, args=[i])
-            p.start()
-            app_procs.append(p)
-
-        # Launch the worker event loop
-        asyncio.run(run_worker(workflow))
-
-        # Politely ask the app to die
-        logger.info("Terminating app process")
-        for p in app_procs:
-            p.terminate()
-            p.join()
-        logger.info('Shutdown complete.')
-
-    else:
-        # Launch the worker event loop
-        asyncio.run(run_worker(workflow))
+    # Launch the worker event loop
+    asyncio.run(Worker.run())

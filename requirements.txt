@@ -1,3 +1,6 @@
 networkx
 aioredis
+pyyaml
 docker
+docker-compose
+sqlalchemy

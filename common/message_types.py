@@ -15,6 +15,22 @@ class ActionResult:
         return ret
 
 
+# class ConfigDetails(namedtuple('_ConfigDetails', 'working_dir config_files environment')):
+#     """
+#     :param working_dir: the directory to use for relative paths in the config
+#     :type  working_dir: string
+#     :param config_files: list of configuration files to load
+#     :type  config_files: list of :class:`ConfigFile`
+#     :param environment: computed environment values for this project
+#     :type  environment: :class:`environment.Environment`
+#      """
+#     def __new__(cls, working_dir, config_files, environment=None):
+#         if environment is None:
+#             environment = Environment.from_env_file(working_dir)
+#         return super(ConfigDetails, cls).__new__(
+#             cls, working_dir, config_files, environment
+#         )
+
 class AppRepo:
     def __init__(self, app_repo):
         self.app_repo = app_repo

@@ -1,9 +1,9 @@
 version: '3.4'
 services:
-  test-app:
-    build: ./
+  hello-world:
+    build: ..
     env_file:
-      - ../../HelloWorld/v1.0/env.txt
+      - env.txt
     deploy:
       mode: replicated
       replicas: 6

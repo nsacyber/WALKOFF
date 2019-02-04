@@ -40,15 +40,15 @@ class TestApp(AppBase):
         return list
 
 
-def main(app_instance):
+if __name__ == "__main__":
     import argparse
     LOG_LEVELS = ("debug", "info", "error", "warn", "fatal", "DEBUG", "INFO", "ERROR", "WARN", "FATAL")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--log-level", dest="log_level", choices=LOG_LEVELS)
+    parser.add_argument("--log-level", dest="log_level", choices=LOG_LEVELS, default="INFO")
     args = parser.parse_args()
 
     logging.basicConfig(level=args.log_level.upper(), format="{asctime} - {name} - {levelname}:{message}", style='{')
-    logger = logging.getLogger(f"TestApp{app_instance}")
+    logger = logging.getLogger("TestApp")
 
     async def run():
         app = TestApp(logger=logger)
@@ -56,7 +56,3 @@ def main(app_instance):
             await app.get_actions()
 
     asyncio.run(run())
-
-
-if __name__ == "__main__":
-    main('')
