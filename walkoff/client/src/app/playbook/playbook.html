@@ -245,14 +245,19 @@
         </div>
     </div>
 
-
-    <ngb-tabset *ngIf="loadedWorkflow?.id || loadedWorkflow?.environment_variables?.length > 0" class="mb-3" destoryOnHide="false" (tabChange)="recalculateConsoleTable($event)">
-
+    <div class="mb-3">
+    <ngb-tabset *ngIf="loadedWorkflow?.id || loadedWorkflow?.environment_variables?.length > 0" destoryOnHide="false" (tabChange)="recalculateConsoleTable($event)">
         <ngb-tab *ngIf="loadedWorkflow?.id && !loadedWorkflow?.has_errors" title="Console" id="console-tab">
             <ng-template ngbTabContent>
-                <div id="console" #consoleContainer class="p-2 mb-3">
-                    <div *ngFor="let log of consoleLog" class="my-1">{{ log.message }}</div>
-                </div>
+                <ngx-codemirror #consoleArea
+                    [(ngModel)]="consoleContent" 
+                    [options]="{
+                        lineNumbers: true,
+                        mode: 'shell',
+                        theme: 'darcula',
+                        readOnly: true
+                    }" 
+                ></ngx-codemirror>
             </ng-template>
         </ngb-tab>
 
@@ -328,6 +333,7 @@
         </ngb-tab>
 
     </ngb-tabset>
+    </div>
 
     <div class="modal fade" id="playbookAndWorkflowActionModal" role="dialog" aria-labelledby="playbookAndWorkflowActionModalTitle"
         aria-hidden="true">

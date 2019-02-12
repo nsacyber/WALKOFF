@@ -14,6 +14,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { GridsterModule } from 'angular-gridster2';
 import { ChartsModule } from 'ng2-charts';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import 'codemirror/mode/shell/shell';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -67,7 +69,8 @@ import { WidgetModalComponent } from './interfaces/widget.modal.component';
 	    BrowserAnimationsModule,
 		ToastrModule.forRoot({ positionClass: 'toast-bottom-right' }),
 		GridsterModule,
-		ChartsModule
+		ChartsModule,
+		CodemirrorModule
 	],
 	declarations: [
 		//Main component

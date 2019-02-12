@@ -47,6 +47,7 @@ import { ConsoleLog } from '../models/execution/consoleLog';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook.environment.variable.modal.component';
 import { WorkflowStatus } from '../models/execution/workflowStatus';
+import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
 
 @Component({
 	selector: 'playbook-component',
@@ -67,7 +68,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('errorLogTable') errorLogTable: DatatableComponent;
 	@ViewChild('environmentVariableTable') environmentVariableTable: DatatableComponent;
 	@ViewChild('importFile') importFile: ElementRef;
-    @ViewChild('accordion') apps_actions: ElementRef;
+	@ViewChild('accordion') apps_actions: ElementRef;
+	@ViewChild('consoleArea') consoleArea: CodemirrorComponent;
 
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
@@ -171,6 +173,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					.removeClass('no-transition') 
 			}, 0);
 		});
+
 	}
 
 	/**
@@ -215,18 +218,18 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
 
-		const shouldScroll = (this.consoleContainer && this.consoleContainer.nativeElement) &&
-			(this.consoleContainer.nativeElement.scrollTop + this.consoleContainer.nativeElement.clientHeight 
-				=== this.consoleContainer.nativeElement.scrollHeight);
-
 		// Induce change detection by slicing array
 		this.consoleLog.push(newConsoleLog);
 		this.consoleLog = this.consoleLog.slice();
-
-		setTimeout(() => {
-			if (shouldScroll) this.consoleContainer.nativeElement.scrollTop = this.consoleContainer.nativeElement.scrollHeight;
-		}, 100)
-    }
+	}
+	
+	get consoleContent() {
+		let content = `******************************* Console Output *******************************`;
+		this.consoleLog.forEach(log => {
+			content += '\n' + log.message;
+		})
+		return content;
+	}
 
 
 
