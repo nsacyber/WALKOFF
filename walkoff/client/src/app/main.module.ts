@@ -33,6 +33,7 @@ import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { DevicesModalComponent } from './devices/devices.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
 import { SettingsRoleModalComponent } from './settings/settings.roles.modal.component';
+import { SettingsTimeoutModalComponent } from './settings/settings.timeout.modal.component';
 import { ExecutionVariableModalComponent } from './execution/execution.variable.modal.component';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook/playbook.environment.variable.modal.component';
 
@@ -89,6 +90,7 @@ import { WidgetModalComponent } from './interfaces/widget.modal.component';
 		DevicesModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
+		SettingsTimeoutModalComponent,
 		MessagesModalComponent,
 		PlaybookEnvironmentVariableModalComponent,
 		ExecutionVariableModalComponent,
@@ -123,6 +125,7 @@ import { WidgetModalComponent } from './interfaces/widget.modal.component';
 		DevicesModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
+		SettingsTimeoutModalComponent,
 		MessagesModalComponent,
 		ExecutionVariableModalComponent,
 		PlaybookEnvironmentVariableModalComponent,

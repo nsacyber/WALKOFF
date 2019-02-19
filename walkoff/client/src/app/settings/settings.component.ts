@@ -13,6 +13,7 @@ import { CacheConfig } from '../models/cacheConfig';
 import { User } from '../models/user';
 import { WorkingUser } from '../models/workingUser';
 import { Role } from '../models/role';
+import { SettingsTimeoutModalComponent } from './settings.timeout.modal.component';
 
 @Component({
 	selector: 'settings-component',
@@ -113,6 +114,12 @@ export class SettingsComponent {
 		modalRef.componentInstance.workingUser = workingUser;
 
 		this._handleModalClose(modalRef);
+	}
+
+	editTimeout(): void {
+		const modalRef = this.modalService.open(SettingsTimeoutModalComponent);
+		modalRef.componentInstance.configuration = this.configuration;
+		modalRef.result.then(() => this.updateConfiguration());
 	}
 
 	editUser(user: User): void {
