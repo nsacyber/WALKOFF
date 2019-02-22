@@ -12,8 +12,8 @@ matrix:
       services:
         - redis-server
       install:
-        - pip install -r requirements.txt && pip install -r requirements-test.txt
-        - pip install coverage
+        - travis_retry pip install -r requirements.txt && travis_retry pip install -r requirements-test.txt
+        - travis_retry pip install coverage
       before_script:
         - python scripts/generate_certificates.py
       script:
@@ -32,8 +32,8 @@ matrix:
       services:
         - redis-server
       install:
-        - pip install -r requirements.txt && pip install -r requirements-test.txt
-        - pip install coverage
+        - travis_retry pip install -r requirements.txt && travis_retry pip install -r requirements-test.txt
+        - travis_retry pip install coverage
       before_script:
         - python scripts/generate_certificates.py
       script:
@@ -52,8 +52,8 @@ matrix:
       services:
         - redis-server
       install:
-        - pip install -r requirements.txt && pip install -r requirements-test.txt
-        - pip install coverage
+        - travis_retry pip install -r requirements.txt && travis_retry pip install -r requirements-test.txt
+        - travis_retry pip install coverage
       before_script:
         - python scripts/generate_certificates.py
       script:
@@ -76,10 +76,10 @@ matrix:
       services:
         - redis-server
       install:
-        - pip install -r requirements.txt
-        - pip install -r requirements-test.txt
-        - pip install -r runtimes/python/requirements.txt
-        - pip install -r runtimes/python/requirements-test.txt
+        - travis_retry pip install -r requirements.txt
+        - travis_retry pip install -r requirements-test.txt
+        - travis_retry pip install -r runtimes/python/requirements.txt
+        - travis_retry pip install -r runtimes/python/requirements-test.txt
       script:
         - cp apps/__init__.py runtimes/python/testapp/__init__.py
         - cp apps/messaging.py runtimes/python/testapp/messaging.py
@@ -97,10 +97,10 @@ matrix:
       services:
         - redis-server
       install:
-        - pip install -r requirements.txt
-        - pip install -r requirements-test.txt
-        - pip install -r runtimes/python/requirements.txt
-        - pip install -r runtimes/python/requirements-test.txt
+        - travis_retry pip install -r requirements.txt
+        - travis_retry pip install -r requirements-test.txt
+        - travis_retry pip install -r runtimes/python/requirements.txt
+        - travis_retry pip install -r runtimes/python/requirements-test.txt
       script:
         - cp apps/__init__.py runtimes/python/testapp/__init__.py
         - cp apps/messaging.py runtimes/python/testapp/messaging.py
@@ -118,10 +118,10 @@ matrix:
       services:
         - redis-server
       install:
-        - pip install -r requirements.txt
-        - pip install -r requirements-test.txt
-        - pip install -r runtimes/python/requirements.txt
-        - pip install -r runtimes/python/requirements-test.txt
+        - travis_retry pip install -r requirements.txt
+        - travis_retry pip install -r requirements-test.txt
+        - travis_retry pip install -r runtimes/python/requirements.txt
+        - travis_retry pip install -r runtimes/python/requirements-test.txt
       script:
         - cp apps/__init__.py runtimes/python/testapp/__init__.py
         - cp apps/messaging.py runtimes/python/testapp/messaging.py
@@ -140,10 +140,10 @@ matrix:
       services:
         - redis-server
       install:
-        - pip install -r requirements.txt
-        - pip install -r requirements-test.txt
-        - pip install -r runtimes/python/requirements.txt
-        - pip install -r runtimes/python/requirements-test.txt
+        - travis_retry pip install -r requirements.txt
+        - travis_retry pip install -r requirements-test.txt
+        - travis_retry pip install -r runtimes/python/requirements.txt
+        - travis_retry pip install -r runtimes/python/requirements-test.txt
       script:
         - cp apps/__init__.py runtimes/python/testapp/__init__.py
         - cp apps/messaging.py runtimes/python/testapp/messaging.py
