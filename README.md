@@ -133,6 +133,8 @@ docker-compose up
 
 If you would like to set usernames and passwords for your Redis or Postgres containers, ensure that they are consistent in your docker-compose.yaml, and that proper permissions are set on the file to protect it.
 
+The default username and password after you access the webview is: `admin/admin`
+
 #### Development 
 
 If you intend to use the container for development, you may want to run WALKOFF manually inside the container to test your changes. To do this, uncomment the "entrypoint" line and its entries.
