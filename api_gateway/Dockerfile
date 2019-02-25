@@ -1,0 +1,20 @@
+FROM python:3.7-alpine3.8 as base
+
+FROM base as builder
+RUN apk --no-cache add --update alpine-sdk libffi libffi-dev postgresql-dev musl-dev
+
+RUN mkdir /install
+WORKDIR /install
+
+COPY ./requirements.txt /requirements.txt
+RUN pip install --prefix="/install" -r /requirements.txt
+
+FROM base
+
+COPY --from=builder /install /usr/local
+RUN apk --no-cache add --update libpq
+COPY ./ /app
+WORKDIR /app
+
+
+CMD python walkoff.py -a

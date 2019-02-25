@@ -55,7 +55,7 @@ class Worker:
             logger.info("Waiting for workflows...")
             # TODO: Remove the test code
             # Push test workflow in for now
-            with open("../data/workflows/hello.json") as fp:
+            with open("../data/not_workflows/hello.json") as fp:
                 wf = json.load(fp)
                 await redis.lpush(config["REDIS"]["workflow_q"], json.dumps(wf))
 
