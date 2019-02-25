@@ -1,0 +1,174 @@
+<div id="main" class="settingsMain">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item"><a class="nav-link active" href="#systemSettings" data-toggle="tab" role="tab">System Settings</a></li>
+        <li class="nav-item"><a class="nav-link"href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
+        <li class="nav-item"><a class="nav-link"href="#roleSettings" data-toggle="tab" role="tab">Role Settings</a></li>
+    </ul>
+    <div class="tab-content">
+        <div id="systemSettings" class="tab-pane fade show active">
+            <h1 class="settingsHeader">System Settings</h1>
+            <form (ngSubmit)="updateConfiguration()" #systemSettingsForm="ngForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3>Data Configuration</h3>
+                        <div class="form-group">
+                            <label for="db_path">WALKOFF Database Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.db_path" name="db_path" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="walkoff_db_type">WALKOFF Database Type</label>
+                            <select class="form-control" [(ngModel)]="configuration.walkoff_db_type" name="walkoff_db_type">
+                                <option *ngFor="let i of dbTypes" [value]="i" [label]="i">{{i}}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h3>Interface Configuration</h3>
+                        <div class="form-group">
+                            <label for="host">Host Address</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.host" name="host" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="port">Port</label>
+                            <input type="number" min="1" max="65535" class="form-control" [(ngModel)]="configuration.port" name="port" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="zmq_results_address">ZMQ Results Address</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.zmq_results_address" name="zmq_results_address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="zmq_results_address">ZMQ Communication Address</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.zmq_communication_address" name="zmq_communication_address" required>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3>Cache Configuration</h3>
+                        <div class="form-group">
+                            <label for="cache_type">Cache Type</label>
+                            <select class="form-control" [(ngModel)]="configuration.cache.type" name="cache_type">
+                                <option *ngFor="let i of cacheTypes" [value]="i" [label]="i">{{i}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group" *ngIf="configuration.cache.type == 'disk'" >
+                            <label for="cache_directory">Directory</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.cache.directory" name="cache_directory" required>
+                        </div>
+                        <div class="form-group" *ngIf="configuration.cache.type == 'disk'">
+                            <label for="cache_shards">Shards</label>
+                            <input type="number" min="1" class="form-control" [(ngModel)]="configuration.cache.shards" name="cache_shards" required>
+                        </div>
+                        <div class="form-group" *ngIf="configuration.cache.type == 'redis'">
+                            <label for="cache_host">Host</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.cache.host" name="cache_host" required>
+                        </div>
+                        <div class="form-group" *ngIf="configuration.cache.type == 'redis'">
+                            <label for="cache_port">Port</label>
+                            <input type="number" min="1" max="65535" class="form-control" [(ngModel)]="configuration.cache.port" name="cache_port" required>
+                        </div>
+                        <div class="form-group" *ngIf="configuration.cache.type == 'redis'">
+                            <label for="cache_unix_socket_path">Unix Socket Path</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.cache.unix_socket_path" name="cache_unix_socket_path" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cache_timeout">Timeout</label>
+                            <input type="number" min="0.0" class="form-control" [(ngModel)]="configuration.cache.timeout" name="cache_timeout" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cache_retry">Retry Timed Out Connections</label>
+                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.cache.retry" name="cache_retry" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h3>Other Configuration</h3>
+                        <!-- <div class="form-group">
+                            <label for="name">Use HTTPS</label>
+                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.https" name="https" required>
+                        </div> -->
+                        <!-- <div class="form-group">
+                            <label for="name">TLS Version (if enabled)</label>
+                            <select class="form-control" [(ngModel)]="configuration.tls_version" name="tls_version">
+                                <option *ngFor="let i of tlsVersions" [value]="i" [label]="i">{{i}}</option>
+                            </select>
+                        </div> -->
+                        <div class="form-group">
+                            <label for="access_token_duration">JWT Access Token Duration (in minutes)</label>
+                            <input type="number" min="1" class="form-control" [(ngModel)]="configuration.access_token_duration" name="access_token_duration"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="refresh_token_duration">JWT Refresh Token Duration (in days)</label>
+                            <input type="number" min="1" class="form-control" [(ngModel)]="configuration.refresh_token_duration" name="refresh_token_duration"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="number_processes">Number of Processes</label>
+                            <input type="number" min="1" max="100" class="form-control" [(ngModel)]="configuration.number_processes" name="number_processes" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="number_threads_per_process">Number of Threads per Process</label>
+                            <input type="number" min="1" max="100" class="form-control" [(ngModel)]="configuration.number_threads_per_process" name="number_threads_per_process" required>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div>
+                <button (click)="updateConfiguration()" id="formSubmit" class="btn btn-primary mx-1">Submit Changes</button>
+                <button (click)="resetConfiguration()" id="resetConfiguration" class="btn btn-danger mx-1">Reset to Defaults</button>
+            </div>
+        </div>
+
+        <div id="userSettings" class="tab-pane fade">
+            <h1 class="settingsHeader">User Settings</h1>
+
+            <div class="row">
+                <div class="col-6">
+                    <button (click)="addUser()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add User</button>
+                </div>
+                <div class="col-6">
+                    <div class="form-group row">
+                        <label class="col-2 col-form-label">Search Filter</label>
+                        <div class="col-10">
+                            <input class="form-control" [formControl]="filterQuery" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ngx-datatable #userTable class='material expandable' [columnMode]="'flex'" [rows]="displayUsers"
+             [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sortType]="'multi'" [sorts]="[{prop: 'username', dir: 'asc'}]" [limit]="10">
+                <!-- Column Templates -->
+                <ngx-datatable-column name="Username" prop="username" [flexGrow]="3"></ngx-datatable-column>
+                <ngx-datatable-column name="Roles" [sortable]="false" [flexGrow]="3">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        {{getFriendlyRoles(row.roles)}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Active" prop="active" [flexGrow]="1">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        {{getFriendlyBool(row.active)}}
+                    </ng-template>
+                </ngx-datatable-column>
+                <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
+                    <ng-template let-row="row" ngx-datatable-cell-template>
+                        <button (click)="editUser(row)" class="btn btn-primary mx-1" title="Edit User">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                        <button (click)="deleteUser(row)" class="btn btn-danger mx-1" title="Delete User">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    </ng-template>
+                </ngx-datatable-column>
+            </ngx-datatable>
+        </div>
+
+        <div id="roleSettings" class="tab-pane fade">
+            <settings-roles-component></settings-roles-component>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,49 @@
+Error:
+  type: object
+  required: [title, detail, status, type]
+  description: An error in RFC 7807 format
+  properties:
+    title:
+      type: string
+      description: A short, human-readable summary of the problem type.
+    detail:
+      type: string
+      description: A human-readable explanation specific to this occurrence of the problem
+    status:
+      type: string
+      description: The HTTP status code generated for this occurrence of the problem
+    type:
+      type: string
+      description: >
+        A URI reference that identifies the problem type. When dereferenced it should provide
+        human-readable documentation for the problem type.
+      default: 'about:blank'
+    instance:
+      type: string
+      description: >
+        A URI reference that identifies the specific occurrence of the problem. It may or may
+        not yield further information if dereferenced.
+
+
+
+AvailableSubscriptions:
+  type: object
+  required: [type, events]
+  description: The events which can be subscribed to for an execution element
+  properties:
+    type:
+      description: The type of execution element
+      type: string
+      example: Condition
+      enum: [controller, playbook, workflow, action, branch, condition, transform]
+    events:
+      description: Events which can be subscribed to
+      type: array
+      items:
+        type: string
+      example: [Event1, Event_2, 'Event 3']
+
+Uuid:
+  type: string
+  description: A 32-bit hexadecimal string representing a globally unique identifier
+  format: uuid

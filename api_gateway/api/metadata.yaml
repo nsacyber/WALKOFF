@@ -1,0 +1,19 @@
+/client/{filename}:
+  get:
+    tags:
+      - Client
+    summary: Get a client file
+    description: ''
+    operationId: api_gateway.server.endpoints.metadata.read_client_file
+    parameters:
+      - name: filename
+        in: path
+        description: The name of the file to fetch
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+      400:
+        description: Invalid filename

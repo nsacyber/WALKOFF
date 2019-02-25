@@ -5,6 +5,7 @@ services:
     build:
       context: ./
       dockerfile: umpire/Dockerfile
+
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     deploy:
@@ -13,25 +14,25 @@ services:
     depends_on:
       - redis
 
-#  walkoff-registry:
-#    restart: always
-#    image: registry:latest
-#    deploy:
-#      placement:
-#       constraints: [node.role==manager]
-#    ports:
-#      - 5000:5000
+  registry:
+    restart: always
+    image: registry:2
+    deploy:
+      placement:
+       constraints: [node.role==manager]
+    ports:
+      - 5000:5000
 #    environment:
 #      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
 #      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
 #      REGISTRY_AUTH: htpasswd
 #      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
 #      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
-#    volumes:
+    volumes:
 #      - ./data/config.yml:/etc/docker/registry/config.yml
-#      - /path/data:/var/lib/registry
-#      - /path/certs:/certs
-#      - /path/auth:/auth
+      - /var/lib/boot2docker/registry:/var/lib/registry
+#      - /var/lib/boot2docker:/certs
+#      - /var/lib/boot2docker/auth:/auth
 
 
   worker:
@@ -39,11 +40,14 @@ services:
     build:
       context: ./
       dockerfile: worker/Dockerfile
+    deploy:
+      mode: replicated
+      replicas: 1
     depends_on:
       - redis
 
-#  hello-world:
-#    image: localhost:5000/hello-world:latest
+#  hello_world:
+#    image: localhost:5000/hello_world:latest
 #    build:
 #      context: ./apps/HelloWorld/v1.0
 #      dockerfile: Dockerfile
@@ -51,7 +55,7 @@ services:
 #      - apps/HelloWorld/v1.0/env.txt
 #    deploy:
 #      mode: replicated
-#      replicas: 6
+#      replicas: 15
 
 
 #  test-app:
@@ -62,24 +66,53 @@ services:
 #      - apps/TestApp/v0.1.1/env.txt
 #    depends_on:
 #      - redis
+#
+#  walkoff:
+#    ports:
+#    - "8080:8080"
+#    image: "localhost:5000/walkoff:latest"
+#    build: ./api_gateway/WALKOFF
+#    environment:
+#    - "CACHE={\"type\": \"redis\", \"host\": \"redis\", \"port\": 6379}"
+#    - "HOST=0.0.0.0"
+#    - "PORT=8080"
+#    - "WALKOFF_DB_TYPE=postgresql"
+#    - "EXECUTION_DB_TYPE=postgresql"
+#    - "DB_PATH=walkoff"
+#    - "EXECUTION_DB_PATH=execution"
+#    - "WALKOFF_DB_HOST=postgres"
+#    - "EXECUTION_DB_HOST=postgres"
+#    - "EXECUTION_DB_USERNAME=walkoff"
+#    - "EXECUTION_DB_PASSWORD=walkoff"
+#    - "WALKOFF_DB_USERNAME=walkoff"
+#    - "WALKOFF_DB_PASSWORD=walkoff"
+#    depends_on:
+#    - "redis"
+#    - "postgres"
+#    stop_signal: SIGINT
+#    stop_grace_period: 30s
 
   redis:
     container_name: redis
     image: "redis"
     ports:
       - 6379:6379
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    volumes:
+      - /var/lib/boot2docker/redis:/data
 
-#  postgres:
-#    container_name: postgres
-#    image: "postgres"
-#    environment:
-#    - "POSTGRES_USER=walkoff"
-#    - "POSTGRES_PASSWORD=walkoff"
-#    volumes:
-#      - postgres_database:/var/lib/postgresql/data
-
-#volumes:
-#  postgres_database:
-
-#networks:
-#  walkoffnet:
+  postgres:
+    container_name: postgres
+    image: "postgres"
+    environment:
+    - "POSTGRES_USER=walkoff"
+    - "POSTGRES_PASSWORD=walkoff"
+    ports:
+      - 5432:5432
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    volumes:
+      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data

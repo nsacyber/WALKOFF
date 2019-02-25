@@ -1,0 +1,34 @@
+.settingsMain {
+	padding: 10px 15px;
+}
+
+.settingsMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
+	white-space: initial;
+}
+
+#roleModalBody .resourceGroup {
+	padding: 5px;
+}
+
+#roleModalBody .resourceGroup.odd {
+	background-color: #EEE;
+}
+
+
+#roleModalBody .resourceGroup .row {
+	padding-bottom: 5px;
+}
+
+#roleModalBody .required,
+#userModalBody .required {
+	color: crimson;
+	margin-left: 5px;
+}
+
+.settingsMain input[type=checkbox].form-control,
+.settingsMain input[type=radio].form-control,
+#userModalBody input[type=checkbox].form-control,
+#userModalBody input[type=radio].form-control {
+	width: 34px;
+	margin: 0 5px;
+}

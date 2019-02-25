@@ -1,0 +1,61 @@
+<div class="indent">
+	<!-- Basic Info -->
+	<div class="row">
+		<div class="col-6">
+			<div class="form-group">
+				<label>Operator</label>
+				<select class="form-control" [(ngModel)]="conditionalExpression.operator">
+					<option *ngFor="let i of availableOperators" [value]="i" [label]="i.toUpperCase()">{{i.toUpperCase()}}</option>
+				</select>
+			</div>
+		</div>
+		<div class="col-6">
+			<div class="form-group">
+				<label>Negated</label>
+				<input type="checkbox" class="form-control" [(ngModel)]="conditionalExpression.is_negated">
+			</div>
+		</div>
+	</div>
+	<!-- Conditions Component -->
+	<div>
+		<h4>Conditions</h4>
+		<playbook-conditions-component [conditions]="conditionalExpression.conditions" [appApis]="appApis" [loadedWorkflow]="loadedWorkflow"
+		 [selectedAppName]="selectedAppName" (createVariable)="onCreateVariable($event)"></playbook-conditions-component>
+	</div>
+	<!-- Add Child Expressions Header -->
+	<div class="row">
+		<div class="col-6">
+			<h4>Child Expressions</h4>
+		</div>
+		<div class="col-6">
+			<div class="form-group">
+				<button class="btn btn-primary pull-right" (click)="addChildExpression()">
+					<i class="fa fa-plus"></i>Add Child Expression
+				</button>
+			</div>
+		</div>
+	</div>
+	<!-- Child expressions control and component -->
+	<div *ngFor="let childExpression of conditionalExpression.child_expressions; let id = index">
+		<div class="row">
+			<div class="col-6">
+				<label>Child Expression {{id+1}}</label>
+			</div>
+			<div class="col-6">
+				<div class="pull-right">
+					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up">
+						<i class="fa fa-arrow-up"></i>
+					</button>
+					<button *ngIf="id < conditionalExpression.child_expressions.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down">
+						<i class="fa fa-arrow-down"></i>
+					</button>
+					<button class="btn btn-danger" (click)="removeChildExpression(id)" title="Remove Conditional Expression">
+						<i class="fa fa-close"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+		<playbook-conditional-expression-component [conditionalExpression]="childExpression" [appApis]="appApis" [selectedAppName]="selectedAppName"
+		 [loadedWorkflow]="loadedWorkflow" (createVariable)="onCreateVariable($event)"></playbook-conditional-expression-component>
+	</div>
+</div>

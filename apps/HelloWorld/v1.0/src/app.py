@@ -5,10 +5,9 @@ import logging
 
 from app_sdk.app_base import AppBase
 
-logger = logging.getLogger("apps")
-
 
 class HelloWorld(AppBase):
+    __version__ = "v1.0"
     def __init__(self, redis=None, logger=None):
         super().__init__(redis, logger)
     
@@ -31,7 +30,7 @@ if __name__ == "__main__":
     import argparse
     LOG_LEVELS = ("debug", "info", "error", "warn", "fatal", "DEBUG", "INFO", "ERROR", "WARN", "FATAL")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--log-level", dest="log_level", choices=LOG_LEVELS, default="INFO")
+    parser.add_argument("--log-level", dest="log_level", choices=LOG_LEVELS, default="DEBUG")
     args = parser.parse_args()
 
     logging.basicConfig(level=args.log_level.upper(), format="{asctime} - {name} - {levelname}:{message}", style='{')

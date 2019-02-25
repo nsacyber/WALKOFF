@@ -1,0 +1,124 @@
+/globals/{global_id}:
+  parameters:
+    - in: path
+      name: global_id
+      description: ID of the device
+      schema:
+        type: integer
+      required: true
+    - in: query
+      name: mode
+      description: Specify mode as export to download the device file
+      schema:
+        type: string
+      required: false
+  get:
+    tags:
+      - Devices
+    summary: Read or download a device
+    description: ''
+    operationId: api_gateway.server.endpoints.devices.read_device
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Global'
+      404:
+        description: Device does not exist.
+  delete:
+    tags:
+      - Devices
+    summary: Remove a device
+    description: ''
+    operationId: api_gateway.server.endpoints.devices.delete_device
+    responses:
+      204:
+        description: Success
+      404:
+        description: Device does not exist
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+/devices:
+  get:
+    tags:
+      - Devices
+    summary: Get all devices
+    description: ''
+    operationId: api_gateway.server.endpoints.devices.read_all_devices
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: array
+              description: A list of devices
+              items:
+                $ref: '#/components/schemas/Device'
+  post:
+    tags:
+      - Devices
+    summary: Add a device
+    description: ''
+    operationId: api_gateway.server.endpoints.devices.create_device
+    parameters:
+      - in: body
+        name: body
+        description: The JSON device object to be created
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddDevice'
+      - in: formData
+        name: formData
+        description: The file to upload to create a device
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: file
+    responses:
+      201:
+        description: Object created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      400:
+        description: Device already exists
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+  put:
+    tags:
+      - Devices
+    summary: Update a device
+    description: ''
+    operationId: api_gateway.server.endpoints.devices.update_device
+    requestBody:
+      description: The new device object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Device'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      404:
+        description: Device does not exist
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

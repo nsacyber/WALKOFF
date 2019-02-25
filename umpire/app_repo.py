@@ -1,25 +1,11 @@
 import logging
 import re
 import json
-import os
+import asyncio
 from pathlib import Path
 
-import aioredis
-import yaml
-import docker
-import docker.tls
-import docker.errors
-import docker.types
-from docker.utils.utils import parse_bytes
-from docker.types.services import ServiceMode, Resources, EndpointSpec, RestartPolicy, SecretReference
-from docker.models.images import Image
-import compose.config
-from compose.const import API_VERSIONS
-from compose.project import Project
-from compose.service import Service
-from compose import timeparse
-from compose.cli.command import set_parallel_limit, get_project_name, get_client, get_project
-from compose.config.environment import Environment
+
+from compose.cli.command import get_project
 
 
 from common.config import load_config
@@ -83,3 +69,15 @@ class AppRepo(dict):
 
                 logger.info(f"Loaded {app.name} versions: {apps[app.name].keys()}")
         return apps
+
+
+if __name__ == "__main__":
+    async def run():
+        db = None  # Set this to whatever sqlalchemy session management type object you have
+        apps = await AppRepo.create(config["UMPIRE"]["apps_path"], db)
+
+        if len(apps) < 1:
+            logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
+            exit(1)
+
+    asyncio.run(run())

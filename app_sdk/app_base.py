@@ -8,7 +8,9 @@ from contextlib import asynccontextmanager
 
 import aioredis
 
-from .result import ActionResult, ActionExecutionError, ActionExecutionSuccess, ActionStarted
+from .message_types import ActionResult, WorkflowEvent, MessageJSONEncoder, MessageJSONDecoder
+from .workflow_types import Node, Action, Condition, Transform, Trigger, ParameterVariant, Workflow, \
+    WorkflowJSONEncoder, WorkflowJSONDecoder
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
@@ -16,10 +18,27 @@ ACTION_RESULT_CH = os.getenv("ACTION_RESULT_CH", "action-results")
 ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
 
 
+def workflow_dumper(obj):
+    return json.dumps(obj, cls=WorkflowJSONEncoder)
+
+
+def workflow_loader(obj):
+    return json.loads(obj, cls=WorkflowJSONDecoder)
+
+
+def message_dumper(obj):
+    return json.dumps(obj, cls=MessageJSONEncoder)
+
+
+def message_loader(obj):
+    return json.loads(obj, cls=MessageJSONDecoder)
+
+
 class AppBase:
     def __init__(self, redis=None, logger=None):
         # Creates redis keys of format "{AppName}-{Priority}"
-        self.action_queue_keys = tuple(f"{self.__class__.__name__}-{i}" for i in range(5, 0, -1))
+        self.action_queue_keys = tuple(f"{self.__class__.__name__}-{self.__version__}-{i}" for i in range(5, 0, -1))
+        print(self.action_queue_keys)
         self.redis: aioredis.Redis = redis
         self.logger = logger if logger is not None else logging.getLogger("AppBaseLoggerShouldBeOverridden")
 
@@ -54,30 +73,30 @@ class AppBase:
                 if time.time() - start > 30: # We've timed out with no work. Guess we'll die now...
                     sys.exit(1)
 
-            action = json.loads(action)
+            action = workflow_loader(action)
             asyncio.create_task(self.execute_action(action))
 
     async def execute_action(self, action):
         """ Execute an action and ship its result """
-        self.logger.debug(f"Attempting execution of: {action['name']}-{action['execution_id']}")
-        if hasattr(self, action["action_name"]):
-            start_action_msg = ActionResult(action=action, result=None, status=ActionStarted)
-            await self.redis.publish_json(ACTION_RESULT_CH, start_action_msg.to_json())
+        self.logger.debug(f"Attempting execution of: {action.name}-{action.workflow_execution_id}")
+        if hasattr(self, action.action_name):
+            start_action_msg = ActionResult.from_action(action=action, event=WorkflowEvent.ActionStarted)
+            await self.redis.publish(ACTION_RESULT_CH, message_dumper(start_action_msg))
             try:
-                if action.get("params", None) is None:
-                    result = getattr(self, action["action_name"])()
+                if len(action.parameters) < 1:
+                    result = getattr(self, action.action_name)()
                 else:
-                    result = getattr(self, action["action_name"])(**action["params"])
-                action_result = ActionResult(action=action, result=result, status=ActionExecutionSuccess)
-                self.logger.debug(f"Executed {action['name']}-{action['id']} with result: {result}")
+                    result = getattr(self, action.action_name)(**{p.name: p.value for p in action.parameters})
+                action_result = ActionResult.from_action(action=action, result=result, event=WorkflowEvent.ActionSuccess)
+                self.logger.debug(f"Executed {action.name}-{action._id} with result: {result}")
 
             except Exception as e:
-                action_result = ActionResult(action=action, result=None, error=repr(e), status=ActionExecutionError)
-                self.logger.exception(f"Failed to execute {action['name']}-{action['id']}")
+                action_result = ActionResult.from_action(action=action, error=repr(e), event=WorkflowEvent.ActionError)
+                self.logger.exception(f"Failed to execute {action.name}-{action._id}")
 
-            await self.redis.publish_json(ACTION_RESULT_CH, action_result.to_json())
+            await self.redis.publish(ACTION_RESULT_CH, message_dumper(action_result))
 
         else:
-            self.logger.error(f"App {self.__class__.__name__} has no method {action['action_name']}")
-            action_result = ActionResult(action, error="Action does not exist")
-            await self.redis.publish_json(ACTION_RESULT_CH, action_result.to_json())
+            self.logger.error(f"App {self.__class__.__name__} has no method {action.action_name}")
+            action_result = ActionResult.from_action(action, error="Action does not exist")
+            await self.redis.publish(ACTION_RESULT_CH, message_dumper(action_result))

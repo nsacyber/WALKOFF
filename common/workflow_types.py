@@ -1,20 +1,64 @@
 import uuid
 import json
+import enum
 import logging
-from collections import namedtuple
+from collections import namedtuple, deque
 
 from networkx import DiGraph
-
 
 logger = logging.getLogger("WALKOFF")
 
 Point = namedtuple("Point", ("x", "y"))
-Branch = namedtuple("Branch", ("src", "dst"))
+Branch = namedtuple("Branch", ("source", "destination"))
+
+
+class ParameterVariant(enum.Enum):
+    STATIC_VALUE = "STATIC_VALUE"
+    ACTION_RESULT = "ACTION_RESULT"
+    WORKFLOW_VARIABLE = "WORKFLOW_VARIABLE"
+    GLOBAL = "GLOBAL"
 
 
 class WorkflowJSONDecoder(json.JSONDecoder):
     # TODO: Come up with a way to encode/decode all of these objects reliably
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(object_hook=self.object_hook, *args, **kwargs)
+        self.actions = {}
+
+    def object_hook(self, o):
+        if "x" and "y" in o:
+            return Point(**o)
+
+        elif "action_name" and "app_name" in o:
+            action = Action(**o)
+            self.actions[action._id] = action
+            return action
+
+        elif "variant" in o:
+            o["variant"] = ParameterVariant[o["variant"]]
+            return Parameter(**o)
+
+        elif "source" and "destination" in o:
+            return Branch(source=self.actions[o["source"]], destination=self.actions[o["destination"]])
+
+        elif "conditional" in o:
+            return Condition(**o)
+
+        elif "transform" in o:
+            return Transform(**o)
+
+        elif "trigger" in o:
+            return Trigger(**o)
+
+        elif "description" and "value" in o:
+            return WorkflowVariable(**o)
+
+        elif "actions" and "branches" in o:
+            workflow_variables = {var._id: var for var in o["workflow_variables"]}
+            o["workflow_variables"] = workflow_variables
+            start = self.actions[o["start"]]
+            o["start"] = start
+            return Workflow(**o)
 
 
 class WorkflowJSONEncoder(json.JSONEncoder):
@@ -22,171 +66,179 @@ class WorkflowJSONEncoder(json.JSONEncoder):
         Note: JSON encoded strings of our custom objects are lossy...for now.
         TODO: Make these not lossy
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.workflow = {}
+
     def default(self, o):
-        if isinstance(o, set):
-            elem = None
-            for elem in o: break  # This is the fastest way to get an element from a set without removing it.
-
-            if elem is None:
-                return None
-
-            if isinstance(elem, Param):  # Convert sets of Params to dicts of name:value pairs
-                return dict((elem.name, elem.value) for elem in o)
-
-            return list(o)  # Any other set of objects should fine as a JSON array.
-
         if isinstance(o, Workflow):
-            return
+            branches = [{"source": src._id, "destination": dst._id} for src, dst in o.edges]
+            actions = [node for node in o.nodes]
+            conditions = [condition for condition in o.conditions]
+            transforms = [transform for transform in o.transforms]
+            triggers = [trigger for trigger in o.triggers]
+            workflow_variables = list(o.workflow_variables.values())
+            return {"_id": o._id, "execution_id": o.execution_id, "name": o.name, "start": o.start._id,
+                    "actions": actions, "conditions": conditions, "branches": branches, "transforms": transforms,
+                    "triggers": triggers, "workflow_variables": workflow_variables, "is_valid": o.is_valid,
+                    "errors": None}
 
         elif isinstance(o, Action):
-            return {"execution_id": o.execution_id, "app_name": o.app_name, "action_name": o.action_name,
-                    "params": o.params, "name": o.name, "id": o.id, "pos": o.pos,
+            return {"_id": o._id, "app_name": o.app_name, "action_name": o.action_name, "name": o.name,
+                    "parameters": o.parameters, "priority": o.priority, "position": o.position,
                     "workflow_execution_id": o.workflow_execution_id}
 
-        elif isinstance(o, Param):
-            return {o.name: o.value}
+        elif isinstance(o, Parameter):
+            return {"name": o.name, "variant": o.variant, "value": o.value, "reference": o.reference}
+
+        elif isinstance(o, ParameterVariant):
+            return o.value
+
+        elif isinstance(o, WorkflowVariable):
+            return {"description": o.description, "_id": o._id, "name": o.name, "value": o.value}
 
 
 class Node:
-    def __init__(self, name, pos: Point, _id):
-        self.id = _id if _id is not None else str(uuid.uuid4())
+    def __init__(self, name, position: Point, _id=None):
+        self._id = _id if _id is not None else str(uuid.uuid4())
         self.name = name
-        self.pos = pos
+        self.position = position
 
     def __repr__(self):
-        return f"Node-{self.id}"
+        return f"Node-{self._id}"
 
     def __str__(self):
         return f"Node-{self.name}"
 
 
-class Param:
-    def __init__(self, name, value=None, reference=None):
-        """Initializes an Argument object.
-
-        Args:
-            name (str): The name of the Argument.
-            value (any, optional): The value of the Argument. Defaults to None. Value or reference must be included.
-            reference (int, optional): The ID of the Action from which to grab the result. Defaults to None.
-                If value is not provided, then reference must be included.
-
-        """
-        super().__init__()
+class Parameter:
+    def __init__(self, name, value=None, variant=None, reference=None):
         self.name = name
         self.value = value
-        self._is_reference = True if value is None else False
+        self.variant: ParameterVariant = variant
         self.reference = reference
         self.validate()
 
+    def __str__(self):
+        return f"Parameter-{self.name}:{self.value or self.reference}"
+
     def validate(self):
-        """Validates the object"""
-        self.errors = []
+        """Validates the param"""
+        message = None
+        reference_variants = {ParameterVariant.ACTION_RESULT, ParameterVariant.GLOBAL,
+                              ParameterVariant.WORKFLOW_VARIABLE}
         if self.value is None and not self.reference:
-            message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
+            message = f'Input {self.name} must have either value or reference. Input has neither'
             logger.error(message)
-            self.errors = [message]
 
         elif self.value is not None and self.reference:
-            message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
+            message = f'Input {self.name} must have either value or reference. Input has both. Using "value"'
             logger.warning(message)
             self.reference = None
 
+        elif self.reference and self.variant not in reference_variants:
+            message = 'Reference input must specify the variant.'
+            logger.error(message)
+        return message
+
+
+class WorkflowVariable:
+    # Previously EnvironmentVariable
+    def __init__(self, _id, name, value, description=None):
+        self._id = _id
+        self.name = name
+        self.value = value
+        self.description = description
+
 
 class Action(Node):
-    def __init__(self, display_name, action_name, app_name, params: [Param], priority, pos: Point, _id=None):
-        super().__init__(display_name, pos, _id)
-        self.execution_id = None
-        self.workflow_execution_id = None
+    def __init__(self, name, position, app_name, action_name, priority, workflow_execution_id=None, parameters=None,
+                 _id=None):
+        super().__init__(name, position, _id)
         self.app_name = app_name
         self.action_name = action_name
-        self.params = params
+        self.workflow_execution_id = workflow_execution_id
+        self.parameters = parameters if parameters is not None else list()
         self.priority = priority
 
     def __str__(self):
-        return f"Action: {self.name}::{self.id}::{self.execution_id}"
+        return f"Action: {self.name}::{self._id}::{self.workflow_execution_id}"
 
     def __repr__(self):
-        return f"Action: {self.name}::{self.id}::{self.execution_id}"
+        return f"Action: {self.name}::{self._id}::{self.workflow_execution_id}"
 
     def __gt__(self, other):
         return self.priority > other.priority
 
-    def to_json(self):
-        ret = {"execution_id": self.execution_id, "app_name": self.app_name, "action_name": self.action_name,
-               "params": self.params, "name": self.name, "id": self.id, "pos": self.pos}
-        return ret
-
-    @classmethod
-    def from_json(cls, data):
-        if isinstance(data, str):
-            try:
-                data = json.loads(data)
-            except json.JSONDecodeError:
-                logger.exception("Error parsing Action from JSON.")
-                return
-        try:
-            return cls(display_name=data["name"], action_name=data["action_name"], app_name=data["app_name"],
-                       params=data["params"], priority=data["priority"],
-                       pos=Point(data["position"]["x"], data["position"]["y"]), _id=data["id"])
-
-        except KeyError:
-            logger.exception("Error parsing Action from JSON.")
-
 
 class Condition(Node):
-    def __init__(self, name, pos: Point):
-        super().__init__(name, pos)
-
-    @staticmethod
-    def from_json(data):
-        pass
-
-    @staticmethod
-    def to_json(data):
-        pass
+    def __init__(self, name, position: Point, conditional=None):
+        super().__init__(name, position)
+        self.conditional = conditional
 
 
+# TODO: fully realize and implement triggers
 class Trigger(Node):
-    def __init__(self, name, pos: Point):
-        super().__init__(name, pos)
-
-    @staticmethod
-    def from_json(data):
-        pass
-
-    @staticmethod
-    def to_json(data):
-        pass
+    def __init__(self, name, position: Point, trigger):
+        super().__init__(name, position)
+        self.trigger = trigger
 
 
 class Transform(Node):
-    def __init__(self, name, pos: Point):
-        super().__init__(name, pos)
+    def __init__(self, name, position: Point, transform, transform_arg=None):
+        super().__init__(name, position)
+        self.transform = f"__{transform.lower()}"
+        self.transform_arg = transform_arg
 
-    @staticmethod
-    def from_json(data):
-        pass
+    def __call__(self, data):
+        """ Execute an action and ship its result """
+        logger.debug(f"Attempting execution of: {self.name}-{self._id}")
+        if hasattr(self, self.transform):
+            try:
+                if self.transform_arg is None:
+                    result = getattr(self, self.transform)(data=data)
+                else:
+                    result = getattr(self, self.transform)(self.transform_arg, data=data)
+                logger.debug(f"Executed {self.name}-{self._id} with result: {result}")
 
-    @staticmethod
-    def to_json(data):
-        pass
+            # TODO: figure out which exceptions will be thrown by which failed transforms and handle them
+            except Exception:
+                logger.exception(f"Failed to execute {self.name}-{self._id}")
+
+        else:
+            logger.error(f"{self.__class__.__name__} has no method {self.transform}")
+
+    # TODO: add JSON to CSV parsing and vice versa.
+    def __get_value_at_index(self, index, data=None):
+        return data[index]
+
+    def __get_value_at_key(self, key, data=None):
+        return data[key]
+
+    def __split_string_to_array(self, delimiter=' ', data=None):
+        return data.split(delimiter)
 
 
 class Workflow(DiGraph):
-    def __init__(self, name, start: Action, actions: [Action], branches: [Branch], _id=None,
-                 execution_id=None, environment_variables=None):
+    def __init__(self, name, start, actions: [Action], conditions: [Condition], triggers: [Trigger],
+                 transforms: [Transform], branches: [Branch], _id=None, execution_id=None, workflow_variables=None,
+                 is_valid=None, errors=None):
         super().__init__()
         for branch in branches:
-            self.add_edge(branch.src, branch.dst)
+            self.add_edge(branch.source, branch.destination)
         self.add_nodes_from(actions)
         self.start = start
-        self.id = _id if _id is not None else str(uuid.uuid4())
-        self.is_valid = self.is_valid()
+        self._id = _id if _id is not None else str(uuid.uuid4())
+        self.is_valid = is_valid if is_valid is not None else self.validate()
         self.name = name
         self.execution_id = execution_id
-        self.environment_variables = environment_variables
+        self.workflow_variables = workflow_variables
+        self.conditions = conditions
+        self.transforms = transforms
+        self.triggers = triggers
+        self.errors = errors
 
-    def is_valid(self):
+    def validate(self):
         # TODO: add in workflow validation from old implementation
         return True
 
@@ -194,42 +246,43 @@ class Workflow(DiGraph):
     def dereference_environment_variables(data):
         return {ev["id"]: (ev["name"], ev["value"]) for ev in data.get("environment_variables", [])}
 
-    @classmethod
-    def from_json(cls, data):
-        # TODO: make this not a hack to work with the old crap
-        if data.get("workflow"):  # if coming from api-gateway in new format
-            data["workflow"]["execution_id"] = data["execution_id"]
-            data["workflow"]["workflow_id"] = data["workflow_id"]
-            data = data["workflow"]
+    def get_dependents(self, node):
+        """
+            BFS to get all nodes dependent on the current node. This includes the current node.
+        """
+        visited = {node}
+        queue = deque([node])
 
-        # Design our workflow
-        actions = {}
-        branches = set()
+        while queue:
+            node = queue.pop()
+            children = set(self.successors(node))
+            for child in children:
+                if child not in visited:
+                    queue.appendleft(child)
+                    visited.add(child)
 
-        for action in data.get("actions", []):
-            # Get action priority
-            action["priority"] = 3
-            for branch in data.get("branches", []):
-                if action["id"] == branch["destination_id"]:
-                    action["priority"] = branch["priority"]
-                    break
+        return visited
 
-            # Get action params
-            action["params"] = set()
-            for param in action.get("arguments", []):
-                action["params"].add(Param(name=param["name"], value=param.get("value", None),
-                                           reference=param.get("reference", None)))
 
-            actions[action["id"]] = Action.from_json(action)
+if __name__ == "__main__":
+    def workflow_dump(fp):
+        return json.dump(fp, cls=WorkflowJSONEncoder)
 
-        for branch in data.get("branches", []):
-            branches.add(Branch(actions[branch["source_id"]], actions[branch["destination_id"]]))
+    def workflow_dumps(obj):
+        return json.dumps(obj, cls=WorkflowJSONEncoder)
 
-        workflow = Workflow(name=data["name"], start=actions[data["start"]], actions=set(actions.values()),
-                            branches=branches, _id=data["workflow_id"], execution_id=data["execution_id"],
-                            environment_variables=Workflow.dereference_environment_variables(data))
-        return workflow
 
-    def to_json(self, data):
-        # TODO: map Workflow object to json workflow
-        pass
+    def workflow_load(fp):
+        return json.load(fp, cls=WorkflowJSONDecoder)
+
+
+    def workflow_loads(obj):
+        return json.loads(obj, cls=WorkflowJSONDecoder)
+
+
+    with open("../data/workflows/hello.json") as fp:
+        wf = workflow_load(fp)
+        wf_str = workflow_dumps(wf)
+        wf2 = workflow_loads(wf_str)
+        wf2_str = workflow_dumps(wf2)
+        print(wf_str == wf2_str)

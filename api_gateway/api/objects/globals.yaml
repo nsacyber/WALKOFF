@@ -1,0 +1,17 @@
+Global:
+  type: object
+  required: [value]
+  description: An global variable object, which is a type of parameter in an Action
+  additionalProperties: false
+  properties:
+    _id:
+      $ref: '#/components/schemas/Uuid'
+    name:
+      type: string
+      description: The name of the environment variable
+    value:
+      type: string
+      description: The value of the environment variable
+    description:
+      type: string
+      description: Description of the global variable

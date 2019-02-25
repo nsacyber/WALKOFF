@@ -3,12 +3,16 @@ import configparser
 from pathlib import Path
 import sys
 
+
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WALKOFF")
 CONFIG_PATH = (Path(__file__).parent / "../data/config.ini").resolve()
 
 
 def load_config():
+    """
+        Loads in and returns the configuration as defined in the triple-play/data/config.ini file
+    """
     try:
         # Load the user configurable parameters
         config = configparser.ConfigParser()
