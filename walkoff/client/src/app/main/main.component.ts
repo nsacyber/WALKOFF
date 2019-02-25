@@ -50,8 +50,8 @@ export class MainComponent implements OnInit, OnDestroy {
 
 		this.currentUser = this.authService.getAndDecodeAccessToken().user_claims.username;
 		this.getInterfaceNames();
-		this.getInitialNotifications();
-		this.getNotificationsSSE();
+		// this.getInitialNotifications();
+		// this.getNotificationsSSE();
 	}
 
 	/**
