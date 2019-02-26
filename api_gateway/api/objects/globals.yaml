@@ -1,6 +1,6 @@
 Global:
   type: object
-  required: [value]
+  required: [name, value]
   description: An global variable object, which is a type of parameter in an Action
   additionalProperties: false
   properties:

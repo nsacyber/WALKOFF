@@ -12,6 +12,7 @@ from yaml import Loader, load
 import api_gateway.config
 from api_gateway.extensions import db, jwt
 from api_gateway.server import context
+from api_gateway.helpers import compose_api
 from api_gateway.server.blueprints import custominterface, workflowresults, console, root
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,7 @@ def add_health_check(_app):
 connexion_app = connexion.App(__name__, specification_dir='../api/', options={'swagger_ui': False})
 _app = connexion_app.app
 
-_app.jinja_loader = FileSystemLoader(['templates'])
+_app.jinja_loader = FileSystemLoader([os.path.join("api_gateway", "templates")])
 _app.config.from_object(api_gateway.config.Config)
 
 try:
@@ -74,6 +75,7 @@ except Exception as e:
     sys.exit(1)
 
 jwt.init_app(_app)
+compose_api(api_gateway.config.Config)
 connexion_app.add_api('composed_api.yaml')
 _app.running_context = context.Context(app=_app)
 register_blueprints(_app)

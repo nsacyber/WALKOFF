@@ -1,10 +1,10 @@
 /workflows:
   get:
     tags:
-      - Playbooks
+      - Workflows
     summary: Read all workflows in playbook
     description: ''
-    operationId: api_gateway.server.endpoints.playbooks.get_workflows
+    operationId: api_gateway.server.endpoints.workflows.get_workflows
     responses:
       200:
         description: Success
@@ -12,16 +12,21 @@
           application/json:
             schema:
               type: array
-              description: The JSON representation of all the workflows' meta data
+              description: The JSON representation of all the workflows meta data
               items:
                 $ref: '#/components/schemas/WorkflowMetaData'
-
+      404:
+        description: No workflows exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   post:
     tags:
       - Workflows
     summary: Create a workflow
     description: ''
-    operationId: api_gateway.server.endpoints.playbooks.create_workflow
+    operationId: api_gateway.server.endpoints.workflows.create_workflow
     parameters:
       - in: query
         name: source
@@ -56,7 +61,7 @@
       - Workflows
     summary: Update a workflow
     description: ''
-    operationId: api_gateway.server.endpoints.playbooks.update_workflow
+    operationId: api_gateway.server.endpoints.workflows.update_workflow
     requestBody:
       description: The fields of the workflow object to be updated
       required: true
@@ -102,7 +107,7 @@
       - Workflows
     summary: Read a workflow
     description: ''
-    operationId: api_gateway.server.endpoints.playbooks.read_workflow
+    operationId: api_gateway.server.endpoints.workflows.read_workflow
     responses:
       200:
         description: Success
@@ -122,7 +127,7 @@
       - Workflows
     summary: Delete a workflow
     description: ''
-    operationId: api_gateway.server.endpoints.playbooks.delete_workflow
+    operationId: api_gateway.server.endpoints.workflows.delete_workflow
     responses:
       204:
         description: Success

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class Workflow(ExecutionElement, Execution_Base):
     __tablename__ = "workflow"
-    playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook._id', ondelete='CASCADE'))
+    # playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook._id', ondelete='CASCADE'))
     name = Column(String(80), nullable=False)
     start = Column(UUIDType(binary=False))
     actions = relationship("Action", cascade="all, delete-orphan", passive_deletes=True)
@@ -24,7 +24,7 @@ class Workflow(ExecutionElement, Execution_Base):
     is_valid = Column(Boolean, default=False)
     children = ("actions", "branches", "conditions", "transforms", "triggers")
     workflow_variables = relationship("WorkflowVariable", cascade="all, delete-orphan", passive_deletes=True)
-    __table_args__ = (UniqueConstraint("playbook_id", "name", name="_playbook_workflow"),)
+    # __table_args__ = (UniqueConstraint("playbook_id", "name", name="_playbook_workflow"),)
 
     def __init__(self, name, start, _id=None, actions=None, branches=None, conditions=None, transforms=None,
                  triggers=None, workflow_variables=None, is_valid=False, errors=None):

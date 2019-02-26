@@ -1,6 +1,6 @@
 Workflow:
   type: object
-  required: [meta]
+  required: [name]
   description: A workflow object
   additionalProperties: false
   properties:
@@ -16,7 +16,8 @@ Workflow:
     tags:
       description: Tag for workflow
       type: array
-      items: strin
+      items:
+        type: string
     is_valid:
       description: Is this workflow able to be run?
       type: boolean
@@ -39,9 +40,9 @@ Workflow:
         $ref: '#/components/schemas/Branch'
     conditions:
       description: Condition nodes in workflow
-        type: array
-        items:
-          $ref: '#/components/schemas/Condition'
+      type: array
+      items:
+        $ref: '#/components/schemas/Condition'
     transforms:
       description: Transform nodes in workflow
       type: array
@@ -56,7 +57,7 @@ Workflow:
       description: The environment variables for this workflow
       type: array
       items:
-        $ref: '#/components/schemas/EnvironmentVariable'
+        $ref: '#/components/schemas/WorkflowVariable'
 
 
 WorkflowMetaData:
@@ -77,7 +78,8 @@ WorkflowMetaData:
     tags:
       description: Tag for workflow
       type: array
-      items: strin
+      items:
+        type: string
     is_valid:
       description: Is this workflow able to be run?
       type: boolean
@@ -154,7 +156,7 @@ Parameter:
       description: The ID of the action whose output should be used
     variant:
       type: string
-        enum: [STATIC_VALUE, ACTION_RESULT, WORKFLOW_VARIABLE, GLOBAL]
+      enum: [STATIC_VALUE, ACTION_RESULT, WORKFLOW_VARIABLE, GLOBAL]
 
 Condition:
   type: object
@@ -165,7 +167,7 @@ Condition:
     _id:
       $ref: '#/components/schemas/Uuid'
       description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
-   name:
+    name:
       description: User defined name
       type: string
       example: Utilities

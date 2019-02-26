@@ -12,7 +12,7 @@ from gevent import pywsgi
 import api_gateway
 import api_gateway.config
 from api_gateway.jsonplaybookloader import JsonPlaybookLoader
-from api_gateway.executiondb.playbook import Playbook
+# from api_gateway.executiondb.playbook import Playbook
 from api_gateway.helpers import compose_api
 from api_gateway.server.app import app
 
@@ -75,26 +75,25 @@ def convert_host_port(args):
     return host, port
 
 
-def import_workflows():
-    playbook_name = [playbook._id for playbook in app.running_context.execution_db.session.query(Playbook).all()]
-    if os.path.exists(api_gateway.config.Config.WORKFLOWS_PATH):
-        logger.info('Importing any workflows not currently in database')
-        for p in os.listdir(api_gateway.config.Config.WORKFLOWS_PATH):
-            full_path = os.path.join(api_gateway.config.Config.WORKFLOWS_PATH, p)
-            if os.path.isfile(full_path):
-                playbook = JsonPlaybookLoader.load_playbook(full_path)
-                if playbook.name not in playbook_name:
-                    app.running_context.execution_db.session.add(playbook)
-        app.running_context.execution_db.session.commit()
+# def import_workflows():
+#     playbook_name = [playbook._id for playbook in app.running_context.execution_db.session.query(Playbook).all()]
+#     if os.path.exists(api_gateway.config.Config.WORKFLOWS_PATH):
+#         logger.info('Importing any workflows not currently in database')
+#         for p in os.listdir(api_gateway.config.Config.WORKFLOWS_PATH):
+#             full_path = os.path.join(api_gateway.config.Config.WORKFLOWS_PATH, p)
+#             if os.path.isfile(full_path):
+#                 playbook = JsonPlaybookLoader.load_playbook(full_path)
+#                 if playbook.name not in playbook_name:
+#                     app.running_context.execution_db.session.add(playbook)
+#         app.running_context.execution_db.session.commit()
 
 
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
     api_gateway.config.initialize(args.config)
-    compose_api(api_gateway.config.Config)
 
-    import_workflows()
+    # import_workflows()
     try:
         run(*convert_host_port(args))
     except KeyboardInterrupt:

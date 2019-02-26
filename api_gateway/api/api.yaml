@@ -19,14 +19,12 @@ tags:
     description: App Management Operations
   - name: Configuration
     description: System Configuration Operations
-  - name: Devices
-    description: Device Operations
+  - name: Globals
+    description: Global Operations
   - name: Users
     description: User operations
   - name: Roles
     description: Role Operations
-  - name: Playbooks
-    description: Playbook Operations
   - name: Workflows
     description: Workflow Operations
   - name: WorkflowQueue
@@ -51,29 +49,30 @@ paths:
   $ref: ./apps.yaml
   $ref: ./auth.yaml
   $ref: ./configuration.yaml
-  $ref: ./devices.yaml
+  $ref: ./globals.yaml
   $ref: ./metadata.yaml
-  $ref: ./playbooks.yaml
   $ref: ./roles.yaml
   $ref: ./scheduler.yaml
   $ref: ./users.yaml
   $ref: ./workflowqueue.yaml
+  $ref: ./workflows.yaml
 
 security:
   - AuthenticationToken: []
 
 components:
   schemas:
-    $ref: ./objects/objects.yaml
     $ref: ./objects/appapi.yaml
     $ref: ./objects/auth.yaml
     $ref: ./objects/configuration.yaml
-    $ref: ./objects/devices.yaml
-    $ref: ./objects/playbooks.yaml
+    $ref: ./objects/globals.yaml
+    $ref: ./objects/objects.yaml
     $ref: ./objects/roles.yaml
     $ref: ./objects/scheduler.yaml
     $ref: ./objects/users.yaml
     $ref: ./objects/workflowqueue.yaml
+    $ref: ./objects/workflows.yaml
+
   securitySchemes:
     AuthenticationToken:
       type: http

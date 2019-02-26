@@ -10,7 +10,7 @@ from .condition import Condition
 from .workflow_variable import WorkflowVariable
 from .global_variable import Global
 # from .executionelement import ExecutionElement
-from .playbook import Playbook
+# from .playbook import Playbook
 from .position import Position
 from .transform import Transform
 from .trigger import Trigger
@@ -210,23 +210,23 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     class Meta:
         model = Workflow
         unknown = EXCLUDE
-        exclude = ('playbook',)
+        # exclude = ('playbook',)
 
 
-class PlaybookSchema(ExecutionElementBaseSchema):
-    """Schema for playbooks
-    """
-    name = field_for(Playbook, 'name', required=True)
-    workflows = fields.Nested(WorkflowSchema, many=True)
-
-    class Meta:
-        model = Playbook
-        unknown = EXCLUDE
+# class PlaybookSchema(ExecutionElementBaseSchema):
+#     """Schema for playbooks
+#     """
+#     name = field_for(Playbook, 'name', required=True)
+#     workflows = fields.Nested(WorkflowSchema, many=True)
+#
+#     class Meta:
+#         model = Playbook
+#         unknown = EXCLUDE
 
 
 # This could be done better with a metaclass which registers subclasses
 _schema_lookup = {
-    Playbook: PlaybookSchema,
+    # Playbook: PlaybookSchema,
     Workflow: WorkflowSchema,
     Position: PositionSchema,
     Action: ActionSchema,

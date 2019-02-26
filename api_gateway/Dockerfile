@@ -6,7 +6,7 @@ RUN apk --no-cache add --update alpine-sdk libffi libffi-dev postgresql-dev musl
 RUN mkdir /install
 WORKDIR /install
 
-COPY ./requirements.txt /requirements.txt
+COPY ./api_gateway/requirements.txt /requirements.txt
 RUN pip install --prefix="/install" -r /requirements.txt
 
 FROM base
@@ -17,4 +17,4 @@ COPY ./ /app
 WORKDIR /app
 
 
-CMD python walkoff.py -a
+CMD python -m api_gateway.walkoff

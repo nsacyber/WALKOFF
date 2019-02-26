@@ -34,7 +34,7 @@ class ExecutionDatabase(object):
         from api_gateway.executiondb.action import Action
         from api_gateway.executiondb.branch import Branch
         from api_gateway.executiondb.condition import Condition
-        from api_gateway.executiondb.playbook import Playbook
+        # from api_gateway.executiondb.playbook import Playbook
         from api_gateway.executiondb.position import Position
         from api_gateway.executiondb.transform import Transform
         from api_gateway.executiondb.trigger import Trigger

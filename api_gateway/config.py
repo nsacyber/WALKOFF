@@ -95,12 +95,12 @@ class Config(object):
     EXECUTION_DB_HOST = 'localhost'
 
     # PATHS
-    DATA_PATH = join("../", 'data')
+    DATA_PATH = 'data'
 
-    API_PATH = 'api'
+    API_PATH = join("api_gateway", "api")
     CACHE = {'type': 'redis', 'host': 'localhost', 'port': 6379}
 
-    CLIENT_PATH = join('client')
+    CLIENT_PATH = join("api_gateway", "client")
     CONFIG_PATH = join(DATA_PATH, 'api_gateway.config')
     DB_PATH = abspath(join(DATA_PATH, 'api_gateway.db'))
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')

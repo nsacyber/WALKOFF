@@ -4,7 +4,7 @@ import os.path
 
 import api_gateway.config
 from api_gateway.appgateway.apiutil import UnknownApp, UnknownAppAction, InvalidParameter, UnknownCondition, UnknownTransform
-from api_gateway.executiondb.schemas import PlaybookSchema, WorkflowSchema
+from api_gateway.executiondb.schemas import WorkflowSchema
 from api_gateway.helpers import (locate_playbooks_in_directory, format_exception_message)
 
 logger = logging.getLogger(__name__)
@@ -52,45 +52,45 @@ class JsonPlaybookLoader(object):
                     logger.error('Invalid Playbook JSON format. Details: {}'.format(e))
                     return None
 
-    @staticmethod
-    def load_playbook(resource):
-        """Loads a playbook from a file.
-
-        Args:
-            resource (str): Path to the workflow.
-        """
-        try:
-            playbook_file = open(resource, 'r')
-        except (IOError, OSError) as e:
-            logger.error('Could not load workflow from {0}. Reason: {1}'.format(resource, format_exception_message(e)))
-            return None
-        else:
-            with playbook_file:
-                workflow_loaded = playbook_file.read()
-                try:
-                    playbook_json = json.loads(workflow_loaded)
-
-                    playbook = PlaybookSchema().load(playbook_json)
-                    return playbook
-                except ValueError as e:
-                    logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
-                except (InvalidParameter, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
-                    logger.error(
-                        'Error constructing playbook from {0}. '
-                        'Reason: {1}'.format(resource, format_exception_message(e)))
-                    return None
-
-    @staticmethod
-    def load_playbooks(resource_collection=None):
-        """Loads all playbooks from a directory.
-
-        Args:
-            resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration
-                workflows_path.
-        """
-
-        if resource_collection is None:
-            resource_collection = api_gateway.config.Config.WORKFLOWS_PATH
-        playbooks = [JsonPlaybookLoader.load_playbook(os.path.join(resource_collection, playbook))
-                     for playbook in locate_playbooks_in_directory(resource_collection)]
-        return [playbook for playbook in playbooks if playbook]
+    # @staticmethod
+    # def load_playbook(resource):
+    #     """Loads a playbook from a file.
+    #
+    #     Args:
+    #         resource (str): Path to the workflow.
+    #     """
+    #     try:
+    #         playbook_file = open(resource, 'r')
+    #     except (IOError, OSError) as e:
+    #         logger.error('Could not load workflow from {0}. Reason: {1}'.format(resource, format_exception_message(e)))
+    #         return None
+    #     else:
+    #         with playbook_file:
+    #             workflow_loaded = playbook_file.read()
+    #             try:
+    #                 playbook_json = json.loads(workflow_loaded)
+    #
+    #                 playbook = PlaybookSchema().load(playbook_json)
+    #                 return playbook
+    #             except ValueError as e:
+    #                 logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
+    #             except (InvalidParameter, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
+    #                 logger.error(
+    #                     'Error constructing playbook from {0}. '
+    #                     'Reason: {1}'.format(resource, format_exception_message(e)))
+    #                 return None
+    #
+    # @staticmethod
+    # def load_playbooks(resource_collection=None):
+    #     """Loads all playbooks from a directory.
+    #
+    #     Args:
+    #         resource_collection (str, optional): Path to the directory to load from. Defaults to the configuration
+    #             workflows_path.
+    #     """
+    #
+    #     if resource_collection is None:
+    #         resource_collection = api_gateway.config.Config.WORKFLOWS_PATH
+    #     playbooks = [JsonPlaybookLoader.load_playbook(os.path.join(resource_collection, playbook))
+    #                  for playbook in locate_playbooks_in_directory(resource_collection)]
+    #     return [playbook for playbook in playbooks if playbook]
