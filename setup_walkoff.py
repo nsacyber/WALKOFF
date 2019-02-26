@@ -15,7 +15,7 @@ def write_redis_info(rh, rp):
 def install_deps():
     print('\nChecking if pip is installed:')
     try:
-        print(subprocess.check_output([sys.executable, "-m", "pip", "--version"]))
+        print(subprocess.check_output([sys.executable, "-m", "pip", "--version"]).decode())
     except subprocess.CalledProcessError:
         print("\nPlease install pip first, before running this installer.")
         return
