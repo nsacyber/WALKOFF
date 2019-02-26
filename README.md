@@ -197,7 +197,7 @@ If the installation goes wrong or you change your mind, you can use `python -m w
 
 We recommend using a Python virtual environment (such as [venv](https://docs.python.org/3/library/venv.html) included with Python 3, [virtualenv](https://virtualenv.pypa.io/en/latest/), [pyenv](https://github.com/pyenv/pyenv)-[virtualenv](https://github.com/pyenv/pyenv-virtualenv) or [pipenv](https://pipenv.readthedocs.io/en/latest/)),
 as this avoids package version conflicts with other applications that you might have, and avoids the necessity of 
-running setup with sudo, which could cause permissions issues if you don't use sudo for subsequent runs.
+running pip with sudo, which could cause permissions issues as root will then own the packages.
 
 Install Redis Server:
 * MacOS: Use homebrew - https://brew.sh/
@@ -205,8 +205,7 @@ Install Redis Server:
 * Windows: There are no up-to-date Redis binaries available for Windows, and we no longer support Windows at this time. Support may resume at a later date.
 * Docker: Run a Redis container with port 6379 published to localhost: `docker run --name walkoff-redis -p 6379:6379 -d redis`
 
-If the Python environment for your elevated privileges are the same as the Python environment you will be running 
-WALKOFF in (check that `pip --version` aligns with `which python`), you can use the all-in-one setup script with elevated privileges:
+With the pre-requisites above satisfied, you can use the all-in-one setup script:
 
     python setup_walkoff.py
 
