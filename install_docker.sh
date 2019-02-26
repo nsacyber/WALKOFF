@@ -2,7 +2,7 @@
 
 # install_docker.sh - BASH script which automatically installs Docker CE Engine
 # using the directions found on the web page at:
-# https://docs.docker.com/compose/install/
+# https://docs.docker.com/install/
 # 
 # Please note, if the installation steps for Docker CE become misaligned with this
 # script, i.e., this script breaks, it needs to be updated to conform to the latest 
