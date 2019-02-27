@@ -10,7 +10,7 @@
                     <input label="title" type="text" [(ngModel)]="widget.title" class="form-control">
                 </div>
             </div>
-            <div *ngIf="widget.type != 'text'" class="col-12">
+            <div *ngIf="!['text', 'kibana'].includes(widget.type)" class="col-12">
               <div class="form-group">
                   <label for="workflow">Workflow</label>
                   <div>
@@ -44,6 +44,12 @@
                 <div class="form-group">
                     <label for="text">Text</label>
                     <textarea name="text" rows="4" [(ngModel)]="widget.text" class="form-control"></textarea>
+                </div>
+            </div>
+            <div *ngIf="widget.type == 'kibana'" class="col-12">
+                <div class="form-group">
+                    <label for="embedUrl">Embed Url</label>
+                    <input label="embedUrl" type="text" [(ngModel)]="widget.options.embedUrl" class="form-control">
                 </div>
             </div>
         </div>

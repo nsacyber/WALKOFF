@@ -46,7 +46,7 @@
 								</div>
 
 								<div *ngIf="item.type == 'kibana'">
-									<iframe class="kibana" [src]="metadata.kibanaUrl"></iframe>
+									<iframe class="kibana" [src]="item.options.embedUrl"></iframe>
 								</div>
 
 							</div>
