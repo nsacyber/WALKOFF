@@ -23,13 +23,11 @@ services:
     depends_on:
     - "walkoff-redis"
     - "walkoff-postgres"
-    stop_signal: SIGINT
-    stop_grace_period: 30s
-#    entrypoint:
-#    - "sleep"
-#    - "36000"
-#    volumes:
-#    - /path/to/host/apps:/app/walkoff/apps
+    # entrypoint: 
+    # - "sleep" 
+    # - "36000"
+    # volumes:
+    # - /path/to/host/apps:/app/walkoff/apps
   walkoff-redis:
     image: "redis"
   walkoff-postgres:
