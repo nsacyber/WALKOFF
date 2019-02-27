@@ -14,7 +14,7 @@ protobuf >= 3.4.0, < 3.5.2
 enum34
 futures; python_version < "3"
 semver
-jsonschema
+jsonschema == 2.6.0
 six >= 1.10.0
 marshmallow >= 3.0.0rc2
 marshmallow-sqlalchemy >= 0.13.0
