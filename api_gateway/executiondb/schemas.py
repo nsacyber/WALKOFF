@@ -15,6 +15,7 @@ from .position import Position
 from .transform import Transform
 from .trigger import Trigger
 from .workflow import Workflow
+from .dashboard import Dashboard, Widget
 
 
 # TODO: use these when moving toward storing apis in database
@@ -87,6 +88,34 @@ class GlobalSchema(ExecutionBaseSchema):
 
     class Meta:
         model = Global
+        unknown = EXCLUDE
+
+
+class WidgetSchema(ExecutionBaseSchema):
+    """Schema for Dashboard Widgets"""
+
+    name = field_for(Widget, 'name', required=True)
+    type_ = field_for(Widget, 'type_', required=True)
+    x = field_for(Widget, 'x', required=True)
+    y = field_for(Widget, 'y', required=True)
+    cols = field_for(Widget, 'cols', required=True)
+    rows = field_for(Widget, 'rows', required=True)
+    options = fields.Raw()
+
+    class Meta:
+        model = Widget
+        exclude = ('dashboard',)
+        unknown = EXCLUDE
+
+
+class DashboardSchema(ExecutionBaseSchema):
+    """Schema for Dashboards"""
+
+    name = field_for(Dashboard, 'name')
+    widgets = fields.Nested(WidgetSchema, many=True)
+
+    class Meta:
+        model = Dashboard
         unknown = EXCLUDE
 
 
@@ -222,6 +251,7 @@ class WorkflowSchema(ExecutionElementBaseSchema):
 #     class Meta:
 #         model = Playbook
 #         unknown = EXCLUDE
+
 
 
 # This could be done better with a metaclass which registers subclasses

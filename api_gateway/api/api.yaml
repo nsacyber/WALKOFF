@@ -56,7 +56,7 @@ paths:
   $ref: ./users.yaml
   $ref: ./workflowqueue.yaml
   $ref: ./workflows.yaml
-
+  $ref: ./dashboards.yaml
 security:
   - AuthenticationToken: []
 
@@ -72,7 +72,7 @@ components:
     $ref: ./objects/users.yaml
     $ref: ./objects/workflowqueue.yaml
     $ref: ./objects/workflows.yaml
-
+    $ref: ./objects/dashboard.yaml
   securitySchemes:
     AuthenticationToken:
       type: http
