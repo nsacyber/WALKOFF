@@ -1,0 +1,262 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: File Utilities App
+  description: Some utility functions for files
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  join path elements:
+    run: actions.join_path_elements
+    description: joins an array of strings into a path using proper path specifiers
+    parameters:
+      - name: elements
+        description: path elements
+        type: array
+        items:
+          type: string
+        required: true
+    returns:
+      Success:
+        schema:
+          type: string
+          description: the joined path
+  exists in directory:
+    run: actions.exists_in_directory
+    description: does the file or directory exist?
+    parameters:
+      - name: path
+        description: the path of the filename to check
+        type: string
+        required: true
+    returns:
+      Exists:
+        schema:
+          type: boolean
+      NotExists:
+        schema:
+          type: boolean
+  copy and bitswap:
+    run: actions.copy_and_bitswap
+    description: copy a file as a binary and swap the bits
+    parameters:
+      - name: path_from
+        type: string
+        required: true
+        description: Path to the file to copy
+      - name: path_to
+        type: string
+        description: Path to copy the file to defaults to apps/FileUtilities/data/<base filename of path_to>-quarnatine.bin
+  create file:
+    run: actions.create
+    description: create or overwrite a file with optional contents
+    parameters:
+      - name: filename
+        description: filename to create
+        type: string
+        required: true
+      - name: contents
+        description: contents of the file to create
+        type: string
+      - name: overwrite
+        description: whether or not to overwrite the file, if it exists
+        type: boolean
+        default: false
+    default_return: FileCreated
+    returns:
+      AlreadyExists:
+        failure: true
+        schema:
+          type: boolean
+      FileCreated:
+        schema:
+          type: boolean
+      Error:
+        failure: true
+        schema:
+          type: boolean
+  append file:
+    run: actions.append
+    description: appends contents to a file
+    parameters:
+      - name: filename
+        description: filename to append to
+        type: string
+        required: true
+      - name: contents
+        description: contents to append to file
+        type: string
+        required: true
+      - name: newline
+        description: whether or not to append to a newline
+        type: boolean
+        default: false
+    default_return: FileWritten
+    returns:
+      FileWritten:
+        schema:
+          type: boolean
+      Error:
+        failure: true
+        schema:
+          type: boolean
+  remove:
+    run: actions.remove
+    description: remove a file
+    parameters:
+      - name: filename
+        type: string
+        description: The filename to remove
+        minLength: 1
+        required: true
+    default_return: Success
+    returns:
+      Success:
+        schema:
+          type: string
+          enum: [Success]
+      Error:
+        failure: true
+        schema:
+          type: string
+          enum: [File does not exist]
+  make read only:
+    run: actions.make_read_only
+    description: disables all write permissions on file
+    parameters:
+      - name: filename
+        description: filename to make read only
+        type: string
+        required: true
+    default_return: Success
+    returns:
+      Error:
+        failure: true
+        schema:
+          type: boolean
+      Success:
+        schema:
+          type: boolean       
+  make writable:
+    run: actions.make_writable
+    description: enables user and group write permissions on file
+    parameters:
+      - name: filename
+        description: filename to make writable
+        type: string
+        required: true
+    default_return: Success
+    returns:
+      Error:
+        failure: true
+        schema:
+          type: boolean
+      Success:
+        schema:
+          type: boolean 
+  read json:
+    run: actions.read_json
+    description: Reads JSON from file
+    parameters:
+      - name: filename
+        type: string
+        description: The filename to read
+        minLength: 1
+        required: true
+    default_return: Success
+    returns:
+      Success:
+        schema:
+          type: object
+          description: The JSON object
+      FileDoesNotExist:
+        failure: true
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              enum: [Could not read file]
+            reason:
+              type: string
+              description: The reason the file could not be read
+      InvalidJson:
+        failure: true
+        schema:
+          type: string
+          enum: [Could not read file as json. Invalid JSON]
+  write json:
+    run: actions.write_json
+    description: Reads JSON from file
+    parameters:
+      - name: filename
+        type: string
+        description: The filename to read
+        minLength: 1
+        required: true
+      - name: data
+        type: object
+        description: The JSON to write to teh file
+        required: true
+    returns:
+      Success:
+        schema:
+          type: string
+          enum: [Success]
+  stats:
+    run: actions.stats
+    description: Gets information about a file
+    parameters:
+      - name: filename
+        description: the relative path of the filename
+        type: string
+        required: true
+    returns:
+      Success:
+        schema:
+          type: object
+          properties:
+            mode:
+              type: integer
+              description: protection bits
+            inode:
+              type: integer
+              description: inode number
+            device:
+              type: integer
+              description: device
+            num_links:
+              type: integer
+              description: number of hard links
+            uid:
+              type: integer
+              description: user id of owner
+            gid:
+              type: integer
+              description: group id of owner
+            size:
+              type: integer
+              description: Size of file in bytes
+            blocks:
+              type: integer
+              description: Number of 512-byte blocks allocated. Linux only
+            block_size:
+              type: integer
+              description: Filesystem blocksize for efficient file system I/O. Linux only
+            device_type:
+              type: integer
+              description: Type of device if an inode device
+            flags:
+              type: integer
+              description: user defined flags
+            access_time:
+              type: string
+              description: time of most recent access
+            modificiation_time:
+              type: string
+              description: time of most recent content modification
+            metadata_time:
+              type: string
+              description: Platform dependent. On Unix - time of most recent change to metadata. On Windows - time of creation
