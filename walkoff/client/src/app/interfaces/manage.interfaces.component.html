@@ -67,7 +67,7 @@
                             </div>
 
                             <div *ngIf="item.type == 'kibana'">
-                                <iframe class="kibana" [src]="item.options.embedUrl"></iframe>
+                                <iframe class="kibana" [src]="sanitizeEmbedUrl(item.options.embedUrl)"></iframe>
                             </div>
 
                         </div>

@@ -12,6 +12,8 @@ import { GridsterConfig, GridType, CompactType } from 'angular-gridster2';
 import { Interface } from '../models/interface/interface';
 import { InterfaceWidget } from '../models/interface/interfaceWidget';
 
+import { DomSanitizer } from '@angular/platform-browser';
+
 @Component({
 	selector: 'interfaces-component',
 	templateUrl: './interfaces.html',
@@ -36,7 +38,8 @@ export class InterfacesComponent implements OnInit {
 	
 	constructor(
 		private route: ActivatedRoute, private toastrService: ToastrService,
-		private http: HttpClient, private interfaceService: InterfaceService
+		private http: HttpClient, private interfaceService: InterfaceService,
+		private sanitizer: DomSanitizer
 	) { }
 
 	/**
@@ -229,5 +232,9 @@ export class InterfacesComponent implements OnInit {
 		//     //! after the for loop is finished running, we save the pdf.
 		//     pdf.save('Test.pdf');
 	//});
+	}
+
+	sanitizeEmbedUrl(url) {
+		return this.sanitizer.bypassSecurityTrustResourceUrl(url)
 	}
 }

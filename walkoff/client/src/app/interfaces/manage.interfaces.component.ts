@@ -7,6 +7,9 @@ import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { WidgetModalComponent } from './widget.modal.component';
+import { DomSanitizer } from '@angular/platform-browser';
+
+
 
 @Component({
     selector: 'manage-interfaces-component',
@@ -31,7 +34,8 @@ export class ManageInterfacesComponent implements OnInit {
         private toastrService: ToastrService,
         private activeRoute: ActivatedRoute,
         private router: Router,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private sanitizer: DomSanitizer
     ) {}
 
     ngOnInit() {
@@ -148,4 +152,8 @@ export class ManageInterfacesComponent implements OnInit {
             this.router.navigate(['/new-interface']);
         }
     }
+
+    sanitizeEmbedUrl(url) {
+		return this.sanitizer.bypassSecurityTrustResourceUrl(url)
+	}
 }
