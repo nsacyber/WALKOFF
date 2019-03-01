@@ -8,9 +8,7 @@ from .parameter import Parameter
 from .branch import Branch
 from .condition import Condition
 from .workflow_variable import WorkflowVariable
-from .global_variable import Global
-# from .executionelement import ExecutionElement
-# from .playbook import Playbook
+from .global_variable import GlobalVariable
 from .position import Position
 from .transform import Transform
 from .trigger import Trigger
@@ -79,15 +77,15 @@ class WorkflowVariableSchema(ExecutionBaseSchema):
         unknown = EXCLUDE
 
 
-class GlobalSchema(ExecutionBaseSchema):
+class GlobalVariableSchema(ExecutionBaseSchema):
     """Schema for global variables
     """
-    name = field_for(Global, 'name')
-    value = field_for(Global, 'value', required=True)
-    description = field_for(Global, 'description')
+    name = field_for(GlobalVariable, 'name')
+    value = field_for(GlobalVariable, 'value', required=True)
+    description = field_for(GlobalVariable, 'description')
 
     class Meta:
-        model = Global
+        model = GlobalVariable
         unknown = EXCLUDE
 
 
@@ -239,24 +237,11 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     class Meta:
         model = Workflow
         unknown = EXCLUDE
-        # exclude = ('playbook',)
-
-
-# class PlaybookSchema(ExecutionElementBaseSchema):
-#     """Schema for playbooks
-#     """
-#     name = field_for(Playbook, 'name', required=True)
-#     workflows = fields.Nested(WorkflowSchema, many=True)
-#
-#     class Meta:
-#         model = Playbook
-#         unknown = EXCLUDE
 
 
 
 # This could be done better with a metaclass which registers subclasses
 _schema_lookup = {
-    # Playbook: PlaybookSchema,
     Workflow: WorkflowSchema,
     Position: PositionSchema,
     Action: ActionSchema,
@@ -264,7 +249,9 @@ _schema_lookup = {
     Parameter: ParameterSchema,
     Condition: ConditionSchema,
     Transform: TransformSchema,
-    Trigger: TriggerSchema}
+    Trigger: TriggerSchema,
+    WorkflowVariable: WorkflowVariableSchema,
+    GlobalVariable: GlobalVariableSchema}
 
 
 def dump_element(element):

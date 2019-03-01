@@ -10,18 +10,23 @@ import traceback
 from gevent import pywsgi
 
 import api_gateway
+
+# For now, these two imports need to be in this order. We init the config, and then init the app based on the config
 import api_gateway.config
-from api_gateway.jsonplaybookloader import JsonPlaybookLoader
-# from api_gateway.executiondb.playbook import Playbook
-from api_gateway.helpers import compose_api
 from api_gateway.server.app import app
+
+app.debug = True
+
+# from api_gateway.jsonplaybookloader import JsonPlaybookLoader
+# from api_gateway.executiondb.playbook import Playbook
+# from api_gateway.helpers import compose_api
 
 logger = logging.getLogger('API-GATEWAY')
 
 
-def run(host, port):
+def run(host, port, debug):
     print_banner()
-    server = setup_server(host, port)
+    server = setup_server(host, port, debug)
     server.serve_forever()
 
 
@@ -33,7 +38,7 @@ def print_banner():
     logger.info(header_footer_banner)
 
 
-def setup_server(host, port):
+def setup_server(host, port, debug):
     if os.path.isfile(api_gateway.config.Config.CERTIFICATE_PATH) and os.path.isfile(
             api_gateway.config.Config.PRIVATE_KEY_PATH):
         server = pywsgi.WSGIServer((host, port), application=app,
@@ -55,6 +60,7 @@ def parse_args():
     parser.add_argument('-p', '--port', help='port to run the server on')
     parser.add_argument('-H', '--host', help='host address to run the server on')
     parser.add_argument('-c', '--config', help='configuration file to use')
+    parser.add_argument('-d', '--debug', help='enables debug mode', action="store_true")
     parser.add_argument('-a', '--apponly', help='start WALKOFF app only, no workers', action='store_true')
     args = parser.parse_args()
     if args.version:
@@ -91,11 +97,9 @@ def convert_host_port(args):
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
-    api_gateway.config.initialize(args.config)
-
     # import_workflows()
     try:
-        run(*convert_host_port(args))
+        run(*convert_host_port(args), args.debug)
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF to shutdown.')
     except Exception as e:

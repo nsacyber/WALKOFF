@@ -276,6 +276,7 @@ def read_and_indent(filename, indent):
 
 
 def compose_api(config):
+    print(os.getcwd())
     with open(os.path.join(config.API_PATH, 'api.yaml'), 'r') as api_yaml:
         final_yaml = []
         for line_num, line in enumerate(api_yaml):

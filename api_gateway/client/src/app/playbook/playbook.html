@@ -20,12 +20,6 @@
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="remove-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Delete Selected Nodes"
-                [disabled]="!loadedWorkflow" (click)="removeSelectedNodes()">
-                <i class="fa fa-trash-o"></i>
-            </button>
-        </div>
-        <div class="btn-group" role="group">
             <button id="undo-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Undo"
                 [disabled]="!loadedWorkflow || (ur && ur.isUndoStackEmpty())" (click)="ur.undo()">
                 <i class="fa fa-undo"></i>
@@ -35,6 +29,12 @@
             <button id="redo-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Redo"
                 [disabled]="!loadedWorkflow || (ur && ur.isRedoStackEmpty())" (click)="ur.redo()">
                 <i class="fa fa-repeat"></i>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="remove-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Delete Selected Nodes"
+                [disabled]="!loadedWorkflow" (click)="removeSelectedNodes()">
+                <i class="fa fa-trash-o"></i>
             </button>
         </div>
         <!-- <div class="btn-group" role="group">
@@ -128,33 +128,49 @@
             <!-- Editor for Actions -->
             <div *ngIf="!waitingOnData && selectedAction" class="parametersEditor">
                 <h3>Action Parameters</h3>
-                <div class="row">
+                <div class="form-row">
                     <div class="col-4">
-                        <label>App:</label>
-                        <span>{{selectedAction.app_name}}</span>
+                        <div class="input-group input-group-sm mb-3" data-toggle="tooltip" [title]="selectedAction.app_name">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text text-white bg-primary">App</span>
+                            </div>
+                            <input type="text" disabled class="form-control" [value]="selectedAction.app_name">
+                        </div>
                     </div>
                     <div class="col-4">
-                        <label>Action:</label>
-                        <span>{{selectedAction.action_name}}</span>
+                        <div class="input-group input-group-sm mb-3" data-toggle="tooltip" [title]="selectedAction.action_name">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text text-white bg-primary">Action</span>
+                            </div>
+                            <input type="text" disabled class="form-control" [value]="selectedAction.action_name">
+                        </div>
                     </div>
                     <div class="col-4">
-                        <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-primary pull-right"
+                        <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary"
                             (click)="setStartNode(selectedAction.id)">Set as Start Action</button>
                     </div>
                 </div>
-                <div class="row">
-                    <div>
-                        <label>Description:</label>
-                        <span>{{selectedActionApi.description}}</span>
+                <div class="form-row">
+                    <label class="col-sm-2 col-form-label">Description:</label>
+                    <!-- <div class="col-sm-10">
+                        <input type="text" disabled class="form-control-plaintext" [value]="selectedActionApi.description">
+                    </div> -->
+                </div>
+                <div class="form-row ml-3">
+                    <span>{{ selectedActionApi.description }}</span>
+                </div>
+                <div class="form-row">
+                        <label class="col-sm-2 col-form-label">Returns:</label>
                     </div>
-                    <div>
-                        <label>Returns:</label>
-                        <div *ngFor="let i of selectedActionApi.returns">
-                            <div class="col-16 col-offset-1">
-                                <label>{{i.status}}</label>
-                                <span>{{i.description}}</span>
-                            </div>
+                <div class="form-row ml-3 mr-1" *ngFor="let i of selectedActionApi.returns">
+                    <div class="input-group input-group-sm mb-3" data-toggle="tooltip" [title]="i.description">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text text-white bg-primary" 
+                                [ngClass]="{'bg-primary': !i.failure, 'bg-secondary': i.failure}">
+                                {{ i.status }}
+                            </span>
                         </div>
+                        <input type="text" disabled class="form-control" [value]="i.description">
                     </div>
                 </div>
                 <div class="form-group">
@@ -245,14 +261,19 @@
         </div>
     </div>
 
-
-    <ngb-tabset *ngIf="loadedWorkflow?.id || loadedWorkflow?.environment_variables?.length > 0" class="mb-3" destoryOnHide="false" (tabChange)="recalculateConsoleTable($event)">
-
+    <div class="mb-3">
+    <ngb-tabset *ngIf="loadedWorkflow?.id || loadedWorkflow?.environment_variables?.length > 0" destoryOnHide="false" (tabChange)="recalculateConsoleTable($event)">
         <ngb-tab *ngIf="loadedWorkflow?.id && !loadedWorkflow?.has_errors" title="Console" id="console-tab">
             <ng-template ngbTabContent>
-                <div id="console" #consoleContainer class="p-2 mb-3">
-                    <div *ngFor="let log of consoleLog" class="my-1">{{ log.message }}</div>
-                </div>
+                <ngx-codemirror #consoleArea
+                    [(ngModel)]="consoleContent" 
+                    [options]="{
+                        lineNumbers: true,
+                        mode: 'shell',
+                        theme: 'darcula',
+                        readOnly: true
+                    }" 
+                ></ngx-codemirror>
             </ng-template>
         </ngb-tab>
 
@@ -328,6 +349,7 @@
         </ngb-tab>
 
     </ngb-tabset>
+    </div>
 
     <div class="modal fade" id="playbookAndWorkflowActionModal" role="dialog" aria-labelledby="playbookAndWorkflowActionModalTitle"
         aria-hidden="true">
@@ -347,8 +369,8 @@
                             <option [ngValue]="''">-- Create new Playbook --</option>
                             <option *ngFor="let i of playbooks" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
                         </select>
-                        <input type="text" *ngIf="modalParams.selectedPlaybookId === '' || !modalParams.shouldShowExistingPlaybooks"
-                            [(ngModel)]="modalParams.newPlaybook" class="form-control" placeholder="Enter a new playbook name">
+                        <input type="text" *ngIf="modalParams.selectedPlaybookId === '' || !modalParams.shouldShowExistingPlaybooks" 
+                            [(ngModel)]="modalParams.newPlaybook" class="form-control mt-2" placeholder="Enter a new playbook name">
                     </div>
                     <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
                         <h6>Enter a Workflow</h6>

@@ -1,4 +1,4 @@
-Global:
+GlobalVariable:
   type: object
   required: [name, value]
   description: An global variable object, which is a type of parameter in an Action

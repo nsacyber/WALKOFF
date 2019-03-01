@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
 import * as moment from 'moment';
 
-@Injectable()
+@Injectable({
+	providedIn: 'root'
+})
 export class UtilitiesService {
 	/**
 	 * Returns a truncated input sting based on the length inputted.

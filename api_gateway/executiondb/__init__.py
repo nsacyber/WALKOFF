@@ -38,7 +38,7 @@ class ExecutionDatabase(object):
         from api_gateway.executiondb.position import Position
         from api_gateway.executiondb.transform import Transform
         from api_gateway.executiondb.trigger import Trigger
-        from api_gateway.executiondb.global_variable import Global
+        from api_gateway.executiondb.global_variable import GlobalVariable
         from api_gateway.executiondb.workflow_variable import WorkflowVariable
         from api_gateway.executiondb.workflow import Workflow
         from api_gateway.executiondb.workflowresults import WorkflowStatus, ActionStatus

@@ -1,7 +1,7 @@
 import logging
 from uuid import uuid4, UUID
 
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String
 from sqlalchemy_utils import UUIDType
 
 from api_gateway.executiondb import Execution_Base
@@ -9,7 +9,7 @@ from api_gateway.executiondb import Execution_Base
 logger = logging.getLogger(__name__)
 
 
-class Global(Execution_Base):
+class GlobalVariable(Execution_Base):
     """SQLAlchemy ORM class for Global, which are variables that can be dynamically loaded into workflow
        execution
 

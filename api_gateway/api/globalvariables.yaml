@@ -9,30 +9,30 @@
       required: true
   get:
     tags:
-      - Globals
+      - GlobalVariables
     summary: Read a global
     description: ''
-    operationId: api_gateway.server.endpoints.globals.read_device
+    operationId: api_gateway.server.endpoints.global_variables.read_device
     responses:
       200:
         description: Success
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Global'
+              $ref: '#/components/schemas/GlobalVariable'
       404:
-        description: Global does not exist.
+        description: GlobalVariable does not exist.
   delete:
     tags:
-      - Global
+      - GlobalVariables
     summary: Remove a global
     description: ''
-    operationId: api_gateway.server.endpoints.globals.delete_device
+    operationId: api_gateway.server.endpoints.global_variables.delete_device
     responses:
       204:
         description: Success
       404:
-        description: Global does not exist
+        description: GlobalVariable does not exist
         content:
           application/json:
             schema:
@@ -40,10 +40,10 @@
 /globals:
   get:
     tags:
-      - Globals
+      - GlobalVariables
     summary: Get all globals
     description: ''
-    operationId: api_gateway.server.endpoints.globals.read_all_devices
+    operationId: api_gateway.server.endpoints.global_variables.read_all_devices
     responses:
       200:
         description: Success
@@ -53,31 +53,28 @@
               type: array
               description: A list of globals
               items:
-                $ref: '#/components/schemas/Global'
+                $ref: '#/components/schemas/GlobalVariable'
   post:
     tags:
-      - Global
+      - GlobalVariables
     summary: Add a global
     description: ''
-    operationId: api_gateway.server.endpoints.globals.create_device
-    parameters:
-      - in: body
-        name: body
-        description: The global to be created
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Global'
+    operationId: api_gateway.server.endpoints.global_variables.create_device
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GlobalVariable'
     responses:
       201:
         description: Object created
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Global'
+              $ref: '#/components/schemas/GlobalVariable'
       400:
-        description: Global already exists
+        description: GlobalVariable already exists
         content:
           application/json:
             schema:
@@ -85,26 +82,26 @@
 
   put:
     tags:
-      - Global
+      - GlobalVariables
     summary: Update a global
     description: ''
-    operationId: api_gateway.server.endpoints.globals.update_device
+    operationId: api_gateway.server.endpoints.global_variables.update_device
     requestBody:
       description: The new global object to be updated
       required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Global'
+            $ref: '#/components/schemas/GlobalVariable'
     responses:
       200:
         description: Success
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Global'
+              $ref: '#/components/schemas/GlobalVariable'
       404:
-        description: Global does not exist
+        description: GlobalVariable does not exist
         content:
           application/json:
             schema:

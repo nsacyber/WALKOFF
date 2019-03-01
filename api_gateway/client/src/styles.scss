@@ -5,6 +5,9 @@
 @import '~font-awesome/scss/font-awesome';
 @import '~bootstrap/scss/bootstrap';
 
+@import "~codemirror/lib/codemirror.css";
+@import "~codemirror/theme/darcula.css";
+
 @import '@swimlane/ngx-datatable/release/index.css';
 @import '@swimlane/ngx-datatable/release/themes/material.css';
 @import '@swimlane/ngx-datatable/release/assets/icons.css';

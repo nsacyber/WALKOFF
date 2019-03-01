@@ -12,6 +12,10 @@ import { DateTimePickerModule } from 'ng-pick-datetime';
 import { DndModule } from 'ng2-dnd';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
+import { GridsterModule } from 'angular-gridster2';
+import { ChartsModule } from 'ng2-charts';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import 'codemirror/mode/shell/shell';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -29,6 +33,7 @@ import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { DevicesModalComponent } from './devices/devices.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
 import { SettingsRoleModalComponent } from './settings/settings.roles.modal.component';
+import { SettingsTimeoutModalComponent } from './settings/settings.timeout.modal.component';
 import { ExecutionVariableModalComponent } from './execution/execution.variable.modal.component';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook/playbook.environment.variable.modal.component';
 
@@ -41,6 +46,8 @@ import { MessagesModalComponent } from './messages/messages.modal.component';
 
 import { KeysPipe } from './pipes/keys.pipe';
 import { UtilitiesService } from './utilities.service';
+import { ManageInterfacesComponent } from './interfaces/manage.interfaces.component';
+import { WidgetModalComponent } from './interfaces/widget.modal.component';
 
 @NgModule({
 	imports: [
@@ -61,7 +68,10 @@ import { UtilitiesService } from './utilities.service';
 		DateTimePickerModule,
 		DndModule.forRoot(),
 	    BrowserAnimationsModule,
-		ToastrModule.forRoot({ positionClass: 'toast-bottom-right' })
+		ToastrModule.forRoot({ positionClass: 'toast-bottom-right' }),
+		GridsterModule,
+		ChartsModule,
+		CodemirrorModule
 	],
 	declarations: [
 		//Main component
@@ -80,6 +90,7 @@ import { UtilitiesService } from './utilities.service';
 		DevicesModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
+		SettingsTimeoutModalComponent,
 		MessagesModalComponent,
 		PlaybookEnvironmentVariableModalComponent,
 		ExecutionVariableModalComponent,
@@ -91,6 +102,8 @@ import { UtilitiesService } from './utilities.service';
 		SettingsRolesComponent,
 		// Pipes
 		KeysPipe,
+		ManageInterfacesComponent,
+		WidgetModalComponent,
 	],
 	providers: [
 		UtilitiesService,
@@ -112,9 +125,11 @@ import { UtilitiesService } from './utilities.service';
 		DevicesModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
+		SettingsTimeoutModalComponent,
 		MessagesModalComponent,
 		ExecutionVariableModalComponent,
-		PlaybookEnvironmentVariableModalComponent
+		PlaybookEnvironmentVariableModalComponent,
+		WidgetModalComponent
 	],
 	bootstrap: [MainComponent],
 })

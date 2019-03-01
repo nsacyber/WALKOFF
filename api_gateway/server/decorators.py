@@ -46,21 +46,47 @@ def invalid_id_problem(resource, operation):
     return Problem.from_crud_resource(BAD_REQUEST, resource, operation, 'Invalid ID format.')
 
 
+# def with_resource_factory(resource_name, getter_func, validator=None):
+#     def validate_resource_exists(operation, *ids):
+#         def wrapper(func):
+#             if validator and not validator(*ids):
+#                 return lambda: invalid_id_problem(resource_name, operation)
+#
+#             obj = getter_func(*ids)
+#             if obj is not None:
+#                 return lambda: func(obj)
+#             else:
+#                 return dne_error(resource_name, operation, ids)
+#
+#         return wrapper
+#
+#     return validate_resource_exists
+
+
 def with_resource_factory(resource_name, getter_func, validator=None):
-    def validate_resource_exists(operation, *ids):
-        def wrapper(func):
-            if validator and not validator(*ids):
-                return lambda: invalid_id_problem(resource_name, operation)
+    """Factory pattern which takes in resource name and resource specific functions, returns a validator decorator"""
+    def arg_wrapper(operation, id_param):
+        """This decorator serves to take in the args to the decorator call and make it available below"""
+        def func_wrapper(func):
+            """This decorator serves to wrap the actual decorated function and return the replacement function below"""
+            def func_caller(*args, **kwargs):
+                """This decorator is the actual replacement function for the decorated function"""
+                if validator and not validator(id_param):
+                    return invalid_id_problem(resource_name, operation)
 
-            obj = getter_func(*ids)
-            if obj is not None:
-                return lambda: func(obj)
-            else:
-                return dne_error(resource_name, operation, ids)
+                # Fetch the resource from the database
+                if operation == "update":  # Put/Patch send the object in the body. Dereference _id from there
+                    kwargs[id_param] = getter_func(kwargs["body"]["_id"])
+                else:
+                    kwargs[id_param] = getter_func(kwargs[id_param])
 
-        return wrapper
-
-    return validate_resource_exists
+                if kwargs[id_param]:
+                    return func(**kwargs)
+                else:
+                    return dne_error(resource_name, operation, kwargs[id_param])
+            return func_caller
+        return func_wrapper
+    return arg_wrapper
 
 
 def is_valid_uid(*ids):

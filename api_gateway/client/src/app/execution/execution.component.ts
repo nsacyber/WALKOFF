@@ -32,7 +32,7 @@ import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 		'./execution.scss',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [ExecutionService, AuthService],
+	providers: [AuthService],
 })
 export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('actionStatusContainer') actionStatusContainer: ElementRef;

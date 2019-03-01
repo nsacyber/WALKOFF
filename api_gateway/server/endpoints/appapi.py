@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required
 from redis import Redis
 from flask import jsonify
 
-import api_gateway.config
+from api_gateway.config import Config
 from api_gateway import helpers
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.problem import Problem
@@ -13,10 +13,7 @@ from api_gateway.server.returncodes import *
 from collections import OrderedDict
 from itertools import islice
 
-config = api_gateway.config.Config()
-config.load_env_vars()
-
-redis_cache = Redis(host=config.CACHE["host"], port=config.CACHE["port"])
+redis_cache = Redis(host=Config.CACHE["host"], port=Config.CACHE["port"])
 
 
 def read_all_apps():

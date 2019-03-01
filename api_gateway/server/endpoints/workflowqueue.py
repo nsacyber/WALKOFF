@@ -47,8 +47,8 @@ def abort_workflow(execution_id, user=None):
                 if user:
                     data['user'] = user
                 log_and_send_event(event=WalkoffEvent.WorkflowAborted,
-                                         sender={'execution_id': execution_id, 'id': workflow_status.workflow_id,
-                                                 'name': workflow.name}, workflow=workflow, data=data)
+                                   sender={'execution_id': execution_id, 'id': workflow_status.workflow_id,
+                                           'name': workflow.name}, workflow=workflow, data=data)
         elif workflow_status.status == WorkflowStatusEnum.running:
             print("I guess Im here")
             # self.zmq_workflow_comm.abort_workflow(execution_id)

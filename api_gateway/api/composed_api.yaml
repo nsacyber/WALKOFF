@@ -19,8 +19,8 @@ tags:
     description: App Management Operations
   - name: Configuration
     description: System Configuration Operations
-  - name: Globals
-    description: Global Operations
+  - name: GlobalVariables
+    description: GlobalVariable Operations
   - name: Users
     description: User operations
   - name: Roles
@@ -315,30 +315,30 @@ paths:
         required: true
     get:
       tags:
-        - Globals
+        - GlobalVariables
       summary: Read a global
       description: ''
-      operationId: api_gateway.server.endpoints.globals.read_device
+      operationId: api_gateway.server.endpoints.global_variables.read_device
       responses:
         200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Global'
+                $ref: '#/components/schemas/GlobalVariable'
         404:
-          description: Global does not exist.
+          description: GlobalVariable does not exist.
     delete:
       tags:
-        - Global
+        - GlobalVariables
       summary: Remove a global
       description: ''
-      operationId: api_gateway.server.endpoints.globals.delete_device
+      operationId: api_gateway.server.endpoints.global_variables.delete_device
       responses:
         204:
           description: Success
         404:
-          description: Global does not exist
+          description: GlobalVariable does not exist
           content:
             application/json:
               schema:
@@ -346,10 +346,10 @@ paths:
   /globals:
     get:
       tags:
-        - Globals
+        - GlobalVariables
       summary: Get all globals
       description: ''
-      operationId: api_gateway.server.endpoints.globals.read_all_devices
+      operationId: api_gateway.server.endpoints.global_variables.read_all_devices
       responses:
         200:
           description: Success
@@ -359,31 +359,28 @@ paths:
                 type: array
                 description: A list of globals
                 items:
-                  $ref: '#/components/schemas/Global'
+                  $ref: '#/components/schemas/GlobalVariable'
     post:
       tags:
-        - Global
+        - GlobalVariables
       summary: Add a global
       description: ''
-      operationId: api_gateway.server.endpoints.globals.create_device
-      parameters:
-        - in: body
-          name: body
-          description: The global to be created
-          required: false
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Global'
+      operationId: api_gateway.server.endpoints.global_variables.create_device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalVariable'
       responses:
         201:
           description: Object created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Global'
+                $ref: '#/components/schemas/GlobalVariable'
         400:
-          description: Global already exists
+          description: GlobalVariable already exists
           content:
             application/json:
               schema:
@@ -391,26 +388,26 @@ paths:
   
     put:
       tags:
-        - Global
+        - GlobalVariables
       summary: Update a global
       description: ''
-      operationId: api_gateway.server.endpoints.globals.update_device
+      operationId: api_gateway.server.endpoints.global_variables.update_device
       requestBody:
         description: The new global object to be updated
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Global'
+              $ref: '#/components/schemas/GlobalVariable'
       responses:
         200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Global'
+                $ref: '#/components/schemas/GlobalVariable'
         404:
-          description: Global does not exist
+          description: GlobalVariable does not exist
           content:
             application/json:
               schema:
@@ -1200,6 +1197,141 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /dashboards:
+    get:
+      tags:
+        - Dashboards
+      summary: Read all dashboards
+      description: Retrieves all dashboards currently stored in the database.
+      operationId: api_gateway.server.endpoints.dashboards.get_dashboards
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: A list of the full representation of all dashboards
+                items:
+                  $ref: '#/components/schemas/Dashboard'
+        404:
+          description: No dashboards exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Dashboards
+      summary: Create a dashboard
+      description: Creates a dashboard from the JSON in request body
+      operationId: api_gateway.server.endpoints.dashboards.create_dashboard
+      requestBody:
+        description: The dashboard object to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dashboard'
+      responses:
+        201:
+          description: Workflow created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        400:
+          description: Workflow already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Dashboards
+      summary: Update a dashboard
+      description: Updates a whole dashboard using the JSON request body
+      operationId: api_gateway.server.endpoints.dashboards.put_dashboard
+      requestBody:
+        description: The dashboard object to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dashboard'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [dashboard]
+                properties:
+                  dashboard:
+                    $ref: '#/components/schemas/Workflow'
+        404:
+          description: Dashboard does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /dashboards/{dashboard_id}:
+    get:
+      tags:
+        - Dashboards
+      summary: Get a dashboard by id
+      description: Retrieve a single dashboard from database by ID.
+      operationId: api_gateway.server.endpoints.dashboards.get_dashboard
+      parameters:
+      - in: path
+        name: dashboard_id
+        description: ID of the global to be fetched
+        schema:
+          type: string
+          format: uuid
+        required: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        404:
+          description: No dashboard with that ID exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Dashboards
+      summary: Delete a dashboard
+      description: Deletes a dashboard by ID
+      operationId: api_gateway.server.endpoints.dashboards.delete_dashboard
+      parameters:
+      - in: path
+        name: dashboard_id
+        description: ID of the global to be fetched
+        schema:
+          type: string
+          format: uuid
+        required: true
+      responses:
+        201:
+          description: Workflow updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        404:
+          description: Dashboard does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 security:
   - AuthenticationToken: []
@@ -1218,21 +1350,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ActionApi'
-        condition_apis:
-          description: Conditions associated with this app
-          type: array
-          items:
-            $ref: '#/components/schemas/ConditionApi'
-        transform_apis:
-          description: Transforms associated with this app
-          type: array
-          items:
-            $ref: '#/components/schemas/TransformApi'
-        device_apis:
-          description: Devices associated with this app
-          type: array
-          items:
-            $ref: '#/components/schemas/DeviceApi'
         tags:
           type: array
           items:
@@ -1339,134 +1456,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ExternalDoc'
-    
-    ConditionApi:
-      type: object
-      description: The api of an app's condition
-      required: [name, run, returns, data_in]
-      properties:
-        name:
-          type: string
-          description: Unique name of the action
-        run:
-          type: string
-          description: The path to the executable function
-        data_in:
-          type: string
-          description: Name of parameter which comes from executed action
-        parameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/ParameterApi'
-          description: The parameters needed by this action
-        deprecated:
-          type: boolean
-          default: false
-          description: Is this action deprecated?
-        tags:
-          type: array
-          items:
-            type: string
-          description: Tags for this action
-          uniqueItems: true
-        summary:
-          type: string
-          description: A brief summary of this action
-        description:
-          type: string
-          description: A longer description of the operation
-        external_docs:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExternalDoc'
-        returns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReturnApi'
-          description: The return types of this action
-    
-    TransformApi:
-      type: object
-      description: The api of an app's transform
-      required: [name, run, data_in, returns]
-      properties:
-        name:
-          type: string
-          description: Unique name of the action
-        run:
-          type: string
-          description: The path to the executable function
-        data_in:
-          type: string
-          description: Name of parameter which comes from executed action
-        parameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/ParameterApi'
-          description: The parameters needed by this action
-        deprecated:
-          type: boolean
-          default: false
-          description: Is this action deprecated?
-        tags:
-          type: array
-          items:
-            type: string
-          description: tags for this action
-          uniqueItems: true
-        summary:
-          type: string
-          description: A brief summary of this action
-        description:
-          type: string
-          description: A longer description of the operation
-        external_docs:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExternalDoc'
-        returns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ReturnApi'
-          description: The return types of this transform
-    
-    DeviceApi:
-      type: object
-      required: [name, fields]
-      properties:
-        name:
-          type: string
-          description: Name of the device type
-        description:
-          type: string
-        fields:
-          type: array
-          items:
-            $ref: '#/components/schemas/DeviceFieldApi'
-    
-    DeviceFieldApi:
-      type: object
-      required: [name, schema]
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-          description: Description of what the argument provides
-        encrypted:
-          type: boolean
-          description: Is this field encrypted
-          default: false
-        placeholder:
-          type: string
-          description: Brief description of the field to be used to prompt a user
-        required:
-          type: boolean
-          default: false
-          description: Is this field required?
-        schema:
-          $ref: '#/components/schemas/ParameterSchema'
-    
     
     ParameterApi:
       type: object
@@ -1694,7 +1683,7 @@ components:
         unix_socket_path:
           description: Path to Unix socket to use for the cache instead of host-port. (Redis cache only)
           type: string
-    Global:
+    GlobalVariable:
       type: object
       required: [name, value]
       description: An global variable object, which is a type of parameter in an Action
@@ -1711,6 +1700,7 @@ components:
         description:
           type: string
           description: Description of the global variable
+
     Error:
       type: object
       required: [title, detail, status, type]
@@ -2470,6 +2460,60 @@ components:
       type: array
       items:
         type: string
+    Dashboard:
+      type: object
+      required: [name]
+      description: A dashboard containing widgets for visualization
+      additionalProperties: false
+      properties:
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          type: string
+          description: Name of the dashboard
+        widgets:
+          type: array
+          description: List of widgets contained in the dashboard
+          items:
+            $ref: '#/components/schemas/Widget'
+    Widget:
+      type: object
+      required: [name, x, y, cols, rows, options]
+      description: A widget for a dashboard containing a visualization
+      additionalProperties: false
+      properties:
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        dashboard_id:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          type: string
+          description: Name of the widget
+        type_:
+          type: string
+          description: Type of widget
+        x:
+          type: integer
+          description: x position of the widget
+        y:
+          type: integer
+          description: y position of the widget
+        cols:
+          type: integer
+          description: width of the widget
+        rows:
+          type: integer
+          description: height of the widget
+        options: # ToDo: define widget types and contents
+          type: object
+    #      properties:
+    #        workflow:
+    #          $ref: '#/components/schemas/Uuid'
+    #        execution:
+    #          type: string
+    #          description: Execution of the workflow to get data from (latest or uuid)
+    #        action:
+    #          $ref: '#/components/schemas/Uuid'
 
   securitySchemes:
     AuthenticationToken:

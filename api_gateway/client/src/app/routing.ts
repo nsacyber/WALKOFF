@@ -9,6 +9,7 @@ import { MetricsComponent } from './metrics/metrics.component';
 import { SettingsComponent } from './settings/settings.component';
 import { InterfacesComponent } from './interfaces/interfaces.component';
 import { ExecutionComponent } from './execution/execution.component';
+import { ManageInterfacesComponent } from './interfaces/manage.interfaces.component';
 //etc
 
 const routes: Routes = [
@@ -16,11 +17,13 @@ const routes: Routes = [
 	{ path: 'playbook', component: PlaybookComponent },
 	{ path: 'scheduler', component: SchedulerComponent },
 	{ path: 'devices', component: DevicesComponent },
-	{ path: 'messages', component: MessagesComponent },
-	{ path: 'metrics', component: MetricsComponent },
+	// { path: 'messages', component: MessagesComponent },
+	// { path: 'metrics', component: MetricsComponent },
 	{ path: 'settings', component: SettingsComponent },
 	{ path: 'execution', component: ExecutionComponent },
-	{ path: 'interfaces/:interfaceName', component: InterfacesComponent },
+	{ path: 'new-interface', component: ManageInterfacesComponent },
+	{ path: 'edit-interface/:interfaceName', component: ManageInterfacesComponent },
+	{ path: 'interface/:interfaceName', component: InterfacesComponent },
 	//etc
 ];
 

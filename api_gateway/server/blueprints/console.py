@@ -27,6 +27,8 @@ def format_console_data(sender, data):
     }
 
 
+# TODO: Make console logging pub/sub pipeline for currently executing actions
+# something like a "app-logger" channel handling {"execution_id": exid, "message": "hello world!"} type messages
 @WalkoffEvent.ConsoleLog.connect
 @console_stream.push('log')
 def console_log_callback(sender, **kwargs):

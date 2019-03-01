@@ -13,6 +13,7 @@ import { MessageUpdate } from '../models/message/messageUpdate';
 import { MessageListing } from '../models/message/messageListing';
 // import { Message } from '../models/message/message';
 import { GenericObject } from '../models/genericObject';
+import { InterfaceService } from '../interfaces/interface.service';
 
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
@@ -37,7 +38,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	constructor(
 		private mainService: MainService, private authService: AuthService,
 		private modalService: NgbModal, private toastrService: ToastrService,
-		public utils: UtilitiesService,
+		public utils: UtilitiesService, private interfaceService: InterfaceService
 	) {}
 
 	/**
@@ -48,7 +49,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	ngOnInit(): void {
 
 		this.currentUser = this.authService.getAndDecodeAccessToken().user_claims.username;
-		// this.getInterfaceNames();
+		this.getInterfaceNames();
 		// this.getInitialNotifications();
 		// this.getNotificationsSSE();
 	}
@@ -67,6 +68,11 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.mainService.getInterfaceNames()
 			.then(interfaceNames => this.interfaceNames = interfaceNames)
 			.catch(e => this.toastrService.error(`Error retrieving interfaces: ${e.message}`));
+	}
+
+	get interfaces() : string[] {
+		//return this.interfaceService.getInterfaces().map(item => item.name).concat(this.interfaceNames).sort();
+		return [].concat(this.interfaceService.getInterfaces().map(item => item.name)).sort();
 	}
 
 	/**

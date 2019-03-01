@@ -9,10 +9,11 @@ logger = logging.getLogger(__name__)
 
 default_resource_permissions_admin = [{"name": "app_apis", "permissions": ["read"]},
                                       {"name": "configuration", "permissions": ["read", "update"]},
-                                      {"name": "devices", "permissions": ["create", "read", "update", "delete"]},
-                                      {"name": "messages", "permissions": ["read", "update", "delete"]},
-                                      {"name": "metrics", "permissions": ["read"]},
-                                      {"name": "playbooks",
+                                      {"name": "global_variables",
+                                       "permissions": ["create", "read", "update", "delete"]},
+                                      {"name": "workflow_variables",
+                                       "permissions": ["create", "read", "update", "delete"]},
+                                      {"name": "workflows",
                                        "permissions": ["create", "read", "update", "delete", "execute"]},
                                       {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
                                       {"name": "scheduler",
@@ -21,16 +22,14 @@ default_resource_permissions_admin = [{"name": "app_apis", "permissions": ["read
 
 default_resource_permissions_guest = [{"name": "app_apis", "permissions": ["read"]},
                                       {"name": "configuration", "permissions": ["read"]},
-                                      {"name": "devices", "permissions": ["read"]},
-                                      {"name": "messages", "permissions": ["read", "update", "delete"]},
-                                      {"name": "metrics", "permissions": ["read"]},
-                                      {"name": "playbooks", "permissions": ["read"]},
+                                      {"name": "global_variables", "permissions": ["read", "update"]},
+                                      {"name": "workflow_variables", "permissions": ["read", "update"]},
+                                      {"name": "workflows", "permissions": ["read"]},
                                       {"name": "roles", "permissions": ["read"]},
                                       {"name": "scheduler", "permissions": ["read"]},
                                       {"name": "users", "permissions": ["read"]}]
 
-default_resources = ['app_apis', 'configuration', 'devices', 'messages', 'metrics', 'playbooks', 'roles',
-                     'scheduler', 'users']
+default_resources = ['app_apis', 'configuration', 'global_variables', 'workflows', 'roles', 'scheduler', 'users']
 
 
 def initialize_default_resources_admin():

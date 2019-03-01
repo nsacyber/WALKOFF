@@ -36,7 +36,7 @@ def message_loader(obj):
 
 class AppBase:
     def __init__(self, redis=None, logger=None):
-        # Creates redis keys of format "{AppName}-{Priority}"
+        # Creates redis keys of format "{AppName}-{Version}-{Priority}"
         self.action_queue_keys = tuple(f"{self.__class__.__name__}-{self.__version__}-{i}" for i in range(5, 0, -1))
         print(self.action_queue_keys)
         self.redis: aioredis.Redis = redis
@@ -83,12 +83,20 @@ class AppBase:
             start_action_msg = ActionResult.from_action(action=action, event=WorkflowEvent.ActionStarted)
             await self.redis.publish(ACTION_RESULT_CH, message_dumper(start_action_msg))
             try:
-                if len(action.parameters) < 1:
-                    result = getattr(self, action.action_name)()
+                func = getattr(self, action.action_name, None)
+                if callable(func):
+                    if len(action.parameters) < 1:
+                        result = func()
+                    else:
+                        result = func(**{p.name: p.value for p in action.parameters})
+                    action_result = ActionResult.from_action(action=action, result=result,
+                                                             event=WorkflowEvent.ActionSuccess)
+                    self.logger.debug(f"Executed {action.name}-{action._id} with result: {result}")
+
                 else:
-                    result = getattr(self, action.action_name)(**{p.name: p.value for p in action.parameters})
-                action_result = ActionResult.from_action(action=action, result=result, event=WorkflowEvent.ActionSuccess)
-                self.logger.debug(f"Executed {action.name}-{action._id} with result: {result}")
+                    self.logger.error(f"App {self.__class__.__name__}.{action.action_name} is not callable")
+                    action_result = ActionResult.from_action(action, error="Action not callable")
+                    await self.redis.publish(ACTION_RESULT_CH, message_dumper(action_result))
 
             except Exception as e:
                 action_result = ActionResult.from_action(action=action, error=repr(e), event=WorkflowEvent.ActionError)

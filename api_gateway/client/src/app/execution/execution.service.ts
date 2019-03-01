@@ -9,7 +9,9 @@ import { Workflow } from '../models/playbook/workflow';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { UtilitiesService } from '../utilities.service';
 
-@Injectable()
+@Injectable({
+	providedIn: 'root'
+})
 export class ExecutionService {
 	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 
@@ -88,5 +90,11 @@ export class ExecutionService {
 			.toPromise()
 			.then((data: object) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
+	}
+
+	async getLatestExecution(workflowId: string): Promise<WorkflowStatus> {
+		const workflowStatuses = await this.getAllWorkflowStatuses();
+		const workflowStatus = workflowStatuses.filter(status => status.workflow_id = workflowId && status.completed_at_local).find(e => !!e);
+		return this.getWorkflowStatus(workflowStatus.execution_id);
 	}
 }

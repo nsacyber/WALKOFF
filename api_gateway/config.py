@@ -71,6 +71,9 @@ def setup_logger():
 
 
 class Config(object):
+    from common.config import load_config as load_common_config
+    # TODO: Merge triple-play config with this old config and replace the hack below
+    common_config = load_common_config()
     # CONFIG VALUES
 
     # IP and port for the webserver
@@ -223,11 +226,8 @@ class Config(object):
         cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
                                                      'WALKOFF_DB_PASSWORD', cls.WALKOFF_DB_HOST)
 
-
-def initialize(config_path=None, load=True):
-    """Loads the config file, loads the app cache, and loads the app APIs into memory"""
-    if load:
-        Config.load_config(config_path)
-        Config.load_env_vars()
-    setup_logger()
+# TODO: Figure out nice way of ensuring the order of operations for all of the flask app init stuff
+Config.load_config()
+Config.load_env_vars()
+setup_logger()
 

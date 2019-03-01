@@ -58,7 +58,7 @@ class AppCache:
         return (key for key, val in self.redis.hscan_iter(self.api_key))
 
     def values(self):
-        return (json.loads(self.redis.get(key)) for key in self.redis.hscan_iter(self.api_key))
+        return (json.loads(val) for key, val in self.redis.hscan_iter(self.api_key))
 
     def items(self):
         return ((key, json.loads(val)) for key, val in self.redis.hscan_iter(self.api_key))
