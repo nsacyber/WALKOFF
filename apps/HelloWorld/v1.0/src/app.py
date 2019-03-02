@@ -12,8 +12,8 @@ class HelloWorld(AppBase):
         super().__init__(redis, logger)
     
     def hello_world(self):
-        logger.debug("This is a test from {}".format(socket.gethostname()))
-        return {"message": "HELLO WORLD FROM {}".format(socket.gethostname())}
+        logger.debug(f"This is a test from {socket.gethostname()}")
+        return {f"message": "HELLO WORLD FROM {socket.gethostname()}"}
 
     def repeat_back_to_me(self, call):
         return f"REPEATING: {call}"

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class Workflow(ExecutionElement, Execution_Base):
     __tablename__ = "workflow"
-    # playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook._id', ondelete='CASCADE'))
+    # playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook.id_', ondelete='CASCADE'))
     name = Column(String(80), nullable=False)
     start = Column(UUIDType(binary=False))
     actions = relationship("Action", cascade="all, delete-orphan", passive_deletes=True)
@@ -26,7 +26,7 @@ class Workflow(ExecutionElement, Execution_Base):
     workflow_variables = relationship("WorkflowVariable", cascade="all, delete-orphan", passive_deletes=True)
     # __table_args__ = (UniqueConstraint("playbook_id", "name", name="_playbook_workflow"),)
 
-    def __init__(self, name, start, _id=None, actions=None, branches=None, conditions=None, transforms=None,
+    def __init__(self, name, start, id_=None, actions=None, branches=None, conditions=None, transforms=None,
                  triggers=None, workflow_variables=None, is_valid=False, errors=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
@@ -34,14 +34,14 @@ class Workflow(ExecutionElement, Execution_Base):
         Args:
             name (str): The name of the Workflow object.
             start (int): ID of the starting Action.
-            _id (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
+            id_ (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
                 Defaults to None.
             actions (list[Action]): Optional Action objects. Defaults to None.
             branches (list[Branch], optional): A list of Branch objects for the Workflow object. Defaults to None.
             workflow_variables (list[EnvironmentVariable], optional): A list of environment variables for the
                 Workflow. Defaults to None.
         """
-        ExecutionElement.__init__(self, _id, errors)
+        ExecutionElement.__init__(self, id_, errors)
         self.name = name
         self.actions = actions if actions else []
         self.branches = branches if branches else []
@@ -59,7 +59,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def validate(self):
         """Validates the object"""
-        action_ids = [action._id for action in self.actions]
+        action_ids = [action.id_ for action in self.actions]
         errors = []
         if not self.start and self.actions:
             errors.append("Workflows with actions require a start parameter")

@@ -7,12 +7,12 @@ from api_gateway.executiondb.validatable import Validatable
 
 
 class ExecutionElement(Validatable):
-    _id = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
+    id_ = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
     errors = Column(ScalarListType(), nullable=True)
 
-    def __init__(self, _id=None, errors=None):
-        if _id:
-            self._id = _id
+    def __init__(self, id_=None, errors=None):
+        if id_:
+            self.id_ = id_
         if errors:
             self.errors = errors
 
@@ -24,7 +24,7 @@ class ExecutionElement(Validatable):
         first = True
         for key, value in representation.items():
             if self.__is_list_of_dicts_with_uids(value):
-                out += ', {0}={1}'.format(key, [list_value['_id'] for list_value in value])
+                out += ', {0}={1}'.format(key, [list_value['id_'] for list_value in value])
             else:
                 out += ', {0}={1}'.format(key, value)
 
@@ -41,4 +41,4 @@ class ExecutionElement(Validatable):
     @staticmethod
     def __is_list_of_dicts_with_uids(value):
         return (isinstance(value, list)
-                and all(isinstance(list_value, dict) and '_id' in list_value for list_value in value))
+                and all(isinstance(list_value, dict) and 'id_' in list_value for list_value in value))

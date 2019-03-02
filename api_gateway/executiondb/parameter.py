@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 class Parameter(Execution_Base, Validatable):
     __tablename__ = 'parameter'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    action_id = Column(UUIDType(binary=False), ForeignKey('action._id', ondelete='CASCADE'))
-    transform_id = Column(UUIDType(binary=False), ForeignKey('transform._id', ondelete='CASCADE'))
+    action_id = Column(UUIDType(binary=False), ForeignKey('action.id_', ondelete='CASCADE'))
+    transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id_', ondelete='CASCADE'))
     name = Column(String(255), nullable=False)
     variant = Column(String(255), nullable=False)
     value = Column(JSONType)

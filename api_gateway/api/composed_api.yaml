@@ -318,7 +318,7 @@ paths:
         - GlobalVariables
       summary: Read a global
       description: ''
-      operationId: api_gateway.server.endpoints.global_variables.read_device
+      operationId: api_gateway.server.endpoints.global_variables.read_global
       responses:
         200:
           description: Success
@@ -333,7 +333,7 @@ paths:
         - GlobalVariables
       summary: Remove a global
       description: ''
-      operationId: api_gateway.server.endpoints.global_variables.delete_device
+      operationId: api_gateway.server.endpoints.global_variables.delete_global
       responses:
         204:
           description: Success
@@ -349,7 +349,7 @@ paths:
         - GlobalVariables
       summary: Get all globals
       description: ''
-      operationId: api_gateway.server.endpoints.global_variables.read_all_devices
+      operationId: api_gateway.server.endpoints.global_variables.read_all_globals
       responses:
         200:
           description: Success
@@ -365,7 +365,7 @@ paths:
         - GlobalVariables
       summary: Add a global
       description: ''
-      operationId: api_gateway.server.endpoints.global_variables.create_device
+      operationId: api_gateway.server.endpoints.global_variables.create_global
       requestBody:
         required: true
         content:
@@ -391,7 +391,7 @@ paths:
         - GlobalVariables
       summary: Update a global
       description: ''
-      operationId: api_gateway.server.endpoints.global_variables.update_device
+      operationId: api_gateway.server.endpoints.global_variables.update_global
       requestBody:
         description: The new global object to be updated
         required: true
@@ -1689,7 +1689,7 @@ components:
       description: An global variable object, which is a type of parameter in an Action
       additionalProperties: false
       properties:
-        _id:
+        id_:
           $ref: '#/components/schemas/Uuid'
         name:
           type: string
@@ -2195,7 +2195,7 @@ components:
       description: A workflow object
       additionalProperties: false
       properties:
-        _id:
+        id_:
           $ref: '#/components/schemas/Uuid'
         name:
           description: The name of the workflow.
@@ -2253,11 +2253,11 @@ components:
     
     WorkflowMetaData:
       type: object
-      required: [_id, name]
+      required: [id_, name]
       description: A workflow  metadata object
       additionalProperties: false
       properties:
-        _id:
+        id_:
           $ref: '#/components/schemas/Uuid'
         name:
           description: The name of the workflow.
@@ -2279,11 +2279,11 @@ components:
     
     Action:
       type: object
-      required: [_id, app_name, action_name, name]
+      required: [id_, app_name, action_name, name]
       description: Encapsulation of executing an action in an app.
       additionalProperties: false
       properties:
-        _id:
+        id_:
           $ref: '#/components/schemas/Uuid'
           description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
         workflow_execution_id:
@@ -2355,7 +2355,7 @@ components:
       description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
       additionalProperties: false
       properties:
-        _id:
+        id_:
           $ref: '#/components/schemas/Uuid'
           description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
         name:
@@ -2375,7 +2375,7 @@ components:
       description: Filters or otherwise transforms the data given to it
       additionalProperties: false
       properties:
-        _id:
+        id_:
           $ref: '#/components/schemas/Uuid'
           description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
         name:
@@ -2398,7 +2398,7 @@ components:
       description: Halts execution of workflow pending an external trigger
       additionalProperties: false
       properties:
-        _id:
+        id_:
           $ref: '#/components/schemas/Uuid'
           description: The ID of the object. If updating a workflow and the trigger object already exists, ID is required. Otherwise, do not include it.
         name:
@@ -2419,7 +2419,7 @@ components:
       description: Various specifications for how the Action is displayed in the playbook editor
       additionalProperties: false
       properties:
-        _id:
+        id_:
           type: integer
           description: The ID of the object. If updating a workflow and the Position object already exists, ID is required. Otherwise, do not include it.
         x:
@@ -2435,7 +2435,7 @@ components:
       description: A workflow variable object that is available in the workflow scope
       additionalProperties: false
       properties:
-       _id:
+       id_:
          $ref: '#/components/schemas/Uuid'
        name:
          type: string

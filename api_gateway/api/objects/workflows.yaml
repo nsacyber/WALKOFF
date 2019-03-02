@@ -4,7 +4,7 @@ Workflow:
   description: A workflow object
   additionalProperties: false
   properties:
-    _id:
+    id_:
       $ref: '#/components/schemas/Uuid'
     name:
       description: The name of the workflow.
@@ -62,11 +62,11 @@ Workflow:
 
 WorkflowMetaData:
   type: object
-  required: [_id, name]
+  required: [id_, name]
   description: A workflow  metadata object
   additionalProperties: false
   properties:
-    _id:
+    id_:
       $ref: '#/components/schemas/Uuid'
     name:
       description: The name of the workflow.
@@ -88,11 +88,11 @@ WorkflowMetaData:
 
 Action:
   type: object
-  required: [_id, app_name, action_name, name]
+  required: [id_, app_name, action_name, name]
   description: Encapsulation of executing an action in an app.
   additionalProperties: false
   properties:
-    _id:
+    id_:
       $ref: '#/components/schemas/Uuid'
       description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
     workflow_execution_id:
@@ -164,7 +164,7 @@ Condition:
   description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
   additionalProperties: false
   properties:
-    _id:
+    id_:
       $ref: '#/components/schemas/Uuid'
       description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
     name:
@@ -184,7 +184,7 @@ Transform:
   description: Filters or otherwise transforms the data given to it
   additionalProperties: false
   properties:
-    _id:
+    id_:
       $ref: '#/components/schemas/Uuid'
       description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
     name:
@@ -207,7 +207,7 @@ Trigger:
   description: Halts execution of workflow pending an external trigger
   additionalProperties: false
   properties:
-    _id:
+    id_:
       $ref: '#/components/schemas/Uuid'
       description: The ID of the object. If updating a workflow and the trigger object already exists, ID is required. Otherwise, do not include it.
     name:
@@ -228,7 +228,7 @@ Position:
   description: Various specifications for how the Action is displayed in the playbook editor
   additionalProperties: false
   properties:
-    _id:
+    id_:
       type: integer
       description: The ID of the object. If updating a workflow and the Position object already exists, ID is required. Otherwise, do not include it.
     x:
@@ -244,7 +244,7 @@ WorkflowVariable:
   description: A workflow variable object that is available in the workflow scope
   additionalProperties: false
   properties:
-   _id:
+   id_:
      $ref: '#/components/schemas/Uuid'
    name:
      type: string

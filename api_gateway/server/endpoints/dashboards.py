@@ -1,5 +1,3 @@
-import json
-
 from flask import current_app, request, jsonify
 from flask_jwt_extended import jwt_required
 
@@ -7,120 +5,79 @@ from marshmallow import ValidationError
 
 from sqlalchemy.exc import IntegrityError, StatementError
 
-from api_gateway.server.decorators import with_resource_factory
-from api_gateway.executiondb.dashboard import Dashboard, Widget
-from api_gateway.executiondb.schemas import DashboardSchema, WidgetSchema
-from api_gateway.server.problem import Problem
+from api_gateway.server.decorators import with_resource_factory, paginate
+from api_gateway.executiondb.dashboard import Dashboard
+from api_gateway.executiondb.schemas import DashboardSchema
+from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
+from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_input_problem
 from api_gateway.server.returncodes import *
-
-
-dashboard_schema = DashboardSchema()
-widget_schema = WidgetSchema()
-
-
-# TODO: Add generic problems to import
-def unique_constraint_problem(type_, operation, id_):
-    return Problem.from_crud_resource(
-        OBJECT_EXISTS_ERROR,
-        type_,
-        operation,
-        'Could not {} {} {}, possibly because of invalid or non-unique IDs.'.format(operation, type_, id_))
-
-
-
-def improper_json_problem(type_, operation, id_, errors=None):
-    return Problem.from_crud_resource(
-        BAD_REQUEST,
-        type_,
-        operation,
-        'Could not {} {} {}. Invalid JSON'.format(operation, type_, id_),
-        ext={'errors': errors})
-
 
 
 def dashboard_getter(dashboard_id):
     return current_app.running_context.execution_db.session.query(Dashboard).filter_by(id_=dashboard_id).first()
 
 
-with_dashboard = with_resource_factory('dashboard', dashboard_getter)
+dashboard_schema = DashboardSchema()
+with_dashboard = with_resource_factory("dashboard", dashboard_getter)
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["read"]))
+@paginate(dashboard_schema)
 def get_dashboards():
-    # @jwt_required
-    def __func():
-        dashboards = current_app.running_context.execution_db.session.query(Dashboard).all()
-        r = [dashboard_schema.dump(dashboard) for dashboard in dashboards]
-
-        return jsonify(sorted(r, key=(lambda n: n["name"].lower()))), SUCCESS
-
-    return __func()
+    query = current_app.running_context.execution_db.session.query(Dashboard).order_by(Dashboard.name).all()
+    return query, SUCCESS
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["create"]))
 def create_dashboard():
-    # @jwt_required
-    def __func():
-        dashboard_name = request.get_json()['name']
-        try:
-            dashboard = dashboard_schema.load(request.get_json())
-            current_app.running_context.execution_db.session.add(dashboard)
-            current_app.running_context.execution_db.session.commit()
-            return dashboard_schema.dump(dashboard), OBJECT_CREATED
-        except ValidationError as e:
-            current_app.running_context.execution_db.session.rollback()
-            current_app.logger.error('Could not create dashboard {}. Invalid input'.format(dashboard_name))
-            return improper_json_problem('dashboard', 'create', dashboard_name, e.messages)
-        except (IntegrityError, StatementError):
-            current_app.running_context.execution_db.session.rollback()
-            current_app.logger.error('Could not create dashboard {}. Unique constraint failed'.format(dashboard_name))
-            return unique_constraint_problem('dashboard', 'create', dashboard_name)
-
-    return __func()
-
-
-def put_dashboard():
     data = request.get_json()
-    dashboard_id = data['id_']
-    # TODO: figure out why this doesn't work. for some reason it instantly returns 200 and never hits any code inside
-    # @jwt_required
-    @with_dashboard('read', dashboard_id)
-    def __func(dashboard):
-        errors = dashboard_schema.load(data, instance=dashboard).errors
-        if errors:
-            return Problem.from_crud_resource(
-                INVALID_INPUT_ERROR,
-                'dashboard',
-                'update',
-                'Could not update dashboard {}. Invalid input.'.format(dashboard_id), ext=errors)
-        current_app.logger.error('HALP')
-        try:
-            current_app.logger.error('HALPtry')
-            current_app.running_context.execution_db.session.commit()
-        except IntegrityError as e:
-            current_app.logger.error('HALPexce')
-            current_app.running_context.execution_db.session.rollback()
-            current_app.logger.error('Could not update dashboard {}. Unique constraint failed ({})'.format(dashboard_id,
-                                                                                                           e))
-            return unique_constraint_problem('dashboard', 'update', dashboard_id)
-
-        current_app.logger.error('HALPdone')
-        current_app.logger.info('Updated dashboard {0}'.format(dashboard_id))
-        return dashboard_schema.dump(dashboard), 400
+    dashboard_name = data["name"]
+    try:
+        dashboard = dashboard_schema.load(data)
+        current_app.running_context.execution_db.session.add(dashboard)
+        current_app.running_context.execution_db.session.commit()
+        return dashboard_schema.dump(dashboard), OBJECT_CREATED
+    except ValidationError as e:
+        current_app.running_context.execution_db.session.rollback()
+        return improper_json_problem("dashboard", "create", dashboard_name, e.messages)
+    except (IntegrityError, StatementError):
+        current_app.running_context.execution_db.session.rollback()
+        return unique_constraint_problem("dashboard", "create", dashboard_name)
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["update"]))
+@with_dashboard("update", "dashboard_id")
+def put_dashboard(dashboard_id):
+    data = request.get_json()
+    errors = dashboard_schema.load(data, instance=dashboard_id).errors
+    if errors:
+        return invalid_input_problem("dashboard", "update", data["name"], errors)
+    try:
+        current_app.running_context.execution_db.session.commit()
+        current_app.logger.info(f"Updated dashboard {dashboard_id}")
+        return dashboard_schema.dump(dashboard_id), SUCCESS
+    except (IntegrityError, StatementError):
+        current_app.running_context.execution_db.session.rollback()
+        return unique_constraint_problem("dashboard", "update", data["name"])
+
+
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["read"]))
+@with_dashboard("read", "dashboard_id")
 def get_dashboard(dashboard_id):
-    # @jwt_required
-    @with_dashboard('read', dashboard_id)
-    def __func(dashboard):
-        dashboard_json = dashboard_schema.dump(dashboard)
-        return jsonify(dashboard_json), SUCCESS
-
-    return __func()
+    dashboard_json = dashboard_schema.dump(dashboard_id)
+    return jsonify(dashboard_json), SUCCESS
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["delete"]))
+@with_dashboard("delete", "dashboard_id")
 def delete_dashboard(dashboard_id):
-    # @jwt_required
-    @with_dashboard('delete', dashboard_id)
-    def __func(dashboard):
-        current_app.running_context.execution_db.session.delete(dashboard)
+    current_app.running_context.execution_db.session.delete(dashboard_id)
+    current_app.logger.info(f"Dashboard removed: {dashboard_id.name}")
+    current_app.running_context.execution_db.session.commit()
+    return None, NO_CONTENT
 
-    return __func()

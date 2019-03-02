@@ -14,22 +14,22 @@ logger = logging.getLogger(__name__)
 
 class Condition(ExecutionElement, executiondb.Execution_Base):
     __tablename__ = 'condition'
-    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow._id', ondelete='CASCADE'))
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
 
     name = Column(String(255), nullable=False)
     conditional = Column(String(512), nullable=False)
     position = relationship('Position', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 
-    def __init__(self, name, conditional, _id=None, position=None, errors=None):
+    def __init__(self, name, conditional, id_=None, position=None, errors=None):
         """Initializes a new Condition object.
 
         Args:
             name (str): The name of this condition
             position (Position, optional): Position object for the Action. Defaults to None.
-            _id (str|UUID, optional): Optional UUID to pass into the Condition. Must be UUID object or valid UUID string.
+            id_ (str|UUID, optional): Optional UUID to pass into the Condition. Must be UUID object or valid UUID string.
                 Defaults to None.
         """
-        ExecutionElement.__init__(self, _id, errors)
+        ExecutionElement.__init__(self, id_, errors)
 
         self.name = name
         self.conditional = conditional

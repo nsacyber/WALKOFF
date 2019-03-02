@@ -31,7 +31,7 @@ def run(host, port, debug):
 
 
 def print_banner():
-    banner = '***** Running WALKOFF v.{} *****'.format(api_gateway.__version__)
+    banner = f'***** Running WALKOFF v.{api_gateway.__version__} *****'
     header_footer_banner = '*' * len(banner)
     logger.info(header_footer_banner)
     logger.info(banner)
@@ -50,7 +50,7 @@ def setup_server(host, port, debug):
         server = pywsgi.WSGIServer((host, port), application=app)
         protocol = 'http'
 
-    logger.info('Listening on host {0}://{1}:{2}'.format(protocol, host, port))
+    logger.info(f'Listening on host {protocol}://{host}:{port}')
     return server
 
 
@@ -76,13 +76,13 @@ def convert_host_port(args):
     try:
         port = int(port)
     except ValueError:
-        print('Invalid port {}. Port must be an integer!'.format(port))
+        print(f'Invalid port {port}. Port must be an integer!')
         exit(1)
     return host, port
 
 
 # def import_workflows():
-#     playbook_name = [playbook._id for playbook in app.running_context.execution_db.session.query(Playbook).all()]
+#     playbook_name = [playbook.id_ for playbook in app.running_context.execution_db.session.query(Playbook).all()]
 #     if os.path.exists(api_gateway.config.Config.WORKFLOWS_PATH):
 #         logger.info('Importing any workflows not currently in database')
 #         for p in os.listdir(api_gateway.config.Config.WORKFLOWS_PATH):

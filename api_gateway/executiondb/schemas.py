@@ -62,7 +62,7 @@ class PositionSchema(ExecutionBaseSchema):
     class Meta:
         model = Position
         unknown = EXCLUDE
-        # exclude = ('_id',)
+        # exclude = ('id_',)
 
 
 class WorkflowVariableSchema(ExecutionBaseSchema):

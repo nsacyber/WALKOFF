@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class Action(ExecutionElement, Execution_Base):
     __tablename__ = 'action'
-    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow._id', ondelete='CASCADE'))
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80), nullable=False)
@@ -26,7 +26,7 @@ class Action(ExecutionElement, Execution_Base):
     position = relationship('Position', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     children = ('parameters',)
 
-    def __init__(self, app_name, action_name, name, priority=3, _id=None, parameters=None,
+    def __init__(self, app_name, action_name, name, priority=3, id_=None, parameters=None,
                  position=None, errors=None):
         """Initializes a new Action object. A Workflow has one or more actions that it executes.
         Args:
@@ -34,13 +34,13 @@ class Action(ExecutionElement, Execution_Base):
             action_name (str): The name of the action associated with a Action
             name (str): The name of the Action object.
              priority (int, optional): Optional priority parameter; defaults to 3 (normal priority).
-            _id (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
+            id_ (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
                 Defaults to None.
             parameters (list[Argument], optional): A list of Argument objects that are parameters to the action.
                 Defaults to None.
             position (Position, optional): Position object for the Action. Defaults to None.
         """
-        ExecutionElement.__init__(self, _id, errors)
+        ExecutionElement.__init__(self, id_, errors)
 
         self.app_name = app_name
         self.action_name = action_name

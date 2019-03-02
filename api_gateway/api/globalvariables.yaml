@@ -12,7 +12,7 @@
       - GlobalVariables
     summary: Read a global
     description: ''
-    operationId: api_gateway.server.endpoints.global_variables.read_device
+    operationId: api_gateway.server.endpoints.global_variables.read_global
     responses:
       200:
         description: Success
@@ -27,7 +27,7 @@
       - GlobalVariables
     summary: Remove a global
     description: ''
-    operationId: api_gateway.server.endpoints.global_variables.delete_device
+    operationId: api_gateway.server.endpoints.global_variables.delete_global
     responses:
       204:
         description: Success
@@ -43,7 +43,7 @@
       - GlobalVariables
     summary: Get all globals
     description: ''
-    operationId: api_gateway.server.endpoints.global_variables.read_all_devices
+    operationId: api_gateway.server.endpoints.global_variables.read_all_globals
     responses:
       200:
         description: Success
@@ -59,7 +59,7 @@
       - GlobalVariables
     summary: Add a global
     description: ''
-    operationId: api_gateway.server.endpoints.global_variables.create_device
+    operationId: api_gateway.server.endpoints.global_variables.create_global
     requestBody:
       required: true
       content:
@@ -85,7 +85,7 @@
       - GlobalVariables
     summary: Update a global
     description: ''
-    operationId: api_gateway.server.endpoints.global_variables.update_device
+    operationId: api_gateway.server.endpoints.global_variables.update_global
     requestBody:
       description: The new global object to be updated
       required: true

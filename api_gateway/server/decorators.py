@@ -1,66 +1,56 @@
 from uuid import UUID
+from itertools import islice
+from operator import itemgetter
+from inspect import getfullargspec
 
-from flask import current_app
+from flask import current_app, request, send_file, jsonify
 
-from api_gateway.server.problem import Problem
-from api_gateway.server.returncodes import OBJECT_DNE_ERROR, BAD_REQUEST
+from api_gateway.server.problem import dne_problem, invalid_id_problem
 
 
 def get_id_str(ids):
     return '-'.join([str(id_) for id_ in ids])
 
 
-def resource_not_found_problem(resource, operation, id_):
-    return Problem.from_crud_resource(
-        OBJECT_DNE_ERROR,
-        resource,
-        operation,
-        '{} {} does not exist.'.format(resource.title(), id_))
+def _whitelist_func_kwargs(func, kwargs):
+    """ Helper function for decorators that whitelist the wrapped functions kwargs in the case of multiple decorators
+        poluting the kwargs.
+    """
+    func_args = getfullargspec(func).args
+    return {key: kwargs[key] for key in func_args}
 
 
-def log_operation_error(resource, operation, id_):
-    current_app.logger.error('Could not {} {} {}. {} does not exist'.format(operation, resource, id_, resource))
+def paginate(schema=None):
+    """
+    Paginates the response to a request.
+    Optional schema will schema.dump() the objects returned by the wrapped function
+    """
+    def func_wrapper(func):
+        def func_caller(*args, **kwargs):
+            page = request.args.get("page", 1, type=int)
+            start = (page - 1) * current_app.config["ITEMS_PER_PAGE"]
+            stop = start + current_app.config["ITEMS_PER_PAGE"]
 
+            ret, status_code = func(*args, **_whitelist_func_kwargs(func, kwargs))
+            pages = islice(ret, start, stop)
 
-def dne_error(resource, operation, ids):
-    id_str = get_id_str(ids)
-    log_operation_error(resource, operation, id_str)
-    return lambda: (resource_not_found_problem(resource, operation, id_str))
+            if schema is not None:
+                return [schema.dump(obj) for obj in pages], status_code
+
+            return [obj for obj in pages], status_code
+        return func_caller
+    return func_wrapper
 
 
 def validate_resource_exists_factory(resource_name, existence_func):
     def validate_resource_exists(operation, *ids):
-
         def wrapper(func):
             if existence_func(*ids):
                 return func
             else:
-                return dne_error(resource_name, operation, ids)
-
+                return dne_problem(resource_name, operation, ids)
         return wrapper
-
     return validate_resource_exists
-
-
-def invalid_id_problem(resource, operation):
-    return Problem.from_crud_resource(BAD_REQUEST, resource, operation, 'Invalid ID format.')
-
-
-# def with_resource_factory(resource_name, getter_func, validator=None):
-#     def validate_resource_exists(operation, *ids):
-#         def wrapper(func):
-#             if validator and not validator(*ids):
-#                 return lambda: invalid_id_problem(resource_name, operation)
-#
-#             obj = getter_func(*ids)
-#             if obj is not None:
-#                 return lambda: func(obj)
-#             else:
-#                 return dne_error(resource_name, operation, ids)
-#
-#         return wrapper
-#
-#     return validate_resource_exists
 
 
 def with_resource_factory(resource_name, getter_func, validator=None):
@@ -75,15 +65,16 @@ def with_resource_factory(resource_name, getter_func, validator=None):
                     return invalid_id_problem(resource_name, operation)
 
                 # Fetch the resource from the database
-                if operation == "update":  # Put/Patch send the object in the body. Dereference _id from there
-                    kwargs[id_param] = getter_func(kwargs["body"]["_id"])
+                if operation == "update":  # Put/Patch send the object in the body. Dereference id_ from there
+                    kwargs[id_param] = getter_func(kwargs["body"]["id_"])
                 else:
                     kwargs[id_param] = getter_func(kwargs[id_param])
 
+                # Pass the arguments and the dereffed resource to the function
                 if kwargs[id_param]:
-                    return func(**kwargs)
+                    return func(**_whitelist_func_kwargs(func, kwargs))
                 else:
-                    return dne_error(resource_name, operation, kwargs[id_param])
+                    return dne_problem(resource_name, operation, kwargs[id_param])
             return func_caller
         return func_wrapper
     return arg_wrapper

@@ -4,7 +4,7 @@ GlobalVariable:
   description: An global variable object, which is a type of parameter in an Action
   additionalProperties: false
   properties:
-    _id:
+    id_:
       $ref: '#/components/schemas/Uuid'
     name:
       type: string

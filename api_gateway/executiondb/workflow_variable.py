@@ -14,7 +14,7 @@ class WorkflowVariable(Execution_Base):
        execution
 
     Attributes:
-        _id (UUID): The ID of the object
+        id_ (UUID): The ID of the object
         workflow_id (UUID): The corresponding workflow ID that this environment variable relates to
         name (str): The name of the environment variable
         value (any): The value of the object
@@ -22,18 +22,18 @@ class WorkflowVariable(Execution_Base):
 
     """
     __tablename__ = 'environment_variable'
-    _id = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
-    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow._id', ondelete='CASCADE'))
+    id_ = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
     name = Column(String(80))
     value = Column(String(80), nullable=False)
     description = Column(String(255))
 
-    def __init__(self, value, _id=None, name=None, description=None):
-        if _id:
-            if not isinstance(_id, UUID):
-                self._id = UUID(_id)
+    def __init__(self, value, id_=None, name=None, description=None):
+        if id_:
+            if not isinstance(id_, UUID):
+                self.id_ = UUID(id_)
             else:
-                self._id = _id
+                self.id_ = id_
         self.name = name
         self.value = value
         self.description = description

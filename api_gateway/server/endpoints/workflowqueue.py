@@ -60,7 +60,7 @@ def abort_workflow(execution_id, user=None):
 
 
 def does_workflow_exist(workflow_id):
-    return current_app.running_context.execution_db.session.query(exists().where(Workflow._id == workflow_id)).scalar()
+    return current_app.running_context.execution_db.session.query(exists().where(Workflow.id_ == workflow_id)).scalar()
 
 
 def does_execution_id_exist(execution_id):

@@ -31,7 +31,7 @@ class WorkflowJSONDecoder(json.JSONDecoder):
 
         elif "action_name" and "app_name" in o:
             action = Action(**o)
-            self.actions[action._id] = action
+            self.actions[action.id_] = action
             return action
 
         elif "variant" in o:
@@ -54,7 +54,7 @@ class WorkflowJSONDecoder(json.JSONDecoder):
             return WorkflowVariable(**o)
 
         elif "actions" and "branches" in o:
-            workflow_variables = {var._id: var for var in o["workflow_variables"]}
+            workflow_variables = {var.id_: var for var in o["workflow_variables"]}
             o["workflow_variables"] = workflow_variables
             start = self.actions[o["start"]]
             o["start"] = start
@@ -72,19 +72,19 @@ class WorkflowJSONEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, Workflow):
-            branches = [{"source": src._id, "destination": dst._id} for src, dst in o.edges]
+            branches = [{"source": src.id_, "destination": dst.id_} for src, dst in o.edges]
             actions = [node for node in o.nodes]
             conditions = [condition for condition in o.conditions]
             transforms = [transform for transform in o.transforms]
             triggers = [trigger for trigger in o.triggers]
             workflow_variables = list(o.workflow_variables.values())
-            return {"_id": o._id, "execution_id": o.execution_id, "name": o.name, "start": o.start._id,
+            return {"id_": o.id_, "execution_id": o.execution_id, "name": o.name, "start": o.start.id_,
                     "actions": actions, "conditions": conditions, "branches": branches, "transforms": transforms,
                     "triggers": triggers, "workflow_variables": workflow_variables, "is_valid": o.is_valid,
                     "errors": None}
 
         elif isinstance(o, Action):
-            return {"_id": o._id, "app_name": o.app_name, "action_name": o.action_name, "name": o.name,
+            return {"id_": o.id_, "app_name": o.app_name, "action_name": o.action_name, "name": o.name,
                     "parameters": o.parameters, "priority": o.priority, "position": o.position,
                     "workflow_execution_id": o.workflow_execution_id}
 
@@ -95,17 +95,17 @@ class WorkflowJSONEncoder(json.JSONEncoder):
             return o.value
 
         elif isinstance(o, WorkflowVariable):
-            return {"description": o.description, "_id": o._id, "name": o.name, "value": o.value}
+            return {"description": o.description, "id_": o.id_, "name": o.name, "value": o.value}
 
 
 class Node:
-    def __init__(self, name, position: Point, _id=None):
-        self._id = _id if _id is not None else str(uuid.uuid4())
+    def __init__(self, name, position: Point, id_=None):
+        self.id_ = id_ if id_ is not None else str(uuid.uuid4())
         self.name = name
         self.position = position
 
     def __repr__(self):
-        return f"Node-{self._id}"
+        return f"Node-{self.id_}"
 
     def __str__(self):
         return f"Node-{self.name}"
@@ -144,8 +144,8 @@ class Parameter:
 
 class WorkflowVariable:
     # Previously EnvironmentVariable
-    def __init__(self, _id, name, value, description=None):
-        self._id = _id
+    def __init__(self, id_, name, value, description=None):
+        self.id_ = id_
         self.name = name
         self.value = value
         self.description = description
@@ -153,8 +153,8 @@ class WorkflowVariable:
 
 class Action(Node):
     def __init__(self, name, position, app_name, action_name, priority, workflow_execution_id=None, parameters=None,
-                 _id=None):
-        super().__init__(name, position, _id)
+                 id_=None):
+        super().__init__(name, position, id_)
         self.app_name = app_name
         self.action_name = action_name
         self.workflow_execution_id = workflow_execution_id
@@ -162,10 +162,10 @@ class Action(Node):
         self.priority = priority
 
     def __str__(self):
-        return f"Action: {self.name}::{self._id}::{self.workflow_execution_id}"
+        return f"Action: {self.name}::{self.id_}::{self.workflow_execution_id}"
 
     def __repr__(self):
-        return f"Action: {self.name}::{self._id}::{self.workflow_execution_id}"
+        return f"Action: {self.name}::{self.id_}::{self.workflow_execution_id}"
 
     def __gt__(self, other):
         return self.priority > other.priority
@@ -192,18 +192,18 @@ class Transform(Node):
 
     def __call__(self, data):
         """ Execute an action and ship its result """
-        logger.debug(f"Attempting execution of: {self.name}-{self._id}")
+        logger.debug(f"Attempting execution of: {self.name}-{self.id_}")
         if hasattr(self, self.transform):
             try:
                 if self.transform_arg is None:
                     result = getattr(self, self.transform)(data=data)
                 else:
                     result = getattr(self, self.transform)(self.transform_arg, data=data)
-                logger.debug(f"Executed {self.name}-{self._id} with result: {result}")
+                logger.debug(f"Executed {self.name}-{self.id_} with result: {result}")
 
             # TODO: figure out which exceptions will be thrown by which failed transforms and handle them
             except Exception:
-                logger.exception(f"Failed to execute {self.name}-{self._id}")
+                logger.exception(f"Failed to execute {self.name}-{self.id_}")
 
         else:
             logger.error(f"{self.__class__.__name__} has no method {self.transform}")
@@ -221,14 +221,14 @@ class Transform(Node):
 
 class Workflow(DiGraph):
     def __init__(self, name, start, actions: [Action], conditions: [Condition], triggers: [Trigger],
-                 transforms: [Transform], branches: [Branch], _id=None, execution_id=None, workflow_variables=None,
+                 transforms: [Transform], branches: [Branch], id_=None, execution_id=None, workflow_variables=None,
                  is_valid=None, errors=None):
         super().__init__()
         for branch in branches:
             self.add_edge(branch.source, branch.destination)
         self.add_nodes_from(actions)
         self.start = start
-        self._id = _id if _id is not None else str(uuid.uuid4())
+        self.id_ = id_ if id_ is not None else str(uuid.uuid4())
         self.is_valid = is_valid if is_valid is not None else self.validate()
         self.name = name
         self.execution_id = execution_id

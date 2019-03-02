@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class Transform(ExecutionElement, Execution_Base):
     __tablename__ = 'transform'
-    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow._id', ondelete='CASCADE'))
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
 
     name = Column(String(255), nullable=False)
     transform = Column(String(80), nullable=False)
@@ -22,18 +22,18 @@ class Transform(ExecutionElement, Execution_Base):
 
     children = ('argument',)
 
-    def __init__(self, name, transform, position=None, _id=None, parameter=None, errors=None):
+    def __init__(self, name, transform, position=None, id_=None, parameter=None, errors=None):
         """Initializes a new Transform object. A Transform is used to transform input into a workflow.
 
         Args:
             name (str): The app name associated with this transform
-            _id (str|UUID, optional): Optional UUID to pass into the Transform. Must be UUID object or valid UUID string.
+            id_ (str|UUID, optional): Optional UUID to pass into the Transform. Must be UUID object or valid UUID string.
                 Defaults to None.
             position (Position, optional): Position object for the Action. Defaults to None.
             transform (str): The name of the transform function to be applied
             parameter (str): The optional parameter to feed into the transform function i.e index or key
         """
-        ExecutionElement.__init__(self, _id, errors)
+        ExecutionElement.__init__(self, id_, errors)
         self.name = name
         self.transform = transform
         self.position = position

@@ -110,7 +110,7 @@ class Worker:
             for _, arg in task._coro.cr_frame.f_locals.items():  # Where the args of a coro are stored...trust me
                 if isinstance(arg, Node):
                     if arg in dependents:
-                        self.in_process.pop(arg._id)
+                        self.in_process.pop(arg.id_)
                         task.cancel()
                         cancelled_tasks.add(task)
 
@@ -131,7 +131,7 @@ class Worker:
             children = set(self.workflow.successors(node))
             node.execution_id = str(uuid.uuid4())
             node.workflow_execution_id = self.workflow.execution_id
-            self.in_process[node._id] = node
+            self.in_process[node.id_] = node
 
             if isinstance(node, Action):
                 tasks.add(asyncio.create_task(self.schedule_action(parents, node)))
@@ -250,7 +250,7 @@ class Worker:
 
     async def schedule_action(self, parents: {Action}, action: Action):
         """ Waits until all dependencies of an action are met and then schedules the action """
-        while not all(parent._id in self.accumulator for parent in parents):
+        while not all(parent.id_ in self.accumulator for parent in parents):
             await asyncio.sleep(0)
 
         await self.dereference_params(action)

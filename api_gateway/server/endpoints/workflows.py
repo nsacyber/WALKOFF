@@ -27,7 +27,7 @@ invalid_execution_element_exceptions = (InvalidParameter, UnknownApp, UnknownFun
 
 def does_workflow_exist(playbook_id, workflow_id):
     return current_app.running_context.execution_db.session.query(
-        exists().where(and_(Workflow._id == workflow_id, Workflow.playbook_id == playbook_id))).scalar()
+        exists().where(and_(Workflow.id_ == workflow_id, Workflow.playbook_id == playbook_id))).scalar()
 
 
 def playbook_getter(playbook_id):
@@ -80,11 +80,11 @@ def get_playbooks(full=None):
         # else:
         #     ret_playbooks = []
         #     for playbook in playbooks:
-        #         entry = {'id': playbook._id, 'name': playbook.name}
+        #         entry = {'id': playbook.id_, 'name': playbook.name}
         #
         #         workflows = []
         #         for workflow in playbook.workflows:
-        #             workflows.append({'id': workflow._id, 'name': workflow.name})
+        #             workflows.append({'id': workflow.id_, 'name': workflow.name})
         #         entry['workflows'] = sorted(workflows, key=(lambda wf: workflow.name.lower()))
         #
         #         ret_playbooks.append(entry)
@@ -363,7 +363,7 @@ def copy_workflow(playbook_id, workflow_id):
         workflow_json['name'] = new_workflow_name
 
         regenerate_workflow_ids(workflow_json)
-        # if current_app.running_context.execution_db.session.query(exists().where(Playbook._id == playbook_id)).scalar():
+        # if current_app.running_context.execution_db.session.query(exists().where(Playbook.id_ == playbook_id)).scalar():
         #     playbook = current_app.running_context.execution_db.session.query(Playbook).filter_by(
         #         id=playbook_id).first()
         # else:
@@ -387,7 +387,7 @@ def copy_workflow(playbook_id, workflow_id):
             current_app.logger.error('Could not copy workflow {}. Unique constraint failed'.format(new_workflow_name))
             return unique_constraint_problem('workflow', 'copy', new_workflow_name)
 
-        current_app.logger.info('Workflow {0} copied to {1}'.format(workflow_id, new_workflow._id))
+        current_app.logger.info('Workflow {0} copied to {1}'.format(workflow_id, new_workflow.id_))
         return workflow_schema.dump(new_workflow), OBJECT_CREATED
 
     return __func()

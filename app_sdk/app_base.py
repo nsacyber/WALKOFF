@@ -91,7 +91,7 @@ class AppBase:
                         result = func(**{p.name: p.value for p in action.parameters})
                     action_result = ActionResult.from_action(action=action, result=result,
                                                              event=WorkflowEvent.ActionSuccess)
-                    self.logger.debug(f"Executed {action.name}-{action._id} with result: {result}")
+                    self.logger.debug(f"Executed {action.name}-{action.id_} with result: {result}")
 
                 else:
                     self.logger.error(f"App {self.__class__.__name__}.{action.action_name} is not callable")
@@ -100,7 +100,7 @@ class AppBase:
 
             except Exception as e:
                 action_result = ActionResult.from_action(action=action, error=repr(e), event=WorkflowEvent.ActionError)
-                self.logger.exception(f"Failed to execute {action.name}-{action._id}")
+                self.logger.exception(f"Failed to execute {action.name}-{action.id_}")
 
             await self.redis.publish(ACTION_RESULT_CH, message_dumper(action_result))
 

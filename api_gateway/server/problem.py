@@ -1,6 +1,8 @@
 import json
 
-from flask import Response
+from flask import Response, current_app
+
+from api_gateway.server.returncodes import *
 
 
 class Problem(Response):
@@ -20,7 +22,7 @@ class Problem(Response):
         headers (dict, optional): Headers to use for this response
 
     """
-    default_mimetype = 'application/problem+json'
+    default_mimetype = "application/problem+json"
     default_status = 400
 
     def __init__(self, status, title, detail, instance=None, type_=None, ext=None, headers=None):
@@ -30,11 +32,11 @@ class Problem(Response):
     @staticmethod
     def make_response_body(status, title, detail, instance=None, type_=None, ext=None):
         if not type_:
-            type_ = 'about:blank'
+            type_ = "about:blank"
 
-        response = {'type': type_, 'title': title, 'detail': detail, 'status': status}
+        response = {"type": type_, "title": title, "detail": detail, "status": status}
         if instance:
-            response['instance'] = instance
+            response["instance"] = instance
         if ext:
             response.update(ext)
 
@@ -42,5 +44,34 @@ class Problem(Response):
 
     @classmethod
     def from_crud_resource(cls, status, resource, operation, detail, instance=None, type_=None, ext=None, headers=None):
-        title = 'Could not {} {}.'.format(operation, resource)
+        title = "Could not {} {}.".format(operation, resource)
         return cls(status, title, detail, instance=instance, type_=type_, ext=ext, headers=headers)
+
+
+def unique_constraint_problem(resource, operation, id_):
+    detail = f"Could not {operation} {resource} {id_}, possibly because of invalid or non-unique IDs."
+    current_app.logger.error(detail)
+    return Problem.from_crud_resource(OBJECT_EXISTS_ERROR, resource, operation, detail)
+
+
+def improper_json_problem(resource, operation, id_, errors=None):
+    detail = f"Could not {operation} {resource} {id_}. Invalid JSON"
+    current_app.logger.error(detail)
+    return Problem.from_crud_resource(BAD_REQUEST, resource, operation, detail, ext={"errors": errors})
+
+
+def invalid_input_problem(resource, operation, id_, errors=None):
+    detail = f"Could not {operation} {resource} {id_}. Invalid input."
+    current_app.logger.error(detail)
+    return Problem.from_crud_resource(INVALID_INPUT_ERROR, resource, operation, detail, ext=errors)
+
+
+def invalid_id_problem(resource, operation):
+    detail = f"Could not {operation} {resource} . Invalid ID format."
+    return Problem.from_crud_resource(BAD_REQUEST, resource, operation, detail)
+
+
+def dne_problem(resource, operation, id_, errors=None):
+    detail = f"Could not {operation} {resource} {id_}. {resource.title()} does not exist."
+    current_app.logger.error(detail)
+    return Problem.from_crud_resource(OBJECT_DNE_ERROR, resource, operation, detail, ext=errors)

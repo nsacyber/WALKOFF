@@ -65,7 +65,7 @@ class ActionResult:
     @classmethod
     def from_action(cls, action, result=None, error=None, event=None):
         workflow_execution_id = action.workflow_execution_id
-        action_id = action._id
+        action_id = action.id_
         name = action.name
         action_name = action.action_name
         app_name = action.app_name
