@@ -4,7 +4,7 @@
       - Workflows
     summary: Read all workflows in playbook
     description: ''
-    operationId: api_gateway.server.endpoints.workflows.get_workflows
+    operationId: api_gateway.server.endpoints.workflows.read_all_workflows
     responses:
       200:
         description: Success
@@ -56,6 +56,34 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+/workflows/{workflow_id}:
+  parameters:
+    - name: workflow_id
+      in: path
+      description: 'The ID that needs to be fetched. '
+      required: true
+      schema:
+        type: string
+        format: uuid
+  get:
+    tags:
+      - Workflows
+    summary: Read a workflow
+    description: ''
+    operationId: api_gateway.server.endpoints.workflows.read_workflow
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workflow'
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   put:
     tags:
       - Workflows
@@ -92,36 +120,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-
-/workflows/{workflow_id}:
-  parameters:
-    - name: workflow_id
-      in: path
-      description: 'The ID that needs to be fetched. '
-      required: true
-      schema:
-        type: string
-        format: uuid
-  get:
-    tags:
-      - Workflows
-    summary: Read a workflow
-    description: ''
-    operationId: api_gateway.server.endpoints.workflows.read_workflow
-    responses:
-      200:
-        description: Success
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Workflow'
-      404:
-        description: Workflow does not exist.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Error'
-
   delete:
     tags:
       - Workflows

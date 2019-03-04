@@ -143,9 +143,6 @@ class ParameterSchema(ExecutionElementBaseSchema):
     def make_instance(self, data):
         instance = self.instance or self.get_instance(data)
         if instance is not None:
-            value = data.pop('value', None)
-            reference = data.pop('reference', None)
-            instance.update_value_reference(value, reference)
             for key, value in data.items():
                 setattr(instance, key, value)
             return instance

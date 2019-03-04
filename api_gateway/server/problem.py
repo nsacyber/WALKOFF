@@ -66,8 +66,9 @@ def invalid_input_problem(resource, operation, id_, errors=None):
     return Problem.from_crud_resource(INVALID_INPUT_ERROR, resource, operation, detail, ext=errors)
 
 
-def invalid_id_problem(resource, operation):
-    detail = f"Could not {operation} {resource} . Invalid ID format."
+def invalid_id_problem(resource, operation, id_):
+    detail = f"Could not {operation} {resource}. {id_} is an invalid ID."
+    current_app.logger.error(detail)
     return Problem.from_crud_resource(BAD_REQUEST, resource, operation, detail)
 
 

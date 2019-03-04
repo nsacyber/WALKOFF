@@ -26,6 +26,7 @@ with_dashboard = with_resource_factory("dashboard", dashboard_getter)
 def create_dashboard():
     data = request.get_json()
     dashboard_name = data["name"]
+
     try:
         dashboard = dashboard_schema.load(data)
         current_app.running_context.execution_db.session.add(dashboard)
@@ -43,8 +44,8 @@ def create_dashboard():
 @permissions_accepted_for_resources(ResourcePermissions("dashboards", ["read"]))
 @paginate(dashboard_schema)
 def read_all_dashboards():
-    query = current_app.running_context.execution_db.session.query(Dashboard).order_by(Dashboard.name).all()
-    return query, SUCCESS
+    r = current_app.running_context.execution_db.session.query(Dashboard).order_by(Dashboard.name).all()
+    return r, SUCCESS
 
 
 @jwt_required
@@ -80,4 +81,3 @@ def delete_dashboard(dashboard_id):
     current_app.logger.info(f"Dashboard removed: {dashboard_id.name}")
     current_app.running_context.execution_db.session.commit()
     return None, NO_CONTENT
-

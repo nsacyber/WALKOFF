@@ -181,46 +181,52 @@ def create_sse_event(event_id=None, event=None, data=None):
 
 
 def regenerate_workflow_ids(workflow):
-    workflow['id'] = str(uuid4())
-    action_mapping = {}
+    workflow['id_'] = str(uuid4())
+    id_mapping = {}
     actions = workflow.get('actions', [])
     for action in actions:
-        prev_id = action['id']
-        action['id'] = str(uuid4())
-        action_mapping[prev_id] = action['id']
+        prev_id = action['id_']
+        action['id_'] = str(uuid4())
+        id_mapping[prev_id] = action['id_']
+
+    workflow_variables = workflow.get('workflow_variables', [])
+    for workflow_variable in workflow_variables:
+        prev_id = workflow_variable["id_"]
+        workflow_variable['id_'] = str(uuid4())
+        id_mapping[prev_id] = workflow_variable['id_']
 
     for action in actions:
-        regenerate_ids(action, action_mapping, regenerate_id=False)
+        regenerate_ids(action, id_mapping, regenerate_id=False)
 
     for branch in workflow.get('branches', []):
-        branch['source_id'] = action_mapping[branch['source_id']]
-        branch['destination_id'] = action_mapping[branch['destination_id']]
-        regenerate_ids(branch, action_mapping)
+        branch['source_id'] = id_mapping[branch['source_id']]
+        branch['destination_id'] = id_mapping[branch['destination_id']]
+        regenerate_ids(branch, id_mapping)
 
-    workflow['start'] = action_mapping[workflow['start']]
+    workflow['start'] = id_mapping[workflow['start']]
 
 
-def regenerate_ids(json_in, action_mapping=None, regenerate_id=True, is_arguments=False):
+def regenerate_ids(json_in, id_mapping=None, regenerate_id=True, is_arguments=False):
     if regenerate_id:
-        json_in['id'] = str(uuid4())
+        json_in['id_'] = str(uuid4())
     if is_arguments:
-        json_in.pop('id', None)
+        json_in.pop('id_', None)
 
-    if 'reference' in json_in and json_in['reference']:
-        json_in['reference'] = action_mapping[json_in['reference']]
+    if json_in.get('variant') in ("ACTION_RESULT", "WORKFLOW_VARIABLE"):
+        json_in['reference'] = id_mapping[json_in['reference']]
 
     for field, value in json_in.items():
         is_arguments = field in ['arguments', 'device_id']
         if isinstance(value, list):
-            __regenerate_ids_of_list(value, action_mapping, is_arguments=is_arguments)
+            __regenerate_ids_of_list(value, id_mapping, is_arguments=is_arguments)
         elif isinstance(value, dict):
-            regenerate_ids(value, action_mapping=action_mapping, is_arguments=is_arguments)
+            regenerate_ids(value, id_mapping=id_mapping, is_arguments=is_arguments)
 
 
-def __regenerate_ids_of_list(value, action_mapping, is_arguments=False):
+def __regenerate_ids_of_list(value, id_mapping, is_arguments=False):
     for list_element in (list_element_ for list_element_ in value
                          if isinstance(list_element_, dict)):
-        regenerate_ids(list_element, action_mapping=action_mapping, is_arguments=is_arguments)
+        regenerate_ids(list_element, id_mapping=id_mapping, is_arguments=is_arguments)
 
 
 def strip_device_ids(playbook):
@@ -234,7 +240,7 @@ def strip_argument_ids(playbook):
         for action in workflow.get('actions', []):
             strip_argument_ids_from_element(action)
             if 'device_id' in action:
-                action['device_id'].pop('id', None)
+                action['device_id'].pop('id_', None)
         for branch in workflow.get('branches', []):
             if 'condition' in branch:
                 strip_argument_ids_from_conditional(branch['conditional'])
@@ -251,7 +257,7 @@ def strip_argument_ids_from_conditional(conditional):
 
 def strip_argument_ids_from_element(element):
     for argument in element.get('arguments', []):
-        argument.pop('id', None)
+        argument.pop('id_', None)
 
 
 def utc_as_rfc_datetime(timestamp):

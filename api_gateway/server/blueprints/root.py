@@ -33,9 +33,6 @@ def client_app_folder(filename):
 @root_page.route('metrics')
 @root_page.route('settings')
 def default():
-    import sys
-    print(os.path.abspath(api_gateway.config.Config.CLIENT_PATH), file=sys.stderr)
-
     return send_from_directory(os.path.abspath(api_gateway.config.Config.CLIENT_PATH), "dist/index.html")
     # return render_template("index.html")
 
