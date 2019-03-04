@@ -22,14 +22,6 @@ with_dashboard = with_resource_factory("dashboard", dashboard_getter)
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["read"]))
-@paginate(dashboard_schema)
-def get_dashboards():
-    query = current_app.running_context.execution_db.session.query(Dashboard).order_by(Dashboard.name).all()
-    return query, SUCCESS
-
-
-@jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("dashboards", ["create"]))
 def create_dashboard():
     data = request.get_json()
@@ -48,14 +40,22 @@ def create_dashboard():
 
 
 @jwt_required
+@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["read"]))
+@paginate(dashboard_schema)
+def read_all_dashboards():
+    query = current_app.running_context.execution_db.session.query(Dashboard).order_by(Dashboard.name).all()
+    return query, SUCCESS
+
+
+@jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("dashboards", ["update"]))
 @with_dashboard("update", "dashboard_id")
-def put_dashboard(dashboard_id):
+def update_dashboard(dashboard_id):
     data = request.get_json()
-    errors = dashboard_schema.load(data, instance=dashboard_id).errors
-    if errors:
-        return invalid_input_problem("dashboard", "update", data["name"], errors)
     try:
+        dashboard_schema.load(data, instance=dashboard_id)
+        # return invalid_input_problem("dashboard", "update", data["name"], errors)  # ToDo: validation
+
         current_app.running_context.execution_db.session.commit()
         current_app.logger.info(f"Updated dashboard {dashboard_id}")
         return dashboard_schema.dump(dashboard_id), SUCCESS
@@ -67,7 +67,7 @@ def put_dashboard(dashboard_id):
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("dashboards", ["read"]))
 @with_dashboard("read", "dashboard_id")
-def get_dashboard(dashboard_id):
+def read_dashboard(dashboard_id):
     dashboard_json = dashboard_schema.dump(dashboard_id)
     return jsonify(dashboard_json), SUCCESS
 

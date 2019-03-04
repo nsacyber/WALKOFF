@@ -4,7 +4,7 @@
       - Dashboards
     summary: Read all dashboards
     description: Retrieves all dashboards currently stored in the database.
-    operationId: api_gateway.server.endpoints.dashboards.get_dashboards
+    operationId: api_gateway.server.endpoints.dashboards.read_all_dashboards
     responses:
       200:
         description: Success
@@ -52,7 +52,7 @@
       - Dashboards
     summary: Update a dashboard
     description: Updates a whole dashboard using the JSON request body
-    operationId: api_gateway.server.endpoints.dashboards.put_dashboard
+    operationId: api_gateway.server.endpoints.dashboards.update_dashboard
     requestBody:
       description: The dashboard object to be updated
       required: true
@@ -84,7 +84,7 @@
       - Dashboards
     summary: Get a dashboard by id
     description: Retrieve a single dashboard from database by ID.
-    operationId: api_gateway.server.endpoints.dashboards.get_dashboard
+    operationId: api_gateway.server.endpoints.dashboards.read_dashboard
     parameters:
     - in: path
       name: dashboard_id
