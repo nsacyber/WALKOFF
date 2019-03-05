@@ -1,6 +1,7 @@
 import json
 import logging
 from functools import wraps
+from http import HTTPStatus
 
 from flask_jwt_extended import get_jwt_claims
 from flask_jwt_extended.config import config
@@ -8,7 +9,6 @@ from flask_jwt_extended.tokens import decode_jwt
 
 import api_gateway.serverdb
 from api_gateway.extensions import jwt
-from api_gateway.server.returncodes import FORBIDDEN_ERROR, UNAUTHORIZED_ERROR
 from api_gateway.serverdb import User
 from api_gateway.serverdb.tokens import is_token_revoked
 
@@ -33,7 +33,7 @@ def add_claims_to_access_token(user_id):
 
 @jwt.revoked_token_loader
 def token_is_revoked_loader():
-    return json.dumps({'error': 'Token is revoked'}), UNAUTHORIZED_ERROR
+    return json.dumps({'error': 'Token is revoked'}), HTTPStatus.UNAUTHORIZED
 
 
 def admin_required(fn):
@@ -42,7 +42,7 @@ def admin_required(fn):
         if user_has_correct_roles({1}, all_required=True):
             return fn(*args, **kwargs)
         else:
-            return "Unauthorized View", FORBIDDEN_ERROR
+            return "Unauthorized View", HTTPStatus.FORBIDDEN
 
     return wrapper
 
@@ -64,7 +64,7 @@ def _permissions_decorator(resource_permissions, all_required=False):
                 _roles_accepted |= api_gateway.serverdb.get_roles_by_resource_permissions(resource_permission)
             if user_has_correct_roles(_roles_accepted, all_required=all_required):
                 return fn(*args, **kwargs)
-            return "Unauthorized View", FORBIDDEN_ERROR
+            return "Unauthorized View", HTTPStatus.FORBIDDEN
 
         return decorated_view
 
@@ -83,7 +83,7 @@ def user_has_correct_roles(accepted_roles, all_required=False):
 
 @jwt.expired_token_loader
 def expired_token_callback():
-    return {'error': 'Token expired'}, UNAUTHORIZED_ERROR
+    return {'error': 'Token expired'}, HTTPStatus.UNAUTHORIZED
 
 
 # This function is necessary for connexion update to v2.0

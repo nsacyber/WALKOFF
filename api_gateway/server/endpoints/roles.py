@@ -5,7 +5,7 @@ from api_gateway.extensions import db
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 from api_gateway.server.decorators import with_resource_factory
 from api_gateway.server.problem import Problem
-from api_gateway.server.returncodes import *
+from http import HTTPStatus
 from api_gateway.serverdb import clear_resources_for_role, get_all_available_resource_actions
 from api_gateway.serverdb.role import Role
 
@@ -16,7 +16,7 @@ def read_all_roles():
     @jwt_required
     @admin_required
     def __func():
-        return [role.as_json() for role in Role.query.all()], SUCCESS
+        return [role.as_json() for role in Role.query.all()], HTTPStatus.OK
 
     return __func()
 
@@ -37,11 +37,11 @@ def create_role():
             db.session.add(new_role)
             db.session.commit()
             current_app.logger.info('Role added: {0}'.format(role_params))
-            return new_role.as_json(), OBJECT_CREATED
+            return new_role.as_json(), HTTPStatus.CREATED
         else:
             current_app.logger.warning('Cannot add role {0}. Role already exists'.format(json_data['name']))
             return Problem.from_crud_resource(
-                OBJECT_EXISTS_ERROR,
+                HTTPStatus.BAD_REQUEST,
                 'role',
                 'create',
                 'Role with name {} already exists'.format(json_data['name']))
@@ -54,7 +54,7 @@ def read_role(role_id):
     @admin_required
     @with_role('read', role_id)
     def __func(role):
-        return role.as_json(), SUCCESS
+        return role.as_json(), HTTPStatus.OK
 
     return __func()
 
@@ -77,7 +77,7 @@ def update_role():
             role.set_resources(resources)
         db.session.commit()
         current_app.logger.info('Edited role {0} to {1}'.format(json_data['id'], json_data))
-        return role.as_json(), SUCCESS
+        return role.as_json(), HTTPStatus.OK
 
     return __func()
 
@@ -94,7 +94,7 @@ def delete_role(role_id):
         clear_resources_for_role(role.name)
         db.session.delete(role)
         db.session.commit()
-        return None, NO_CONTENT
+        return None, HTTPStatus.NO_CONTENT
 
     return __func()
 
@@ -103,6 +103,6 @@ def read_available_resource_actions():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
     def __func():
-        return get_all_available_resource_actions(), SUCCESS
+        return get_all_available_resource_actions(), HTTPStatus.OK
 
     return __func()

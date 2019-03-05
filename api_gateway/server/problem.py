@@ -2,7 +2,7 @@ import json
 
 from flask import Response, current_app
 
-from api_gateway.server.returncodes import *
+from http import HTTPStatus
 
 
 class Problem(Response):
@@ -51,28 +51,28 @@ class Problem(Response):
 def unique_constraint_problem(resource, operation, id_):
     detail = f"Could not {operation} {resource} {id_}, possibly because of invalid or non-unique IDs."
     current_app.logger.error(detail)
-    return Problem.from_crud_resource(OBJECT_EXISTS_ERROR, resource, operation, detail)
+    return Problem.from_crud_resource(HTTPStatus.BAD_REQUEST, resource, operation, detail)
 
 
 def improper_json_problem(resource, operation, id_, errors=None):
     detail = f"Could not {operation} {resource} {id_}. Invalid JSON"
     current_app.logger.error(detail)
-    return Problem.from_crud_resource(BAD_REQUEST, resource, operation, detail, ext={"errors": errors})
+    return Problem.from_crud_resource(HTTPStatus.BAD_REQUEST, resource, operation, detail, ext={"errors": errors})
 
 
 def invalid_input_problem(resource, operation, id_, errors=None):
     detail = f"Could not {operation} {resource} {id_}. Invalid input."
     current_app.logger.error(detail)
-    return Problem.from_crud_resource(INVALID_INPUT_ERROR, resource, operation, detail, ext=errors)
+    return Problem.from_crud_resource(HTTPStatus.BAD_REQUEST, resource, operation, detail, ext=errors)
 
 
 def invalid_id_problem(resource, operation, id_):
     detail = f"Could not {operation} {resource}. {id_} is an invalid ID."
     current_app.logger.error(detail)
-    return Problem.from_crud_resource(BAD_REQUEST, resource, operation, detail)
+    return Problem.from_crud_resource(HTTPStatus.BAD_REQUEST, resource, operation, detail)
 
 
 def dne_problem(resource, operation, id_, errors=None):
     detail = f"Could not {operation} {resource} {id_}. {resource.title()} does not exist."
     current_app.logger.error(detail)
-    return Problem.from_crud_resource(OBJECT_DNE_ERROR, resource, operation, detail, ext=errors)
+    return Problem.from_crud_resource(HTTPStatus.NOT_FOUND, resource, operation, detail, ext=errors)

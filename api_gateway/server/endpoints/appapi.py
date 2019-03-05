@@ -9,7 +9,7 @@ from api_gateway.config import Config
 from api_gateway import helpers
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.problem import Problem
-from api_gateway.server.returncodes import *
+from http import HTTPStatus
 from collections import OrderedDict
 from itertools import islice
 
@@ -22,7 +22,7 @@ def read_all_apps():
     def __func():
         apps = redis_cache.hgetall("app-apis").keys()
         print(apps)
-        return sorted(str(apps), key=(lambda app_name: app_name.lower())), SUCCESS
+        return sorted(str(apps), key=(lambda app_name: app_name.lower())), HTTPStatus.OK
 
     return __func()
 
@@ -118,7 +118,7 @@ def read_all_app_apis(field_name=None):
         # TODO: Remove this once connexion can validate enums with openapi3.
         if field_name and field_name not in ['info', 'action_apis', 'condition_apis', 'transform_apis', 'device_apis',
                                              'tags', 'external_docs']:
-            return Problem(BAD_REQUEST, 'Could not read app api.', '{} is not a valid field name.'.format(field_name))
+            return Problem(HTTPStatus.BAD_REQUEST, 'Could not read app api.', '{} is not a valid field name.'.format(field_name))
 
         ret = []
         for app_name, app_api in redis_cache.hgetall("app-apis").items():
@@ -126,13 +126,13 @@ def read_all_app_apis(field_name=None):
         if field_name is not None:
             default = [] if field_name not in ('info', 'external_docs') else {}
             ret = [{'name': api['name'], field_name: api.get(field_name, default)} for api in ret]
-        return ret, SUCCESS
+        return ret, HTTPStatus.OK
 
     return __func()
 
 
 def app_api_dne_problem(app_name):
-    return Problem(OBJECT_DNE_ERROR, 'Could not read app api.', 'App {} does not exist.'.format(app_name))
+    return Problem(HTTPStatus.NOT_FOUND, 'Could not read app api.', 'App {} does not exist.'.format(app_name))
 
 
 def read_app_api(app_name):
@@ -141,7 +141,7 @@ def read_app_api(app_name):
     def __func():
         api = json.loads(redis_cache.hget("app-apis", app_name))
         if api is not None:
-            return format_full_app_api(api, app_name), SUCCESS
+            return format_full_app_api(api, app_name), HTTPStatus.OK
         else:
             return app_api_dne_problem(app_name)
 
@@ -155,11 +155,11 @@ def read_app_api_field(app_name, field_name):
         # TODO: Remove this once connexion can validate enums with openapi3.
         if field_name not in ['info', 'action_apis', 'condition_apis', 'transform_apis', 'device_apis', 'tags',
                               'externalDocs']:
-            return Problem(BAD_REQUEST, 'Could not read app api.', '{} is not a valid field name.'.format(field_name))
+            return Problem(HTTPStatus.BAD_REQUEST, 'Could not read app api.', '{} is not a valid field name.'.format(field_name))
 
         api = json.loads(redis_cache.hget("app-apis", app_name))
         if api is not None:
-            return format_full_app_api(api, app_name)[field_name], SUCCESS
+            return format_full_app_api(api, app_name)[field_name], HTTPStatus.OK
         else:
             return app_api_dne_problem(app_name)
 

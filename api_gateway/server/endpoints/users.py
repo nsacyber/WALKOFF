@@ -5,7 +5,7 @@ from api_gateway.extensions import db
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 from api_gateway.server.decorators import with_resource_factory
 from api_gateway.server.problem import Problem
-from api_gateway.server.returncodes import *
+from http import HTTPStatus
 from api_gateway.serverdb import add_user
 from api_gateway.serverdb.user import User
 
@@ -18,7 +18,7 @@ def read_all_users():
     def __func():
         page = request.args.get('page', 1, type=int)
         return [user.as_json() for user in
-                User.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], SUCCESS
+                User.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], HTTPStatus.OK
 
     return __func()
 
@@ -37,11 +37,11 @@ def create_user():
 
             db.session.commit()
             current_app.logger.info('User added: {0}'.format(user.as_json()))
-            return user.as_json(), OBJECT_CREATED
+            return user.as_json(), HTTPStatus.CREATED
         else:
             current_app.logger.warning('Cannot create user {0}. User already exists.'.format(username))
             return Problem.from_crud_resource(
-                OBJECT_EXISTS_ERROR,
+                HTTPStatus.BAD_REQUEST,
                 'user',
                 'create',
                 'User with username {} already exists'.format(username))
@@ -54,7 +54,7 @@ def read_user(user_id):
     @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
     @with_user('read', user_id)
     def __func(user):
-        return user.as_json(), SUCCESS
+        return user.as_json(), HTTPStatus.OK
 
     return __func()
 
@@ -71,11 +71,11 @@ def update_user():
             return update_user_fields(data, user)
         else:
             response = role_update_user_fields(data, user, update=True)
-            if isinstance(response, tuple) and response[1] == FORBIDDEN_ERROR:
+            if isinstance(response, tuple) and response[1] == HTTPStatus.FORBIDDEN:
                 current_app.logger.error('User {0} does not have permission to '
                                          'update user {1}'.format(current_user, user.id))
                 return Problem.from_crud_resource(
-                    FORBIDDEN_ERROR,
+                    HTTPStatus.FORBIDDEN,
                     'user',
                     'update',
                     'Current user does not have permission to update user {}.'.format(user_id))
@@ -106,20 +106,20 @@ def update_user_fields(data, user):
         if user_db is None or user_db.id == user.id:
             user.username = data['username']
         else:
-            return Problem(BAD_REQUEST, 'Cannot update user.', 'Username {} is already taken.'.format(data['username']))
+            return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.', 'Username {} is already taken.'.format(data['username']))
     if 'old_password' in data and 'password' in data:
         if user.verify_password(data['old_password']):
             user.password = data['password']
         else:
             user.username = original_username
             return Problem.from_crud_resource(
-                UNAUTHORIZED_ERROR,
+                HTTPStatus.UNAUTHORIZED,
                 'user',
                 'update',
                 'Current password is incorrect.')
     db.session.commit()
     current_app.logger.info('Updated user {0}. Updated to: {1}'.format(user.id, user.as_json()))
-    return user.as_json(), SUCCESS
+    return user.as_json(), HTTPStatus.OK
 
 
 def delete_user(user_id):
@@ -131,9 +131,9 @@ def delete_user(user_id):
             db.session.delete(user)
             db.session.commit()
             current_app.logger.info('User {0} deleted'.format(user.username))
-            return None, NO_CONTENT
+            return None, HTTPStatus.NO_CONTENT
         else:
             current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
-            return Problem.from_crud_resource(FORBIDDEN_ERROR, 'user', 'delete', 'Current user cannot delete self.')
+            return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete', 'Current user cannot delete self.')
 
     return __func()

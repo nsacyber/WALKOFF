@@ -62,7 +62,7 @@ def with_resource_factory(resource_name, getter_func, validator=None):
             def func_caller(*args, **kwargs):
                 """This decorator is the actual replacement function for the decorated function"""
                 if validator and not validator(kwargs[id_param]):
-                    return invalid_id_problem(resource_name, kwargs[id_param], operation)
+                    return invalid_id_problem(resource_name, operation, kwargs[id_param])
 
                 # Fetch the resource from the database
                 if operation == "update":  # Put/Patch send the object in the body. Dereference id_ from there
