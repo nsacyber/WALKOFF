@@ -1,5 +1,3 @@
-from itertools import islice
-
 from flask import current_app, request, send_file, jsonify
 from flask_jwt_extended import jwt_required
 from sqlalchemy.exc import IntegrityError, StatementError
@@ -10,11 +8,6 @@ from api_gateway.security import permissions_accepted_for_resources, ResourcePer
 from api_gateway.server.decorators import with_resource_factory, paginate
 from api_gateway.server.problem import unique_constraint_problem, invalid_input_problem
 from http import HTTPStatus
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 
 def global_variable_getter(global_id):

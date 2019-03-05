@@ -13,14 +13,13 @@ import api_gateway.config
 from api_gateway.extensions import db, jwt
 from api_gateway.server import context
 from api_gateway.helpers import compose_api
-from api_gateway.server.blueprints import custominterface, workflowresults, console, root
+from api_gateway.server.blueprints import workflowresults, console, root
 
 logger = logging.getLogger(__name__)
 
 
 def register_blueprints(flaskapp):
     flaskapp.logger.info('Registering builtin blueprints')
-    flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
     flaskapp.register_blueprint(workflowresults.workflowresults_page, url_prefix='/api/streams/workflowqueue')
     flaskapp.register_blueprint(console.console_page, url_prefix='/api/streams/console')
     flaskapp.register_blueprint(root.root_page, url_prefix='/')

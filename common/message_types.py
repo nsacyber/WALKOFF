@@ -33,7 +33,7 @@ class MessageJSONDecoder(json.JSONDecoder):
     def object_hook(self, o):
         if "error" and "event" in o:
             o["event"] = WorkflowEvent[o["event"]]
-            return ActionResult(**o)
+            return ActionStatus(**o)
 
 
 class MessageJSONEncoder(json.JSONEncoder):
@@ -42,7 +42,7 @@ class MessageJSONEncoder(json.JSONEncoder):
         TODO: Make these not lossy
     """
     def default(self, o):
-        if isinstance(o, ActionResult):
+        if isinstance(o, ActionStatus):
             return {"result": o.result, "workflow_execution_id": o.workflow_execution_id, "action_id": o.action_id,
                     "name": o.name, "action_name": o.action_name, "app_name": o.app_name, "error": o.error,
                     "event": o.event}
@@ -50,7 +50,33 @@ class MessageJSONEncoder(json.JSONEncoder):
             return o.value
 
 
-class ActionResult:
+class WorkflowStatusEnum(enum.Enum):
+    running = "running"
+    paused = "paused"  # not currently implemented but may be if we see a use case
+    awaiting_data = "awaiting_data"  # possibly for triggers?
+    pending = "pending"
+    completed = "completed"
+    aborted = "aborted"
+
+
+class ActionStatusEnum(enum.Enum):
+    executing = "executing"
+    awaiting_data = "awaiting_data"  # possibly for triggers?
+    success = "success"
+    failure = "failure"
+    aborted = "aborted"
+
+
+class WorkflowResult:
+    def __init__(self, execution_id, workflow_id, name, status=WorkflowStatusEnum.pending, user=None):
+        self.execution_id = execution_id
+        self.workflow_id = workflow_id
+        self.name = name
+        self.status = status
+        self.user = user
+
+
+class ActionStatus:
     """ Class that formats an ActionResult message """
     def __init__(self, name, action_id, action_name, app_name, workflow_execution_id, result=None, error=None, event=None):
         self.name = name

@@ -34,7 +34,6 @@ class ExecutionDatabase(object):
         from api_gateway.executiondb.action import Action
         from api_gateway.executiondb.branch import Branch
         from api_gateway.executiondb.condition import Condition
-        # from api_gateway.executiondb.playbook import Playbook
         from api_gateway.executiondb.position import Position
         from api_gateway.executiondb.transform import Transform
         from api_gateway.executiondb.trigger import Trigger
@@ -87,7 +86,7 @@ class ExecutionDatabase(object):
 
 
 @event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
+def set_sqlite_pragma(dbapi_connection):
     """Necessary for enforcing foreign key constraints in sqlite database
     """
     if 'sqlite' in ExecutionDatabase.db_type:
@@ -97,17 +96,17 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 class WorkflowStatusEnum(enum.Enum):
-    running = 1
-    paused = 2
-    awaiting_data = 3
-    pending = 4
-    completed = 5
-    aborted = 6
+    running = "running"
+    paused = "paused"  # not currently implemented but may be if we see a use case
+    awaiting_data = "awaiting_data"  # possibly for triggers?
+    pending = "pending"
+    completed = "completed"
+    aborted = "aborted"
 
 
 class ActionStatusEnum(enum.Enum):
-    executing = 1
-    awaiting_data = 2
-    success = 3
-    failure = 4
-    aborted = 5
+    executing = "executing"
+    awaiting_data = "awaiting_data"  # possibly for triggers?
+    success = "success"
+    failure = "failure"
+    aborted = "aborted"
