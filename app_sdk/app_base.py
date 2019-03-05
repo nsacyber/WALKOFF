@@ -8,30 +8,13 @@ from contextlib import asynccontextmanager
 
 import aioredis
 
-from .message_types import ActionResult, WorkflowEvent, MessageJSONEncoder, MessageJSONDecoder
-from .workflow_types import Node, Action, Condition, Transform, Trigger, ParameterVariant, Workflow, \
-    WorkflowJSONEncoder, WorkflowJSONDecoder
+from .message_types import ActionStatus, message_dumps
+from .workflow_types import workflow_loads
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
 ACTION_RESULT_CH = os.getenv("ACTION_RESULT_CH", "action-results")
 ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
-
-
-def workflow_dumper(obj):
-    return json.dumps(obj, cls=WorkflowJSONEncoder)
-
-
-def workflow_loader(obj):
-    return json.loads(obj, cls=WorkflowJSONDecoder)
-
-
-def message_dumper(obj):
-    return json.dumps(obj, cls=MessageJSONEncoder)
-
-
-def message_loader(obj):
-    return json.loads(obj, cls=MessageJSONDecoder)
 
 
 class AppBase:
@@ -73,15 +56,15 @@ class AppBase:
                 if time.time() - start > 30: # We've timed out with no work. Guess we'll die now...
                     sys.exit(1)
 
-            action = workflow_loader(action)
+            action = workflow_loads(action)
             asyncio.create_task(self.execute_action(action))
 
     async def execute_action(self, action):
         """ Execute an action and ship its result """
         self.logger.debug(f"Attempting execution of: {action.name}-{action.workflow_execution_id}")
         if hasattr(self, action.action_name):
-            start_action_msg = ActionResult.from_action(action=action, event=WorkflowEvent.ActionStarted)
-            await self.redis.publish(ACTION_RESULT_CH, message_dumper(start_action_msg))
+            start_action_msg = ActionStatus.executing_from_action(action)
+            await self.redis.lpush(action.workflow_execution_id, message_dumps(start_action_msg))
             try:
                 func = getattr(self, action.action_name, None)
                 if callable(func):
@@ -89,22 +72,20 @@ class AppBase:
                         result = func()
                     else:
                         result = func(**{p.name: p.value for p in action.parameters})
-                    action_result = ActionResult.from_action(action=action, result=result,
-                                                             event=WorkflowEvent.ActionSuccess)
+                    action_result = ActionStatus.success_from_action(action, result)
                     self.logger.debug(f"Executed {action.name}-{action.id_} with result: {result}")
 
                 else:
                     self.logger.error(f"App {self.__class__.__name__}.{action.action_name} is not callable")
-                    action_result = ActionResult.from_action(action, error="Action not callable")
-                    await self.redis.publish(ACTION_RESULT_CH, message_dumper(action_result))
+                    action_result = ActionStatus.failure_from_action(action, error="Action not callable")
 
             except Exception as e:
-                action_result = ActionResult.from_action(action=action, error=repr(e), event=WorkflowEvent.ActionError)
+                action_result = ActionStatus.failure_from_action(action=action, error=repr(e))
                 self.logger.exception(f"Failed to execute {action.name}-{action.id_}")
 
-            await self.redis.publish(ACTION_RESULT_CH, message_dumper(action_result))
+            await self.redis.lpush(action.workflow_execution_id, message_dumps(action_result))
 
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.action_name}")
-            action_result = ActionResult.from_action(action, error="Action does not exist")
-            await self.redis.publish(ACTION_RESULT_CH, message_dumper(action_result))
+            action_result = ActionStatus.from_action(action, error="Action does not exist")
+            await self.redis.lpush(action.workflow_execution_id, message_dumps(action_result))

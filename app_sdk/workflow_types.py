@@ -8,15 +8,21 @@ from networkx import DiGraph
 
 logger = logging.getLogger("WALKOFF")
 
-Point = namedtuple("Point", ("x", "y"))
-Branch = namedtuple("Branch", ("source", "destination"))
+
+def workflow_dumps(obj):
+    return json.dumps(obj, cls=WorkflowJSONEncoder)
 
 
-class ParameterVariant(enum.Enum):
-    STATIC_VALUE = "STATIC_VALUE"
-    ACTION_RESULT = "ACTION_RESULT"
-    WORKFLOW_VARIABLE = "WORKFLOW_VARIABLE"
-    GLOBAL = "GLOBAL"
+def workflow_loads(obj):
+    return json.loads(obj, cls=WorkflowJSONDecoder)
+
+
+def workflow_dump(obj):
+    return json.dumps(obj, cls=WorkflowJSONEncoder)
+
+
+def workflow_load(obj):
+    return json.loads(obj, cls=WorkflowJSONDecoder)
 
 
 class WorkflowJSONDecoder(json.JSONDecoder):
@@ -56,6 +62,8 @@ class WorkflowJSONDecoder(json.JSONDecoder):
         elif "actions" and "branches" in o:
             workflow_variables = {var.id_: var for var in o["workflow_variables"]}
             o["workflow_variables"] = workflow_variables
+            start = self.actions[o["start"]]
+            o["start"] = start
             return Workflow(**o)
 
 
@@ -94,6 +102,17 @@ class WorkflowJSONEncoder(json.JSONEncoder):
 
         elif isinstance(o, WorkflowVariable):
             return {"description": o.description, "id_": o.id_, "name": o.name, "value": o.value}
+
+
+Point = namedtuple("Point", ("x", "y"))
+Branch = namedtuple("Branch", ("source", "destination"))
+
+
+class ParameterVariant(enum.Enum):
+    STATIC_VALUE = "STATIC_VALUE"
+    ACTION_RESULT = "ACTION_RESULT"
+    WORKFLOW_VARIABLE = "WORKFLOW_VARIABLE"
+    GLOBAL = "GLOBAL"
 
 
 class Node:
@@ -168,35 +187,11 @@ class Action(Node):
     def __gt__(self, other):
         return self.priority > other.priority
 
-    @classmethod
-    def from_json(cls, data):
-        if isinstance(data, str):
-            try:
-                data = json.loads(data)
-            except json.JSONDecodeError:
-                logger.exception("Error parsing Action from JSON.")
-                return
-        try:
-            return cls(name=data["name"], action_name=data["action_name"], app_name=data["app_name"],
-                       parameters=data["parameters"], priority=data["priority"],
-                       position=Point(data["position"]["x"], data["position"]["y"]), id_=data["id"])
-
-        except KeyError:
-            logger.exception("Error parsing Action from JSON.")
-
 
 class Condition(Node):
     def __init__(self, name, position: Point, conditional=None):
         super().__init__(name, position)
         self.conditional = conditional
-
-    @staticmethod
-    def from_json(data):
-        pass
-
-    @staticmethod
-    def to_json(data):
-        pass
 
 
 # TODO: fully realize and implement triggers
@@ -204,14 +199,6 @@ class Trigger(Node):
     def __init__(self, name, position: Point, trigger):
         super().__init__(name, position)
         self.trigger = trigger
-
-    @staticmethod
-    def from_json(data):
-        pass
-
-    @staticmethod
-    def to_json(data):
-        pass
 
 
 class Transform(Node):
@@ -257,7 +244,7 @@ class Workflow(DiGraph):
         for branch in branches:
             self.add_edge(branch.source, branch.destination)
         self.add_nodes_from(actions)
-        self.start = next(filter(lambda action: action.id_ == start, actions))  # quick search to find the start node
+        self.start = start
         self.id_ = id_ if id_ is not None else str(uuid.uuid4())
         self.is_valid = is_valid if is_valid is not None else self.validate()
         self.name = name
@@ -275,40 +262,6 @@ class Workflow(DiGraph):
     @staticmethod
     def dereference_environment_variables(data):
         return {ev["id"]: (ev["name"], ev["value"]) for ev in data.get("environment_variables", [])}
-
-    @classmethod
-    def from_json(cls, data):
-        # TODO: make this not a hack to work with the old crap
-
-        # Design our workflow
-        actions = {}
-        branches = set()
-
-        for action in data.get("actions", []):
-            # Get action priority
-            action["priority"] = 3
-            for branch in data.get("branches", []):
-                if action["id"] == branch["destination"]:
-                    action["priority"] = branch["priority"]
-                    break
-
-            # Get action params
-            action["parameters"] = set()
-            for param in action.get("arguments", []):
-                action["parameters"].add(Parameter(name=param["name"], value=param.get("value", None),
-                                                   reference=param.get("reference", None),
-                                                   variant=param.get("variant", None)))
-
-            actions[action["id"]] = Action.from_json(action)
-
-        for branch in data.get("branches", []):
-            branches.add(Branch(actions[branch["source"]], actions[branch["destination"]]))
-
-        workflow = Workflow(name=data["name"], start=actions[data["start"]], actions=set(actions.values()),
-                            branches=branches, id_=data.get("workflow_id", uuid.uuid4()),
-                            execution_id=data["execution_id"],
-                            workflow_variables=Workflow.dereference_environment_variables(data))
-        return workflow
 
     def get_dependents(self, node):
         """

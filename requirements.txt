@@ -1,7 +1,10 @@
-networkx
+aiodns
+aiohttp
 aioredis
-pyyaml
+asteval
+cchardet
 docker
 docker-compose
+networkx
+pyyaml
 sqlalchemy
-asteval

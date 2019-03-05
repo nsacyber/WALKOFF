@@ -71,9 +71,9 @@ def setup_logger():
 
 
 class Config(object):
-    from common.config import load_config as load_common_config
+    from common.config import config as common_config
     # TODO: Merge triple-play config with this old config and replace the hack below
-    common_config = load_common_config()
+    common_config = common_config
     # CONFIG VALUES
 
     # IP and port for the webserver

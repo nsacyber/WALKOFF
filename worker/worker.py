@@ -4,47 +4,33 @@ import logging
 import json
 import sys
 import uuid
+from typing import Union
 
+import aiohttp
 import aioredis
 from asteval import Interpreter, make_symbol_table
 
-from common.message_types import MessageJSONEncoder, MessageJSONDecoder, WorkflowEvent
-from common.config import load_config
+from common.message_types import message_dumps, message_loads, message_dump, ActionStatus, WorkflowStatus, StatusEnum, \
+    JSONPatch, JSONPatchOps
+from common.config import config
 from common.helpers import connect_to_redis_pool
 from common.workflow_types import Node, Action, Condition, Transform, Trigger, ParameterVariant, Workflow, \
-    WorkflowJSONEncoder, WorkflowJSONDecoder
+    workflow_dumps, workflow_loads
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WORKER")
 
-config = load_config()
-
-
-def workflow_dumper(obj):
-    return json.dumps(obj, cls=WorkflowJSONEncoder)
-
-
-def workflow_loader(obj):
-    return json.loads(obj, cls=WorkflowJSONDecoder)
-
-
-def message_dumper(obj):
-    return json.dumps(obj, cls=MessageJSONEncoder)
-
-
-def message_loader(obj):
-    return json.loads(obj, cls=MessageJSONDecoder)
-
-
 class Worker:
     class ConditionException(Exception): pass
 
-    def __init__(self, workflow: Workflow = None, start_action=None, redis=None):
+    def __init__(self, workflow: Workflow = None, start_action: str = None, redis: aioredis.Redis = None,
+                 session:aiohttp.ClientSession = None):
         self.workflow = workflow
         self.start_action = start_action if start_action is not None else self.workflow.start
         self.accumulator = {}
         self.in_process = {}
         self.redis = redis
+        self.session = session
 
     @staticmethod
     async def get_workflow(redis: aioredis.Redis):
@@ -66,21 +52,21 @@ class Worker:
             if workflow is None:  # We've timed out with no work. Guess we'll die now...
                 sys.exit(1)
 
-            yield workflow_loader(workflow)
+            yield workflow_loads(workflow)
 
     @staticmethod
     async def run():
-        async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis:
+        async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis, aiohttp.ClientSession() as session:
             async for workflow in Worker.get_workflow(redis):
 
                 # Setup worker launch the event loop
-                worker = Worker(workflow, redis=redis)
+                worker = Worker(workflow, redis=redis, session=session)
                 logger.info(f"Starting execution of workflow: {workflow.name}")
 
                 try:
                     await worker.execute_workflow()
 
-                except (asyncio.TimeoutError, aioredis.ChannelClosedError):
+                except Exception:
                     logger.info(f"Failed execution of workflow: {workflow.name}")
 
                 else:
@@ -151,14 +137,14 @@ class Worker:
                     visited.add(child)
 
         # Launch the results accumulation task and wait for all the results to come in
-        results_task = asyncio.create_task(self.get_action_results(config["REDIS"]["action_results_ch"]))
+        results_task = asyncio.create_task(self.get_action_results())
 
         done, pending = await asyncio.wait([asyncio.gather(*tasks), results_task], return_when=asyncio.FIRST_EXCEPTION)
         try:
             for task in done:
                 await task
 
-        except (asyncio.TimeoutError, aioredis.ChannelClosedError) as e:
+        except Exception as e:
             # We timed out or were unsubbed. Clean up any scheduled actions and such that we didn't make it to
             for task in pending:
                 task.cancel()
@@ -255,50 +241,96 @@ class Worker:
 
         await self.dereference_params(action)
 
-        await self.redis.lpush(f"{action.app_name}-{action.priority}", workflow_dumper(action))
+        # TODO: decide if we want pending action messages and uncomment this line
+        # await self.send_message(ActionStatus.pending_from_action(action))
+
+        await self.redis.lpush(f"{action.app_name}-{action.priority}", workflow_dumps(action))
         logger.info(f"Scheduled {action}")
 
-    async def get_action_results(self, results_channel_key):
+    async def get_action_results(self):
         """ Continuously monitors the results queue until all scheduled actions have been completed """
-        channel: aioredis.Channel = (await self.redis.subscribe(results_channel_key))[0]
+        read_messages_queue = f"{self.workflow.execution_id}::read"
         while len(self.in_process) > 0:
-            try:
-                msg = message_loader(await asyncio.wait_for(channel.get(), timeout=30))
-
-            except asyncio.TimeoutError as e:
-                logger.info(f"Timed out while listening on redis channel: {channel.name.decode()}")
-                raise e
-
-            except aioredis.ChannelClosedError as e:
-                logger.info(f"Channel: {channel.name.decode()} was unsubscribed")
-                raise e
+            msg = await self.redis.brpoplpush(self.workflow.execution_id, read_messages_queue, timeout=5)
 
             if msg is None:
-                logger.info(f"Channel: {channel.name.decode()} was unsubscribed")
-                raise aioredis.ChannelClosedError  # channel was unsubbed. The docs aren't clear on if this is needed
+                continue
 
+            msg = message_loads(msg)
             # Ensure that the recieved ActionResult is for an action we launched
             if msg.workflow_execution_id == self.workflow.execution_id and msg.action_id in self.in_process:
                 # if msg["error"] is None and msg["result"] is not None:
 
-                if msg.event == WorkflowEvent.ActionStarted:
+                if msg.status == StatusEnum.EXECUTING:
                     logger.info(f"App started exectuion of: {msg.name}-{msg.workflow_execution_id}")
 
-                elif msg.event == WorkflowEvent.ActionSuccess:
+                elif msg.status == StatusEnum.SUCCESS:
                     self.accumulator[msg.action_id] = msg.result
                     logger.info(f"Worker recieved result for: {msg.name}-{msg.workflow_execution_id}")
 
                     # Remove the action from our local in_process queue as well as the one in redis
                     action = self.in_process.pop(msg.action_id)
-                    await self.redis.lrem(config["REDIS"]["actions_in_process"], 0, workflow_dumper(action))
+                    await self.redis.lrem(config["REDIS"]["actions_in_process"], 0, workflow_dumps(action))
 
-                else:
+                elif msg.status == StatusEnum.FAILURE:
                     self.accumulator[msg.action_id] = msg.error
                     logger.info(f"Worker recieved error \"{msg.error}\" for: {msg.name}-{msg.workflow_execution_id}")
 
+                else:
+                    logger.error(f"Unknown message recieved: {msg}")
 
-        logger.info("Action-Results channel closed")
+        # Clean up our redis mess
+        await self.redis.delete(read_messages_queue)
 
+    async def send_message(self, message: Union[ActionStatus, WorkflowStatus]):
+        execution_id = None
+        patches = None
+        if isinstance(message, ActionStatus):
+            execution_id = message.workflow_execution_id
+            root = f"#/action_statuses/{message.action_id}"
+
+            if message.status == StatusEnum.EXECUTING:
+                black_list = {"result", "completed_at"}
+                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k not in black_list}
+                patches = [JSONPatch(JSONPatchOps.ADD, path=path, value=value) for path, value in fields]
+
+            elif message.status == StatusEnum.SUCCESS:
+                white_list = {"status", "result", "completed_at"}
+                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k in white_list}
+                patches = [JSONPatch(JSONPatchOps.REMOVE, path=path, value=value) for path, value in fields]
+
+            elif message.status == StatusEnum.FAILURE:
+                white_list = {"status", "error", "completed_at"}
+                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k in white_list}
+                patches = [JSONPatch(JSONPatchOps.REMOVE, path=path, value=value) for path, value in fields]
+
+        elif isinstance(message, WorkflowStatus):
+            execution_id = message.execution_id
+            root = f"#/"
+
+            if message.status == StatusEnum.EXECUTING:
+                black_list = {"status", "started_at"}
+                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k not in black_list}
+                patches = [JSONPatch(JSONPatchOps.ADD, path=path, value=value) for path, value in fields]
+
+            elif message.status == StatusEnum.COMPLETED:
+                white_list = {"status", "completed_at"}
+                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k in white_list}
+                patches = [JSONPatch(JSONPatchOps.REMOVE, path=path, value=value) for path, value in fields]
+
+            elif message.status == StatusEnum.ABORTED:
+                white_list = {"status", "completed_at"}
+                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k in white_list}
+                patches = [JSONPatch(JSONPatchOps.REMOVE, path=path, value=value) for path, value in fields]
+
+        if execution_id is None:
+            raise ValueError(f"Attempting to send improper message type: {type(message)}")
+
+        data = message_dumps(patches)
+        params = {"event": message.status.value}
+        url = f"/iapi/workflowstatus/{execution_id}"
+        async with self.session.patch(url, data=data, params=params) as resp:
+            return resp.json(loads=message_loads)
 
 if __name__ == "__main__":
     # Launch the worker event loop

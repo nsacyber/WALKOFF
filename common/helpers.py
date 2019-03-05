@@ -1,8 +1,5 @@
 import logging
-import re
-import json
 import os
-from pathlib import Path
 from contextlib import asynccontextmanager
 
 import aioredis
@@ -12,23 +9,14 @@ import docker.tls
 import docker.errors
 import docker.types
 from docker.utils.utils import parse_bytes
-from docker.types.services import ServiceMode, Resources, EndpointSpec, RestartPolicy, SecretReference
-from docker.models.images import Image
-import compose.config
-from compose.const import API_VERSIONS
-from compose.project import Project
-from compose.service import Service
+from docker.types.services import ServiceMode, Resources, EndpointSpec, RestartPolicy
+
 from compose import timeparse
-from compose.cli.command import set_parallel_limit, get_project_name, get_client, get_project
 from compose.config.environment import Environment
 
-from common.config import load_config
+from common.config import config
 
-logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
-logger = logging.getLogger("UMPIRE")
-# logger.setLevel(logging.DEBUG)
-
-config = load_config()
+logger = logging.getLogger("WALKOFF")
 
 
 def sint(value):

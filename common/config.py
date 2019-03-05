@@ -36,7 +36,7 @@ def load_config():
         sys.exit(1)  # Invalid config is grounds for immediate app termination
 
 
+config = load_config()
+
 if __name__ == "__main__":
-    config = load_config()
-    if config:
-        print([key for key in config.keys()])
+    print([key for key in config.keys()])
