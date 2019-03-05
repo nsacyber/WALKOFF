@@ -1,5 +1,6 @@
 import logging
 import os
+from http import HTTPStatus
 
 # from alembic.config import Config
 # from alembic.runtime.migration import MigrationContext
@@ -11,7 +12,6 @@ from sqlalchemy.exc import SQLAlchemyError
 import api_gateway.config
 from api_gateway.extensions import db
 from api_gateway.server.problem import Problem
-from api_gateway.server.returncodes import SERVER_ERROR
 
 logger = logging.getLogger(__name__)
 
@@ -50,13 +50,13 @@ def login_page():
 @root_page.errorhandler(SQLAlchemyError)
 def handle_database_errors(e):
     current_app.logger.exception('Caught an unhandled SqlAlchemy exception.')
-    return Problem(SERVER_ERROR, 'A database error occurred.', e.__class__.__name__)
+    return Problem(HTTPStatus.INTERNAL_SERVER_ERROR, 'A database error occurred.', e.__class__.__name__)
 
 
 @root_page.errorhandler(500)
 def handle_generic_server_error(e):
     current_app.logger.exception('Caught an unhandled error.')
-    return Problem(SERVER_ERROR, 'An error occurred in the server.', e.__class__.__name__)
+    return Problem(HTTPStatus.INTERNAL_SERVER_ERROR, 'An error occurred in the server.', e.__class__.__name__)
 
 
 @root_page.before_app_first_request

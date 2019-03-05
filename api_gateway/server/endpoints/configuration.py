@@ -7,7 +7,7 @@ import api_gateway.config
 from api_gateway.helpers import format_exception_message
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.problem import Problem
-from api_gateway.server.returncodes import *
+from http import HTTPStatus
 
 
 def __get_current_configuration():
@@ -29,7 +29,7 @@ def read_config_values():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('configuration', ['read']))
     def __func():
-        return __get_current_configuration(), SUCCESS
+        return __get_current_configuration(), HTTPStatus.OK
 
     return __func()
 
@@ -42,7 +42,7 @@ def update_configuration():
         if not _reset_token_durations(access_token_duration=config_in.get('access_token_duration', None),
                                       refresh_token_duration=config_in.get('refresh_token_duration', None)):
             return Problem.from_crud_resource(
-                BAD_REQUEST,
+                HTTPStatus.BAD_REQUEST,
                 'configuration',
                 'update',
                 'Access token duration must be less than refresh token duration.')
@@ -56,11 +56,11 @@ def update_configuration():
         current_app.logger.info('Changed configuration')
         try:
             api_gateway.config.Config.write_values_to_file()
-            return __get_current_configuration(), SUCCESS
+            return __get_current_configuration(), HTTPStatus.OK
         except (IOError, OSError) as e:
             current_app.logger.error('Could not write changes to configuration to file')
             return Problem(
-                IO_ERROR,
+                HTTPStatus.INTERNAL_SERVER_ERROR,
                 'Could not write changes to file.',
                 'Could not write configuration changes to file. Problem: {}'.format(format_exception_message(e)))
 

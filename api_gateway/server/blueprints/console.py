@@ -1,12 +1,12 @@
 import logging
 from uuid import UUID
+from http import HTTPStatus
 
 from flask import request
 from flask_jwt_extended import jwt_required
 
 from api_gateway.events import WalkoffEvent
 from api_gateway.server.problem import Problem
-from api_gateway.server.returncodes import BAD_REQUEST
 from api_gateway.sse import FilteredSseStream, StreamableBlueprint
 
 console_stream = FilteredSseStream('console_results')
@@ -41,7 +41,7 @@ def stream_console_events():
     workflow_execution_id = request.args.get('workflow_execution_id')
     if workflow_execution_id is None:
         return Problem(
-            BAD_REQUEST,
+            HTTPStatus.BAD_REQUEST,
             'Could not connect to log stream',
             'workflow_execution_id is a required query param')
     try:
@@ -49,6 +49,6 @@ def stream_console_events():
         return console_stream.stream(subchannel=workflow_execution_id)
     except (ValueError, AttributeError):
         return Problem(
-            BAD_REQUEST,
+            HTTPStatus.BAD_REQUEST,
             'Could not connect to log stream',
             'workflow_execution_id must be a valid UUID')

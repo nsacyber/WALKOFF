@@ -8,7 +8,7 @@ from api_gateway.scheduler import InvalidTriggerArgs
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory
 from api_gateway.server.problem import Problem
-from api_gateway.server.returncodes import *
+from http import HTTPStatus
 from api_gateway.serverdb.scheduledtasks import ScheduledTask
 
 with_task = with_resource_factory('Scheduled task', lambda task_id: ScheduledTask.query.filter_by(id=task_id).first())
@@ -28,7 +28,7 @@ def get_scheduler_status():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
     def __func():
-        return {"status": current_app.running_context.scheduler.scheduler.state}, SUCCESS
+        return {"status": current_app.running_context.scheduler.scheduler.state}, HTTPStatus.OK
 
     return __func()
 
@@ -51,7 +51,7 @@ def update_scheduler_status():
         elif status == "resume":
             updated_status = current_app.running_context.scheduler.resume()
             current_app.logger.info('Scheduler resumed. Status {0}'.format(updated_status))
-        return {"status": updated_status}, SUCCESS
+        return {"status": updated_status}, HTTPStatus.OK
 
     return __func()
 
@@ -62,27 +62,27 @@ def read_all_scheduled_tasks():
     def __func():
         page = request.args.get('page', 1, type=int)
         return [task.as_json() for task in
-                ScheduledTask.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], SUCCESS
+                ScheduledTask.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], HTTPStatus.OK
 
     return __func()
 
 
 def invalid_uuid_problem(invalid_uuids):
     return Problem(
-        BAD_REQUEST,
+        HTTPStatus.BAD_REQUEST,
         'Invalid scheduled task.',
         'Specified UUIDs {} are not valid.'.format(invalid_uuids))
 
 
 def scheduled_task_name_already_exists_problem(name, operation):
     return Problem.from_crud_resource(
-        OBJECT_EXISTS_ERROR,
+        HTTPStatus.BAD_REQUEST,
         'scheduled task',
         operation,
         'Could not {} scheduled task. Scheduled task with name {} already exists.'.format(operation, name))
 
 
-invalid_scheduler_args_problem = Problem(BAD_REQUEST, 'Invalid scheduled task.', 'Invalid scheduler arguments.')
+invalid_scheduler_args_problem = Problem(HTTPStatus.BAD_REQUEST, 'Invalid scheduled task.', 'Invalid scheduler arguments.')
 
 
 def create_scheduled_task():
@@ -102,7 +102,7 @@ def create_scheduled_task():
             else:
                 db.session.add(task)
                 db.session.commit()
-                return task.as_json(), OBJECT_CREATED
+                return task.as_json(), HTTPStatus.CREATED
         else:
             return scheduled_task_name_already_exists_problem(data['name'], 'create')
 
@@ -114,7 +114,7 @@ def read_scheduled_task(scheduled_task_id):
     @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
     @with_task('read', scheduled_task_id)
     def __func(task):
-        return task.as_json(), SUCCESS
+        return task.as_json(), HTTPStatus.OK
 
     return __func()
 
@@ -138,7 +138,7 @@ def update_scheduled_task():
             return invalid_scheduler_args_problem
         else:
             db.session.commit()
-            return task.as_json(), SUCCESS
+            return task.as_json(), HTTPStatus.OK
 
     return __func()
 
@@ -150,7 +150,7 @@ def delete_scheduled_task(scheduled_task_id):
     def __func(task):
         db.session.delete(task)
         db.session.commit()
-        return None, NO_CONTENT
+        return None, HTTPStatus.NO_CONTENT
 
     return __func()
 
@@ -168,6 +168,6 @@ def control_scheduled_task():
         elif action == 'stop':
             task.stop()
         db.session.commit()
-        return {}, SUCCESS
+        return {}, HTTPStatus.OK
 
     return __func()

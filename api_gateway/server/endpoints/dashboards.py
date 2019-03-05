@@ -10,7 +10,7 @@ from api_gateway.executiondb.dashboard import Dashboard
 from api_gateway.executiondb.schemas import DashboardSchema
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_input_problem
-from api_gateway.server.returncodes import *
+from http import HTTPStatus
 
 
 def dashboard_getter(dashboard_id):
@@ -31,7 +31,7 @@ def create_dashboard():
         dashboard = dashboard_schema.load(data)
         current_app.running_context.execution_db.session.add(dashboard)
         current_app.running_context.execution_db.session.commit()
-        return dashboard_schema.dump(dashboard), OBJECT_CREATED
+        return dashboard_schema.dump(dashboard), HTTPStatus.CREATED
     except ValidationError as e:
         current_app.running_context.execution_db.session.rollback()
         return improper_json_problem("dashboard", "create", dashboard_name, e.messages)
@@ -45,7 +45,7 @@ def create_dashboard():
 @paginate(dashboard_schema)
 def read_all_dashboards():
     r = current_app.running_context.execution_db.session.query(Dashboard).order_by(Dashboard.name).all()
-    return r, SUCCESS
+    return r, HTTPStatus.OK
 
 
 @jwt_required
@@ -59,7 +59,7 @@ def update_dashboard(dashboard_id):
 
         current_app.running_context.execution_db.session.commit()
         current_app.logger.info(f"Updated dashboard {dashboard_id}")
-        return dashboard_schema.dump(dashboard_id), SUCCESS
+        return dashboard_schema.dump(dashboard_id), HTTPStatus.OK
     except (IntegrityError, StatementError):
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem("dashboard", "update", data["name"])
@@ -70,7 +70,7 @@ def update_dashboard(dashboard_id):
 @with_dashboard("read", "dashboard_id")
 def read_dashboard(dashboard_id):
     dashboard_json = dashboard_schema.dump(dashboard_id)
-    return jsonify(dashboard_json), SUCCESS
+    return jsonify(dashboard_json), HTTPStatus.OK
 
 
 @jwt_required
@@ -80,4 +80,4 @@ def delete_dashboard(dashboard_id):
     current_app.running_context.execution_db.session.delete(dashboard_id)
     current_app.logger.info(f"Dashboard removed: {dashboard_id.name}")
     current_app.running_context.execution_db.session.commit()
-    return None, NO_CONTENT
+    return None, HTTPStatus.NO_CONTENT

@@ -14,7 +14,7 @@ from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStat
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
 from api_gateway.server.problem import Problem
-from api_gateway.server.returncodes import *
+from http import HTTPStatus
 from api_gateway.executiondb.schemas import WorkflowSchema
 
 
@@ -104,7 +104,7 @@ def get_all_workflow_status():
             offset((page - 1) * current_app.config['ITEMS_PER_PAGE'])
 
         ret = jsonify([workflow_status.as_json() for workflow_status in ret])
-        return ret, SUCCESS
+        return ret, HTTPStatus.OK
 
     return __func()
 
@@ -114,7 +114,7 @@ def get_workflow_status(execution_id):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     @with_workflow_status('control', execution_id)
     def __func(workflow_status):
-        return workflow_status.as_json(full_actions=True), SUCCESS
+        return workflow_status.as_json(full_actions=True), HTTPStatus.OK
 
     return __func()
 
@@ -128,7 +128,7 @@ def execute_workflow():
     @with_workflow('execute', workflow_id)
     def __func(workflow):
         if not workflow.is_valid:
-            return Problem(INVALID_INPUT_ERROR, 'Cannot execute workflow', 'Workflow is invalid')
+            return Problem(HTTPStatus.BAD_REQUEST, 'Cannot execute workflow', 'Workflow is invalid')
 
         # Short circuits the multiprocessed executor
         workflow = current_app.running_context.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
@@ -147,7 +147,7 @@ def execute_workflow():
                                     event=WalkoffEvent.SchedulerJobExecuted, data=data)
 
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))
-        return {'id': execution_id}, SUCCESS_ASYNC
+        return {'id': execution_id}, HTTPStatus.ACCEPTED
 
     return __func()
 
@@ -171,7 +171,7 @@ def control_workflow():
         elif status == 'abort':
             abort_workflow(execution_id, user=get_jwt_claims().get('username', None))
 
-        return None, NO_CONTENT
+        return None, HTTPStatus.NO_CONTENT
 
     return __func()
 
@@ -192,6 +192,6 @@ def clear_workflow_status(all=False, days=30):
                 WorkflowStatus.completed_at <= delete_date
             )).delete(synchronize_session=False)
         current_app.running_context.execution_db.session.commit()
-        return None, NO_CONTENT
+        return None, HTTPStatus.NO_CONTENT
 
     return __func()

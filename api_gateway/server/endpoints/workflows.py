@@ -16,7 +16,7 @@ from api_gateway.helpers import strip_device_ids, strip_argument_ids
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, paginate
 from api_gateway.server.problem import Problem, unique_constraint_problem, improper_json_problem, invalid_input_problem
-from api_gateway.server.returncodes import *
+from http import HTTPStatus
 
 workflow_schema = WorkflowSchema()
 
@@ -51,14 +51,14 @@ def create_workflow():
     workflow_name = data['name']
 
     if workflow_id:
-        return copy_workflow(workflow_id)
+        return copy_workflow(workflow_id=workflow_id)
 
     try:
         workflow = workflow_schema.load(data)
         current_app.running_context.execution_db.session.add(workflow)
         current_app.running_context.execution_db.session.commit()
         current_app.logger.info(f"Created Workflow {workflow.name} ({workflow.id_})")
-        return workflow_schema.dump(workflow), OBJECT_CREATED
+        return workflow_schema.dump(workflow), HTTPStatus.CREATED
     except ValidationError as e:
         current_app.running_context.execution_db.session.rollback()
         return improper_json_problem('workflow', 'create', workflow_name, e.messages)
@@ -67,12 +67,12 @@ def create_workflow():
         return unique_constraint_problem('workflow', 'create', workflow_name)
 
 
+@with_workflow('read', 'workflow_id')
 def copy_workflow(workflow_id):
-    workflow = workflow_getter(workflow_id)
     data = request.get_json()
 
-    workflow_json = workflow_schema.dump(workflow)
-    workflow_json['name'] = data.get("name", f"{workflow.name}_copy")
+    workflow_json = workflow_schema.dump(workflow_id)
+    workflow_json['name'] = data.get("name", f"{workflow_id.name}_copy")
 
     regenerate_workflow_ids(workflow_json)
 
@@ -80,8 +80,8 @@ def copy_workflow(workflow_id):
         new_workflow = workflow_schema.load(workflow_json)
         current_app.running_context.execution_db.session.add(new_workflow)
         current_app.running_context.execution_db.session.commit()
-        current_app.logger.info(f"Workflow {workflow_id} copied to {new_workflow.id_}")
-        return workflow_schema.dump(new_workflow), OBJECT_CREATED
+        current_app.logger.info(f"Workflow {workflow_id.id_} copied to {new_workflow.id_}")
+        return workflow_schema.dump(new_workflow), HTTPStatus.CREATED
     except IntegrityError:
         current_app.running_context.execution_db.session.rollback()
         current_app.logger.error(f"Could not copy workflow {workflow_json['name']}. Unique constraint failed")
@@ -93,14 +93,14 @@ def copy_workflow(workflow_id):
 @paginate(workflow_schema)
 def read_all_workflows():
     r = current_app.running_context.execution_db.session.query(Workflow).order_by(Workflow.name).all()
-    return r, SUCCESS
+    return r, HTTPStatus.OK
 
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
 @with_workflow('read', 'workflow_id')
 def read_workflow(workflow_id):
-    return workflow_schema.dump(workflow_id), SUCCESS
+    return workflow_schema.dump(workflow_id), HTTPStatus.OK
 
 
 @jwt_required
@@ -116,7 +116,7 @@ def update_workflow(workflow_id):
     try:
         current_app.running_context.execution_db.session.commit()
         current_app.logger.info(f"Updated workflow {workflow_id.name} ({workflow_id.id_})")
-        return workflow_schema.dump(workflow_id), SUCCESS
+        return workflow_schema.dump(workflow_id), HTTPStatus.OK
     except IntegrityError:
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem('workflow', 'update', workflow_id.id_)
@@ -129,4 +129,4 @@ def delete_workflow(workflow_id):
     current_app.running_context.execution_db.session.delete(workflow_id)
     current_app.logger.info(f"Removed workflow {workflow_id.name} ({workflow_id.id_})")
     current_app.running_context.execution_db.session.commit()
-    return None, NO_CONTENT
+    return None, HTTPStatus.NO_CONTENT

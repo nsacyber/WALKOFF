@@ -1,5 +1,6 @@
 from datetime import datetime
 from uuid import UUID
+from http import HTTPStatus
 
 from enum import Enum, unique
 from flask import current_app, request
@@ -10,7 +11,6 @@ from api_gateway.executiondb import ActionStatusEnum, WorkflowStatusEnum
 from api_gateway.executiondb.workflowresults import WorkflowStatus
 from api_gateway.helpers import convert_action_argument, utc_as_rfc_datetime
 from api_gateway.server.problem import Problem
-from api_gateway.server.returncodes import BAD_REQUEST
 from api_gateway.sse import FilteredSseStream, StreamableBlueprint
 
 workflow_stream = FilteredSseStream('workflow_results')
@@ -222,7 +222,7 @@ def stream_workflow_action_events():
             UUID(workflow_execution_id)
         except ValueError:
             return Problem(
-                BAD_REQUEST,
+                HTTPStatus.BAD_REQUEST,
                 'Could not connect to action results stream',
                 'workflow_execution_id must be a valid UUID')
     if request.args.get('summary'):
@@ -240,7 +240,7 @@ def stream_workflow_status():
             UUID(workflow_execution_id)
         except ValueError:
             return Problem(
-                BAD_REQUEST,
+                HTTPStatus.BAD_REQUEST,
                 'Could not connect to action results stream',
                 'workflow_execution_id must be a valid UUID')
     return workflow_stream.stream(subchannel=workflow_execution_id)
