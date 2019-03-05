@@ -1,0 +1,87 @@
+/iapi/workflowstatus/:
+  # ToDo: delete this, it's for debug only
+  # GET already exists under /workflowqueue
+  # POST here for CRUD debug only. You should post to /workflowqueue instead for real workflows
+  post:
+    tags:
+      - TempInternal
+    summary: Create workflow status object. does not actually execute workflow
+    description: For internal use only. This endpoint should only be available to the docker network.
+    operationId: api_gateway.server.endpoints.results.create_workflow_status
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExecuteWorkflow'
+    responses:
+      201:
+        description: Created WorkflowStatus entry
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Uuid'
+      400:
+        description: Invalid input error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/iapi/workflowstatus/{execution_id}:
+  # ToDo: decide on path name
+  # GET already exists under /workflowqueue/{execution_id}
+  parameters:
+    - name: event
+      in: query
+      description: The event type that is being submitted
+      required: true
+      schema:
+        type: string
+        enum:
+          - ActionStarted
+          - ActionSuccess
+          - ActionError
+          - TransformStarted
+          - TransformSuccess
+          - TransformError
+          - ConditionalStarted
+          - ConditionalSuccess
+          - ConditionalError
+          - TriggerStarted
+          - TriggerSuccess
+          - TriggerError
+          - WorkflowStarted
+          - WorkflowSuccess
+          - WorkflowError
+  patch:
+    tags:
+      - TempInternal
+    summary: Patch parts of a WorkflowStatus object
+    description: For internal use only. This endpoint should only be available to the docker network.
+    operationId: api_gateway.server.endpoints.results.update_workflow_status
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JSONPatch'
+    responses:
+      202:
+        description: Updated WorkflowStatus entry
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Uuid'
+      400:
+        description: Invalid input error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      404:
+        description: WorkflowStatus does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
