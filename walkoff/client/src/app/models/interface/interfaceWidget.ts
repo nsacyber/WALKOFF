@@ -9,7 +9,7 @@ export abstract class InterfaceWidget {
     metadata: any = {};
 
     constructor(
-        public title: string = 'Widget', 
+        public title: string = '', 
         public x = 0, 
         public y = 0, 
         public cols = 4, 
@@ -61,7 +61,6 @@ export class PieChartWidget  extends ChartWidget {
     chartData: number[] = [1881, 1408, 2];
 
     setMetadata(results: any) {
-        console.log(results);
         this.metadata = {
             chartLabels: results.headers,
             chartData: results.rows[0]

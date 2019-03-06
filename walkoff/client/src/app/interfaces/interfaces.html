@@ -16,40 +16,44 @@
 					<gridster class="displayGrid" [options]="options">
 						<gridster-item [item]="item" *ngFor="let item of interface.widgets" class="p-3">
 							<!-- your content here -->
-							<h3 class="text-center">{{ item.title }}</h3>
-
-							<div *ngIf="item.metadata; let metadata">
-
-								<div *ngIf="item.type == 'bar'">
-									<canvas baseChart [datasets]="metadata.chartData" [labels]="metadata.chartLabels" [options]="item.chartOptions" [legend]="item.showLegend"
-									[chartType]="'bar'">
-									</canvas>
+							<div class="widget">
+								<div *ngIf="item.title" class="widget-header">
+									<h3 class="text-center">{{ item.title }}</h3>
 								</div>
 
-								<div *ngIf="item.type == 'line'">
-									<canvas baseChart [datasets]="metadata.chartData" [labels]="metadata.chartLabels" [options]="item.chartOptions" [legend]="item.showLegend"
-									[chartType]="'line'">
-									</canvas>
-								</div>
+								<div class="widget-content" *ngIf="item.metadata; let metadata">
 
-								<div *ngIf="item.type == 'pie'">
-									<canvas baseChart [data]="metadata.chartData" [labels]="metadata.chartLabels" [chartType]="'pie'" [legend]="item.showLegend">
-									</canvas>
-								</div>
+									<ng-container *ngIf="item.type == 'bar'">
+										<canvas baseChart [datasets]="metadata.chartData" [labels]="metadata.chartLabels" [options]="item.chartOptions" [legend]="item.showLegend"
+										[chartType]="'bar'">
+										</canvas>
+									</ng-container>
 
-								<div *ngIf="item.type == 'text'">
-									<p *ngIf="item.text">{{ item.text }}</p>
-								</div>
+									<ng-container *ngIf="item.type == 'line'">
+										<canvas baseChart [datasets]="metadata.chartData" [labels]="metadata.chartLabels" [options]="item.chartOptions" [legend]="item.showLegend"
+										[chartType]="'line'">
+										</canvas>
+									</ng-container>
 
-								<div *ngIf="item.type == 'table'">
-									<ngx-datatable [style.height.px]="getItemHeight(item)" class="material" [scrollbarV]="true" [columnMode]="'force'" [rows]="metadata.rows" [columns]="metadata.columns"></ngx-datatable>
-								</div>
+									<ng-container *ngIf="item.type == 'pie'">
+										<canvas baseChart [data]="metadata.chartData" [labels]="metadata.chartLabels" [chartType]="'pie'" [legend]="item.showLegend">
+										</canvas>
+									</ng-container>
 
-								<div *ngIf="item.type == 'kibana'">
-									<iframe class="kibana" [src]="sanitizeEmbedUrl(item.options.embedUrl)"></iframe>
-								</div>
+									<ng-container *ngIf="item.type == 'text'">
+										<p *ngIf="item.text">{{ item.text }}</p>
+									</ng-container>
 
-							</div>
+									<ng-container *ngIf="item.type == 'table'">
+										<ngx-datatable class="material widget-fullscreen" headerHeight="45" rowHeight="45" [columnMode]="'force'" [rows]="metadata.rows" [columns]="metadata.columns"></ngx-datatable>
+									</ng-container>
+
+									<ng-container *ngIf="item.type == 'kibana'">
+										<iframe class="widget-fullscreen" [src]="item.options.embedUrl | safeEmbed"></iframe>
+									</ng-container>
+
+								</div>
+							</div>	
 						</gridster-item>
 					</gridster>
 				</div>

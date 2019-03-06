@@ -48,6 +48,7 @@ import { KeysPipe } from './pipes/keys.pipe';
 import { UtilitiesService } from './utilities.service';
 import { ManageInterfacesComponent } from './interfaces/manage.interfaces.component';
 import { WidgetModalComponent } from './interfaces/widget.modal.component';
+import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 
 @NgModule({
 	imports: [
@@ -102,6 +103,7 @@ import { WidgetModalComponent } from './interfaces/widget.modal.component';
 		SettingsRolesComponent,
 		// Pipes
 		KeysPipe,
+		SafeEmbedPipe,
 		ManageInterfacesComponent,
 		WidgetModalComponent,
 	],

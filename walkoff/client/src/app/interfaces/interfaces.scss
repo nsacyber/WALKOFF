@@ -24,11 +24,26 @@ gridster.displayGrid {
 	background: none;
 }
 
-#grid iframe.kibana {
+.widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.widget-header {
+    flex-basis: content;
+}
+
+.widget-content {
+	flex: 1;
+	position: relative;
+}
+
+.widget-fullscreen {
+    overflow-y: scroll !important;
     width: 100%;
     height: 100%;
     position: absolute;
-    display: block;
-    bottom: 0;
-    left: 0;
+    left:0;
+    bottom:0;
 }

@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, ViewEncapsulation, OnInit, OnChanges } from '@angular/core';
+import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
@@ -10,15 +10,11 @@ import { HttpClient } from '@angular/common/http';
 import { InterfaceService } from './interface.service';
 import { GridsterConfig, GridType, CompactType } from 'angular-gridster2';
 import { Interface } from '../models/interface/interface';
-import { InterfaceWidget } from '../models/interface/interfaceWidget';
-
-import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
 	selector: 'interfaces-component',
 	templateUrl: './interfaces.html',
 	styleUrls: ['./interfaces.scss'],
-	encapsulation: ViewEncapsulation.None,
 	providers: [AuthService],
 })
 export class InterfacesComponent implements OnInit {
@@ -38,8 +34,7 @@ export class InterfacesComponent implements OnInit {
 	
 	constructor(
 		private route: ActivatedRoute, private toastrService: ToastrService,
-		private http: HttpClient, private interfaceService: InterfaceService,
-		private sanitizer: DomSanitizer
+		private http: HttpClient, private interfaceService: InterfaceService
 	) { }
 
 	/**
@@ -127,10 +122,6 @@ export class InterfacesComponent implements OnInit {
 		//return '980px';
 		return this.gridRows * Math.ceil(this.gridColSize * 3 / 4 + this.gridGutterSize) + this.gridGutterSize  + 'px';
 	}
-
-	getItemHeight(item: InterfaceWidget) {
-        return item.rows * Math.ceil(this.gridColSize * 3/4 + this.gridGutterSize) - 80;
-    }
 
 	savePDF() {
 		return window.print();
@@ -232,9 +223,5 @@ export class InterfacesComponent implements OnInit {
 		//     //! after the for loop is finished running, we save the pdf.
 		//     pdf.save('Test.pdf');
 	//});
-	}
-
-	sanitizeEmbedUrl(url) {
-		return this.sanitizer.bypassSecurityTrustResourceUrl(url)
 	}
 }

@@ -7,7 +7,7 @@
             <div class="col-12">
                 <div class="form-group">
                     <label for="title">Title</label>
-                    <input label="title" type="text" [(ngModel)]="widget.title" class="form-control">
+                    <input label="title" type="text" [(ngModel)]="widget.title" class="form-control" placeholder="Title (Optional)">
                 </div>
             </div>
             <div *ngIf="!['text', 'kibana'].includes(widget.type)" class="col-12">
