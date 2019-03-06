@@ -239,29 +239,38 @@ class WorkflowSchema(ExecutionElementBaseSchema):
 
 class ActionStatusSchema(ExecutionBaseSchema):
     """
-    Schema for ActionStatus
+    Schema for ActionStatusMessage
     """
     action_id = field_for(ActionStatus, 'action_id', required=True)
     name = field_for(ActionStatus, 'name', required=True)
     app_name = field_for(ActionStatus, 'app_name', required=True)
     action_name = field_for(ActionStatus, 'action_name', required=True)
     result = field_for(ActionStatus, 'result')
-    arguments = field_for(ActionStatus, 'arguments')
     status = field_for(ActionStatus, 'status', required=True)
     started_at = field_for(ActionStatus, 'started_at')
     completed_at = field_for(ActionStatus, 'completed_at')
 
+    class Meta:
+        model = ActionStatus
+        unknown = EXCLUDE
+
 
 class WorkflowStatusSchema(ExecutionBaseSchema):
     """
-    Schema for WorkflowStatus
+    Schema for WorkflowStatusMessage
     """
+    execution_id = field_for(WorkflowStatus, 'execution_id', required=True)
+    workflow_id = field_for(WorkflowStatus, 'workflow_id', required=True)
     name = field_for(WorkflowStatus, 'name', required=True)
     status = field_for(WorkflowStatus, 'status', required=True)
     started_at = field_for(WorkflowStatus, 'started_at')
     completed_at = field_for(WorkflowStatus, 'completed_at')
     user = field_for(WorkflowStatus, 'user')
     _action_statuses = fields.Nested(ActionStatusSchema, many=True)
+
+    class Meta:
+        model = WorkflowStatus
+        unknown = EXCLUDE
 
 
 # This could be done better with a metaclass which registers subclasses

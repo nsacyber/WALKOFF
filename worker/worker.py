@@ -10,7 +10,7 @@ import aiohttp
 import aioredis
 from asteval import Interpreter, make_symbol_table
 
-from common.message_types import message_dumps, message_loads, message_dump, ActionStatus, WorkflowStatus, StatusEnum, \
+from common.message_types import message_dumps, message_loads, message_dump, ActionStatusMessage, WorkflowStatusMessage, StatusEnum, \
     JSONPatch, JSONPatchOps
 from common.config import config
 from common.helpers import connect_to_redis_pool
@@ -242,7 +242,7 @@ class Worker:
         await self.dereference_params(action)
 
         # TODO: decide if we want pending action messages and uncomment this line
-        # await self.send_message(ActionStatus.pending_from_action(action))
+        # await self.send_message(ActionStatusMessage.pending_from_action(action))
 
         await self.redis.lpush(f"{action.app_name}-{action.priority}", workflow_dumps(action))
         logger.info(f"Scheduled {action}")
@@ -282,10 +282,10 @@ class Worker:
         # Clean up our redis mess
         await self.redis.delete(read_messages_queue)
 
-    async def send_message(self, message: Union[ActionStatus, WorkflowStatus]):
+    async def send_message(self, message: Union[ActionStatusMessage, WorkflowStatusMessage]):
         execution_id = None
         patches = None
-        if isinstance(message, ActionStatus):
+        if isinstance(message, ActionStatusMessage):
             execution_id = message.workflow_execution_id
             root = f"#/action_statuses/{message.action_id}"
 
@@ -304,7 +304,7 @@ class Worker:
                 fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k in white_list}
                 patches = [JSONPatch(JSONPatchOps.REMOVE, path=path, value=value) for path, value in fields]
 
-        elif isinstance(message, WorkflowStatus):
+        elif isinstance(message, WorkflowStatusMessage):
             execution_id = message.execution_id
             root = f"#/"
 

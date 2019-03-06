@@ -19,7 +19,7 @@ JSONPatch:
       description: A JSON-Pointer
       example: "#/level1/level2/level3"
     value:
-      type: object
+      type: string
       description: The value to be used within the operations.
     from:
       type: string

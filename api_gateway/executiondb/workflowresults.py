@@ -20,25 +20,26 @@ class WorkflowStatus(Execution_Base):
         started_at (datetime): Time the Workflow started
         completed_at (datetime): Time the Workflow ended
         user (str): The user who initially executed this workflow
-        _action_statuses (list[ActionStatus]): A list of ActionStatus objects for this WorkflowStatus
+        _action_statuses (list[ActionStatus]): A list of ActionStatusMessage objects for this WorkflowStatusMessage
     """
     __tablename__ = 'workflow_status'
     execution_id = Column(UUIDType(binary=False), primary_key=True)
     workflow_id = Column(UUIDType(binary=False), nullable=False)
     name = Column(String, nullable=False)
-    status = Column(Enum(WorkflowStatusEnum, name='WorkflowStatusEnum'), nullable=False)
+    status = Column(String, nullable=False)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
     user = Column(String)
     _action_statuses = relationship('ActionStatus', backref=backref("_workflow_status"), passive_deletes=True,
                                     cascade='all, delete-orphan')
 
-    def __init__(self, execution_id, workflow_id, name, user=None):
+    def __init__(self, execution_id, workflow_id, name, status=WorkflowStatusEnum.pending, user=None):
         self.execution_id = execution_id
         self.workflow_id = workflow_id
         self.name = name
-        self.status = WorkflowStatusEnum.pending
+        self.status = status
         self.user = user
+        self._action_statuses = []
 
     def running(self):
         """Sets the status to running"""
@@ -68,15 +69,15 @@ class WorkflowStatus(Execution_Base):
             self._action_statuses[-1].aborted()
 
     def add_action_status(self, action_status):
-        """Adds an ActionStatus
+        """Adds an ActionStatusMessage
 
         Args:
-            action_status (ActionStatus): The ActionStatus to add
+            action_status (ActionStatus): The ActionStatusMessage to add
         """
         self._action_statuses.append(action_status)
 
     def as_json(self, full_actions=False):
-        """Gets the JSON representation of the WorkflowStatus
+        """Gets the JSON representation of the WorkflowStatusMessage
 
         Args:
             full_actions (bool, optional): Get the full Action objects as well? Defaults to False
@@ -88,6 +89,7 @@ class WorkflowStatus(Execution_Base):
                "workflow_id": str(self.workflow_id),
                "name": self.name,
                "status": self.status.name}
+
         if self.user:
             ret["user"] = self.user
         if self.started_at:
@@ -115,7 +117,7 @@ class ActionStatus(Execution_Base):
         status (ActionStatusEnum): The status of the Action
         started_at (datetime): The time the Action started
         completed_at (datetime): The time the Action completed
-        _workflow_status_id (UUID): The FK ID of the WorkflowStatus
+        _workflow_status_id (UUID): The FK ID of the WorkflowStatusMessage
     """
     __tablename__ = 'action_status'
     action_id = Column(UUIDType(binary=False), primary_key=True)
@@ -123,7 +125,7 @@ class ActionStatus(Execution_Base):
     app_name = Column(String, nullable=False)
     action_name = Column(String, nullable=False)
     result = Column(String)
-    status = Column(Enum(ActionStatusEnum, name='ActionStatusEnum'), nullable=False)
+    status = Column(String, nullable=False)
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
     workflow_execution_id = Column(UUIDType(binary=False), ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))

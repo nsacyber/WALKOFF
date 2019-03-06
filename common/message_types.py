@@ -13,11 +13,11 @@ def message_loads(obj):
 
 
 def message_dump(obj):
-    return json.dumps(obj, cls=MessageJSONEncoder)
+    return json.dump(obj, cls=MessageJSONEncoder)
 
 
 def message_load(obj):
-    return json.loads(obj, cls=MessageJSONDecoder)
+    return json.load(obj, cls=MessageJSONDecoder)
 
 
 class MessageJSONDecoder(json.JSONDecoder):
@@ -28,22 +28,22 @@ class MessageJSONDecoder(json.JSONDecoder):
     def object_hook(self, o):
         if "action_id" and "app_name" in o:
             o["status"] = StatusEnum[o["status"]]
-            return ActionStatus(**o)
+            return ActionStatusMessage(**o)
 
         elif "workflow_id" and "execution_id" in o:
             o["status"] = StatusEnum[o["status"]]
-            return WorkflowStatus(**o)
+            return WorkflowStatusMessage(**o)
 
 
 class MessageJSONEncoder(json.JSONEncoder):
     """ A custom encoder for encoding Message types to JSON strings. """
     def default(self, o):
-        if isinstance(o, ActionStatus):
+        if isinstance(o, ActionStatusMessage):
             return {"name": o.name, "action_id": o.action_id, "action_name": o.action_name, "app_name": o.app_name,
                     "workflow_execution_id": o.workflow_execution_id, "result": o.result,  "error": o.error,
                     "status": o.status}
 
-        elif isinstance(o, WorkflowStatus):
+        elif isinstance(o, WorkflowStatusMessage):
             return {"execution_id": o.execution_id, "workflow_id": o.workflow_id, "name": o.name, "status": o.status,
                     "started_at": o.started_at, "completed_at": o.completed_at, "user": o.user}
 
@@ -97,8 +97,8 @@ class StatusEnum(enum.Enum):
     FAILURE = "FAILURE"
 
 
-class WorkflowStatus:
-    """ Class that formats a WorkflowStatus message """
+class WorkflowStatusMessage:
+    """ Class that formats a WorkflowStatusMessage message """
     def __init__(self, execution_id, workflow_id, name, started_at=None, completed_at=None, status=None, user=None):
         self.execution_id = execution_id
         self.workflow_id = workflow_id
@@ -128,8 +128,8 @@ class WorkflowStatus:
         return cls(execution_id, workflow_id, name, completed_at=end_time, status=StatusEnum.ABORTED, user=user)
 
 
-class ActionStatus:
-    """ Class that formats an ActionStatus message. The name is a bit of a misnomer since they are used for Trigger,
+class ActionStatusMessage:
+    """ Class that formats an ActionStatusMessage message. The name is a bit of a misnomer since they are used for Trigger,
         Transform, and Condition messages as well. NodeStatus just didn't seem like the right thing to call them.
     """
     def __init__(self, name, action_id, action_name, app_name, workflow_execution_id, result=None, error=None,
@@ -159,19 +159,19 @@ class ActionStatus:
 
     @classmethod
     def pending_from_action(cls, action):
-        return ActionStatus.from_action(action, status=StatusEnum.PENDING)
+        return ActionStatusMessage.from_action(action, status=StatusEnum.PENDING)
 
     @classmethod
     def executing_from_action(cls, action):
         started_at = time.time()
-        return ActionStatus.from_action(action, started_at=started_at, status=StatusEnum.EXECUTING)
+        return ActionStatusMessage.from_action(action, started_at=started_at, status=StatusEnum.EXECUTING)
 
     @classmethod
     def success_from_action(cls, action, result):
         completed_at = time.time()
-        return ActionStatus.from_action(action, result=result, completed_at=completed_at, status=StatusEnum.SUCCESS)
+        return ActionStatusMessage.from_action(action, result=result, completed_at=completed_at, status=StatusEnum.SUCCESS)
 
     @classmethod
     def failure_from_action(cls, action, error=None):
         completed_at = time.time()
-        return ActionStatus.from_action(action, error=error, completed_at=completed_at, status=StatusEnum.FAILURE)
+        return ActionStatusMessage.from_action(action, error=error, completed_at=completed_at, status=StatusEnum.FAILURE)

@@ -1,4 +1,4 @@
-/iapi/workflowstatus/:
+/internal/workflowstatus/:
   # ToDo: delete this, it's for debug only
   # GET already exists under /workflowqueue
   # POST here for CRUD debug only. You should post to /workflowqueue instead for real workflows
@@ -16,7 +16,7 @@
             $ref: '#/components/schemas/ExecuteWorkflow'
     responses:
       201:
-        description: Created WorkflowStatus entry
+        description: Created WorkflowStatusMessage entry
         content:
           application/json:
             schema:
@@ -28,36 +28,13 @@
             schema:
               $ref: '#/components/schemas/Error'
 
-/iapi/workflowstatus/{execution_id}:
+/internal/workflowstatus/{execution_id}:
   # ToDo: decide on path name
   # GET already exists under /workflowqueue/{execution_id}
-  parameters:
-    - name: event
-      in: query
-      description: The event type that is being submitted
-      required: true
-      schema:
-        type: string
-        enum:
-          - ActionStarted
-          - ActionSuccess
-          - ActionError
-          - TransformStarted
-          - TransformSuccess
-          - TransformError
-          - ConditionalStarted
-          - ConditionalSuccess
-          - ConditionalError
-          - TriggerStarted
-          - TriggerSuccess
-          - TriggerError
-          - WorkflowStarted
-          - WorkflowSuccess
-          - WorkflowError
   patch:
     tags:
       - TempInternal
-    summary: Patch parts of a WorkflowStatus object
+    summary: Patch parts of a WorkflowStatusMessage object
     description: For internal use only. This endpoint should only be available to the docker network.
     operationId: api_gateway.server.endpoints.results.update_workflow_status
     requestBody:
@@ -66,9 +43,29 @@
         application/json:
           schema:
             $ref: '#/components/schemas/JSONPatch'
+    parameters:
+      - name: execution_id
+        in: path
+        description: execution_id of workflow status to update
+        required: true
+        schema:
+          type: string
+      - name: event
+        in: query
+        description: The event type that is being submitted
+        required: true
+        schema:
+          type: string
+          enum:
+            - PENDING
+            - COMPLETED
+            - ABORTED
+            - EXECUTING
+            - SUCCESS
+            - FAILURE
     responses:
       202:
-        description: Updated WorkflowStatus entry
+        description: Updated WorkflowStatusMessage entry
         content:
           application/json:
             schema:
@@ -80,7 +77,7 @@
             schema:
               $ref: '#/components/schemas/Error'
       404:
-        description: WorkflowStatus does not exist.
+        description: WorkflowStatusMessage does not exist.
         content:
           application/json:
             schema:

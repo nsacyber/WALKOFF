@@ -41,6 +41,8 @@ tags:
     description: Serves up client pages
   - name: System
     description: System Resources
+  - name: TempInternal
+    description: TempInternal
 
 servers:
   - url: /api
@@ -50,13 +52,14 @@ paths:
   $ref: ./auth.yaml
   $ref: ./configuration.yaml
   $ref: ./global_variables.yaml
-  $ref: ./metadata.yaml
   $ref: ./roles.yaml
   $ref: ./scheduler.yaml
   $ref: ./users.yaml
   $ref: ./workflowqueue.yaml
   $ref: ./workflows.yaml
   $ref: ./dashboards.yaml
+  $ref: ./results.yaml
+
 security:
   - AuthenticationToken: []
 
@@ -73,6 +76,8 @@ components:
     $ref: ./objects/workflowqueue.yaml
     $ref: ./objects/workflows.yaml
     $ref: ./objects/dashboard.yaml
+    $ref: ./objects/results.yaml
+
   securitySchemes:
     AuthenticationToken:
       type: http

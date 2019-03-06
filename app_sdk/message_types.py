@@ -98,7 +98,7 @@ class StatusEnum(enum.Enum):
 
 
 class WorkflowStatus:
-    """ Class that formats a WorkflowStatus message """
+    """ Class that formats a WorkflowStatusMessage message """
     def __init__(self, execution_id, workflow_id, name, started_at=None, completed_at=None, status=None, user=None):
         self.execution_id = execution_id
         self.workflow_id = workflow_id
@@ -129,7 +129,7 @@ class WorkflowStatus:
 
 
 class ActionStatus:
-    """ Class that formats an ActionStatus message. The name is a bit of a misnomer since they are used for Trigger,
+    """ Class that formats an ActionStatusMessage message. The name is a bit of a misnomer since they are used for Trigger,
         Transform, and Condition messages as well. NodeStatus just didn't seem like the right thing to call them.
     """
     def __init__(self, name, action_id, action_name, app_name, workflow_execution_id, result=None, error=None,

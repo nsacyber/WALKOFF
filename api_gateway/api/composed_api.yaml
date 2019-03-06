@@ -41,6 +41,8 @@ tags:
     description: Serves up client pages
   - name: System
     description: System Resources
+  - name: TempInternal
+    description: TempInternal
 
 servers:
   - url: /api
@@ -412,26 +414,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-  /client/{filename}:
-    get:
-      tags:
-        - Client
-      summary: Get a client file
-      description: ''
-      operationId: api_gateway.server.endpoints.metadata.read_client_file
-      parameters:
-        - name: filename
-          in: path
-          description: The name of the file to fetch
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-        400:
-          description: Invalid filename
 
   /roles:
     get:
@@ -1326,6 +1308,91 @@ paths:
                 $ref: '#/components/schemas/Dashboard'
         404:
           description: Dashboard does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /internal/workflowstatus/:
+    # ToDo: delete this, it's for debug only
+    # GET already exists under /workflowqueue
+    # POST here for CRUD debug only. You should post to /workflowqueue instead for real workflows
+    post:
+      tags:
+        - TempInternal
+      summary: Create workflow status object. does not actually execute workflow
+      description: For internal use only. This endpoint should only be available to the docker network.
+      operationId: api_gateway.server.endpoints.results.create_workflow_status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteWorkflow'
+      responses:
+        201:
+          description: Created WorkflowStatusMessage entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Uuid'
+        400:
+          description: Invalid input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /internal/workflowstatus/{execution_id}:
+    # ToDo: decide on path name
+    # GET already exists under /workflowqueue/{execution_id}
+    patch:
+      tags:
+        - TempInternal
+      summary: Patch parts of a WorkflowStatusMessage object
+      description: For internal use only. This endpoint should only be available to the docker network.
+      operationId: api_gateway.server.endpoints.results.update_workflow_status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JSONPatch'
+      parameters:
+        - name: execution_id
+          in: path
+          description: execution_id of workflow status to update
+          required: true
+          schema:
+            type: string
+        - name: event
+          in: query
+          description: The event type that is being submitted
+          required: true
+          schema:
+            type: string
+            enum:
+              - PENDING
+              - COMPLETED
+              - ABORTED
+              - EXECUTING
+              - SUCCESS
+              - FAILURE
+      responses:
+        202:
+          description: Updated WorkflowStatusMessage entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Uuid'
+        400:
+          description: Invalid input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: WorkflowStatusMessage does not exist.
           content:
             application/json:
               schema:
@@ -2512,6 +2579,34 @@ components:
     #          description: Execution of the workflow to get data from (latest or uuid)
     #        action:
     #          $ref: '#/components/schemas/Uuid'
+
+    JSONPatch:
+      description: A JSON-Patch document as defined by RFC 6902
+      required:
+        - "op"
+        - "path"
+      properties:
+        op:
+          type: string
+          description: The operation to be performed
+          enum:
+            - "add"
+            - "remove"
+            - "replace"
+            - "move"
+            - "copy"
+            - "test"
+        path:
+          type: string
+          description: A JSON-Pointer
+          example: "#/level1/level2/level3"
+        value:
+          type: string
+          description: The value to be used within the operations.
+        from:
+          type: string
+          description: A string containing a JSON Pointer value.
+
 
   securitySchemes:
     AuthenticationToken:

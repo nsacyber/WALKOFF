@@ -221,7 +221,7 @@ class Config(object):
                     setattr(cls, field, json.loads(os.environ.get(field)))
                 else:
                     setattr(cls, field, var_type(os.environ.get(field)))
-                logger.info("Loading field {} from environment variables.".format(field))
+                logger.info("Loading {} into field {} from environment variables.".format(os.environ.get(field), field))
 
         cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
                                                      'WALKOFF_DB_PASSWORD', cls.WALKOFF_DB_HOST)

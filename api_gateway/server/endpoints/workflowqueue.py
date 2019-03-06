@@ -94,7 +94,7 @@ completed_statuses = (WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed)
 
 def get_all_workflow_status():
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
+    @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
     def __func():
         page = request.args.get('page', 1, type=int)
 
@@ -111,7 +111,7 @@ def get_all_workflow_status():
 
 def get_workflow_status(execution_id):
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
+    @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
     @with_workflow_status('control', execution_id)
     def __func(workflow_status):
         return workflow_status.as_json(full_actions=True), HTTPStatus.OK
@@ -124,7 +124,7 @@ def execute_workflow():
     workflow_id = data['workflow_id']
 
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['execute']))
+    @permissions_accepted_for_resources(ResourcePermissions('workflows', ['execute']))
     @with_workflow('execute', workflow_id)
     def __func(workflow):
         if not workflow.is_valid:
@@ -157,7 +157,7 @@ def control_workflow():
     execution_id = data['execution_id']
 
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['execute']))
+    @permissions_accepted_for_resources(ResourcePermissions('workflows', ['execute']))
     @validate_execution_id_is_registered('control', execution_id)
     def __func():
         status = data['status']
@@ -178,7 +178,7 @@ def control_workflow():
 
 def clear_workflow_status(all=False, days=30):
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
+    @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
     def __func():
         if all:
             current_app.running_context.execution_db.session.query(WorkflowStatus).filter(or_(
