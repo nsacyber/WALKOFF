@@ -8,15 +8,21 @@ from networkx import DiGraph
 
 logger = logging.getLogger("WALKOFF")
 
-Point = namedtuple("Point", ("x", "y"))
-Branch = namedtuple("Branch", ("source", "destination"))
+
+def workflow_dumps(obj):
+    return json.dumps(obj, cls=WorkflowJSONEncoder)
 
 
-class ParameterVariant(enum.Enum):
-    STATIC_VALUE = "STATIC_VALUE"
-    ACTION_RESULT = "ACTION_RESULT"
-    WORKFLOW_VARIABLE = "WORKFLOW_VARIABLE"
-    GLOBAL = "GLOBAL"
+def workflow_loads(obj):
+    return json.loads(obj, cls=WorkflowJSONDecoder)
+
+
+def workflow_dump(obj):
+    return json.dumps(obj, cls=WorkflowJSONEncoder)
+
+
+def workflow_load(obj):
+    return json.loads(obj, cls=WorkflowJSONDecoder)
 
 
 class WorkflowJSONDecoder(json.JSONDecoder):
@@ -96,6 +102,17 @@ class WorkflowJSONEncoder(json.JSONEncoder):
 
         elif isinstance(o, WorkflowVariable):
             return {"description": o.description, "id_": o.id_, "name": o.name, "value": o.value}
+
+
+Point = namedtuple("Point", ("x", "y"))
+Branch = namedtuple("Branch", ("source", "destination"))
+
+
+class ParameterVariant(enum.Enum):
+    STATIC_VALUE = "STATIC_VALUE"
+    ACTION_RESULT = "ACTION_RESULT"
+    WORKFLOW_VARIABLE = "WORKFLOW_VARIABLE"
+    GLOBAL = "GLOBAL"
 
 
 class Node:

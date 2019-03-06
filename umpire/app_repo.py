@@ -8,14 +8,12 @@ from pathlib import Path
 from compose.cli.command import get_project
 
 
-from common.config import load_config
+from common.config import config
 from common.helpers import load_docker_env, validate_app_api
 
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("AppRepo")
-
-config = load_config()
 
 
 class AppRepo(dict):

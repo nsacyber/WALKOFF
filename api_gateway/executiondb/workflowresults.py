@@ -107,38 +107,33 @@ class ActionStatus(Execution_Base):
     """ORM for an Action event in the database
 
     Attributes:
-        execution_id (UUID): The execution ID of the Action
         action_id (UUID): The ID of the Action
         name (str): The name of the Action
         app_name (str): The App name for the Action
         action_name (str): The Action name for the Action
         result (str): The result of the Action
-        arguments (str): The Arguments for the Action, in string representation
         status (ActionStatusEnum): The status of the Action
         started_at (datetime): The time the Action started
         completed_at (datetime): The time the Action completed
         _workflow_status_id (UUID): The FK ID of the WorkflowStatus
     """
     __tablename__ = 'action_status'
-    execution_id = Column(UUIDType(binary=False), primary_key=True)
-    action_id = Column(UUIDType(binary=False), nullable=False)
+    action_id = Column(UUIDType(binary=False), primary_key=True)
     name = Column(String, nullable=False)
     app_name = Column(String, nullable=False)
     action_name = Column(String, nullable=False)
     result = Column(String)
-    arguments = Column(String)
     status = Column(Enum(ActionStatusEnum, name='ActionStatusEnum'), nullable=False)
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
-    _workflow_status_id = Column(UUIDType(binary=False), ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
+    workflow_execution_id = Column(UUIDType(binary=False), ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
 
-    def __init__(self, execution_id, action_id, name, app_name, action_name, arguments=None):
+    def __init__(self, execution_id, action_id, name, app_name, action_name):
         self.execution_id = execution_id
         self.action_id = action_id
         self.name = name
         self.app_name = app_name
         self.action_name = action_name
-        self.arguments = arguments
         self.status = ActionStatusEnum.executing
 
     def aborted(self):

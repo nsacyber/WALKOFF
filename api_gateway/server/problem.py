@@ -57,7 +57,7 @@ def unique_constraint_problem(resource, operation, id_):
 def improper_json_problem(resource, operation, id_, errors=None):
     detail = f"Could not {operation} {resource} {id_}. Invalid JSON"
     current_app.logger.error(detail)
-    return Problem.from_crud_resource(HTTPStatus.BAD_REQUEST, resource, operation, detail, ext={"errors": errors})
+    return Problem.from_crud_resource(HTTPStatus.BAD_REQUEST, resource, operation, detail, ext=errors)
 
 
 def invalid_input_problem(resource, operation, id_, errors=None):

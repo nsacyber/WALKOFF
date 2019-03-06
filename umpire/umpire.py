@@ -14,7 +14,7 @@ from docker.types.services import SecretReference
 from compose.service import Service
 
 
-from common.config import load_config
+from common.config import config
 from common.helpers import connect_to_redis_pool, connect_to_docker, ServiceKwargs
 from umpire.app_repo import AppRepo
 
@@ -22,7 +22,6 @@ logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}
 logger = logging.getLogger("UMPIRE")
 logger.setLevel(logging.DEBUG)
 
-config = load_config()
 USING_DOCKER = config["UMPIRE"]["backend"].casefold() == "docker".casefold()
 USING_KUBERNETES = config["UMPIRE"]["backend"].casefold() == "kubernetes".casefold() \
                 or config["UMPIRE"]["backend"].casefold() == "k8s".casefold()
