@@ -120,18 +120,20 @@ class ActionStatus(Execution_Base):
         _workflow_status_id (UUID): The FK ID of the WorkflowStatusMessage
     """
     __tablename__ = 'action_status'
-    action_id = Column(UUIDType(binary=False), primary_key=True)
+    combined_id = Column(String, primary_key=True)
+    action_id = Column(UUIDType(binary=False), nullable=False)
     name = Column(String, nullable=False)
     app_name = Column(String, nullable=False)
     action_name = Column(String, nullable=False)
     result = Column(String)
+    arguments = Column(String)
     status = Column(String, nullable=False)
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
     workflow_execution_id = Column(UUIDType(binary=False), ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
 
-    def __init__(self, execution_id, action_id, name, app_name, action_name):
-        self.execution_id = execution_id
+    def __init__(self, combined_id, action_id, name, app_name, action_name):
+        self.combined_id = combined_id
         self.action_id = action_id
         self.name = name
         self.app_name = app_name

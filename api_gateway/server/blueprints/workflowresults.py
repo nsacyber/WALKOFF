@@ -40,7 +40,7 @@ def format_action_data(sender, kwargs, status):
             'app_name': sender['app_name'],
             'action_id': sender['id'],
             'name': sender['name'],
-            'execution_id': sender['execution_id'],
+            'combined_id': sender['execution_id'],
             'timestamp': utc_as_rfc_datetime(datetime.utcnow()),
             'status': status.name,
             'arguments': action_arguments,

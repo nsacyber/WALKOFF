@@ -1,9 +1,13 @@
+import re
 import uuid
 import json
 from http import HTTPStatus
 from datetime import datetime
 
-from flask import current_app, request, jsonify
+import gevent
+from gevent.queue import Queue
+
+from flask import Flask, Response, current_app, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_claims
 
 from marshmallow import ValidationError
@@ -16,11 +20,9 @@ from api_gateway.executiondb.workflow import Workflow
 from api_gateway.executiondb.workflowresults import WorkflowStatus, ActionStatus
 from api_gateway.executiondb.schemas import WorkflowSchema, WorkflowStatusSchema, ActionStatusSchema
 
-from common.message_types import WorkflowStatusMessage
-from common.message_types import ActionStatusMessage
-
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_input_problem
+from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_id_problem
+from api_gateway.sse import SseEvent
 
 
 def workflow_getter(workflow_id):
@@ -31,10 +33,19 @@ def workflow_status_getter(execution_id):
     return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
 
 
+def action_status_getter(combined_id):
+    return current_app.running_context.execution_db.session.query(ActionStatus).filter_by(combined_id=combined_id).first()
+
+
 with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
 with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
 
+action_status_schema = ActionStatusSchema()
 workflow_status_schema = WorkflowStatusSchema()
+
+results_stream = Flask(__name__)
+workflow_stream_subs = {}
+action_stream_subs = {}
 
 
 @jwt_required
@@ -73,16 +84,90 @@ def create_workflow_status():
 def update_workflow_status(execution_id):
     old_workflow_status = workflow_status_schema.dump(execution_id)
     print(type(old_workflow_status))
-    patch = jsonpatch.JsonPatch.from_string(json.dumps(request.get_json()))
+    data = request.get_json()
+    patch = jsonpatch.JsonPatch.from_string(json.dumps(data))
     print(type(patch))
     new_workflow_status = patch.apply(old_workflow_status)
     print(type(new_workflow_status))
 
+    resource = request.args.get("resource")
+    event = request.args.get("event")
+
     try:
         workflow_status_schema.load(new_workflow_status, instance=execution_id)
         current_app.running_context.execution_db.session.commit()
-        current_app.logger.info(f"Updated workflow status {execution_id.id_} ({execution_id.name})")
+
+        action_statuses = []
+
+        uuid_regex = "([0-9a-f]{8}\-[0-9a-f]{4}\-4[0-9a-f]{3}\-[89ab][0-9a-f]{3}\-[0-9a-f]{12})"
+        combined_id_re = re.compile(f"{uuid_regex}:{uuid_regex}")
+        for patch in data:
+            if "_action_statuses" in patch["path"]:
+                combined_id = combined_id_re.search(patch["path"]).group(0)
+                action_statuses.append(action_status_getter(combined_id))
+
+        def push_to_workflow_stream_queue():
+            new_workflow_status.pop("_action_statuses", None)
+            sse_event_text = SseEvent(event, new_workflow_status).format(execution_id.execution_id)
+
+            if execution_id.execution_id in workflow_stream_subs:
+                workflow_stream_subs[execution_id.execution_id].put(sse_event_text)
+            if 'all' in workflow_stream_subs:
+                workflow_stream_subs['all'].put(sse_event_text)
+
+        def push_to_action_stream_queue():
+            for action_status in action_statuses:
+                action_status_json = action_status_schema.dump(action_status)
+                sse_event = SseEvent(event, action_status_json)
+                action_stream_subs[action_status.combined_id].put(sse_event.format(action_status.combined_id))
+
+        if resource == "action":
+            gevent.spawn(push_to_action_stream_queue)
+        elif resource == "workflow":
+            gevent.spawn(push_to_workflow_stream_queue)
+
+        current_app.logger.info(f"Updated workflow status {execution_id.execution_id} ({execution_id.name})")
         return workflow_status_schema.dump(execution_id), HTTPStatus.OK
     except IntegrityError:
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem('workflow status', 'update', execution_id.id_)
+
+
+@results_stream.route('/workflow_status')
+def workflow_stream():
+    execution_id = request.args.get('workflow_execution_id', 'all')
+    if execution_id != 'all':
+        try:
+            uuid.UUID(execution_id)
+        except ValueError:
+            return invalid_id_problem('workflow status', 'read', execution_id)
+
+    def workflow_results_generator():
+        workflow_stream_subs[execution_id] = events = workflow_stream_subs.get(execution_id, Queue())
+        try:
+            while True:
+                yield events.get().encode()
+        except GeneratorExit:
+            workflow_stream_subs.pop(events)
+
+    return Response(workflow_results_generator(), mimetype="test/event-stream")
+
+
+@results_stream.route('/action_status')
+def action_stream():
+    execution_id = request.args.get('workflow_execution_id', 'all')
+    if execution_id != 'all':
+        try:
+            uuid.UUID(execution_id)
+        except ValueError:
+            return invalid_id_problem('action status', 'read', execution_id)
+
+    def action_results_generator():
+        action_stream_subs[execution_id] = events = action_stream_subs.get(execution_id, Queue())
+        try:
+            while True:
+                yield events.get().encode()
+        except GeneratorExit:
+            action_stream_subs.pop(events)
+
+    return Response(action_results_generator(), mimetype="test/event-stream")

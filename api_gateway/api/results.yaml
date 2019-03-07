@@ -1,4 +1,4 @@
-/internal/workflowstatus/:
+/internal/workflowstatus:
   # ToDo: delete this, it's for debug only
   # GET already exists under /workflowqueue
   # POST here for CRUD debug only. You should post to /workflowqueue instead for real workflows
