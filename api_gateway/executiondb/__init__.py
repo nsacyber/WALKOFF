@@ -86,7 +86,7 @@ class ExecutionDatabase(object):
 
 
 @event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection):
+def set_sqlite_pragma(dbapi_connection, connection_type):
     """Necessary for enforcing foreign key constraints in sqlite database
     """
     if 'sqlite' in ExecutionDatabase.db_type:
