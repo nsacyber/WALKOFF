@@ -48,6 +48,23 @@ workflow_stream_subs = {}
 action_stream_subs = {}
 
 
+def push_to_workflow_stream_queue(workflow_status, event):
+    workflow_status.pop("action_statuses", None)
+    sse_event_text = SseEvent(event, workflow_status).format(workflow_status["execution_id"])
+
+    if workflow_status["execution_id"] in workflow_stream_subs:
+        workflow_stream_subs[workflow_status["execution_id"]].put(sse_event_text)
+    if 'all' in workflow_stream_subs:
+        workflow_stream_subs['all'].put(sse_event_text)
+
+
+def push_to_action_stream_queue(action_statuses, event):
+    for action_status in action_statuses:
+        action_status_json = action_status_schema.dump(action_status)
+        sse_event = SseEvent(event, action_status_json)
+        action_stream_subs[action_status.combined_id].put(sse_event.format(action_status.combined_id))
+
+
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("workflowstatus", ["create"]))
 def create_workflow_status():
@@ -60,7 +77,7 @@ def create_workflow_status():
 
     execution_id = str(uuid.uuid4())
 
-    workflow_status_json["status"] = "pending"
+    workflow_status_json["status"] = "PENDING"
     workflow_status_json["name"] = workflow.name
     workflow_status_json["execution_id"] = execution_id
 
@@ -68,6 +85,7 @@ def create_workflow_status():
         workflow_status = workflow_status_schema.load(workflow_status_json)
         current_app.running_context.execution_db.session.add(workflow_status)
         current_app.running_context.execution_db.session.commit()
+        gevent.spawn(push_to_workflow_stream_queue, workflow_status, "PENDING")
         current_app.logger.info(f"Created Workflow Status {workflow.name} ({execution_id})")
         return jsonify({'id': execution_id}), HTTPStatus.ACCEPTED
     except ValidationError as e:
@@ -102,29 +120,14 @@ def update_workflow_status(execution_id):
         uuid_regex = "([0-9a-f]{8}\-[0-9a-f]{4}\-4[0-9a-f]{3}\-[89ab][0-9a-f]{3}\-[0-9a-f]{12})"
         combined_id_re = re.compile(f"{uuid_regex}:{uuid_regex}")
         for patch in data:
-            if "_action_statuses" in patch["path"]:
+            if "action_statuses" in patch["path"]:
                 combined_id = combined_id_re.search(patch["path"]).group(0)
                 action_statuses.append(action_status_getter(combined_id))
 
-        def push_to_workflow_stream_queue():
-            new_workflow_status.pop("_action_statuses", None)
-            sse_event_text = SseEvent(event, new_workflow_status).format(execution_id.execution_id)
-
-            if execution_id.execution_id in workflow_stream_subs:
-                workflow_stream_subs[execution_id.execution_id].put(sse_event_text)
-            if 'all' in workflow_stream_subs:
-                workflow_stream_subs['all'].put(sse_event_text)
-
-        def push_to_action_stream_queue():
-            for action_status in action_statuses:
-                action_status_json = action_status_schema.dump(action_status)
-                sse_event = SseEvent(event, action_status_json)
-                action_stream_subs[action_status.combined_id].put(sse_event.format(action_status.combined_id))
-
-        if resource == "action":
-            gevent.spawn(push_to_action_stream_queue)
-        elif resource == "workflow":
-            gevent.spawn(push_to_workflow_stream_queue)
+        if resource == "workflow":
+            gevent.spawn(push_to_workflow_stream_queue, new_workflow_status, event)
+        elif resource == "action":
+            gevent.spawn(push_to_action_stream_queue, action_statuses, event)
 
         current_app.logger.info(f"Updated workflow status {execution_id.execution_id} ({execution_id.name})")
         return workflow_status_schema.dump(execution_id), HTTPStatus.OK

@@ -255,6 +255,20 @@ class ActionStatusSchema(ExecutionBaseSchema):
         unknown = EXCLUDE
 
 
+class ActionStatusSummarySchema(ExecutionBaseSchema):
+    """
+    Summary Schema for ActionStatusMessage
+    """
+    action_id = field_for(ActionStatus, 'action_id', required=True)
+    name = field_for(ActionStatus, 'name', required=True)
+    app_name = field_for(ActionStatus, 'app_name', required=True)
+    action_name = field_for(ActionStatus, 'action_name', required=True)
+
+    class Meta:
+        model = ActionStatus
+        unknown = EXCLUDE
+
+
 class WorkflowStatusSchema(ExecutionBaseSchema):
     """
     Schema for WorkflowStatusMessage
@@ -266,7 +280,25 @@ class WorkflowStatusSchema(ExecutionBaseSchema):
     started_at = field_for(WorkflowStatus, 'started_at')
     completed_at = field_for(WorkflowStatus, 'completed_at')
     user = field_for(WorkflowStatus, 'user')
-    _action_statuses = fields.Nested(ActionStatusSchema, many=True)
+    action_statuses = fields.Nested(ActionStatusSchema, many=True)
+
+    class Meta:
+        model = WorkflowStatus
+        unknown = EXCLUDE
+
+
+class WorkflowStatusSummarySchema(ExecutionBaseSchema):
+    """
+    Summary Schema for WorkflowStatusMessage
+    """
+    execution_id = field_for(WorkflowStatus, 'execution_id', required=True)
+    workflow_id = field_for(WorkflowStatus, 'workflow_id', required=True)
+    name = field_for(WorkflowStatus, 'name', required=True)
+    status = field_for(WorkflowStatus, 'status', required=True)
+    started_at = field_for(WorkflowStatus, 'started_at')
+    completed_at = field_for(WorkflowStatus, 'completed_at')
+    user = field_for(WorkflowStatus, 'user')
+    current_action_status = fields.Nested(ActionStatusSchema)
 
     class Meta:
         model = WorkflowStatus

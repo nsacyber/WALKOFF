@@ -5,7 +5,8 @@ from sqlalchemy import Column, String, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
-from api_gateway.executiondb import Execution_Base, WorkflowStatusEnum, ActionStatusEnum
+from common.message_types import StatusEnum
+from api_gateway.executiondb import Execution_Base
 from api_gateway.helpers import utc_as_rfc_datetime
 
 
@@ -20,53 +21,53 @@ class WorkflowStatus(Execution_Base):
         started_at (datetime): Time the Workflow started
         completed_at (datetime): Time the Workflow ended
         user (str): The user who initially executed this workflow
-        _action_statuses (list[ActionStatus]): A list of ActionStatusMessage objects for this WorkflowStatusMessage
+        action_statuses (list[ActionStatus]): A list of ActionStatusMessage objects for this WorkflowStatusMessage
     """
     __tablename__ = 'workflow_status'
     execution_id = Column(UUIDType(binary=False), primary_key=True)
     workflow_id = Column(UUIDType(binary=False), nullable=False)
     name = Column(String, nullable=False)
-    status = Column(String, nullable=False)
+    status = Column(String, nullable=False)  # ToDo: revisit this and make this a real enum
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
     user = Column(String)
-    _action_statuses = relationship('ActionStatus', backref=backref("_workflow_status"), passive_deletes=True,
-                                    cascade='all, delete-orphan')
+    action_statuses = relationship('ActionStatus', backref=backref("_workflow_status"), passive_deletes=True,
+                                   cascade='all, delete-orphan')
 
-    def __init__(self, execution_id, workflow_id, name, status=WorkflowStatusEnum.pending, user=None):
+    def __init__(self, execution_id, workflow_id, name, status=StatusEnum.PENDING, user=None):
         self.execution_id = execution_id
         self.workflow_id = workflow_id
         self.name = name
         self.status = status
         self.user = user
-        self._action_statuses = []
+        self.action_statuses = []
 
     def running(self):
         """Sets the status to running"""
         self.started_at = datetime.utcnow()
-        self.status = WorkflowStatusEnum.running
+        self.status = StatusEnum.EXECUTING
 
     def paused(self):
         """Sets the status to paused"""
-        self.status = WorkflowStatusEnum.paused
+        self.status = StatusEnum.PAUSED
 
     def awaiting_data(self):
         """Sets the status to awaiting data"""
-        self.status = WorkflowStatusEnum.awaiting_data
-        if self._action_statuses:
-            self._action_statuses[-1].awaiting_data()
+        self.status = StatusEnum.AWAITING_DATA
+        if self.action_statuses:
+            self.action_statuses[-1].awaiting_data()
 
     def completed(self):
         """Sets the status to completed"""
         self.completed_at = datetime.utcnow()
-        self.status = WorkflowStatusEnum.completed
+        self.status = StatusEnum.COMPLETED
 
     def aborted(self):
         """Sets the status to aborted"""
         self.completed_at = datetime.utcnow()
-        self.status = WorkflowStatusEnum.aborted
-        if self._action_statuses:
-            self._action_statuses[-1].aborted()
+        self.status = StatusEnum.ABORTED
+        if self.action_statuses:
+            self.action_statuses[-1].aborted()
 
     def add_action_status(self, action_status):
         """Adds an ActionStatusMessage
@@ -74,7 +75,7 @@ class WorkflowStatus(Execution_Base):
         Args:
             action_status (ActionStatus): The ActionStatusMessage to add
         """
-        self._action_statuses.append(action_status)
+        self.action_statuses.append(action_status)
 
     def as_json(self, full_actions=False):
         """Gets the JSON representation of the WorkflowStatusMessage
@@ -94,12 +95,12 @@ class WorkflowStatus(Execution_Base):
             ret["user"] = self.user
         if self.started_at:
             ret["started_at"] = utc_as_rfc_datetime(self.started_at)
-        if self.status in [WorkflowStatusEnum.completed, WorkflowStatusEnum.aborted]:
+        if self.status in [StatusEnum.COMPLETED, StatusEnum.ABORTED]:
             ret["completed_at"] = utc_as_rfc_datetime(self.completed_at)
         if full_actions:
-            ret["action_statuses"] = [action_status.as_json() for action_status in self._action_statuses]
-        elif self._action_statuses and self.status != WorkflowStatusEnum.completed:
-            current_action = self._action_statuses[-1]
+            ret["action_statuses"] = [action_status.as_json() for action_status in self.action_statuses]
+        elif self.action_statuses and self.status != StatusEnum.COMPLETED:
+            current_action = self.action_statuses[-1]
             ret['current_action'] = current_action.as_json(summary=True)
 
         return ret
@@ -114,7 +115,7 @@ class ActionStatus(Execution_Base):
         app_name (str): The App name for the Action
         action_name (str): The Action name for the Action
         result (str): The result of the Action
-        status (ActionStatusEnum): The status of the Action
+        status (StatusEnum): The status of the Action
         started_at (datetime): The time the Action started
         completed_at (datetime): The time the Action completed
         _workflow_status_id (UUID): The FK ID of the WorkflowStatusMessage
@@ -127,7 +128,7 @@ class ActionStatus(Execution_Base):
     action_name = Column(String, nullable=False)
     result = Column(String)
     arguments = Column(String)
-    status = Column(String, nullable=False)
+    status = Column(String, nullable=False)  # ToDo: revisit this and make this a real enum
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
     workflow_execution_id = Column(UUIDType(binary=False), ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
@@ -138,30 +139,30 @@ class ActionStatus(Execution_Base):
         self.name = name
         self.app_name = app_name
         self.action_name = action_name
-        self.status = ActionStatusEnum.executing
+        self.status = StatusEnum.EXECUTING
 
     def aborted(self):
         """Sets status to aborted"""
-        if self.status == ActionStatusEnum.awaiting_data:
-            self.status = ActionStatusEnum.aborted
+        if self.status == StatusEnum.AWAITING_DATA:
+            self.status = StatusEnum.ABORTED
 
     def running(self):
         """Sets status to running"""
-        self.status = ActionStatusEnum.executing
+        self.status = StatusEnum.EXECUTING
 
     def awaiting_data(self):
         """Sets status to awaiting data"""
-        self.status = ActionStatusEnum.awaiting_data
+        self.status = StatusEnum.AWAITING_DATA
 
     def completed_success(self, data):
         """Sets status to completed successfully"""
-        self.status = ActionStatusEnum.success
+        self.status = StatusEnum.SUCCESS
         self.result = json.dumps(data['result'])
         self.completed_at = datetime.utcnow()
 
     def completed_failure(self, data):
         """Sets status to completed unsuccessfully"""
-        self.status = ActionStatusEnum.failure
+        self.status = StatusEnum.FAILURE
         self.result = json.dumps(data['result'])
         self.completed_at = datetime.utcnow()
 
@@ -174,7 +175,7 @@ class ActionStatus(Execution_Base):
         Returns:
             (dict): The JSON representation of the object
         """
-        ret = {"execution_id": str(self.execution_id),
+        ret = {"execution_id": str(self.combined_id),
                "action_id": str(self.action_id),
                "name": self.name,
                "app_name": self.app_name,
@@ -185,7 +186,7 @@ class ActionStatus(Execution_Base):
             {"arguments": json.loads(self.arguments) if self.arguments else [],
              "status": self.status.name,
              "started_at": utc_as_rfc_datetime(self.started_at)})
-        if self.status in [ActionStatusEnum.success, ActionStatusEnum.failure]:
+        if self.status in [StatusEnum.SUCCESS, StatusEnum.FAILURE]:
             ret["result"] = json.loads(self.result)
             ret["completed_at"] = utc_as_rfc_datetime(self.completed_at)
         return ret

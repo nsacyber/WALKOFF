@@ -96,18 +96,18 @@ def set_sqlite_pragma(dbapi_connection, connection_type):
 
 
 # TODO: Use common.message_types.StatusEnum for these
-class WorkflowStatusEnum(enum.Enum):
-    running = "running"
-    paused = "paused"  # not currently implemented but may be if we see a use case
-    awaiting_data = "awaiting_data"  # possibly for triggers?
-    pending = "pending"
-    completed = "completed"
-    aborted = "aborted"
-
-
-class ActionStatusEnum(enum.Enum):
-    executing = "executing"
-    awaiting_data = "awaiting_data"  # possibly for triggers?
-    success = "success"
-    failure = "failure"
-    aborted = "aborted"
+# class StatusEnum(enum.Enum):
+#     running = "running"
+#     paused = "paused"  # not currently implemented but may be if we see a use case
+#     awaiting_data = "awaiting_data"  # possibly for triggers?
+#     pending = "pending"
+#     completed = "completed"
+#     aborted = "aborted"
+#
+#
+# class StatusEnum(enum.Enum):
+#     executing = "executing"
+#     awaiting_data = "awaiting_data"  # possibly for triggers?
+#     success = "success"
+#     failure = "failure"
+#     aborted = "aborted"

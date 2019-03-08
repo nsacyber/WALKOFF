@@ -2,8 +2,8 @@ import json
 
 from flask import current_app
 
+from common.message_types import StatusEnum
 from api_gateway.events import WalkoffEvent
-from api_gateway.executiondb import WorkflowStatusEnum, ActionStatusEnum
 from api_gateway.executiondb.workflowresults import WorkflowStatus, ActionStatus
 
 
@@ -13,7 +13,7 @@ def __workflow_pending(sender, **kwargs):
     workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
         execution_id=str(sender['execution_id'])).first()
     if workflow_status:
-        workflow_status.status = WorkflowStatusEnum.pending
+        workflow_status.status = StatusEnum.PENDING
     else:
         user = kwargs['data']['user'] if ('data' in kwargs and 'user' in kwargs['data']) else None
         workflow_status = WorkflowStatus(str(sender['execution_id']), sender['id'], sender['name'], user=user)
@@ -75,7 +75,7 @@ def __action_start_callback(sender, **kwargs):
     action_status = current_app.running_context.execution_db.session.query(ActionStatus).filter_by(
         execution_id=sender['execution_id']).first()
     if action_status:
-        action_status.status = ActionStatusEnum.executing
+        action_status.status = StatusEnum.EXECUTING
     else:
         workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=workflow_execution_id).first()

@@ -287,7 +287,7 @@ class Worker:
         patches = None
         if isinstance(message, ActionStatusMessage):
             execution_id = message.workflow_execution_id
-            root = f"#/action_statuses/{message.action_id}"
+            root = f"/action_statuses/{message.action_id}"
 
             if message.status == StatusEnum.EXECUTING:
                 black_list = {"result", "completed_at"}

@@ -7,23 +7,29 @@ from collections import OrderedDict
 from flask import request, current_app, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_claims
 from sqlalchemy import exists, and_, or_
+import gevent
 
+from marshmallow import ValidationError
+from sqlalchemy.exc import IntegrityError, StatementError
+
+from common.message_types import StatusEnum, WorkflowStatusMessage
 from api_gateway.events import WalkoffEvent
 from api_gateway.executiondb.workflow import Workflow
-from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
+from api_gateway.executiondb.workflowresults import WorkflowStatus
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
-from api_gateway.server.problem import Problem
+from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, paginate
+from api_gateway.server.problem import Problem, dne_problem, invalid_input_problem, improper_json_problem
+from api_gateway.server.endpoints.results import push_to_action_stream_queue, push_to_workflow_stream_queue
 from http import HTTPStatus
-from api_gateway.executiondb.schemas import WorkflowSchema
+from api_gateway.executiondb.schemas import WorkflowSchema, WorkflowStatusSchema, WorkflowStatusSummarySchema
 
 
 logger = logging.getLogger(__name__)
 
 
 def log_and_send_event(event, sender=None, data=None, workflow=None):
-        sender = sender
-        current_app.running_context.results_sender.handle_event(workflow, sender, event=event, data=data)
+    sender = sender
+    current_app.running_context.results_sender.handle_event(workflow, sender, event=event, data=data)
 
 
 def abort_workflow(execution_id, user=None):
@@ -39,8 +45,8 @@ def abort_workflow(execution_id, user=None):
     workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
 
     if workflow_status:
-        if workflow_status.status in [WorkflowStatusEnum.pending, WorkflowStatusEnum.paused,
-                                      WorkflowStatusEnum.awaiting_data]:
+        if workflow_status.status in [StatusEnum.PENDING, StatusEnum.PAUSED,
+                                      StatusEnum.AWAITING_DATA]:
             workflow = current_app.running_context.execution_db.session.query(Workflow).filter_by(id=workflow_status.workflow_id).first()
             if workflow is not None:
                 data = {}
@@ -49,7 +55,7 @@ def abort_workflow(execution_id, user=None):
                 log_and_send_event(event=WalkoffEvent.WorkflowAborted,
                                    sender={'execution_id': execution_id, 'id': workflow_status.workflow_id,
                                            'name': workflow.name}, workflow=workflow, data=data)
-        elif workflow_status.status == WorkflowStatusEnum.running:
+        elif workflow_status.status == StatusEnum.EXECUTING:
             print("I guess Im here")
             # self.zmq_workflow_comm.abort_workflow(execution_id)
         return True
@@ -76,6 +82,9 @@ def workflow_status_getter(execution_id):
 def workflow_getter(workflow_id):
     return current_app.running_context.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
+workflow_schema = WorkflowSchema()
+workflow_status_schema = WorkflowStatusSchema()
+workflow_status_summary_schema = WorkflowStatusSummarySchema()
 
 with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
 
@@ -84,72 +93,75 @@ validate_workflow_is_registered = validate_resource_exists_factory('workflow', d
 validate_execution_id_is_registered = validate_resource_exists_factory('workflow', does_execution_id_exist)
 
 status_order = OrderedDict(
-    [((WorkflowStatusEnum.running, WorkflowStatusEnum.awaiting_data, WorkflowStatusEnum.paused),
+    [((StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA, StatusEnum.PAUSED),
       WorkflowStatus.started_at),
-     ((WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed), WorkflowStatus.completed_at)])
+     ((StatusEnum.ABORTED, StatusEnum.COMPLETED), WorkflowStatus.completed_at)])
 
-executing_statuses = (WorkflowStatusEnum.running, WorkflowStatusEnum.awaiting_data, WorkflowStatusEnum.paused)
-completed_statuses = (WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed)
+executing_statuses = (StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA, StatusEnum.PAUSED)
+completed_statuses = (StatusEnum.ABORTED, StatusEnum.COMPLETED)
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
+@paginate(workflow_status_schema)
 def get_all_workflow_status():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
-    def __func():
-        page = request.args.get('page', 1, type=int)
-
-        ret = current_app.running_context.execution_db.session.query(WorkflowStatus). \
-            order_by(WorkflowStatus.status, WorkflowStatus.started_at.desc()). \
-            limit(current_app.config['ITEMS_PER_PAGE']). \
-            offset((page - 1) * current_app.config['ITEMS_PER_PAGE'])
-
-        ret = jsonify([workflow_status.as_json() for workflow_status in ret])
-        return ret, HTTPStatus.OK
-
-    return __func()
+    r = current_app.running_context.execution_db.session.query(WorkflowStatus).order_by(WorkflowStatus.name).all()
+    return r, HTTPStatus.OK
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
+@with_workflow_status('control', 'execution_id')
 def get_workflow_status(execution_id):
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
-    @with_workflow_status('control', execution_id)
-    def __func(workflow_status):
-        return workflow_status.as_json(full_actions=True), HTTPStatus.OK
-
-    return __func()
+    workflow_status = workflow_status_schema.dump(execution_id)
+    return workflow_status, HTTPStatus.OK
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('workflows', ['execute']))
 def execute_workflow():
     data = request.get_json()
-    workflow_id = data['workflow_id']
+    workflow_id = data.get("workflow_id")
+    workflow = workflow_getter(workflow_id)  # ToDo: should this go under a path param so we can use the decorator
 
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('workflows', ['execute']))
-    @with_workflow('execute', workflow_id)
-    def __func(workflow):
-        if not workflow.is_valid:
-            return Problem(HTTPStatus.BAD_REQUEST, 'Cannot execute workflow', 'Workflow is invalid')
+    if not workflow:
+        return dne_problem("workflow", "execute", workflow_id)
 
-        # Short circuits the multiprocessed executor
-        workflow = current_app.running_context.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
-        workflow_schema = WorkflowSchema()
-        workflow = workflow_schema.dump(workflow)
+    if not workflow.is_valid:
+        return invalid_input_problem("workflow", "execute", workflow.id_, errors=workflow.errors)
+
+    workflow = workflow_schema.dump(workflow)
+
+    if "workflow_variables" in workflow and "workflow_variables" in data:
+        # Get workflow variables keyed by ID
+        current_wvs = {wv['id_']: wv for wv in workflow["workflow_variables"]}
+        new_wvs = {wv['id_']: wv for wv in data["workflow_variables"]}
+
+        # Update workflow variables with new values, ignore ids that didn't already exist
+        override_wvs = {id_: new_wvs[id_] if id_ in new_wvs else current_wvs[id_] for id_ in current_wvs}
+        workflow["workflow_variables"] = list(override_wvs.values())
+
+    try:
         execution_id = str(uuid.uuid4())
+        workflow_status = workflow_status_schema.load({
+            "status": StatusEnum.PENDING.name,
+            "name": workflow["name"],
+            "execution_id": execution_id
+        })
+        current_app.running_context.execution_db.session.add(workflow_status)
+        current_app.running_context.execution_db.session.commit()
 
-        workflow_data = {'execution_id': execution_id, 'id': workflow["id"], 'name': workflow["name"]}
-        current_app.running_context.results_sender.handle_event(workflow=workflow, sender=workflow_data,
-                                    event=WalkoffEvent.WorkflowExecutionPending, data=data)
+        workflow_message = {"workflow": workflow, "workflow_id": workflow_id, "execution_id": execution_id}
+        # ToDo: self.__box.encrypt(message))
+        current_app.running_context.cache.lpush("workflow-queue", json.dumps(workflow_message))
 
-        message = {"workflow": workflow, "workflow_id": str(workflow_id), "execution_id": execution_id}
-        current_app.running_context.cache.lpush("workflow-queue", json.dumps(message))  # self.__box.encrypt(message))
+        gevent.spawn(push_to_workflow_stream_queue, workflow_status, "PENDING")
+        current_app.logger.info(f"Created Workflow Status {workflow['name']} ({execution_id})")
 
-        current_app.running_context.results_sender.handle_event(workflow=workflow, sender=workflow_data,
-                                    event=WalkoffEvent.SchedulerJobExecuted, data=data)
-
-        current_app.logger.info('Executed workflow {0}'.format(workflow_id))
-        return {'id': execution_id}, HTTPStatus.ACCEPTED
-
-    return __func()
+        return jsonify({'execution_id': execution_id}), HTTPStatus.ACCEPTED
+    except ValidationError as e:
+        current_app.running_context.execution_db.session.rollback()
+        return improper_json_problem('workflow_status', 'create', workflow['name'], e.messages)
 
 
 def control_workflow():
@@ -182,13 +194,13 @@ def clear_workflow_status(all=False, days=30):
     def __func():
         if all:
             current_app.running_context.execution_db.session.query(WorkflowStatus).filter(or_(
-                WorkflowStatus.status == WorkflowStatusEnum.aborted,
-                WorkflowStatus.status == WorkflowStatusEnum.completed
+                WorkflowStatus.status == StatusEnum.ABORTED,
+                WorkflowStatus.status == StatusEnum.COMPLETED
             )).delete()
         elif days > 0:
             delete_date = datetime.datetime.today() - datetime.timedelta(days=days)
             current_app.running_context.execution_db.session.query(WorkflowStatus).filter(and_(
-                WorkflowStatus.status.in_([WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed]),
+                WorkflowStatus.status.in_([StatusEnum.ABORTED, StatusEnum.COMPLETED]),
                 WorkflowStatus.completed_at <= delete_date
             )).delete(synchronize_session=False)
         current_app.running_context.execution_db.session.commit()
