@@ -3,12 +3,13 @@ import logging
 import os
 import sys
 import time
-from contextlib import asynccontextmanager
 
 import aioredis
 
 from common.message_types import NodeStatus, message_dumps
 from common.workflow_types import workflow_loads, Action
+from common.async_logger import AsyncLogger, AsyncHandler
+from common.helpers import connect_to_redis_pool
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
@@ -16,25 +17,34 @@ ACTION_RESULT_CH = os.getenv("ACTION_RESULT_CH", "action-results")
 ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
 
 
+class PubSubStream:
+    """ Thin wrapper around a redis pub/sub that plugs into the async logger """
+    def __init__(self, redis=None, channel_base=None):
+        super().__init__()
+        self.redis: aioredis.Redis = redis
+        self.channel = f"{channel_base}:console"
+
+    def set_channel(self, channel):
+        self.channel = channel
+
+    async def flush(self):
+        pass
+
+    async def write(self, message):
+        await self.redis.publish(self.channel, message)
+
+    async def close(self):
+        pass
+
+
 class AppBase:
-    def __init__(self, redis=None, logger=None):
+    def __init__(self, redis=None, logger=None, console_logger=None):
         # Creates redis keys of format "{AppName}-{Version}-{Priority}"
         self.action_queue_keys = tuple(f"{self.__class__.__name__}-{self.__version__}-{i}" for i in range(5, 0, -1))
-        print(self.action_queue_keys)
         self.redis: aioredis.Redis = redis
-        self.logger = logger if logger is not None else logging.getLogger("AppBaseLoggerShouldBeOverridden")
-
-    @asynccontextmanager
-    async def connect_to_redis_pool(self, redis_uri=REDIS_URI) -> aioredis.Redis:
-        # Redis client bound to pool of connections (auto-reconnecting).
-        self.redis = await aioredis.create_redis_pool(redis_uri)
-        try:
-            yield self.redis
-        finally:
-            # gracefully close pool
-            self.redis.close()
-            await self.redis.wait_closed()
-            self.logger.info("Redis connection pool closed.")
+        self.logger = logger if logger is not None else logging.getLogger("AppBaseLogger")
+        self.console_logger = console_logger if console_logger is not None else logging.getLogger("ConsoleBaseLogger")
+        self.current_execution_id = None
 
     async def get_actions(self):
         """ Continuously monitors the action queues and asynchronously executes actions """
@@ -61,6 +71,7 @@ class AppBase:
     async def execute_action(self, action: Action):
         """ Execute an action and ship its result """
         self.logger.debug(f"Attempting execution of: {action.label}-{action.execution_id}")
+        self.console_logger.handlers[0].stream.set_channel(f"{action.execution_id}:console")
         if hasattr(self, action.name):
             start_action_msg = NodeStatus.executing_from_node(action, action.execution_id)
             await self.redis.lpush(action.execution_id, message_dumps(start_action_msg))
@@ -68,9 +79,9 @@ class AppBase:
                 func = getattr(self, action.name, None)
                 if callable(func):
                     if len(action.parameters) < 1:
-                        result = func()
+                        result = await func()
                     else:
-                        result = func(**{p.name: p.value for p in action.parameters})
+                        result = await func(**{p.name: p.value for p in action.parameters})
                     action_result = NodeStatus.success_from_node(action, action.execution_id, result)
                     self.logger.debug(f"Executed {action.label}-{action.id_} with result: {result}")
 
@@ -89,3 +100,22 @@ class AppBase:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
             action_result = NodeStatus.failure_from_node(action, action.execution_id, error="Action does not exist")
             await self.redis.lpush(action.execution_id, message_dumps(action_result))
+
+    @classmethod
+    async def run(cls):
+        async with connect_to_redis_pool(REDIS_URI) as redis:
+            # TODO: Migrate to the common log config
+            logging.basicConfig(format="{asctime} - {name} - {levelname}:{message}", style='{')
+            logger = logging.getLogger(f"{cls.__name__}")
+            logger.setLevel(logging.DEBUG)
+
+            console_logger = AsyncLogger(f"{cls.__name__}", level=logging.DEBUG)
+            handler = AsyncHandler(stream=PubSubStream(redis))
+            handler.setFormatter(logging.Formatter(fmt="{asctime} - {name} - {levelname}:{message}", style='{'))
+            console_logger.addHandler(handler)
+
+            app = cls(redis=redis, logger=logger, console_logger=console_logger)
+
+            await app.get_actions()
+
+

@@ -132,6 +132,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
         else:
             return o
 
+
 Point = namedtuple("Point", ("x", "y"))
 Branch = namedtuple("Branch", ("source", "destination"))
 ParentSymbol = namedtuple("ParentSymbol", "result")  # used inside conditions to further mask the parent node attrs
