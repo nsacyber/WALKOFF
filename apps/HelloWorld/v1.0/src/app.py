@@ -24,8 +24,16 @@ class HelloWorld(AppBase):
     def pause(self, seconds):
         time.sleep(seconds)
         return seconds
-        
-        
+
+    def echo_array(self, data):
+        logger.info(f"Echoing array: {data}")
+        return data
+
+    def echo_json(self, data):
+        logger.info(f"Echoing JSON: {data}")
+        return data
+
+
 if __name__ == "__main__":
     import argparse
     LOG_LEVELS = ("debug", "info", "error", "warn", "fatal", "DEBUG", "INFO", "ERROR", "WARN", "FATAL")

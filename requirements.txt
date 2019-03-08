@@ -1,8 +1,8 @@
-aiodns
+#aiodns
 aiohttp
 aioredis
 asteval
-cchardet
+#cchardet
 docker
 docker-compose
 networkx

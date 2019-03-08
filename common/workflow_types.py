@@ -5,6 +5,7 @@ import logging
 from collections import namedtuple, deque
 
 from networkx import DiGraph
+from asteval import Interpreter, make_symbol_table
 
 logger = logging.getLogger("WALKOFF")
 
@@ -18,59 +19,73 @@ def workflow_loads(obj):
 
 
 def workflow_dump(obj):
-    return json.dumps(obj, cls=WorkflowJSONEncoder)
+    return json.dump(obj, fp, cls=WorkflowJSONEncoder)
 
 
 def workflow_load(obj):
-    return json.loads(obj, cls=WorkflowJSONDecoder)
+    return json.load(obj, cls=WorkflowJSONDecoder)
+
+
+class ConditionException(Exception):
+    pass
 
 
 class WorkflowJSONDecoder(json.JSONDecoder):
-    # TODO: Come up with a way to encode/decode all of these objects reliably
     def __init__(self, *args, **kwargs):
         super().__init__(object_hook=self.object_hook, *args, **kwargs)
-        self.actions = {}
+        self.nodes = {}
+        self.branches = set()
 
     def object_hook(self, o):
         if "x" and "y" in o:
             return Point(**o)
 
-        elif "action_name" and "app_name" in o:
-            action = Action(**o)
-            self.actions[action.id_] = action
-            return action
+        elif "parameters" and "priority" in o:
+            node = Action(**o)
+            self.nodes[node.id_] = node
+            return node
 
         elif "variant" in o:
             o["variant"] = ParameterVariant[o["variant"]]
             return Parameter(**o)
 
         elif "source" and "destination" in o:
-            return Branch(source=self.actions[o["source"]], destination=self.actions[o["destination"]])
+            self.branches.add(Branch(source=o["source"], destination=o["destination"]))
 
         elif "conditional" in o:
-            return Condition(**o)
+            node = Condition(**o)
+            self.nodes[node.id_] = node
+            return node
 
         elif "transform" in o:
-            return Transform(**o)
+            node = Transform(**o)
+            self.nodes[node.id_] = node
+            return node
 
         elif "trigger" in o:
-            return Trigger(**o)
+            node = Trigger(**o)
+            self.nodes[node.id_] = node
+            return node
 
         elif "description" and "value" in o:
             return WorkflowVariable(**o)
 
         elif "actions" and "branches" in o:
+            branches = {Branch(self.nodes[b.source], self.nodes[b.destination]) for b in self.branches}
             workflow_variables = {var.id_: var for var in o["workflow_variables"]}
+            start = self.nodes[o["start"]]
+            o["branches"] = branches
             o["workflow_variables"] = workflow_variables
-            start = self.actions[o["start"]]
             o["start"] = start
             return Workflow(**o)
+
+        else:
+            return o
 
 
 class WorkflowJSONEncoder(json.JSONEncoder):
     """ A custom encoder for encoding Workflow types to JSON strings.
         Note: JSON encoded strings of our custom objects are lossy...for now.
-        TODO: Make these not lossy
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -90,9 +105,20 @@ class WorkflowJSONEncoder(json.JSONEncoder):
                     "errors": None}
 
         elif isinstance(o, Action):
-            return {"id_": o.id_, "app_name": o.app_name, "action_name": o.action_name, "name": o.name,
-                    "parameters": o.parameters, "priority": o.priority, "position": o.position,
-                    "workflow_execution_id": o.workflow_execution_id}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": o.position,
+                    "parameters": o.parameters, "priority": o.priority, "execution_id": o.execution_id}
+
+        elif isinstance(o, Condition):
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": o.position,
+                    "conditional": o.conditional}
+
+        elif isinstance(o, Transform):
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": o.position,
+                    "transform": o.transform, "parameter": o.parameter}
+
+        elif isinstance(o, Trigger):
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": o.position,
+                    "trigger": o.trigger}
 
         elif isinstance(o, Parameter):
             return {"name": o.name, "variant": o.variant, "value": o.value, "reference": o.reference}
@@ -103,9 +129,13 @@ class WorkflowJSONEncoder(json.JSONEncoder):
         elif isinstance(o, WorkflowVariable):
             return {"description": o.description, "id_": o.id_, "name": o.name, "value": o.value}
 
+        else:
+            return o
 
 Point = namedtuple("Point", ("x", "y"))
 Branch = namedtuple("Branch", ("source", "destination"))
+ParentSymbol = namedtuple("ParentSymbol", "result")  # used inside conditions to further mask the parent node attrs
+ChildSymbol = namedtuple("ChildSymbol", "id_")  # used inside conditions to further mask the child node attrs
 
 
 class ParameterVariant(enum.Enum):
@@ -113,19 +143,6 @@ class ParameterVariant(enum.Enum):
     ACTION_RESULT = "ACTION_RESULT"
     WORKFLOW_VARIABLE = "WORKFLOW_VARIABLE"
     GLOBAL = "GLOBAL"
-
-
-class Node:
-    def __init__(self, name, position: Point, id_=None):
-        self.id_ = id_ if id_ is not None else str(uuid.uuid4())
-        self.name = name
-        self.position = position
-
-    def __repr__(self):
-        return f"Node-{self.id_}"
-
-    def __str__(self):
-        return f"Node-{self.name}"
 
 
 class Parameter:
@@ -168,62 +185,117 @@ class WorkflowVariable:
         self.description = description
 
 
-class Action(Node):
-    def __init__(self, name, position, app_name, action_name, priority, workflow_execution_id=None, parameters=None,
-                 id_=None):
-        super().__init__(name, position, id_)
+class Node:
+    def __init__(self, name, position: Point, label, app_name, id_=None):
+        self.id_ = id_ if id_ is not None else str(uuid.uuid4())
+        self.name = name
         self.app_name = app_name
-        self.action_name = action_name
-        self.workflow_execution_id = workflow_execution_id
-        self.parameters = parameters if parameters is not None else list()
-        self.priority = priority
-
-    def __str__(self):
-        return f"Action: {self.name}::{self.id_}::{self.workflow_execution_id}"
+        self.label = label
+        self.position = position
 
     def __repr__(self):
-        return f"Action: {self.name}::{self.id_}::{self.workflow_execution_id}"
+        return f"Node-{self.id_}"
+
+    def __str__(self):
+        return f"Node-{self.label}"
+
+
+class Action(Node):
+    def __init__(self, name, position, app_name, label, priority, parameters=None, id_=None, execution_id=None):
+        super().__init__(name, position, label, app_name, id_)
+        self.parameters = parameters if parameters is not None else list()
+        self.priority = priority
+        self.execution_id = execution_id  # Only used by the app as a key for the redis queue
+
+    def __str__(self):
+        return f"Action: {self.label}::{self.id_}"
+
+    def __repr__(self):
+        return f"Action: {self.label}::{self.id_}"
 
     def __gt__(self, other):
         return self.priority > other.priority
 
 
 class Condition(Node):
-    def __init__(self, name, position: Point, conditional=None):
-        super().__init__(name, position)
+    def __init__(self, name, position: Point, app_name, label, conditional, id_=None):
+        super().__init__(name, position, label, app_name, id_)
         self.conditional = conditional
+
+    def __str__(self):
+        return f"Condition: {self.label}::{self.id_}"
+
+    def __repr__(self):
+        return f"Condition: {self.label}::{self.id_}"
+
+    @staticmethod
+    def format_node_names(nodes):
+        # We need to format space delimited names into underscore delimited names
+        names_to_modify = {node.label for node in nodes.values() if node.label.count(' ') > 0}
+        formatted_nodes = {}
+        for node in nodes.values():
+            formatted_name = node.label.strip().replace(' ', '_')
+
+            if formatted_name in names_to_modify:  # we have to check for a name conflict as described above
+                logger.error(f"Error processing condition. {node.label} or {formatted_name} must be renamed.")
+
+            formatted_nodes[formatted_name] = node
+        return formatted_nodes
+
+    def __call__(self, parents, children, accumulator) -> str:
+        parent_symbols = {k: ParentSymbol(accumulator[v.id_]) for k, v in self.format_node_names(parents).items()}
+        children_symbols = {k: ChildSymbol(v.id_) for k, v in self.format_node_names(children).items()}
+        syms = make_symbol_table(use_numpy=False, **parent_symbols, **children_symbols)
+        aeval = Interpreter(usersyms=syms, no_for=True, no_while=True, no_try=True, no_functiondef=True, no_ifexp=True,
+                            no_listcomp=True, no_augassign=True, no_assert=True, no_delete=True, no_raise=True,
+                            no_print=True, use_numpy=False, builtins_readonly=True, readonly_symbols=children_symbols.keys())
+
+        aeval(self.conditional)
+        child_id = getattr(aeval.symtable.get("selected_node", None), "id_", None)
+
+        if len(aeval.error) > 0:
+            raise ConditionException
+
+        return child_id
 
 
 # TODO: fully realize and implement triggers
 class Trigger(Node):
-    def __init__(self, name, position: Point, trigger):
-        super().__init__(name, position)
+    def __init__(self, name, position: Point, app_name, label, trigger, id_=None):
+        super().__init__(name, position, label, app_name, id_)
         self.trigger = trigger
+
+    def __str__(self):
+        return f"Trigger: {self.label}::{self.id_}"
+
+    def __repr__(self):
+        return f"Trigger: {self.label}::{self.id_}"
 
 
 class Transform(Node):
-    def __init__(self, name, position: Point, transform, transform_arg=None):
-        super().__init__(name, position)
-        self.transform = f"__{transform.lower()}"
-        self.transform_arg = transform_arg
+    def __init__(self, name, position: Point, app_name, label, transform, parameter=None, id_=None):
+        super().__init__(name, position, label, app_name, id_)
+        self.transform = f"_{self.__class__.__name__}__{transform.lower()}"
+        self.parameter = parameter
 
     def __call__(self, data):
         """ Execute an action and ship its result """
         logger.debug(f"Attempting execution of: {self.name}-{self.id_}")
         if hasattr(self, self.transform):
-            try:
-                if self.transform_arg is None:
-                    result = getattr(self, self.transform)(data=data)
-                else:
-                    result = getattr(self, self.transform)(self.transform_arg, data=data)
-                logger.debug(f"Executed {self.name}-{self.id_} with result: {result}")
-
-            # TODO: figure out which exceptions will be thrown by which failed transforms and handle them
-            except Exception:
-                logger.exception(f"Failed to execute {self.name}-{self.id_}")
-
+            if self.parameter is None:
+                result = getattr(self, self.transform)(data=data)
+            else:
+                result = getattr(self, self.transform)(self.parameter, data=data)
+            logger.debug(f"Executed {self.name}-{self.id_} with result: {result}")
+            return result
         else:
             logger.error(f"{self.__class__.__name__} has no method {self.transform}")
+
+    def __str__(self):
+        return f"Transform: {self.label}::{self.id_}"
+
+    def __repr__(self):
+        return f"Transform: {self.label}::{self.id_}"
 
     # TODO: add JSON to CSV parsing and vice versa.
     def __get_value_at_index(self, index, data=None):

@@ -14,23 +14,23 @@ services:
     depends_on:
       - redis
 
-#  registry:
-#    restart: always
-#    image: registry:2
-#    deploy:
-#      placement:
-#       constraints: [node.role==manager]
-#    ports:
-#      - 5000:5000
+  registry:
+    restart: always
+    image: registry:2
+    deploy:
+      placement:
+       constraints: [node.role==manager]
+    ports:
+      - 5000:5000
 #    environment:
 #      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
 #      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
 #      REGISTRY_AUTH: htpasswd
 #      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
 #      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
-#    volumes:
+    volumes:
 #      - ./data/config.yml:/etc/docker/registry/config.yml
-#      - /var/lib/boot2docker/registry:/var/lib/registry
+      - /var/lib/boot2docker/registry:/var/lib/registry
 #      - /var/lib/boot2docker:/certs
 #      - /var/lib/boot2docker/auth:/auth
 
@@ -46,16 +46,16 @@ services:
 #    depends_on:
 #      - redis
 
-#  hello_world:
-#    image: localhost:5000/hello_world:latest
-#    build:
-#      context: ./apps/HelloWorld/v1.0
-#      dockerfile: Dockerfile
-#    env_file:
-#      - apps/HelloWorld/v1.0/env.txt
-#    deploy:
-#      mode: replicated
-#      replicas: 15
+  hello_world:
+    image: localhost:5000/hello_world:latest
+    build:
+      context: ./apps/HelloWorld/v1.0
+      dockerfile: Dockerfile
+    env_file:
+      - apps/HelloWorld/v1.0/env.txt
+    deploy:
+      mode: replicated
+      replicas: 10
 
 
 #  test-app:

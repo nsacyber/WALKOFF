@@ -12,12 +12,12 @@ def message_loads(obj):
     return json.loads(obj, cls=MessageJSONDecoder)
 
 
-def message_dump(obj):
-    return json.dumps(obj, cls=MessageJSONEncoder)
+def message_dump(obj, fp):
+    return json.dump(obj, fp, cls=MessageJSONEncoder)
 
 
 def message_load(obj):
-    return json.loads(obj, cls=MessageJSONDecoder)
+    return json.load(obj, cls=MessageJSONDecoder)
 
 
 class MessageJSONDecoder(json.JSONDecoder):
@@ -26,22 +26,25 @@ class MessageJSONDecoder(json.JSONDecoder):
         json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
 
     def object_hook(self, o):
-        if "action_id" and "app_name" in o:
+        if "result" and "app_name" in o:
             o["status"] = StatusEnum[o["status"]]
-            return ActionStatus(**o)
+            return NodeStatus(**o)
 
         elif "workflow_id" and "execution_id" in o:
             o["status"] = StatusEnum[o["status"]]
             return WorkflowStatus(**o)
 
+        else:
+            return o
+
 
 class MessageJSONEncoder(json.JSONEncoder):
     """ A custom encoder for encoding Message types to JSON strings. """
     def default(self, o):
-        if isinstance(o, ActionStatus):
-            return {"name": o.name, "action_id": o.action_id, "action_name": o.action_name, "app_name": o.app_name,
-                    "workflow_execution_id": o.workflow_execution_id, "result": o.result,  "error": o.error,
-                    "status": o.status}
+        if isinstance(o, NodeStatus):
+            return {"name": o.name, "id_": o.id_, "label": o.label, "app_name": o.app_name,
+                    "execution_id": o.execution_id, "result": o.result, "error": o.error, "status": o.status,
+                    "started_at": o.started_at, "completed_at": o.completed_at}
 
         elif isinstance(o, WorkflowStatus):
             return {"execution_id": o.execution_id, "workflow_id": o.workflow_id, "name": o.name, "status": o.status,
@@ -68,6 +71,14 @@ class MessageJSONEncoder(json.JSONEncoder):
 
         elif isinstance(o, StatusEnum):
             return o.value
+
+        elif isinstance(o, JSONPatchOps):
+            return o.value.lower()
+
+        elif isinstance(o, JSONPatch):
+            return {"op": o.op, "path": o.path, "value": o.value, "from_": o.from_}
+        else:
+            return o
 
 
 JSONPatch = namedtuple("JSONPatch", ("op", "path", "value", "from_"), defaults=(None, None))
@@ -97,8 +108,10 @@ class StatusEnum(enum.Enum):
     FAILURE = "FAILURE"
 
 
-class WorkflowStatus:
+class WorkflowStatus(object):
     """ Class that formats a WorkflowStatus message """
+    __slots__ = ("execution_id", "workflow_id", "name", "status", "started_at", "completed_at", "user")
+
     def __init__(self, execution_id, workflow_id, name, started_at=None, completed_at=None, status=None, user=None):
         self.execution_id = execution_id
         self.workflow_id = workflow_id
@@ -128,17 +141,18 @@ class WorkflowStatus:
         return cls(execution_id, workflow_id, name, completed_at=end_time, status=StatusEnum.ABORTED, user=user)
 
 
-class ActionStatus:
-    """ Class that formats an ActionStatus message. The name is a bit of a misnomer since they are used for Trigger,
-        Transform, and Condition messages as well. NodeStatus just didn't seem like the right thing to call them.
-    """
-    def __init__(self, name, action_id, action_name, app_name, workflow_execution_id, result=None, error=None,
-                 status=None, started_at=None, completed_at=None):
+class NodeStatus(object):
+    """ Class that formats a NodeStatus message. """
+    __slots__ = ("name", "id_", "label", "app_name", "execution_id", "result", "error", "status", "started_at",
+                 "completed_at")
+
+    def __init__(self, name, id_, label, app_name, execution_id, result=None, error=None, status=None, started_at=None,
+                 completed_at=None):
         self.name = name
-        self.action_id = action_id
-        self.action_name = action_name
+        self.id_ = id_
+        self.label = label
         self.app_name = app_name
-        self.workflow_execution_id = workflow_execution_id
+        self.execution_id = execution_id
         self.result = result
         self.error = error
         self.status = status
@@ -146,32 +160,27 @@ class ActionStatus:
         self.completed_at = completed_at
 
     @classmethod
-    def from_action(cls, action, result=None, error=None, status=None, started_at=None, completed_at=None):
-        workflow_execution_id = action.workflow_execution_id
-        action_id = action.id_
-        name = action.name
-        action_name = action.action_name
-        app_name = action.app_name
-        started_at = started_at
-        completed_at = completed_at
-        return cls(name, action_id, action_name, app_name, workflow_execution_id, result=result, error=error,
+    def from_node(cls, node, execution_id, result=None, error=None, status=None, started_at=None, completed_at=None):
+        return cls(node.name, node.id_, node.label, node.app_name, execution_id, result=result, error=error,
                    status=status, started_at=started_at, completed_at=completed_at)
 
     @classmethod
-    def pending_from_action(cls, action):
-        return ActionStatus.from_action(action, status=StatusEnum.PENDING)
+    def pending_from_node(cls, node, execution_id):
+        return NodeStatus.from_node(node, execution_id, status=StatusEnum.PENDING)
 
     @classmethod
-    def executing_from_action(cls, action):
+    def executing_from_node(cls, node, execution_id):
         started_at = time.time()
-        return ActionStatus.from_action(action, started_at=started_at, status=StatusEnum.EXECUTING)
+        return NodeStatus.from_node(node, execution_id, started_at=started_at, status=StatusEnum.EXECUTING)
 
     @classmethod
-    def success_from_action(cls, action, result):
+    def success_from_node(cls, node, execution_id, result):
         completed_at = time.time()
-        return ActionStatus.from_action(action, result=result, completed_at=completed_at, status=StatusEnum.SUCCESS)
+        return NodeStatus.from_node(node, execution_id, result=result, completed_at=completed_at,
+                                    status=StatusEnum.SUCCESS)
 
     @classmethod
-    def failure_from_action(cls, action, error=None):
+    def failure_from_node(cls, node, execution_id, error=None):
         completed_at = time.time()
-        return ActionStatus.from_action(action, error=error, completed_at=completed_at, status=StatusEnum.FAILURE)
+        return NodeStatus.from_node(node, execution_id, error=error, completed_at=completed_at,
+                                    status=StatusEnum.FAILURE)

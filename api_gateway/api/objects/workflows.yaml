@@ -88,26 +88,23 @@ WorkflowMetaData:
 
 Action:
   type: object
-  required: [id_, app_name, action_name, name]
+  required: [id_, app_name, label, name]
   description: Encapsulation of executing an action in an app.
   additionalProperties: false
   properties:
     id_:
       $ref: '#/components/schemas/Uuid'
       description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
-    workflow_execution_id:
-      $ref: '#/components/schemas/Uuid'
-      description: The execution ID of the workflow this action belongs to. Needed for identifying the exectution of the action
     app_name:
       description: The app to which the action belongs
       type: string
       example: CyberAnalytics
-    action_name:
+    name:
       description: The name of the function this Action will take
       type: string
       example: pause
-    name:
-      description: User-specified name of the action
+    label:
+      description: User-specified label for the action
       type: string
       example: action1
     parameters:
@@ -160,34 +157,46 @@ Parameter:
 
 Condition:
   type: object
-  required: [name]
+  required: [label, conditional]
   description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
   additionalProperties: false
   properties:
     id_:
       $ref: '#/components/schemas/Uuid'
       description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
-    name:
-      description: User defined name
+    app_name:
       type: string
-      example: Utilities
+      enum: [Builtin]
+    name:
+      type: string
+      enum: [Condition]
+    label:
+      description: User-specified label for the condition
+      type: string
+      example: condition1
     conditional:
       type: string
-      example: "if output == 5: return Hello_World_Action"
+      example: "if Pre_Hello_World_Action == 5: return Hello_World_Action"
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
       $ref: '#/components/schemas/Position'
 
 Transform:
   type: object
-  required: [name, transform]
+  required: [label, transform]
   description: Filters or otherwise transforms the data given to it
   additionalProperties: false
   properties:
     id_:
       $ref: '#/components/schemas/Uuid'
       description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
+    app_name:
+      type: string
+      enum: [Builtin]
     name:
+      type: string
+      enum: [Transform]
+    label:
       description: The user defined name of the transform
       type: string
       example: split string
@@ -203,14 +212,20 @@ Transform:
 
 Trigger:
   type: object
-  required: [name]
+  required: [label, trigger]
   description: Halts execution of workflow pending an external trigger
   additionalProperties: false
   properties:
     id_:
       $ref: '#/components/schemas/Uuid'
       description: The ID of the object. If updating a workflow and the trigger object already exists, ID is required. Otherwise, do not include it.
+    app_name:
+      type: string
+      enum: [Builtin]
     name:
+      type: string
+      enum: [Trigger]
+    label:
       description: The user defined name of the trigger
       type: string
       example: Wait for Approval

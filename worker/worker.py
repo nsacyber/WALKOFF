@@ -3,28 +3,27 @@ import asyncio
 import logging
 import json
 import sys
-import uuid
 from typing import Union
 
 import aiohttp
 import aioredis
-from asteval import Interpreter, make_symbol_table
+import networkx as nx
+import matplotlib.pyplot as plt
 
-from common.message_types import message_dumps, message_loads, message_dump, ActionStatus, WorkflowStatus, StatusEnum, \
+from common.message_types import message_dumps, message_loads, NodeStatus, WorkflowStatus, StatusEnum, \
     JSONPatch, JSONPatchOps
 from common.config import config
 from common.helpers import connect_to_redis_pool
 from common.workflow_types import Node, Action, Condition, Transform, Trigger, ParameterVariant, Workflow, \
-    workflow_dumps, workflow_loads
+    workflow_dumps, workflow_loads, ConditionException
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WORKER")
 
-class Worker:
-    class ConditionException(Exception): pass
 
+class Worker:
     def __init__(self, workflow: Workflow = None, start_action: str = None, redis: aioredis.Redis = None,
-                 session:aiohttp.ClientSession = None):
+                 session: aiohttp.ClientSession = None):
         self.workflow = workflow
         self.start_action = start_action if start_action is not None else self.workflow.start
         self.accumulator = {}
@@ -41,7 +40,7 @@ class Worker:
             logger.info("Waiting for workflows...")
             # TODO: Remove the test code
             # Push test workflow in for now
-            with open("../data/not_workflows/hello.json") as fp:
+            with open("../data/not_workflows/condition_test.json") as fp:
                 wf = json.load(fp)
                 await redis.lpush(config["REDIS"]["workflow_q"], json.dumps(wf))
 
@@ -58,16 +57,15 @@ class Worker:
     async def run():
         async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis, aiohttp.ClientSession() as session:
             async for workflow in Worker.get_workflow(redis):
-
                 # Setup worker launch the event loop
                 worker = Worker(workflow, redis=redis, session=session)
                 logger.info(f"Starting execution of workflow: {workflow.name}")
 
                 try:
                     await worker.execute_workflow()
-
+                    print(worker.accumulator)
                 except Exception:
-                    logger.info(f"Failed execution of workflow: {workflow.name}")
+                    logger.exception(f"Failed execution of workflow: {workflow.name}")
 
                 else:
                     logger.info(f"Completed execution of workflow: {workflow.name}")
@@ -100,7 +98,7 @@ class Worker:
                         task.cancel()
                         cancelled_tasks.add(task)
 
-        exceptions = await asyncio.gather(*cancelled_tasks, return_exceptions=True)
+        await asyncio.gather(*cancelled_tasks, return_exceptions=True)
 
     async def execute_workflow(self):
         """
@@ -113,46 +111,35 @@ class Worker:
 
         while queue:
             node = queue.pop()
-            parents = set(self.workflow.predecessors(node)) if node is not self.start_action else set()
-            children = set(self.workflow.successors(node))
-            node.execution_id = str(uuid.uuid4())
-            node.workflow_execution_id = self.workflow.execution_id
+            parents = {n.id_: n for n in self.workflow.predecessors(node)} if node is not self.start_action else {}
+            children = {n.id_: n for n in self.workflow.successors(node)}
             self.in_process[node.id_] = node
 
             if isinstance(node, Action):
-                tasks.add(asyncio.create_task(self.schedule_action(parents, node)))
-
-            elif isinstance(node, Condition):
-                self.evaluate_condition(parents=parents, children=children, condition=node.conditional)
-
-            elif isinstance(node, Transform):
-                pass
+                node.execution_id = self.workflow.execution_id  # the app needs this as a key for the redis queue
 
             elif isinstance(node, Trigger):
                 raise NotImplementedError
 
-            for child in sorted(children, reverse=True):
+            tasks.add(asyncio.create_task(self.schedule_node(node, parents, children)))
+
+            for child in sorted(children.values(), reverse=True):
                 if child not in visited:
                     queue.appendleft(child)
                     visited.add(child)
 
+        # TODO: Figure out a clean way of handling the exceptions here. Cancelling subgraphs throws CancelledErrors.
         # Launch the results accumulation task and wait for all the results to come in
         results_task = asyncio.create_task(self.get_action_results())
+        exceptions = await asyncio.gather(*tasks, results_task, return_exceptions=True)
+        for e in exceptions:
+            if isinstance(e, Exception) and not isinstance(e, asyncio.CancelledError):
+                try:
+                    raise e
+                except:
+                    logger.exception(f"Exception while executing Workflow:{self.workflow}")
 
-        done, pending = await asyncio.wait([asyncio.gather(*tasks), results_task], return_when=asyncio.FIRST_EXCEPTION)
-        try:
-            for task in done:
-                await task
-
-        except Exception as e:
-            # We timed out or were unsubbed. Clean up any scheduled actions and such that we didn't make it to
-            for task in pending:
-                task.cancel()
-            await asyncio.gather(*pending, return_exceptions=True)
-            logger.info("Cleaned up remaining actions.")
-            raise e
-
-    def evaluate_condition(self, condition, parents, children):
+    async def evaluate_condition(self, condition, parents, children):
         """
             TODO: This will change when we implement a better UI element for it. For now, if an action is given a user
             defined name like "Hello World", it would be referenced by the variable name "Hello_World" in the
@@ -160,53 +147,43 @@ class Worker:
             if a user has an action named "Hello World" as well as "Hello_World". In this case, we cannot be sure
             which is being referenced in the conditional and must raise an exception.
         """
-        def format_node_names(nodes):
-            # We need to format space delimited names into underscore delimited names
-            names_to_modify = {node.name for node in nodes if node.name.count(' ') > 0}
-            formatted_nodes = {}
-            for node in nodes:
-                formatted_name = node.name.strip().replace(' ', '_')
+        logger.debug(f"Attempting evaluation of: {condition.label}-{self.workflow.execution_id}")
+        await self.send_message(NodeStatus.executing_from_node(condition, self.workflow.execution_id))
+        try:
+            child_id = condition(parents, children, self.accumulator)
+            selected_node = children.pop(child_id)
+            await self.send_message(NodeStatus.success_from_node(condition, self.workflow.execution_id, selected_node))
+            logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
-                if formatted_name in names_to_modify:  # we have to check for a name conflict as described above
-                    logger.error(f"Error processing condition. {node.name} or {formatted_name} must be renamed.")
-                    raise self.ConditionException
+            # We preemptively schedule all branches of execution so we must cancel all "false" branches here
+            [await self.cancel_subgraph(child) for child in children.values()]
 
-                formatted_nodes[formatted_name] = node
-            return formatted_nodes
+            self.in_process.pop(condition.id_)
+            self.accumulator[condition.id_] = selected_node
 
-        parent_symbols = format_node_names(parents)
-        children_symbols = format_node_names(children)
-        syms = make_symbol_table(**parent_symbols, **children_symbols)
-        aeval = Interpreter(usersyms=syms, no_for=True, no_while=True, no_try=True, no_functiondef=True, no_ifexp=True,
-                            no_listcomp=True, no_augassign=True, no_assert=True, no_delete=True, no_raise=True,
-                            no_print=True, builtins_readonly=True)
+        except ConditionException as e:
+            logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
+            await self.send_message(NodeStatus.failure_from_node(condition, self.workflow.execution_id, error=repr(e)))
 
-        return aeval(condition) if len(aeval.error) is 0 else aeval.error
+        except Exception:
+            logger.exception("Something happened in Condition evaluation")
 
-    # async def execute_transform(self, action):
-    #     """ Execute an transform and ship its result """
-    #     self.logger.debug(f"Attempting execution of: {self.name}-{self.id}")
-    #     if hasattr(self, self.transform):
-    #         start_action_msg = ActionResult(action=action, result=None, status=WorkflowEvent.TransformStarted)
-    #         await self.redis.publish_json(ACTION_RESULT_CH, start_action_msg.to_json())
-    #         try:
-    #             if action.get("params", None) is None:
-    #                 result = getattr(self, action["action_name"])()
-    #             else:
-    #                 result = getattr(self, action["action_name"])(**action["params"])
-    #             action_result = ActionResult(action=action, result=result, status=WorkflowEvent.TransformSuccess)
-    #             self.logger.debug(f"Executed {action['name']}-{action['id']} with result: {result}")
-    #
-    #         except Exception as e:
-    #             action_result = ActionResult(action=action, result=None, error=repr(e), status=WorkflowEvent.TransformError)
-    #             self.logger.exception(f"Failed to execute {action['name']}-{action['id']}")
-    #
-    #         await self.redis.publish_json(ACTION_RESULT_CH, action_result.to_json())
-    #
-    #     else:
-    #         self.logger.error(f"App {self.__class__.__name__} has no method {action['action_name']}")
-    #         action_result = ActionResult(action, error="Action does not exist")
-    #         await self.redis.publish_json(ACTION_RESULT_CH, action_result.to_json())
+    async def execute_transform(self, transform, parent):
+        """ Execute an transform and ship its result """
+        logger.debug(f"Attempting evaluation of: {transform.label}-{self.workflow.execution_id}")
+        await self.send_message(NodeStatus.executing_from_node(transform, self.workflow.execution_id))
+        try:
+            result = transform(self.accumulator[parent.id_])  # run transform on parent's result
+            await self.send_message(NodeStatus.success_from_node(transform, self.workflow.execution_id, result))
+            logger.info(f"Transform {transform.label}-succeeded with result: {result}")
+
+            self.accumulator[transform.id_] = result
+            self.in_process.pop(transform.id_)
+
+        # TODO: figure out exactly what can be raised by the possible transforms
+        except Exception as e:
+            logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
+            await self.send_message(NodeStatus.failure_from_node(transform, self.workflow.execution_id, error=repr(e)))
 
     async def dereference_params(self, action: Action):
         global_vars = set(await self.redis.hkeys(config["REDIS"]["globals_key"]))
@@ -234,18 +211,29 @@ class Worker:
             param.reference = None
             param.variant = ParameterVariant.STATIC_VALUE
 
-    async def schedule_action(self, parents: {Action}, action: Action):
+    async def schedule_node(self, node, parents, children):
         """ Waits until all dependencies of an action are met and then schedules the action """
-        while not all(parent.id_ in self.accumulator for parent in parents):
+        while not all(parent.id_ in self.accumulator for parent in parents.values()):
             await asyncio.sleep(0)
 
-        await self.dereference_params(action)
+        if isinstance(node, Action):
+            await self.dereference_params(node)
+            await self.redis.lpush(f"{node.app_name}-{node.priority}", workflow_dumps(node))
+
+        elif isinstance(node, Condition):
+            await self.evaluate_condition(node, parents, children)
+
+        elif isinstance(node, Transform):
+            if len(parents) > 1:
+                logger.error(f"Error scheduling {node.name}: Transforms cannot have more than 1 incoming connection.")
+            await self.execute_transform(node, parents.popitem()[1])
+
+        elif isinstance(node, Trigger):
+            raise NotImplementedError
 
         # TODO: decide if we want pending action messages and uncomment this line
-        # await self.send_message(ActionStatus.pending_from_action(action))
-
-        await self.redis.lpush(f"{action.app_name}-{action.priority}", workflow_dumps(action))
-        logger.info(f"Scheduled {action}")
+        # await self.send_message(ActionStatus.pending_from_node(node, workflow.execution_id))
+        logger.info(f"Scheduled {node}")
 
     async def get_action_results(self):
         """ Continuously monitors the results queue until all scheduled actions have been completed """
@@ -256,81 +244,90 @@ class Worker:
             if msg is None:
                 continue
 
-            msg = message_loads(msg)
-            # Ensure that the recieved ActionResult is for an action we launched
-            if msg.workflow_execution_id == self.workflow.execution_id and msg.action_id in self.in_process:
-                # if msg["error"] is None and msg["result"] is not None:
-
+            msg: NodeStatus = message_loads(msg)
+            # Ensure that the received NodeStatus is for an action we launched
+            if msg.execution_id == self.workflow.execution_id and msg.id_ in self.in_process:
                 if msg.status == StatusEnum.EXECUTING:
-                    logger.info(f"App started exectuion of: {msg.name}-{msg.workflow_execution_id}")
+                    logger.info(f"App started execution of: {msg.label}-{msg.execution_id}")
 
                 elif msg.status == StatusEnum.SUCCESS:
-                    self.accumulator[msg.action_id] = msg.result
-                    logger.info(f"Worker recieved result for: {msg.name}-{msg.workflow_execution_id}")
+                    self.accumulator[msg.id_] = msg.result
+                    logger.info(f"Worker received result for: {msg.label}-{msg.execution_id}")
 
                     # Remove the action from our local in_process queue as well as the one in redis
-                    action = self.in_process.pop(msg.action_id)
+                    action = self.in_process.pop(msg.id_)
                     await self.redis.lrem(config["REDIS"]["actions_in_process"], 0, workflow_dumps(action))
 
                 elif msg.status == StatusEnum.FAILURE:
-                    self.accumulator[msg.action_id] = msg.error
-                    logger.info(f"Worker recieved error \"{msg.error}\" for: {msg.name}-{msg.workflow_execution_id}")
+                    self.accumulator[msg.id_] = msg.error
+                    logger.info(f"Worker recieved error \"{msg.error}\" for: {msg.label}-{msg.execution_id}")
 
                 else:
-                    logger.error(f"Unknown message recieved: {msg}")
+                    logger.error(f"Unknown message status received: {msg}")
+
+            else:
+                logger.error(f"Message received for unknown execution: {msg}")
 
         # Clean up our redis mess
         await self.redis.delete(read_messages_queue)
 
-    async def send_message(self, message: Union[ActionStatus, WorkflowStatus]):
-        execution_id = None
-        patches = None
-        if isinstance(message, ActionStatus):
-            execution_id = message.workflow_execution_id
-            root = f"#/action_statuses/{message.action_id}"
+    def make_patches(self, message, root, op, white_list=None, black_list=None):
+        if white_list is None and black_list is None:
+            raise ValueError("Either white_list or black_list must be provided")
 
+        if white_list is not None and black_list is not None:
+            raise ValueError("Either white_list or black_list must be provided, not both")
+
+        # convert blacklist to whitelist and grab those attrs from the message
+        white_list = set(message.__slots__).difference(black_list) if black_list is not None else white_list
+        fields = {'/'.join((root, k)): getattr(message, k) for k in message.__slots__ if k in white_list}
+
+        return [JSONPatch(op, path=path, value=value) for path, value in fields.items()]
+
+    def get_patches(self, message):
+        patches = None
+        if isinstance(message, NodeStatus):
+            root = f"#/action_statuses/{message.id_}"
             if message.status == StatusEnum.EXECUTING:
-                black_list = {"result", "completed_at"}
-                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k not in black_list}
-                patches = [JSONPatch(JSONPatchOps.ADD, path=path, value=value) for path, value in fields]
+                patches = self.make_patches(message, root, JSONPatchOps.ADD, black_list={"result", "completed_at"})
 
             elif message.status == StatusEnum.SUCCESS:
-                white_list = {"status", "result", "completed_at"}
-                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k in white_list}
-                patches = [JSONPatch(JSONPatchOps.REMOVE, path=path, value=value) for path, value in fields]
+                patches = self.make_patches(message, root, JSONPatchOps.REPLACE,
+                                            white_list={"status", "result", "completed_at"})
 
             elif message.status == StatusEnum.FAILURE:
-                white_list = {"status", "error", "completed_at"}
-                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k in white_list}
-                patches = [JSONPatch(JSONPatchOps.REMOVE, path=path, value=value) for path, value in fields]
+                patches = self.make_patches(message, root, JSONPatchOps.REPLACE,
+                                            white_list={"status", "error", "completed_at"})
 
         elif isinstance(message, WorkflowStatus):
-            execution_id = message.execution_id
             root = f"#/"
-
             if message.status == StatusEnum.EXECUTING:
-                black_list = {"status", "started_at"}
-                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k not in black_list}
-                patches = [JSONPatch(JSONPatchOps.ADD, path=path, value=value) for path, value in fields]
+                patches = self.make_patches(message, root, JSONPatchOps.ADD, black_list={"status", "started_at"})
 
             elif message.status == StatusEnum.COMPLETED:
-                white_list = {"status", "completed_at"}
-                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k in white_list}
-                patches = [JSONPatch(JSONPatchOps.REMOVE, path=path, value=value) for path, value in fields]
+                patches = self.make_patches(message, root, JSONPatchOps.REPLACE, white_list={"status", "completed_at"})
 
             elif message.status == StatusEnum.ABORTED:
-                white_list = {"status", "completed_at"}
-                fields = {'/'.join((root, k)): v for k, v in message_dump(message).items() if k in white_list}
-                patches = [JSONPatch(JSONPatchOps.REMOVE, path=path, value=value) for path, value in fields]
+                patches = self.make_patches(message, root, JSONPatchOps.REPLACE, white_list={"status", "completed_at"})
 
-        if execution_id is None:
+        return patches
+
+    async def send_message(self, message: Union[NodeStatus, WorkflowStatus]):
+        """ Forms and sends a JSONPatch message to the api_gateway to update the status of an action or workflow """
+        patches = self.get_patches(message)
+
+        if patches is None:
             raise ValueError(f"Attempting to send improper message type: {type(message)}")
 
         data = message_dumps(patches)
         params = {"event": message.status.value}
-        url = f"/iapi/workflowstatus/{execution_id}"
-        async with self.session.patch(url, data=data, params=params) as resp:
-            return resp.json(loads=message_loads)
+        url = f"{config['WORKER']['api_gateway_uri']}/iapi/workflowstatus/{self.workflow.execution_id}"
+        try:
+            async with self.session.patch(url, data=data, params=params) as resp:
+                return resp.json(loads=message_loads)
+        except aiohttp.ClientConnectionError as e:
+            logger.error(f"Could not send status message to {url}: {e!r}")
+
 
 if __name__ == "__main__":
     # Launch the worker event loop

@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import os
 import sys
@@ -8,8 +7,8 @@ from contextlib import asynccontextmanager
 
 import aioredis
 
-from .message_types import ActionStatus, message_dumps
-from .workflow_types import workflow_loads
+from common.message_types import NodeStatus, message_dumps
+from common.workflow_types import workflow_loads, Action
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
@@ -59,33 +58,34 @@ class AppBase:
             action = workflow_loads(action)
             asyncio.create_task(self.execute_action(action))
 
-    async def execute_action(self, action):
+    async def execute_action(self, action: Action):
         """ Execute an action and ship its result """
-        self.logger.debug(f"Attempting execution of: {action.name}-{action.workflow_execution_id}")
-        if hasattr(self, action.action_name):
-            start_action_msg = ActionStatus.executing_from_action(action)
-            await self.redis.lpush(action.workflow_execution_id, message_dumps(start_action_msg))
+        self.logger.debug(f"Attempting execution of: {action.label}-{action.execution_id}")
+        if hasattr(self, action.name):
+            start_action_msg = NodeStatus.executing_from_node(action, action.execution_id)
+            await self.redis.lpush(action.execution_id, message_dumps(start_action_msg))
             try:
-                func = getattr(self, action.action_name, None)
+                func = getattr(self, action.name, None)
                 if callable(func):
                     if len(action.parameters) < 1:
                         result = func()
                     else:
                         result = func(**{p.name: p.value for p in action.parameters})
-                    action_result = ActionStatus.success_from_action(action, result)
-                    self.logger.debug(f"Executed {action.name}-{action.id_} with result: {result}")
+                    action_result = NodeStatus.success_from_node(action, action.execution_id, result)
+                    self.logger.debug(f"Executed {action.label}-{action.id_} with result: {result}")
 
                 else:
-                    self.logger.error(f"App {self.__class__.__name__}.{action.action_name} is not callable")
-                    action_result = ActionStatus.failure_from_action(action, error="Action not callable")
+                    self.logger.error(f"App {self.__class__.__name__}.{action.name} is not callable")
+                    action_result = NodeStatus.failure_from_node(action, action.execution_id,
+                                                                 error="Action not callable")
 
             except Exception as e:
-                action_result = ActionStatus.failure_from_action(action=action, error=repr(e))
-                self.logger.exception(f"Failed to execute {action.name}-{action.id_}")
+                action_result = NodeStatus.failure_from_node(action, action.execution_id, error=repr(e))
+                self.logger.exception(f"Failed to execute {action.label}-{action.id_}")
 
-            await self.redis.lpush(action.workflow_execution_id, message_dumps(action_result))
+            await self.redis.lpush(action.execution_id, message_dumps(action_result))
 
         else:
-            self.logger.error(f"App {self.__class__.__name__} has no method {action.action_name}")
-            action_result = ActionStatus.from_action(action, error="Action does not exist")
-            await self.redis.lpush(action.workflow_execution_id, message_dumps(action_result))
+            self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
+            action_result = NodeStatus.failure_from_node(action, action.execution_id, error="Action does not exist")
+            await self.redis.lpush(action.execution_id, message_dumps(action_result))

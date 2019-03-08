@@ -9,7 +9,6 @@ info:
     name: Creative Commons
 actions:
   hello_world:
-    run: app.hello_world
     description: Returns an introductory message
     returns:
       Success:
@@ -20,7 +19,6 @@ actions:
             message:
               type: string
   repeat_back_to_me:
-    run: app.repeat_back_to_me
     description: Repeats the call argument
     parameters:
         - name: call
@@ -33,7 +31,6 @@ actions:
         schema:
           type: string
   return_plus_one:
-    run: app.return_plus_one
     description: Increments a given number by 1
     parameters:
         - name: number
@@ -47,7 +44,6 @@ actions:
         schema:
           type: integer
   pause:
-    run: app.pause
     description: pauses execution for an amount of time
     parameters:
       - name: seconds
@@ -57,4 +53,25 @@ actions:
     returns:
       Success:
         description: successfully paused
-
+  echo_array:
+    description: echos the given array
+    parameters:
+      - name: data
+        description: The data to echo
+        required: true
+        type: array
+    returns:
+      Success:
+        schema:
+          type: array
+  echo_json:
+    description: echos the given JSON object
+    parameters:
+      - name: data
+        description: The data to echo
+        required: true
+        type: object
+    returns:
+      Success:
+        schema:
+          type: object

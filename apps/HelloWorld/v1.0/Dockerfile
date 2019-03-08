@@ -12,8 +12,9 @@ RUN pip install --prefix="/install" -r /requirements.txt
 FROM base
 
 COPY --from=builder /install /usr/local
-COPY src/app_sdk /app/app_sdk
-COPY src /app/
+COPY app_sdk /app/app_sdk
+COPY common /app/common
+COPY apps/HelloWorld/v1.0/src /app/
 
 WORKDIR /app
 
