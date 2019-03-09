@@ -1,25 +1,27 @@
-import { Type } from 'class-transformer';
+import { Type, Expose } from 'class-transformer';
 
-import { InterfaceWidget, 
+import { DashboardWidget, 
          BarChartWidget, 
          PieChartWidget, 
          LineChartWidget,  
          TextWidget,
          TableWidget,
          KibanaWidget
-} from "./interfaceWidget";
+} from "./dashboardWidget";
 
 import { UUID } from 'angular2-uuid';
 
-export class Interface {
+export class Dashboard {
 
+    @Expose({ name: "id_" })
     id: string;
 
     name: string;
 
-    @Type(() => InterfaceWidget, {
+    @Type(() => DashboardWidget, {
+        keepDiscriminatorProperty: true,
         discriminator: {
-            property: "type",
+            property: "type_",
             subTypes: [
                 { value: BarChartWidget, name: "bar" },
                 { value: PieChartWidget, name: "pie" },
@@ -30,7 +32,7 @@ export class Interface {
             ]
         }
     })
-    widgets: InterfaceWidget[] = []; 
+    widgets: DashboardWidget[] = []; 
 
     constructor() { 
         this.id = UUID.UUID();

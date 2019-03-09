@@ -5,9 +5,9 @@ import { By } from '@angular/platform-browser';
 import { plainToClass } from 'class-transformer';
 import {} from 'jasmine';
 
-import { DevicesComponent } from './devices.component';
-import { DevicesService } from './devices.service';
-import { Device } from '../models/device';
+import { GlobalsComponent } from './globals.component';
+import { GlobalsService } from './globals.service';
+import { Global } from '../models/global';
 import { AppApi } from '../models/api/appApi';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
@@ -17,15 +17,15 @@ import { JwtInterceptor, JwtModule } from '@auth0/angular-jwt';
 import { RefreshTokenInterceptor, jwtTokenGetter } from '../refresh-token-interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
-describe('DevicesComponent', () => {
-	let comp: DevicesComponent;
-	let fixture: ComponentFixture<DevicesComponent>;
-	let service: DevicesService;
+describe('GlobalsComponent', () => {
+	let comp: GlobalsComponent;
+	let fixture: ComponentFixture<GlobalsComponent>;
+	let service: GlobalsService;
 
-	const testDeviceApis: AppApi[] = plainToClass(AppApi, [
+	const testGlobalApis: AppApi[] = plainToClass(AppApi, [
 		{
 			name: 'app_name',
-			device_apis: [
+			global_apis: [
 				{
 					name: 'type',
 					description: 'description',
@@ -55,7 +55,7 @@ describe('DevicesComponent', () => {
 		},
 	]);
 
-	const testDevices: Device[] = plainToClass(Device, [
+	const testGlobals: Global[] = plainToClass(Global, [
 		{
 			id: 1,
 			name: 'name',
@@ -98,9 +98,9 @@ describe('DevicesComponent', () => {
 				// FormsModule,
 				// ReactiveFormsModule,
 			],
-			declarations: [DevicesComponent],
+			declarations: [GlobalsComponent],
 			schemas: [NO_ERRORS_SCHEMA],
-			providers: [DevicesService, JwtInterceptor, 
+			providers: [GlobalsService, JwtInterceptor, 
 			// Providing JwtInterceptor allow to inject JwtInterceptor manually into RefreshTokenInterceptor
 			{
 				provide: HTTP_INTERCEPTORS,
@@ -120,48 +120,48 @@ describe('DevicesComponent', () => {
 	 * Synchronous beforeEach
 	 */
 	beforeEach(() => {
-		fixture = TestBed.createComponent(DevicesComponent);
+		fixture = TestBed.createComponent(GlobalsComponent);
 		comp = fixture.componentInstance;
-		service = fixture.debugElement.injector.get(DevicesService);
+		service = fixture.debugElement.injector.get(GlobalsService);
 
 		spyOn(window, 'confirm').and.returnValue(true);
-		spyOn(service, 'getAllDevices').and.returnValue(Promise.resolve(testDevices));
-		spyOn(service, 'getDeviceApis').and.returnValue(Promise.resolve(testDeviceApis));
-		spyOn(service, 'deleteDevice').and.returnValue(Promise.resolve());
+		spyOn(service, 'getAllGlobals').and.returnValue(Promise.resolve(testGlobals));
+		spyOn(service, 'getGlobalApis').and.returnValue(Promise.resolve(testGlobalApis));
+		spyOn(service, 'deleteGlobal').and.returnValue(Promise.resolve());
 	});
 
-	// it('should properly display devices', fakeAsync(() => {
+	// it('should properly display globals', fakeAsync(() => {
 	// 	fixture.detectChanges();
-	// 	expect(comp.devices).toBeTruthy();
-	// 	expect(comp.devices.length).toBe(0);
+	// 	expect(comp.globals).toBeTruthy();
+	// 	expect(comp.globals.length).toBe(0);
 	// 	tick();
 	// 	fixture.detectChanges();
-	// 	expect(comp.devices.length).toBe(testDevices.length);
+	// 	expect(comp.globals.length).toBe(testGlobals.length);
 	// 	const els = fixture.debugElement.queryAll(By.css('.datatable-body-row'));
-	// 	expect(els.length).toBe(testDevices.length);
+	// 	expect(els.length).toBe(testGlobals.length);
 	// }));
 
-	// it('should properly remove device from the display on delete', fakeAsync(() => {
+	// it('should properly remove global from the display on delete', fakeAsync(() => {
 	// 	fixture.detectChanges();
 	// 	tick();
 	// 	fixture.detectChanges();
-	// 	const originalCount = testDevices.length;
-	// 	expect(comp.devices.length).toBe(originalCount);
+	// 	const originalCount = testGlobals.length;
+	// 	expect(comp.globals.length).toBe(originalCount);
 	// 	let els = fixture.debugElement.queryAll(By.css('.datatable-body-row'));
 	// 	expect(els.length).toBe(originalCount);
 
-	// 	comp.deleteDevice(comp.devices[0]);
+	// 	comp.deleteGlobal(comp.globals[0]);
 	// 	tick();
 	// 	fixture.detectChanges();
-	// 	expect(comp.devices.length).toBe(originalCount - 1);
+	// 	expect(comp.globals.length).toBe(originalCount - 1);
 	// 	els = fixture.debugElement.queryAll(By.css('.datatable-body-row'));
 	// 	expect(els.length).toBe(originalCount - 1);
 	// }));
 
-	// it('should properly open a modal on clicking add device', fakeAsync(() => {
+	// it('should properly open a modal on clicking add global', fakeAsync(() => {
 	// 	fixture.detectChanges();
 	// 	tick();
 	// 	fixture.detectChanges();
-	// 	comp.addDevice();
+	// 	comp.addGlobal();
 	// }));
 });

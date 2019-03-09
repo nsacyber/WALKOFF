@@ -119,7 +119,7 @@ export class SettingsComponent {
 	editTimeout(): void {
 		const modalRef = this.modalService.open(SettingsTimeoutModalComponent);
 		modalRef.componentInstance.configuration = this.configuration;
-		modalRef.result.then(() => this.updateConfiguration());
+		modalRef.result.then(() => this.updateConfiguration()).catch(() => null)
 	}
 
 	editUser(user: User): void {

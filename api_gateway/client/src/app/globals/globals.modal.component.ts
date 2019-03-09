@@ -2,43 +2,43 @@ import { Component, Input, ChangeDetectorRef, ViewChild, ElementRef, OnInit, Aft
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 
-import { DevicesService } from './devices.service';
+import { GlobalsService } from './globals.service';
 import { UtilitiesService } from '../utilities.service';
 
-import { WorkingDevice } from '../models/workingDevice';
+import { WorkingGlobal } from '../models/workingGlobal';
 import { AppApi } from '../models/api/appApi';
 import { DeviceApi } from '../models/api/deviceApi';
 import { ParameterSchema } from '../models/api/parameterSchema';
 import { GenericObject } from '../models/genericObject';
 
 @Component({
-	selector: 'device-modal',
-	templateUrl: './devices.modal.html',
+	selector: 'global-modal',
+	templateUrl: './globals.modal.html',
 	styleUrls: [
-		'./devices.scss',
+		'./globals.scss',
 	],
-	providers: [DevicesService, UtilitiesService],
+	providers: [GlobalsService, UtilitiesService],
 })
-export class DevicesModalComponent implements OnInit, AfterViewInit {
-	@Input() workingDevice: WorkingDevice = new WorkingDevice();
+export class GlobalsModalComponent implements OnInit, AfterViewInit {
+	@Input() workingGlobal: WorkingGlobal = new WorkingGlobal();
 	@Input() title: string;
 	@Input() submitText: string;
 	@Input() appNames: string[] = [];
 	@Input() appApis: AppApi[] = [];
 	@ViewChild('typeRef') typeRef: ElementRef;
-	// @ViewChild('deviceForm') form: FormGroup
+	// @ViewChild('globalForm') form: FormGroup
 
-	deviceTypesForApp: DeviceApi[] = [];
-	// save device type fields on saving/loading so we don't clear all progress if we switch device type
+	globalTypesForApp: DeviceApi[] = [];
+	// save global type fields on saving/loading so we don't clear all progress if we switch global type
 	// e.g. { 'router': { 'ip': '127.0.0.1', ... }, ... }
-	deviceTypeFields: { [key: string]: {} } = {};
-	selectedDeviceType: DeviceApi;
+	globalTypeFields: { [key: string]: {} } = {};
+	selectedGlobalType: DeviceApi;
 	validationErrors: { [key: string]: string } = {};
 	encryptedConfirmFields: { [key: string]: string } = {};
 	encryptedFieldsToBeCleared: { [key: string]: boolean } = {};
 
 	constructor (
-		private devicesService: DevicesService, public activeModal: NgbActiveModal, 
+		private globalsService: GlobalsService, public activeModal: NgbActiveModal, 
 		private toastrService: ToastrService, private cdr: ChangeDetectorRef,
 	) {}
 
@@ -46,57 +46,57 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 	}
 
 	ngAfterViewInit(): void {
-		//For an existing device, set our available device types and store the known fields for our device type
-		if (this.workingDevice.app_name) {
-			this.deviceTypesForApp = this.appApis.find(app => app.name === this.workingDevice.app_name).device_apis;
+		//For an existing global, set our available global types and store the known fields for our global type
+		if (this.workingGlobal.app_name) {
+			this.globalTypesForApp = this.appApis.find(app => app.name === this.workingGlobal.app_name).device_apis;
 		}
 		//Detect changes beforehand so the select box is updated
 		this.cdr.detectChanges();
-		if (this.workingDevice.type) {
-			this.deviceTypeFields[this.workingDevice.type] = this.workingDevice.fields;
-			this.typeRef.nativeElement.value = this.workingDevice.type;
-			this.handleDeviceTypeSelection(null, this.workingDevice.type);
+		if (this.workingGlobal.type) {
+			this.globalTypeFields[this.workingGlobal.type] = this.workingGlobal.fields;
+			this.typeRef.nativeElement.value = this.workingGlobal.type;
+			this.handleGlobalTypeSelection(null, this.workingGlobal.type);
 		}
-		//Detect changes once more to actually use the selected device type
+		//Detect changes once more to actually use the selected global type
 		this.cdr.detectChanges();
 	}
 
 	/**
-	 * On selecting an app in the app select, get the DeviceTypes for the app from our App Apis.
-	 * Also clear device type data if needed.
+	 * On selecting an app in the app select, get the GlobalTypes for the app from our App Apis.
+	 * Also clear global type data if needed.
 	 * @param event JS event fired from app select
 	 * @param appName App name from the selection
 	 */
 	handleAppSelection(event: any, appName: string): void {
-		this.workingDevice.app_name = appName;
-		this.deviceTypesForApp = this.appApis.find(a => a.name === appName).device_apis;
-		if (this.selectedDeviceType) { this._clearDeviceTypeData(); }
+		this.workingGlobal.app_name = appName;
+		this.globalTypesForApp = this.appApis.find(a => a.name === appName).device_apis;
+		if (this.selectedGlobalType) { this._clearGlobalTypeData(); }
 	}
 
 	/**
-	 * On selecting a device type in the device type select, grab the DeviceApi from our AppApis.
-	 * Get the default or existing values for our device based on the Device Api.
-	 * @param event JS event fired from device type select
-	 * @param deviceType Device type from the selection
+	 * On selecting a global type in the global type select, grab the DeviceApi from our AppApis.
+	 * Get the default or existing values for our global based on the Global Api.
+	 * @param event JS event fired from global type select
+	 * @param globalType Global type from the selection
 	 */
-	handleDeviceTypeSelection(event: any, deviceType: string): void {
-		// If we just cleared our device type selection,
-		// clear our device type data from the working device and any temp storage
-		if (!deviceType) {
-			this._clearDeviceTypeData();
+	handleGlobalTypeSelection(event: any, globalType: string): void {
+		// If we just cleared our global type selection,
+		// clear our global type data from the working global and any temp storage
+		if (!globalType) {
+			this._clearGlobalTypeData();
 			return;
 		}
-		// Grab the first device type that matches our app and newly selected type
-		this.selectedDeviceType = this.appApis.find(a => a.name === this.workingDevice.app_name)
-			.device_apis.find(d => d.name === deviceType);
-		// Set the type on our working device
-		this.workingDevice.type = deviceType;
+		// Grab the first global type that matches our app and newly selected type
+		this.selectedGlobalType = this.appApis.find(a => a.name === this.workingGlobal.app_name)
+			.device_apis.find(d => d.name === globalType);
+		// Set the type on our working global
+		this.workingGlobal.type = globalType;
 		// Set our fields to whatever's stored or a new object
-		this.workingDevice.fields = 
-			this.deviceTypeFields[deviceType] = 
-			this.deviceTypeFields[deviceType] || this._getDefaultValues(this.selectedDeviceType);
+		this.workingGlobal.fields = 
+			this.globalTypeFields[globalType] = 
+			this.globalTypeFields[globalType] || this._getDefaultValues(this.selectedGlobalType);
 
-		this._getEncryptedConfirmFields(this.selectedDeviceType);
+		this._getEncryptedConfirmFields(this.selectedGlobalType);
 		this.validationErrors = {};
 	}
 
@@ -111,20 +111,20 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 	}
 
 	/**
-	 * Submits the add/edit device modal.
-	 * If we're editing a device, we also want to handle removing
+	 * Submits the add/edit global modal.
+	 * If we're editing a global, we also want to handle removing
 	 * encrypted fields by setting them as '' rather than just passing null.
-	 * Calls POST/PUT based upon add/edit and returns the added/updated device from the server.
+	 * Calls POST/PUT based upon add/edit and returns the added/updated global from the server.
 	 */
 	submit(): void {
 		if (!this.validate()) { return; }
 
-		const toSubmit = WorkingDevice.toDevice(this.workingDevice);
+		const toSubmit = WorkingGlobal.toGlobal(this.workingGlobal);
 
-		//If device has an ID, device already exists, call update
-		if (this.workingDevice.id) {
+		//If global has an ID, global already exists, call update
+		if (this.workingGlobal.id) {
 			toSubmit.fields.forEach((field, index, array) => {
-				const ftype = this.selectedDeviceType.fields.find(ft => ft.name === field.name);
+				const ftype = this.selectedGlobalType.fields.find(ft => ft.name === field.name);
 	
 				if (!ftype.encrypted) { return; }
 	
@@ -135,18 +135,18 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 					(typeof(field.value) === 'number' && !field.value)) { array.splice(index, 1); }
 			});
 
-			this.devicesService
-				.editDevice(toSubmit)
-				.then(device => this.activeModal.close({
-					device,
+			this.globalsService
+				.editGlobal(toSubmit)
+				.then(global => this.activeModal.close({
+					global,
 					isEdit: true,
 				}))
 				.catch(e => this.toastrService.error(e.message));
 		} else {
-			this.devicesService
-				.addDevice(toSubmit)
-				.then(device => this.activeModal.close({
-					device,
+			this.globalsService
+				.addGlobal(toSubmit)
+				.then(global => this.activeModal.close({
+					global,
 					isEdit: false,
 				}))
 				.catch(e => this.toastrService.error(e.message));
@@ -154,21 +154,21 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 	}
 
 	/**
-	 * Checks if basic info on the top level device params is valid (specified).
+	 * Checks if basic info on the top level global params is valid (specified).
 	 */
 	isBasicInfoValid(): boolean {
-		if (this.workingDevice.name && this.workingDevice.name.trim() && 
-			this.workingDevice.app_name && this.workingDevice.type) { return true; }
+		if (this.workingGlobal.name && this.workingGlobal.name.trim() && 
+			this.workingGlobal.app_name && this.workingGlobal.type) { return true; }
 
 		return false;
 	}
 
 	/**
-	 * Performs validation on each Device field based on the matching ParameterSchema for the DeviceApi.
+	 * Performs validation on each Global field based on the matching ParameterSchema for the DeviceApi.
 	 */
 	validate(): boolean {
 		this.validationErrors = {};
-		const inputs = this.workingDevice.fields;
+		const inputs = this.workingGlobal.fields;
 
 		//Trim whitespace out of our inputs first
 		Object.keys(inputs).forEach(key => {
@@ -181,10 +181,10 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 			}
 		});
 
-		this.selectedDeviceType.fields.forEach(field => {
+		this.selectedGlobalType.fields.forEach(field => {
 			// if we have a required field, and this field is NOT an edit to an encrypted field,
 			// check if we have a value specified
-			if (field.required && !(this.workingDevice.id && field.encrypted)) {
+			if (field.required && !(this.workingGlobal.id && field.encrypted)) {
 				if (inputs[field.name] == null ||
 					(typeof inputs[field.name] === 'string' && !inputs[field.name]) ||
 					(typeof inputs[field.name] === 'number' && inputs[field.name] === null)) {
@@ -279,18 +279,18 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 	/**
 	 * Sets a component variable to track confirm fields for encrypted values.
 	 * This is so we can allow the form to have encrypted values entered twice such that a user doesn't fat finger it.
-	 * @param deviceType DeviceApi to check for encrypted fields.
+	 * @param globalType DeviceApi to check for encrypted fields.
 	 */
-	private _getEncryptedConfirmFields(deviceType: DeviceApi): void {
+	private _getEncryptedConfirmFields(globalType: DeviceApi): void {
 		this.encryptedConfirmFields = {};
-		deviceType.fields.forEach(field => {
+		globalType.fields.forEach(field => {
 			if (field.encrypted) { this.encryptedConfirmFields[field.name] = ''; }
 		});
 	}
 
 	/**
 	 * Returns a field with the default value specified if possible.
-	 * @param deviceApi Device Api to check against
+	 * @param deviceApi Global Api to check against
 	 */
 	private _getDefaultValues(deviceApi: DeviceApi): GenericObject {
 		const out: GenericObject = {};
@@ -307,12 +307,12 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 	}
 
 	/**
-	 * Clears all of our device type data. Used if we switch device types or selected app.
+	 * Clears all of our global type data. Used if we switch global types or selected app.
 	 */
-	private _clearDeviceTypeData(): void {
-		this.selectedDeviceType = null;
-		this.workingDevice.type = null;
-		this.workingDevice.fields = null;
+	private _clearGlobalTypeData(): void {
+		this.selectedGlobalType = null;
+		this.workingGlobal.type = null;
+		this.workingGlobal.fields = null;
 		this.validationErrors = {};
 		this.encryptedConfirmFields = {};
 	}

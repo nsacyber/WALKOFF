@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ManageInterfacesComponent } from './manage.interfaces.component';
+import { ManageDashboardsComponent } from './manage.dashboards.component';
 
-describe('ManageInterfacesComponent', () => {
-  let component: ManageInterfacesComponent;
-  let fixture: ComponentFixture<ManageInterfacesComponent>;
+describe('ManageDashboardsComponent', () => {
+  let component: ManageDashboardsComponent;
+  let fixture: ComponentFixture<ManageDashboardsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ManageInterfacesComponent ]
+      declarations: [ ManageDashboardsComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ManageInterfacesComponent);
+    fixture = TestBed.createComponent(ManageDashboardsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

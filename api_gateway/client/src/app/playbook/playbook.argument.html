@@ -1,6 +1,6 @@
 <div class="form-group argument {{id % 2 ? 'odd' : 'even'}}">
 	<!-- Label for argument with optional required icon -->
-	<label *ngIf="!isDeviceArgument" for="{{argument.name}}">
+	<label *ngIf="!isGlobalArgument" for="{{argument.name}}">
 		Argument {{id+1}}: {{argument.name}} ({{parameterSchema.type}})
 		<i *ngIf="parameterApi.description != null" class="fa fa-info-circle" [title]="parameterApi.description"></i>
 		<i *ngIf="parameterApi.required" class="fa fa-asterisk required" title="This field is required."></i>
@@ -42,10 +42,10 @@
 			<select2 *ngIf="isStatic && isRoleSelect" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"
 				(valueChanged)="selectChange($event)"></select2>
 
-			<!-- Device select -->
-			<select *ngIf="isDeviceSelect" class="form-control" name="device_id" [(ngModel)]="argument.value" (change)="clearReference()">
+			<!-- Global select -->
+			<select *ngIf="isGlobalSelect" class="form-control" name="global_id" [(ngModel)]="argument.value" (change)="clearReference()">
 				<option [ngValue]="''"></option>
-				<option *ngFor="let i of devices" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
+				<option *ngFor="let i of globals" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 			</select>
 
 			<!-- Branch Counter select -->
@@ -79,7 +79,7 @@
 		</div>
 	</div>
 </div>
-<div *ngIf="!isDeviceArgument && isStatic && isNormalArray(parameterSchema)" class="indent">
+<div *ngIf="!isGlobalArgument && isStatic && isNormalArray(parameterSchema)" class="indent">
 	<div class="row">
 		<div class="col-6">
 			<select class="form-control" [(ngModel)]="selectedType" name="selectedType">
@@ -114,7 +114,7 @@
 		<input *ngIf="arrayTypes[itemId] === 'boolean'" type="checkbox" class="form-control" [(ngModel)]="argument.value[itemId]">
 	</div>
 </div>
-<div *ngIf="!isDeviceArgument && isStatic && parameterSchema.type === 'object'" class="indent">
+<div *ngIf="!isGlobalArgument && isStatic && parameterSchema.type === 'object'" class="indent">
 	<div class="row">
 		<div class="col-6">
 			<input type="text" class="form-control" [(ngModel)]="propertyName" placeholder="Enter a parameter name">

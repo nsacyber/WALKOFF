@@ -9,7 +9,7 @@ import { Argument } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
 import { User } from '../models/user';
 import { Role } from '../models/role';
-import { Device } from '../models/device';
+import { Global } from '../models/global';
 
 const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 
@@ -27,7 +27,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 	@Input() loadedWorkflow: Workflow;
 	@Input() users: User[];
 	@Input() roles: Role[];
-	@Input() devices: Device[];
+	@Input() globals: Global[];
 	@Input() branchCounters: any[];
 
 	@Output() createVariable = new EventEmitter<Argument>();
@@ -58,20 +58,20 @@ export class PlaybookArgumentComponent implements OnChanges {
 	 */
 	ngOnChanges(): void {
 		this.initParameterSchema();
-		this.initDeviceSelect()
+		this.initGlobalSelect()
 		this.initBranchCounterSelect();
 		this.initTypeSelector();
 		this.initUserSelect();
 		this.initRoleSelect();
 	}
 
-	initDeviceSelect(): void {
-		if (!this.isDeviceArgument) return;
-		this.argument.name = '__device__';
+	initGlobalSelect(): void {
+		if (!this.isGlobalArgument) return;
+		this.argument.name = '__global__';
 	}
 
 	initParameterSchema(): void {
-		if (this.isDeviceArgument) return;
+		if (this.isGlobalArgument) return;
 
 		this.parameterSchema = this.parameterApi.schema;
 		if (this.argument.reference == null) { 
@@ -98,9 +98,9 @@ export class PlaybookArgumentComponent implements OnChanges {
 	}
 
 	initTypeSelector(): void {
-		this.valueTypes = (this.isDeviceArgument) ? 
+		this.valueTypes = (this.isGlobalArgument) ? 
 		[
-			{ id: 'device', name: 'Device'},
+			{ id: 'global', name: 'Global'},
 			{ id: 'action', name: 'Action Output'},
 		] : [
 			{ id: 'static', name: 'Static Value'},
@@ -110,7 +110,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 		]
 
 		this.valueType = 'static';
-		if (this.isDeviceArgument && !this.argument.reference) this.valueType = 'device';
+		if (this.isGlobalArgument && !this.argument.reference) this.valueType = 'global';
 		else if (this.argument.reference) {
 			if (this.loadedWorkflow.actions.find(action => action.id == this.argument.reference)) this.valueType = 'action';
 			else if (this.loadedWorkflow.branches.find(branch => branch.id == this.argument.reference)) this.valueType = 'branch';
@@ -348,8 +348,8 @@ export class PlaybookArgumentComponent implements OnChanges {
 		return true;
 	}
 
-	get isDeviceArgument(): boolean {
-		return this.devices && !this.parameterApi;
+	get isGlobalArgument(): boolean {
+		return this.globals && !this.parameterApi;
 	}
 
 	/**
@@ -375,7 +375,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 	}
 
 	get isReference(): boolean {
-		return ['static', 'device', 'branch', 'variable'].indexOf(this.valueType) == -1;
+		return ['static', 'global', 'branch', 'variable'].indexOf(this.valueType) == -1;
 	}
 
 	get isStatic(): boolean {
@@ -406,8 +406,8 @@ export class PlaybookArgumentComponent implements OnChanges {
 		return this.isStatic && this.parameterSchema && this.parameterSchema.type === 'boolean';
 	}
 
-	get isDeviceSelect() : boolean {
-		return this.valueType == 'device';
+	get isGlobalSelect() : boolean {
+		return this.valueType == 'global';
 	}
 
 	get isBranchCounterSelect(): boolean {

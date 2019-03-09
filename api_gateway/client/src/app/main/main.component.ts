@@ -13,7 +13,8 @@ import { MessageUpdate } from '../models/message/messageUpdate';
 import { MessageListing } from '../models/message/messageListing';
 // import { Message } from '../models/message/message';
 import { GenericObject } from '../models/genericObject';
-import { InterfaceService } from '../interfaces/interface.service';
+import { DashboardService } from '../dashboards/dashboard.service';
+import { Dashboard } from '../models/dashboard/dashboard';
 
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
@@ -28,7 +29,7 @@ const MAX_TOTAL_MESSAGES = 20;
 })
 export class MainComponent implements OnInit, OnDestroy {
 	currentUser: string;
-	interfaceNames: string[] = [];
+	dashboards: Dashboard[] = [];
 	messageListings: MessageListing[] = [];
 	messageModalRef: NgbModalRef;
 	newMessagesCount: number = 0;
@@ -38,7 +39,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	constructor(
 		private mainService: MainService, private authService: AuthService,
 		private modalService: NgbModal, private toastrService: ToastrService,
-		public utils: UtilitiesService, private interfaceService: InterfaceService
+		public utils: UtilitiesService, private dashboardService: DashboardService
 	) {}
 
 	/**
@@ -49,7 +50,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	ngOnInit(): void {
 
 		this.currentUser = this.authService.getAndDecodeAccessToken().user_claims.username;
-		this.getInterfaceNames();
+		this.dashboardService.dashboardsChange.subscribe(dashboards => this.dashboards = dashboards);
 		// this.getInitialNotifications();
 		// this.getNotificationsSSE();
 	}
@@ -59,20 +60,6 @@ export class MainComponent implements OnInit, OnDestroy {
 	 */
 	ngOnDestroy(): void {
 		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
-	}
-
-	/**
-	 * Grabs a list of interface names to display under the Interfaces dropdown.
-	 */
-	getInterfaceNames(): void {
-		this.mainService.getInterfaceNames()
-			.then(interfaceNames => this.interfaceNames = interfaceNames)
-			.catch(e => this.toastrService.error(`Error retrieving interfaces: ${e.message}`));
-	}
-
-	get interfaces() : string[] {
-		//return this.interfaceService.getInterfaces().map(item => item.name).concat(this.interfaceNames).sort();
-		return [].concat(this.interfaceService.getInterfaces().map(item => item.name)).sort();
 	}
 
 	/**

@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { InterfaceWidget } from '../models/interface/interfaceWidget';
+import { DashboardWidget } from '../models/dashboard/dashboardWidget';
 import { ExecutionService } from '../execution/execution.service';
 import { PlaybookService } from '../playbook/playbook.service';
 
@@ -12,7 +12,7 @@ import { PlaybookService } from '../playbook/playbook.service';
 })
 export class WidgetModalComponent implements OnInit {
 
-    @Input() widget: InterfaceWidget;
+    @Input() widget: DashboardWidget;
 
     workflows: any[] = [];
     executions: any[] = [];

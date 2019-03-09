@@ -3,27 +3,28 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { PlaybookComponent } from './playbook/playbook.component';
 import { SchedulerComponent } from './scheduler/scheduler.component';
-import { DevicesComponent } from './devices/devices.component';
+import { GlobalsComponent } from './globals/globals.component';
 import { MessagesComponent } from './messages/messages.component';
 import { MetricsComponent } from './metrics/metrics.component';
 import { SettingsComponent } from './settings/settings.component';
-import { InterfacesComponent } from './interfaces/interfaces.component';
+import { DashboardsComponent } from './dashboards/dashboards.component';
 import { ExecutionComponent } from './execution/execution.component';
-import { ManageInterfacesComponent } from './interfaces/manage.interfaces.component';
+import { ManageDashboardsComponent } from './dashboards/manage.dashboards.component';
 //etc
 
 const routes: Routes = [
-	{ path: '', redirectTo: '/playbook', pathMatch: 'full' },
-	{ path: 'playbook', component: PlaybookComponent },
+	{ path: '', redirectTo: '/workflows', pathMatch: 'full' },
+	{ path: 'workflows', component: PlaybookComponent },
+	{ path: 'workflows/:workflowId', component: PlaybookComponent },
 	{ path: 'scheduler', component: SchedulerComponent },
-	{ path: 'devices', component: DevicesComponent },
+	{ path: 'globals', component: GlobalsComponent },
 	// { path: 'messages', component: MessagesComponent },
 	// { path: 'metrics', component: MetricsComponent },
 	{ path: 'settings', component: SettingsComponent },
 	{ path: 'execution', component: ExecutionComponent },
-	{ path: 'new-interface', component: ManageInterfacesComponent },
-	{ path: 'edit-interface/:interfaceName', component: ManageInterfacesComponent },
-	{ path: 'interface/:interfaceName', component: InterfacesComponent },
+	{ path: 'dashboard/new', component: ManageDashboardsComponent },
+	{ path: 'dashboard/:dashboardId/edit', component: ManageDashboardsComponent },
+	{ path: 'dashboard/:dashboardId', component: DashboardsComponent },
 	//etc
 ];
 

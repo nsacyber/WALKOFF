@@ -1,27 +1,24 @@
 import { Component, OnInit } from '@angular/core';
-import { GridsterConfig, GridsterItem, GridType, CompactType } from 'angular-gridster2';
-import { InterfaceWidget, BarChartWidget, PieChartWidget, LineChartWidget, TextWidget, KibanaWidget, TableWidget } from '../models/interface/interfaceWidget';
-import { Interface } from '../models/interface/interface';
-import { InterfaceService } from './interface.service';
+import { GridsterConfig, GridType, CompactType } from 'angular-gridster2';
+import { DashboardWidget, BarChartWidget, PieChartWidget, LineChartWidget, TextWidget, KibanaWidget, TableWidget } from '../models/dashboard/dashboardWidget';
+import { Dashboard } from '../models/dashboard/dashboard';
+import { DashboardService } from './dashboard.service';
 import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { WidgetModalComponent } from './widget.modal.component';
-import { DomSanitizer } from '@angular/platform-browser';
-
-
 
 @Component({
-    selector: 'manage-interfaces-component',
-    templateUrl: './manage.interfaces.component.html',
-    styleUrls: ['./manage.interfaces.component.scss']
+    selector: 'manage-dashboards-component',
+    templateUrl: './manage.dashboards.component.html',
+    styleUrls: ['./manage.dashboards.component.scss']
 })
-export class ManageInterfacesComponent implements OnInit {
+export class ManageDashboardsComponent implements OnInit {
 
     options: GridsterConfig;
 
-    interface: Interface = new Interface();
-    existingInterface = false;
+    dashboard: Dashboard = new Dashboard();
+    existingDashboard = false;
 
     gridRows = 16;
     gridColumns = 8;
@@ -30,20 +27,19 @@ export class ManageInterfacesComponent implements OnInit {
     gridDefaultCols = 3;
 
     constructor(
-        private interfaceService: InterfaceService, 
+        private dashboardService: DashboardService, 
         private toastrService: ToastrService,
         private activeRoute: ActivatedRoute,
         private router: Router,
-        private modalService: NgbModal,
-        private sanitizer: DomSanitizer
+        private modalService: NgbModal
     ) {}
 
     ngOnInit() {
         this.activeRoute.params.subscribe(params => {
-            if (params.interfaceName) {
-                this.existingInterface = true;
-                this.interfaceService.getInterfaceWithMetadata(params.interfaceName).then(face => {
-                    this.interface = face;
+            if (params.dashboardId) {
+                this.existingDashboard = true;
+                this.dashboardService.getDashboardWithMetadata(params.dashboardId).then(dashboard => {
+                    this.dashboard = dashboard;
                 });
             }
 
@@ -85,10 +81,6 @@ export class ManageInterfacesComponent implements OnInit {
         return this.gridRows * Math.ceil(this.gridColSize * 3/4 + this.gridGutterSize) + this.gridGutterSize + 'px';
     }
 
-    getItemHeight(item: InterfaceWidget) {
-        return item.rows * Math.ceil(this.gridColSize * 3/4 + this.gridGutterSize) - 80;
-    }
-
     changedOptions() {
         this.options.api.optionsChanged();
     }
@@ -101,11 +93,11 @@ export class ManageInterfacesComponent implements OnInit {
 
     removeWidget($event: Event, widget) {
         $event.preventDefault();
-        this.interface.widgets.splice(this.interface.widgets.indexOf(widget), 1);
+        this.dashboard.widgets.splice(this.dashboard.widgets.indexOf(widget), 1);
     }
 
     addWidget(type: string): void {
-        let widget: InterfaceWidget;
+        let widget: DashboardWidget;
 
         switch (type) {
             case "bar":
@@ -131,29 +123,25 @@ export class ManageInterfacesComponent implements OnInit {
         const modalRef = this.modalService.open(WidgetModalComponent);
 		modalRef.componentInstance.widget = widget;
 		modalRef.result.then(addedWidget => {
-			this.interface.widgets.push(addedWidget);
+			this.dashboard.widgets.push(addedWidget);
 		}).catch(() => null)
     }
     
     save() {
-        if (!this.interface.name) return this.toastrService.error('Enter a name for the interface');
+        if (!this.dashboard.name) return this.toastrService.error('Enter a name for the dashboard');
 
-        this.interfaceService.saveInterface(this.interface);
-        this.toastrService.success(`"${ this.interface.name }" Saved`);
+        (this.existingDashboard) ? this.dashboardService.updateDashboard(this.dashboard) : this.dashboardService.newDashboard(this.dashboard);
+        this.toastrService.success(`"${ this.dashboard.name }" Saved`);
 
-        this.router.navigate(['/interface', this.interface.name]);
+        this.router.navigate(['/dashboard', this.dashboard.id]);
     }
 
     delete() {
-        if(confirm(`Are you sure you want to delete this Interface?`)) {
-            const interfaceName = this.interface.name;
-            this.interfaceService.deleteInterface(this.interface);
-            this.toastrService.success(`"${ interfaceName }" Deleted`);
-            this.router.navigate(['/new-interface']);
+        if(confirm(`Are you sure you want to delete this Dashboard?`)) {
+            const dashboardName = this.dashboard.name;
+            this.dashboardService.deleteDashboard(this.dashboard);
+            this.toastrService.success(`"${ dashboardName }" Deleted`);
+            this.router.navigate(['/dashboard/new']);
         }
     }
-
-    sanitizeEmbedUrl(url) {
-		return this.sanitizer.bypassSecurityTrustResourceUrl(url)
-	}
 }

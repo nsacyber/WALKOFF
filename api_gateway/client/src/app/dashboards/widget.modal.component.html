@@ -7,7 +7,7 @@
             <div class="col-12">
                 <div class="form-group">
                     <label for="title">Title</label>
-                    <input label="title" type="text" [(ngModel)]="widget.title" class="form-control">
+                    <input label="title" type="text" [(ngModel)]="widget.name" class="form-control" placeholder="Title (Optional)">
                 </div>
             </div>
             <div *ngIf="!['text', 'kibana'].includes(widget.type)" class="col-12">
@@ -43,7 +43,7 @@
             <div *ngIf="widget.type == 'text'" class="col-12">
                 <div class="form-group">
                     <label for="text">Text</label>
-                    <textarea name="text" rows="4" [(ngModel)]="widget.text" class="form-control"></textarea>
+                    <textarea name="text" rows="4" [(ngModel)]="widget.options.text" class="form-control"></textarea>
                 </div>
             </div>
             <div *ngIf="widget.type == 'kibana'" class="col-12">

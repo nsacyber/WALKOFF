@@ -1,5 +1,5 @@
 
-export class Device {
+export class Global {
 	id: number;
 
 	name: string;

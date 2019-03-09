@@ -17,7 +17,7 @@ export class Action extends ExecutionElement {
 	action_name: string;
 
 	@Type(() => Argument)
-	device_id?: Argument = new Argument();
+	global_id?: Argument = new Argument();
 
 	risk?: number;
 

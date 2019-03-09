@@ -79,7 +79,7 @@
         <div class="col-md-2 graphEditorColumn">
             <div class="panel-group" id="accordion" #accordion [hidden]="!loadedWorkflow">
                 <div class="card my-1">
-                    <input class="form-control" placeholder="Filter Actions..." [ngModel]="actionFilter" [formControl]="actionFilterControl" />
+                    <input class="form-control" placeholder="Filter Actions..." [formControl]="actionFilterControl" />
                 </div>
                 <div *ngFor="let app of getAppsWithActions()" class="card card-default my-1">
                     <div class="card-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + removeWhitespace(app.name)"
@@ -179,12 +179,12 @@
                     </label>
                     <input type="text" class="form-control" [(ngModel)]="selectedAction.name" name="name" required>
                 </div>
-                <div *ngIf="!selectedActionApi.global" class="form-group deviceArgument">
-                    <label for="device_id">Device
+                <div *ngIf="!selectedActionApi.global" class="form-group globalArgument">
+                    <label for="global_id">Global
                         <i class="fa fa-asterisk required" title="This field is required."></i>
                     </label>
-                    <playbook-argument-component [loadedWorkflow]="loadedWorkflow" [argument]="selectedAction.device_id"
-                        [id]="id" [users]="users" [roles]="roles" [devices]="relevantDevices"></playbook-argument-component>
+                    <playbook-argument-component [loadedWorkflow]="loadedWorkflow" [argument]="selectedAction.global_id"
+                        [id]="id" [users]="users" [roles]="roles" [globals]="relevantGlobals"></playbook-argument-component>
                 </div>
                 <!-- Inputs -->
                 <div *ngIf="selectedActionApi.parameters.length">
@@ -434,7 +434,8 @@
                                 <div class="card-body p-3">
                                     <div *ngFor="let workflow of playbook.workflows" class="card card-default workflowPanel my-1">
                                         <div class="card-body my-auto p-2">
-                                            <a (click)="loadWorkflow(playbook, workflow)">{{workflow.name}}</a>
+                                            <!-- <a (click)="loadWorkflow(playbook, workflow)">{{workflow.name}}</a> -->
+                                            <a (click)="routeToWorkflow(workflow)">{{workflow.name}}</a>
                                             <div class="pull-right">
                                                 <!-- <button (click)="renameWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary" title="Rename Workflow">
                                                     <i class="fa fa-i-cursor"></i>

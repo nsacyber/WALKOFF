@@ -5,12 +5,12 @@ import { HttpClient } from '@angular/common/http';
 import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
 import { AppApi } from '../models/api/appApi';
-import { Device } from '../models/device';
+import { Global } from '../models/global';
 import { User } from '../models/user';
 import { Role } from '../models/role';
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 
-import { DevicesService } from '../devices/devices.service';
+import { GlobalsService } from '../globals/globals.service';
 import { ExecutionService } from '../execution/execution.service';
 import { SettingsService } from '../settings/settings.service';
 import { UtilitiesService } from '../utilities.service';
@@ -24,7 +24,7 @@ import 'rxjs/add/operator/map';
 })
 export class PlaybookService {
 	constructor(private http: HttpClient, private utils: UtilitiesService, private executionService: ExecutionService,
-				private devicesService: DevicesService, private settingsService: SettingsService) {}
+				private globalsService: GlobalsService, private settingsService: SettingsService) {}
 
 	/**
 	 * Returns all playbooks and their child workflows in minimal form (id, name).
@@ -177,10 +177,10 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Returns an array of all devices within the DB.
+	 * Returns an array of all globals within the DB.
 	 */
-	getDevices(): Promise<Device[]> {
-		return this.devicesService.getAllDevices();
+	getGlobals(): Promise<Global[]> {
+		return this.globalsService.getAllGlobals();
 	}
 
 	/**

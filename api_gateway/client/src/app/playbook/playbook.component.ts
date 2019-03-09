@@ -9,6 +9,7 @@ import { saveAs } from 'file-saver';
 import { plainToClass, classToClass } from 'class-transformer';
 import { NgbModal, NgbTabChangeEvent } from '@ng-bootstrap/ng-bootstrap';
 import { FormControl } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import * as cytoscape from 'cytoscape';
 import * as clipboard from 'cytoscape-clipboard';
@@ -20,7 +21,7 @@ import * as undoRedo from 'cytoscape-undo-redo';
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 import { UtilitiesService } from '../utilities.service';
-import { DevicesService } from '../devices/devices.service';
+import { GlobalsService } from '../globals/globals.service';
 import { ExecutionService } from '../execution/execution.service';
 import { SettingsService } from '../settings/settings.service';
 
@@ -36,7 +37,7 @@ import { Workflow } from '../models/playbook/workflow';
 import { Action } from '../models/playbook/action';
 import { Branch } from '../models/playbook/branch';
 import { GraphPosition } from '../models/playbook/graphPosition';
-import { Device } from '../models/device';
+import { Global } from '../models/global';
 import { Argument } from '../models/playbook/argument';
 import { User } from '../models/user';
 import { Role } from '../models/role';
@@ -48,6 +49,7 @@ import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook.environment.variable.modal.component';
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
 	selector: 'playbook-component',
@@ -58,7 +60,7 @@ import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
 		'../../../node_modules/ng2-dnd/bundles/style.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [AuthService, DevicesService, SettingsService],
+	providers: [AuthService, GlobalsService, SettingsService],
 })
 export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;
@@ -71,8 +73,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('accordion') apps_actions: ElementRef;
 	@ViewChild('consoleArea') consoleArea: CodemirrorComponent;
 
-	devices: Device[] = [];
-	relevantDevices: Device[] = [];
+	globals: Global[] = [];
+	relevantGlobals: Global[] = [];
 	users: User[];
 	roles: Role[];
 
@@ -132,13 +134,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 	constructor(
 		private playbookService: PlaybookService, private authService: AuthService,
-		private toastrService: ToastrService,
+		private toastrService: ToastrService, private activeRoute: ActivatedRoute,
 		private cdr: ChangeDetectorRef, private utils: UtilitiesService,
-		private modalService: NgbModal
+		private modalService: NgbModal, private router: Router
 	) {}
 
 	/**
-	 * On component initialization, we grab arrays of devices, app apis, and playbooks/workflows (id, name pairs).
+	 * On component initialization, we grab arrays of globals, app apis, and playbooks/workflows (id, name pairs).
 	 * We also initialize an EventSoruce for Action Statuses for the execution results table.
 	 * Also initialize cytoscape event bindings.
 	 */
@@ -151,7 +153,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		if (!cyDummy.panzoom) { cytoscape.use(panzoom); }
 		if (!cyDummy.undoRedo) { cytoscape.use(undoRedo); }
 
-		this.playbookService.getDevices().then(devices => this.devices = devices);
+		this.playbookService.getGlobals().then(globals => this.globals = globals);
 		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
 		this.getPlaybooksWithWorkflows();
 		this._addCytoscapeEventBindings();
@@ -163,9 +165,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		/**
 		 * Filter app list by application and action names
 		 */
-		this.actionFilterControl.valueChanges.debounceTime(250).distinctUntilChanged().subscribe(query => {
-			query = query.trim();
-			this.actionFilter = query;
+		this.actionFilterControl.valueChanges.debounceTime(100).distinctUntilChanged().subscribe(query => {
+			this.actionFilter = query.trim();
 			setTimeout(() => {
 				($('.action-panel') as any)
 					.addClass('no-transition')
@@ -369,6 +370,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.loadedWorkflow = workflow;
 			this.setupGraph();
 		}
+	}
+
+	routeToWorkflow(workflow: Workflow): void {
+		this._closeWorkflowsModal();
+		this.router.navigateByUrl(`/workflows/${ workflow.id }`);
 	}
 
 	setupGraph(): void {
@@ -732,10 +738,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			// Set the new cytoscape positions on our loadedworkflow
 			action.position = cyData.find(cyAction => cyAction.data._id === action.id).position;
 
-			// Sanitize and set device_id argument
-			(action.device_id.hasInput()) ? 
-				action.device_id.sanitize() :
-				delete action.device_id;
+			// Sanitize and set global_id argument
+			(action.global_id.hasInput()) ? 
+				action.global_id.sanitize() :
+				delete action.global_id;
 
 			// Properly sanitize arguments through the tree
 			this._sanitizeArgumentsForSave(action.arguments);
@@ -786,7 +792,17 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	getPlaybooksWithWorkflows(): void {
 		this.playbookService.getPlaybooks()
-			.then(playbooks => this.playbooks = playbooks);
+			.then(playbooks => {
+				this.playbooks = playbooks;
+				this.activeRoute.params.subscribe(params => {
+					if (params.workflowId) {
+						this.playbookService.loadWorkflow(params.workflowId).then(workflow => {
+							let playbook = this.playbooks.find(p => p.workflows.some(w => w.id == workflow.id));
+							this.loadWorkflow(playbook, workflow);
+						})
+					}
+				})
+			});
 	}
 
 	_sanitizeExpressionAndChildren(expression: ConditionalExpression): void {
@@ -981,8 +997,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.selectedAction = action;
 		this.selectedActionApi = actionApi;
 
-		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
-		this.relevantDevices = this.devices.filter(d => d.app_name === this.selectedAction.app_name);
+		// TODO: maybe scope out relevant globals by action, but for now we're just only scoping out by app
+		this.relevantGlobals = this.globals.filter(d => d.app_name === this.selectedAction.app_name);
 	}
 
 	/**
@@ -1619,7 +1635,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Gets a list of TransformApis from a given app name.
 	 * @param appName App name to query
 	 */
-	getDeviceApis(appName: string): DeviceApi[] {
+	getGlobalApis(appName: string): DeviceApi[] {
 		return this.appApis.find(a => a.name === appName).device_apis;
 	}
 

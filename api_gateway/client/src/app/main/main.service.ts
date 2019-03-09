@@ -5,7 +5,7 @@ import { plainToClass } from 'class-transformer';
 import { Message } from '../models/message/message';
 import { MessageListing } from '../models/message/messageListing';
 import { UtilitiesService } from '../utilities.service';
-import { InterfaceService } from '../interfaces/interface.service';
+import { DashboardService } from '../dashboards/dashboard.service';
 
 @Injectable()
 export class MainService {
@@ -15,7 +15,7 @@ export class MainService {
 	 * Asyncryonously returns a list of imported interface names from the server.
 	 */
 	getInterfaceNames(): Promise<string[]> {
-		return this.http.get('/api/interfaces')
+		return this.http.get('/api/dashboards')
 			.toPromise()
 			.catch(this.utils.handleResponseError);
 	}

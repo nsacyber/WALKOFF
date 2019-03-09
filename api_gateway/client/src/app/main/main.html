@@ -10,33 +10,30 @@
       <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item">
-            <a class="nav-link" routerLink="/playbook" routerLinkActive="active"><i class="fa fa-sitemap"></i><span class="navLink">Playbook</span></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/execution" routerLinkActive="active"><i class="fa fa-flag-checkered"></i><span class="navLink">Execution</span></a>
+            <a class="nav-link" routerLink="/workflows" routerLinkActive="active"><i class="fa fa-sitemap"></i><span class="navLink">Workflows</span></a>
           </li>
           <li class="nav-item dropdown" routerLinkActive="active">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="fa fa-area-chart"></i><span class="navLink">Interfaces</span>
+              <i class="fa fa-area-chart"></i><span class="navLink">Dashboards</span>
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a *ngFor="let interfaceName of interfaces" class="dropdown-item installedInterface" routerLink="/interface/{{interfaceName}}">
-                <span>{{interfaceName}}</span>
+              <a *ngFor="let dashboard of dashboards" class="dropdown-item installedDashboard" routerLink="/dashboard/{{dashboard.id}}">
+                <span>{{ dashboard.name }}</span>
               </a>
-              <span *ngIf="!interfaces || !interfaces.length" class="dropdown-item installedInterface">
-                No custom WALKOFF interfaces are installed.
-              </span>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item installedInterface" routerLink="/new-interface">
-                <span><i>Create New...</i></span>
+              <div *ngIf="dashboards && dashboards.length > 0" class="dropdown-divider"></div>
+              <a class="dropdown-item installedDashboard" routerLink="/dashboard/new">
+                <span><i>Create New Dashboard...</i></span>
               </a>
             </div>
           </li>
           <li class="nav-item">
-            <a class="nav-link" routerLink="/scheduler" routerLinkActive="active"><i class="fa fa-calendar"></i><span class="navLink">Scheduler</span></a>
+            <a class="nav-link" routerLink="/execution" routerLinkActive="active"><i class="fa fa-play-circle"></i><span class="navLink">Execution</span></a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" routerLink="/devices" routerLinkActive="active"><i class="fa fa-desktop"></i><span class="navLink">Devices</span></a>
+            <a class="nav-link" routerLink="/globals" routerLinkActive="active"><i class="fa fa-globe"></i><span class="navLink">Globals</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/scheduler" routerLinkActive="active"><i class="fa fa-calendar-o"></i><span class="navLink">Scheduler</span></a>
           </li>
           <!-- <li class="nav-item">
             <a class="nav-link" routerLink="/messages" routerLinkActive="active"><i class="fa fa-envelope-o"></i><span class="navLink">Messages</span></a>
@@ -48,7 +45,7 @@
             <a class="nav-link" routerLink="/settings" routerLinkActive="active"><i class="fa fa-store"></i><span class="navLink">Marketplace</span></a>
           </li> -->
           <li class="nav-item">
-            <a class="nav-link" routerLink="/settings" routerLinkActive="active"><i class="fa fa-wrench"></i><span class="navLink">Settings</span></a>
+            <a class="nav-link" routerLink="/settings" routerLinkActive="active"><i class="fa fa-gear"></i><span class="navLink">Settings</span></a>
           </li>
         </ul>
         <!-- <form class="form-inline mt-2 mt-md-0">
@@ -85,7 +82,7 @@
               <span class="userName">{{currentUser}}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarUserDropdown">
-              <a class="dropdown-item installedInterface" href="/login" (click)="logout()">Sign Out</a>
+              <a class="dropdown-item installedDashboard" href="/login" (click)="logout()">Sign Out</a>
             </div>
           </li>
         </ul>
