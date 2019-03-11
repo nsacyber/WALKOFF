@@ -63,10 +63,8 @@ def create_global():
 @with_global_variable("update", "global_id")
 def update_global(global_id):
     data = request.get_json()
-    errors = global_variable_schema.load(data, instance=global_id).errors
-    if errors:
-        return invalid_input_problem("global_variable", "update", data["name"], errors)
     try:
+        global_variable_schema.load(data, instance=global_id)
         current_app.running_context.execution_db.session.commit()
         return global_variable_schema.dump(global_id), HTTPStatus.OK
     except (IntegrityError, StatementError):

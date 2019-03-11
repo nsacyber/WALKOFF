@@ -22,6 +22,32 @@
               $ref: '#/components/schemas/GlobalVariable'
       404:
         description: GlobalVariable does not exist.
+  put:
+    tags:
+      - GlobalVariables
+    summary: Update a global
+    description: ''
+    operationId: api_gateway.server.endpoints.global_variables.update_global
+    requestBody:
+      description: The new global object to be updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GlobalVariable'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalVariable'
+      404:
+        description: GlobalVariable does not exist
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   delete:
     tags:
       - GlobalVariables
@@ -75,33 +101,6 @@
               $ref: '#/components/schemas/GlobalVariable'
       400:
         description: GlobalVariable already exists
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Error'
-
-  put:
-    tags:
-      - GlobalVariables
-    summary: Update a global
-    description: ''
-    operationId: api_gateway.server.endpoints.global_variables.update_global
-    requestBody:
-      description: The new global object to be updated
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GlobalVariable'
-    responses:
-      200:
-        description: Success
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GlobalVariable'
-      404:
-        description: GlobalVariable does not exist
         content:
           application/json:
             schema:
