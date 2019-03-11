@@ -80,7 +80,8 @@ def workflow_status_getter(execution_id):
 
 
 def workflow_getter(workflow_id):
-    return current_app.running_context.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+    return current_app.running_context.execution_db.session.query(Workflow).filter_by(id_=workflow_id).first()
+
 
 workflow_schema = WorkflowSchema()
 workflow_status_schema = WorkflowStatusSchema()
@@ -103,7 +104,7 @@ completed_statuses = (StatusEnum.ABORTED, StatusEnum.COMPLETED)
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
-@paginate(workflow_status_schema)
+@paginate(workflow_status_summary_schema)
 def get_all_workflow_status():
     r = current_app.running_context.execution_db.session.query(WorkflowStatus).order_by(WorkflowStatus.name).all()
     return r, HTTPStatus.OK
@@ -133,6 +134,7 @@ def execute_workflow():
     workflow = workflow_schema.dump(workflow)
 
     if "workflow_variables" in workflow and "workflow_variables" in data:
+        # TODO: change these on the db model to be keyed by ID
         # Get workflow variables keyed by ID
         current_wvs = {wv['id_']: wv for wv in workflow["workflow_variables"]}
         new_wvs = {wv['id_']: wv for wv in data["workflow_variables"]}
@@ -143,11 +145,17 @@ def execute_workflow():
 
     try:
         execution_id = str(uuid.uuid4())
-        workflow_status = workflow_status_schema.load({
-            "status": StatusEnum.PENDING.name,
+        workflow_status_json = {  # ToDo: Probably load this directly into db model?
+            "execution_id": execution_id,
+            "workflow_id": workflow_id,
             "name": workflow["name"],
-            "execution_id": execution_id
-        })
+            "status": StatusEnum.PENDING.name,
+            "started_at": None,
+            "completed_at": None,
+            "user": get_jwt_claims().get('username', None),
+            "action_statuses": []
+        }
+        workflow_status = workflow_status_schema.load(workflow_status_json)
         current_app.running_context.execution_db.session.add(workflow_status)
         current_app.running_context.execution_db.session.commit()
 
@@ -155,7 +163,7 @@ def execute_workflow():
         # ToDo: self.__box.encrypt(message))
         current_app.running_context.cache.lpush("workflow-queue", json.dumps(workflow_message))
 
-        gevent.spawn(push_to_workflow_stream_queue, workflow_status, "PENDING")
+        gevent.spawn(push_to_workflow_stream_queue, workflow_status_json, "PENDING")
         current_app.logger.info(f"Created Workflow Status {workflow['name']} ({execution_id})")
 
         return jsonify({'execution_id': execution_id}), HTTPStatus.ACCEPTED
@@ -164,6 +172,7 @@ def execute_workflow():
         return improper_json_problem('workflow_status', 'create', workflow['name'], e.messages)
 
 
+#ToDo: Ensure workflow abort works
 def control_workflow():
     data = request.get_json()
     execution_id = data['execution_id']
@@ -188,6 +197,7 @@ def control_workflow():
     return __func()
 
 
+#ToDo: make these clear db endpoints for more resources
 def clear_workflow_status(all=False, days=30):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))

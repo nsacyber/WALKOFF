@@ -1,4 +1,4 @@
-WorkflowStatus:
+WorkflowStatusSummary:
   type: object
   required: [execution_id, workflow_id, name, status]
   properties:
@@ -30,11 +30,11 @@ WorkflowStatus:
     user:
       description: The user that executed the workflow
       type: string
-    current_action_status:
+    action_status:
       description: The currently executing action
       $ref: '#/components/schemas/ActionIdentification'
 
-FullWorkflowStatus:
+WorkflowStatus:
   type: object
   required: [action_statuses, execution_id, workflow_id, name, status]
   properties:

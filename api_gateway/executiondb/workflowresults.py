@@ -31,16 +31,20 @@ class WorkflowStatus(Execution_Base):
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
     user = Column(String)
-    action_statuses = relationship('ActionStatus', backref=backref("_workflow_status"), passive_deletes=True,
+    # TODO: change these on the db model to be keyed by ID (use an association proxy)
+    action_statuses = relationship('ActionStatus', backref=backref("execution_id"), passive_deletes=True,
                                    cascade='all, delete-orphan')
 
-    def __init__(self, execution_id, workflow_id, name, status=StatusEnum.PENDING, user=None):
+    def __init__(self, execution_id, workflow_id, name, status=StatusEnum.PENDING, started_at=None, completed_at=None,
+                 user=None, action_statuses=[]):
         self.execution_id = execution_id
         self.workflow_id = workflow_id
         self.name = name
         self.status = status
+        self.started_at = started_at
+        self.completed_at = completed_at
         self.user = user
-        self.action_statuses = []
+        self.action_statuses = action_statuses
 
     def running(self):
         """Sets the status to running"""
@@ -133,13 +137,18 @@ class ActionStatus(Execution_Base):
     completed_at = Column(DateTime)
     workflow_execution_id = Column(UUIDType(binary=False), ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
 
-    def __init__(self, combined_id, action_id, name, app_name, action_name):
+    def __init__(self, combined_id, action_id, name, app_name, action_name, result=None, arguments=None,
+                 status=StatusEnum.EXECUTING, started_at=None, completed_at=None):
         self.combined_id = combined_id
         self.action_id = action_id
         self.name = name
         self.app_name = app_name
         self.action_name = action_name
-        self.status = StatusEnum.EXECUTING
+        self.result = result
+        self.arguments = arguments
+        self.status = status
+        self.started_at = started_at
+        self.completed_at = completed_at
 
     def aborted(self):
         """Sets status to aborted"""

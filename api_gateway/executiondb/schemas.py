@@ -298,7 +298,7 @@ class WorkflowStatusSummarySchema(ExecutionBaseSchema):
     started_at = field_for(WorkflowStatus, 'started_at')
     completed_at = field_for(WorkflowStatus, 'completed_at')
     user = field_for(WorkflowStatus, 'user')
-    current_action_status = fields.Nested(ActionStatusSchema)
+    action_status = fields.Nested(ActionStatusSchema)
 
     class Meta:
         model = WorkflowStatus
