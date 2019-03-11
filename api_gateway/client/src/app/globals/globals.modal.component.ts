@@ -119,38 +119,38 @@ export class GlobalsModalComponent implements OnInit, AfterViewInit {
 	submit(): void {
 		if (!this.validate()) { return; }
 
-		const toSubmit = WorkingGlobal.toGlobal(this.workingGlobal);
+		// const toSubmit = WorkingGlobal.toGlobal(this.workingGlobal);
 
-		//If global has an ID, global already exists, call update
-		if (this.workingGlobal.id) {
-			toSubmit.fields.forEach((field, index, array) => {
-				const ftype = this.selectedGlobalType.fields.find(ft => ft.name === field.name);
+		// //If global has an ID, global already exists, call update
+		// if (this.workingGlobal.id) {
+		// 	toSubmit.fields.forEach((field, index, array) => {
+		// 		const ftype = this.selectedGlobalType.fields.find(ft => ft.name === field.name);
 	
-				if (!ftype.encrypted) { return; }
+		// 		if (!ftype.encrypted) { return; }
 	
-				//If we are to be clearing our value, please set it to empty string and return
-				if (this.encryptedFieldsToBeCleared[field.name]) { 
-					field.value = '';
-				} else if ((typeof(field.value) === 'string' && !field.value.trim()) ||
-					(typeof(field.value) === 'number' && !field.value)) { array.splice(index, 1); }
-			});
+		// 		//If we are to be clearing our value, please set it to empty string and return
+		// 		if (this.encryptedFieldsToBeCleared[field.name]) { 
+		// 			field.value = '';
+		// 		} else if ((typeof(field.value) === 'string' && !field.value.trim()) ||
+		// 			(typeof(field.value) === 'number' && !field.value)) { array.splice(index, 1); }
+		// 	});
 
-			this.globalsService
-				.editGlobal(toSubmit)
-				.then(global => this.activeModal.close({
-					global,
-					isEdit: true,
-				}))
-				.catch(e => this.toastrService.error(e.message));
-		} else {
-			this.globalsService
-				.addGlobal(toSubmit)
-				.then(global => this.activeModal.close({
-					global,
-					isEdit: false,
-				}))
-				.catch(e => this.toastrService.error(e.message));
-		}
+		// 	this.globalsService
+		// 		.editGlobal(toSubmit)
+		// 		.then(global => this.activeModal.close({
+		// 			global,
+		// 			isEdit: true,
+		// 		}))
+		// 		.catch(e => this.toastrService.error(e.message));
+		// } else {
+		// 	this.globalsService
+		// 		.addGlobal(toSubmit)
+		// 		.then(global => this.activeModal.close({
+		// 			global,
+		// 			isEdit: false,
+		// 		}))
+		// 		.catch(e => this.toastrService.error(e.message));
+		// }
 	}
 
 	/**

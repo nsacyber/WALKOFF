@@ -6,6 +6,7 @@ import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
 import { AppApi } from '../models/api/appApi';
 import { Global } from '../models/global';
+import { Variable } from '../models/variable';
 import { User } from '../models/user';
 import { Role } from '../models/role';
 import { WorkflowStatus } from '../models/execution/workflowStatus';
@@ -179,7 +180,7 @@ export class PlaybookService {
 	/**
 	 * Returns an array of all globals within the DB.
 	 */
-	getGlobals(): Promise<Global[]> {
+	getGlobals(): Promise<Variable[]> {
 		return this.globalsService.getAllGlobals();
 	}
 

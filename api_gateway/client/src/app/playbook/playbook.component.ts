@@ -50,6 +50,7 @@ import { PlaybookEnvironmentVariableModalComponent } from './playbook.environmen
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
 import { ActivatedRoute } from '@angular/router';
+import { Variable } from '../models/variable';
 
 @Component({
 	selector: 'playbook-component',
@@ -73,8 +74,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('accordion') apps_actions: ElementRef;
 	@ViewChild('consoleArea') consoleArea: CodemirrorComponent;
 
-	globals: Global[] = [];
-	relevantGlobals: Global[] = [];
+	globals: Variable[] = [];
+	relevantGlobals: Variable[] = [];
 	users: User[];
 	roles: Role[];
 
@@ -998,7 +999,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.selectedActionApi = actionApi;
 
 		// TODO: maybe scope out relevant globals by action, but for now we're just only scoping out by app
-		this.relevantGlobals = this.globals.filter(d => d.app_name === this.selectedAction.app_name);
+		this.relevantGlobals = this.globals; //.filter(d => d.app_name === this.selectedAction.app_name);
 	}
 
 	/**

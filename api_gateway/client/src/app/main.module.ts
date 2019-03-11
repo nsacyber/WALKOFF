@@ -31,6 +31,7 @@ import { ExecutionComponent } from './execution/execution.component';
 
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { GlobalsModalComponent } from './globals/globals.modal.component';
+import { VariableModalComponent } from './globals/variable.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
 import { SettingsRoleModalComponent } from './settings/settings.roles.modal.component';
 import { SettingsTimeoutModalComponent } from './settings/settings.timeout.modal.component';
@@ -89,6 +90,7 @@ import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 		//Modals
 		SchedulerModalComponent,
 		GlobalsModalComponent,
+		VariableModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		SettingsTimeoutModalComponent,
@@ -125,6 +127,7 @@ import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 	entryComponents: [
 		SchedulerModalComponent,
 		GlobalsModalComponent,
+		VariableModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		SettingsTimeoutModalComponent,
