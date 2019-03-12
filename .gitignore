@@ -1,2 +1,3 @@
 __pycache__/
 *.db
+api_gateway/api/composed_api.yaml
