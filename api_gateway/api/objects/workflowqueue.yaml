@@ -1,4 +1,4 @@
-WorkflowStatus:
+WorkflowStatusSummary:
   type: object
   required: [execution_id, workflow_id, name, status]
   properties:
@@ -14,7 +14,7 @@ WorkflowStatus:
     status:
       description: The current status of the workflow
       type: string
-      enum: ['pending', 'running', 'paused', 'awaiting_data', 'completed', 'aborted']
+      enum: ['PENDING', 'EXECUTING', 'PAUSED', 'AWAITING_DATA', 'COMPLETED', 'ABORTED']
       readOnly: true
     started_at:
       description: The timestamp of the start of workflow execution
@@ -27,11 +27,14 @@ WorkflowStatus:
       type: string
       format: date-time
       example: '2017-05-24T00:42:22.934058Z'
-    current_action:
+    user:
+      description: The user that executed the workflow
+      type: string
+    action_status:
       description: The currently executing action
       $ref: '#/components/schemas/ActionIdentification'
 
-FullWorkflowStatus:
+WorkflowStatus:
   type: object
   required: [action_statuses, execution_id, workflow_id, name, status]
   properties:
@@ -47,7 +50,7 @@ FullWorkflowStatus:
     status:
       description: The current status of the workflow
       type: string
-      enum: ['pending', 'running', 'paused', 'awaiting_data', 'completed', 'aborted']
+      enum: ['PENDING', 'EXECUTING', 'PAUSED', 'AWAITING_DATA', 'COMPLETED', 'ABORTED']
       readOnly: true
     started_at:
       description: The timestamp of the start of workflow execution
@@ -60,6 +63,9 @@ FullWorkflowStatus:
       type: string
       format: date-time
       example: '2017-05-24T00:42:22.934058Z'
+    user:
+      description: The user that executed the workflow
+      type: string
     action_statuses:
       description: The statuses of the workflow actions
       type: array

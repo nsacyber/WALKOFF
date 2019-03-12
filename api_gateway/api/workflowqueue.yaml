@@ -21,7 +21,7 @@
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/WorkflowStatus'
+                $ref: '#/components/schemas/WorkflowStatusSummary'
   post:
     tags:
       - WorkflowQueue
@@ -102,7 +102,7 @@
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FullWorkflowStatus'
+              $ref: '#/components/schemas/WorkflowStatus'
       404:
         description: Object does not exist.
         content:

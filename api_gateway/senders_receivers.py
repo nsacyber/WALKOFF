@@ -75,7 +75,7 @@ class WorkflowResultsReceiver(object):
         while True:
             if self.thread_exit:
                 break
-            workflow_results_message = self.workflow_results_pubsub.get_message(ignore_subscribe_messages=True)  # ToDo: ignore sub/unsub?
+            workflow_results_message = self.workflow_results_pubsub.get_message(ignore_subscribe_messages=True)
             if workflow_results_message:
                 workflow_results_message = json.loads(workflow_results_message)
                 print(workflow_results_message)

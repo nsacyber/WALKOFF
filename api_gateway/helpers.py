@@ -6,7 +6,7 @@ import pkgutil
 import sys
 import warnings
 from datetime import datetime
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 from importlib import reload as reload_module
 from inspect import signature as getsignature
@@ -272,6 +272,14 @@ def read_and_indent(filename, indent):
     indent = '  ' * indent
     with open(filename, 'r') as file_open:
         return ['{0}{1}'.format(indent, line) for line in file_open]
+
+
+def validate_uuid4(id_, stringify=False):
+    try:
+        uuid_ = UUID(id_, version=4)
+        return uuid_ if not stringify else id_
+    except ValueError:
+        return None
 
 
 def compose_api(config):

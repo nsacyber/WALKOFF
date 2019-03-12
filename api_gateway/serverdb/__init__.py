@@ -5,34 +5,34 @@ from api_gateway.serverdb.resource import Resource, Permission
 from api_gateway.serverdb.role import Role
 from api_gateway.serverdb.user import User
 
-
 # TODO: Migrate this all to SQLAlchemy for the sanic migration. Probably combine walkoff and execution dbs
 logger = logging.getLogger(__name__)
 
-default_resource_permissions_admin = [{"name": "app_apis", "permissions": ["read"]},
-                                      {"name": "configuration", "permissions": ["read", "update"]},
-                                      {"name": "global_variables",
-                                       "permissions": ["create", "read", "update", "delete"]},
-                                      {"name": "workflow_variables",
-                                       "permissions": ["create", "read", "update", "delete"]},
-                                      {"name": "workflows",
-                                       "permissions": ["create", "read", "update", "delete", "execute"]},
-                                      {"name": "dashboards",
-                                       "permissions": ["create", "read", "update", "delete"]},
-                                      {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
-                                      {"name": "scheduler",
-                                       "permissions": ["create", "read", "update", "delete", "execute"]},
-                                      {"name": "users", "permissions": ["create", "read", "update", "delete"]}]
+default_resource_permissions_admin = [
+    {"name": "app_apis", "permissions": ["read"]},
+    {"name": "configuration", "permissions": ["read", "update"]},
+    {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "workflow_variables", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "workflows", "permissions": ["create", "read", "update", "delete", "execute"]},
+    {"name": "dashboards", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "workflowstatus", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
+    {"name": "users", "permissions": ["create", "read", "update", "delete"]}
+]
 
-default_resource_permissions_guest = [{"name": "app_apis", "permissions": ["read"]},
-                                      {"name": "configuration", "permissions": ["read"]},
-                                      {"name": "global_variables", "permissions": ["read", "update"]},
-                                      {"name": "workflow_variables", "permissions": ["read", "update"]},
-                                      {"name": "workflows", "permissions": ["read"]},
-                                      {"name": "dashboards", "permissions": ["read", "update"]},
-                                      {"name": "roles", "permissions": ["read"]},
-                                      {"name": "scheduler", "permissions": ["read"]},
-                                      {"name": "users", "permissions": ["read"]}]
+default_resource_permissions_guest = [
+    {"name": "app_apis", "permissions": ["read"]},
+    {"name": "configuration", "permissions": ["read"]},
+    {"name": "global_variables", "permissions": ["read", "update"]},
+    {"name": "workflow_variables", "permissions": ["read", "update"]},
+    {"name": "workflows", "permissions": ["read"]},
+    {"name": "dashboards", "permissions": ["read", "update"]},
+    {"name": "workflowstatus", "permissions": ["read"]},
+    {"name": "roles", "permissions": ["read"]},
+    {"name": "scheduler", "permissions": ["read"]},
+    {"name": "users", "permissions": ["read"]}
+]
 
 default_resources = ['app_apis', 'configuration', 'global_variables', 'workflows', 'roles', 'scheduler', 'users']
 

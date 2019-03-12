@@ -65,8 +65,8 @@ def with_resource_factory(resource_name, getter_func, validator=None):
                     return invalid_id_problem(resource_name, operation, kwargs[id_param])
 
                 # Fetch the resource from the database
-                if operation == "update":  # Put/Patch send the object in the body. Dereference id_ from there
-                    kwargs[id_param] = getter_func(kwargs["body"]["id_"])
+                # if operation == "update":  # Put/Patch send the object in the body. Dereference id_ from there
+                #     kwargs[id_param] = getter_func(kwargs["body"]["id_"])
                 else:
                     kwargs[id_param] = getter_func(kwargs[id_param])
 

@@ -6,7 +6,7 @@ import time
 
 import aioredis
 
-from common.message_types import NodeStatus, message_dumps
+from common.message_types import NodeStatusMessage, message_dumps
 from common.workflow_types import workflow_loads, Action
 from common.async_logger import AsyncLogger, AsyncHandler
 from common.helpers import connect_to_redis_pool
@@ -73,7 +73,7 @@ class AppBase:
         self.logger.debug(f"Attempting execution of: {action.label}-{action.execution_id}")
         self.console_logger.handlers[0].stream.set_channel(f"{action.execution_id}:console")
         if hasattr(self, action.name):
-            start_action_msg = NodeStatus.executing_from_node(action, action.execution_id)
+            start_action_msg = NodeStatusMessage.executing_from_node(action, action.execution_id)
             await self.redis.lpush(action.execution_id, message_dumps(start_action_msg))
             try:
                 func = getattr(self, action.name, None)
@@ -82,23 +82,23 @@ class AppBase:
                         result = await func()
                     else:
                         result = await func(**{p.name: p.value for p in action.parameters})
-                    action_result = NodeStatus.success_from_node(action, action.execution_id, result)
+                    action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result)
                     self.logger.debug(f"Executed {action.label}-{action.id_} with result: {result}")
 
                 else:
                     self.logger.error(f"App {self.__class__.__name__}.{action.name} is not callable")
-                    action_result = NodeStatus.failure_from_node(action, action.execution_id,
-                                                                 error="Action not callable")
+                    action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
+                                                                        error="Action not callable")
 
             except Exception as e:
-                action_result = NodeStatus.failure_from_node(action, action.execution_id, error=repr(e))
+                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, error=repr(e))
                 self.logger.exception(f"Failed to execute {action.label}-{action.id_}")
 
             await self.redis.lpush(action.execution_id, message_dumps(action_result))
 
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
-            action_result = NodeStatus.failure_from_node(action, action.execution_id, error="Action does not exist")
+            action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, error="Action does not exist")
             await self.redis.lpush(action.execution_id, message_dumps(action_result))
 
     @classmethod

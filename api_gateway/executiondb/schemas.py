@@ -14,6 +14,7 @@ from .transform import Transform
 from .trigger import Trigger
 from .workflow import Workflow
 from .dashboard import Dashboard, Widget
+from .workflowresults import WorkflowStatus, ActionStatus
 
 
 # TODO: use these when moving toward storing apis in database
@@ -236,6 +237,73 @@ class WorkflowSchema(ExecutionElementBaseSchema):
         unknown = EXCLUDE
 
 
+class ActionStatusSchema(ExecutionBaseSchema):
+    """
+    Schema for ActionStatusMessage
+    """
+    action_id = field_for(ActionStatus, 'action_id', required=True)
+    name = field_for(ActionStatus, 'name', required=True)
+    app_name = field_for(ActionStatus, 'app_name', required=True)
+    action_name = field_for(ActionStatus, 'action_name', required=True)
+    result = field_for(ActionStatus, 'result')
+    status = field_for(ActionStatus, 'status', required=True)
+    started_at = field_for(ActionStatus, 'started_at')
+    completed_at = field_for(ActionStatus, 'completed_at')
+
+    class Meta:
+        model = ActionStatus
+        unknown = EXCLUDE
+
+
+class ActionStatusSummarySchema(ExecutionBaseSchema):
+    """
+    Summary Schema for ActionStatusMessage
+    """
+    action_id = field_for(ActionStatus, 'action_id', required=True)
+    name = field_for(ActionStatus, 'name', required=True)
+    app_name = field_for(ActionStatus, 'app_name', required=True)
+    action_name = field_for(ActionStatus, 'action_name', required=True)
+
+    class Meta:
+        model = ActionStatus
+        unknown = EXCLUDE
+
+
+class WorkflowStatusSchema(ExecutionBaseSchema):
+    """
+    Schema for WorkflowStatusMessage
+    """
+    execution_id = field_for(WorkflowStatus, 'execution_id', required=True)
+    workflow_id = field_for(WorkflowStatus, 'workflow_id', required=True)
+    name = field_for(WorkflowStatus, 'name', required=True)
+    status = field_for(WorkflowStatus, 'status', required=True)
+    started_at = field_for(WorkflowStatus, 'started_at')
+    completed_at = field_for(WorkflowStatus, 'completed_at')
+    user = field_for(WorkflowStatus, 'user')
+    action_statuses = fields.Nested(ActionStatusSchema, many=True)
+
+    class Meta:
+        model = WorkflowStatus
+        unknown = EXCLUDE
+
+
+class WorkflowStatusSummarySchema(ExecutionBaseSchema):
+    """
+    Summary Schema for WorkflowStatusMessage
+    """
+    execution_id = field_for(WorkflowStatus, 'execution_id', required=True)
+    workflow_id = field_for(WorkflowStatus, 'workflow_id', required=True)
+    name = field_for(WorkflowStatus, 'name', required=True)
+    status = field_for(WorkflowStatus, 'status', required=True)
+    started_at = field_for(WorkflowStatus, 'started_at')
+    completed_at = field_for(WorkflowStatus, 'completed_at')
+    user = field_for(WorkflowStatus, 'user')
+    action_status = fields.Nested(ActionStatusSchema)
+
+    class Meta:
+        model = WorkflowStatus
+        unknown = EXCLUDE
+
 
 # This could be done better with a metaclass which registers subclasses
 _schema_lookup = {
@@ -248,7 +316,10 @@ _schema_lookup = {
     Transform: TransformSchema,
     Trigger: TriggerSchema,
     WorkflowVariable: WorkflowVariableSchema,
-    GlobalVariable: GlobalVariableSchema}
+    GlobalVariable: GlobalVariableSchema,
+    ActionStatus: ActionStatusSchema,
+    WorkflowStatus: WorkflowStatusSchema
+}
 
 
 def dump_element(element):

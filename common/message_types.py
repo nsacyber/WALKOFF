@@ -28,11 +28,11 @@ class MessageJSONDecoder(json.JSONDecoder):
     def object_hook(self, o):
         if "result" and "app_name" in o:
             o["status"] = StatusEnum[o["status"]]
-            return NodeStatus(**o)
+            return NodeStatusMessage(**o)
 
         elif "workflow_id" and "execution_id" in o:
             o["status"] = StatusEnum[o["status"]]
-            return WorkflowStatus(**o)
+            return WorkflowStatusMessage(**o)
 
         else:
             return o
@@ -41,12 +41,12 @@ class MessageJSONDecoder(json.JSONDecoder):
 class MessageJSONEncoder(json.JSONEncoder):
     """ A custom encoder for encoding Message types to JSON strings. """
     def default(self, o):
-        if isinstance(o, NodeStatus):
+        if isinstance(o, NodeStatusMessage):
             return {"name": o.name, "id_": o.id_, "label": o.label, "app_name": o.app_name,
                     "execution_id": o.execution_id, "result": o.result, "error": o.error, "status": o.status,
                     "started_at": o.started_at, "completed_at": o.completed_at}
 
-        elif isinstance(o, WorkflowStatus):
+        elif isinstance(o, WorkflowStatusMessage):
             return {"execution_id": o.execution_id, "workflow_id": o.workflow_id, "name": o.name, "status": o.status,
                     "started_at": o.started_at, "completed_at": o.completed_at, "user": o.user}
 
@@ -108,8 +108,8 @@ class StatusEnum(enum.Enum):
     FAILURE = "FAILURE"
 
 
-class WorkflowStatus(object):
-    """ Class that formats a WorkflowStatus message """
+class WorkflowStatusMessage(object):
+    """ Class that formats a WorkflowStatusMessage message """
     __slots__ = ("execution_id", "workflow_id", "name", "status", "started_at", "completed_at", "user")
 
     def __init__(self, execution_id, workflow_id, name, started_at=None, completed_at=None, status=None, user=None):
@@ -141,8 +141,8 @@ class WorkflowStatus(object):
         return cls(execution_id, workflow_id, name, completed_at=end_time, status=StatusEnum.ABORTED, user=user)
 
 
-class NodeStatus(object):
-    """ Class that formats a NodeStatus message. """
+class NodeStatusMessage(object):
+    """ Class that formats a NodeStatusMessage message. """
     __slots__ = ("name", "id_", "label", "app_name", "execution_id", "result", "error", "status", "started_at",
                  "completed_at")
 
@@ -166,21 +166,21 @@ class NodeStatus(object):
 
     @classmethod
     def pending_from_node(cls, node, execution_id):
-        return NodeStatus.from_node(node, execution_id, status=StatusEnum.PENDING)
+        return NodeStatusMessage.from_node(node, execution_id, status=StatusEnum.PENDING)
 
     @classmethod
     def executing_from_node(cls, node, execution_id):
         started_at = time.time()
-        return NodeStatus.from_node(node, execution_id, started_at=started_at, status=StatusEnum.EXECUTING)
+        return NodeStatusMessage.from_node(node, execution_id, started_at=started_at, status=StatusEnum.EXECUTING)
 
     @classmethod
     def success_from_node(cls, node, execution_id, result):
         completed_at = time.time()
-        return NodeStatus.from_node(node, execution_id, result=result, completed_at=completed_at,
-                                    status=StatusEnum.SUCCESS)
+        return NodeStatusMessage.from_node(node, execution_id, result=result, completed_at=completed_at,
+                                           status=StatusEnum.SUCCESS)
 
     @classmethod
     def failure_from_node(cls, node, execution_id, error=None):
         completed_at = time.time()
-        return NodeStatus.from_node(node, execution_id, error=error, completed_at=completed_at,
-                                    status=StatusEnum.FAILURE)
+        return NodeStatusMessage.from_node(node, execution_id, error=error, completed_at=completed_at,
+                                           status=StatusEnum.FAILURE)

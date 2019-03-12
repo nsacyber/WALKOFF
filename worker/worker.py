@@ -10,7 +10,7 @@ import aioredis
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from common.message_types import message_dumps, message_loads, NodeStatus, WorkflowStatus, StatusEnum, \
+from common.message_types import message_dumps, message_loads, NodeStatusMessage, WorkflowStatusMessage, StatusEnum, \
     JSONPatch, JSONPatchOps
 from common.config import config
 from common.helpers import connect_to_redis_pool
@@ -148,11 +148,11 @@ class Worker:
             which is being referenced in the conditional and must raise an exception.
         """
         logger.debug(f"Attempting evaluation of: {condition.label}-{self.workflow.execution_id}")
-        await self.send_message(NodeStatus.executing_from_node(condition, self.workflow.execution_id))
+        await self.send_message(NodeStatusMessage.executing_from_node(condition, self.workflow.execution_id))
         try:
             child_id = condition(parents, children, self.accumulator)
             selected_node = children.pop(child_id)
-            await self.send_message(NodeStatus.success_from_node(condition, self.workflow.execution_id, selected_node))
+            await self.send_message(NodeStatusMessage.success_from_node(condition, self.workflow.execution_id, selected_node))
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
             # We preemptively schedule all branches of execution so we must cancel all "false" branches here
@@ -163,7 +163,7 @@ class Worker:
 
         except ConditionException as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
-            await self.send_message(NodeStatus.failure_from_node(condition, self.workflow.execution_id, error=repr(e)))
+            await self.send_message(NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id, error=repr(e)))
 
         except Exception:
             logger.exception("Something happened in Condition evaluation")
@@ -171,10 +171,10 @@ class Worker:
     async def execute_transform(self, transform, parent):
         """ Execute an transform and ship its result """
         logger.debug(f"Attempting evaluation of: {transform.label}-{self.workflow.execution_id}")
-        await self.send_message(NodeStatus.executing_from_node(transform, self.workflow.execution_id))
+        await self.send_message(NodeStatusMessage.executing_from_node(transform, self.workflow.execution_id))
         try:
             result = transform(self.accumulator[parent.id_])  # run transform on parent's result
-            await self.send_message(NodeStatus.success_from_node(transform, self.workflow.execution_id, result))
+            await self.send_message(NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result))
             logger.info(f"Transform {transform.label}-succeeded with result: {result}")
 
             self.accumulator[transform.id_] = result
@@ -183,7 +183,7 @@ class Worker:
         # TODO: figure out exactly what can be raised by the possible transforms
         except Exception as e:
             logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
-            await self.send_message(NodeStatus.failure_from_node(transform, self.workflow.execution_id, error=repr(e)))
+            await self.send_message(NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, error=repr(e)))
 
     async def dereference_params(self, action: Action):
         global_vars = set(await self.redis.hkeys(config["REDIS"]["globals_key"]))
@@ -244,8 +244,8 @@ class Worker:
             if msg is None:
                 continue
 
-            msg: NodeStatus = message_loads(msg)
-            # Ensure that the received NodeStatus is for an action we launched
+            msg: NodeStatusMessage = message_loads(msg)
+            # Ensure that the received NodeStatusMessage is for an action we launched
             if msg.execution_id == self.workflow.execution_id and msg.id_ in self.in_process:
                 if msg.status == StatusEnum.EXECUTING:
                     logger.info(f"App started execution of: {msg.label}-{msg.execution_id}")
@@ -286,8 +286,8 @@ class Worker:
 
     def get_patches(self, message):
         patches = None
-        if isinstance(message, NodeStatus):
-            root = f"#/action_statuses/{message.id_}"
+        if isinstance(message, NodeStatusMessage):
+            root = f"/action_statuses/{message.id_}"
             if message.status == StatusEnum.EXECUTING:
                 patches = self.make_patches(message, root, JSONPatchOps.ADD, black_list={"result", "completed_at"})
 
@@ -299,8 +299,8 @@ class Worker:
                 patches = self.make_patches(message, root, JSONPatchOps.REPLACE,
                                             white_list={"status", "error", "completed_at"})
 
-        elif isinstance(message, WorkflowStatus):
-            root = f"#/"
+        elif isinstance(message, WorkflowStatusMessage):
+            root = f"/"
             if message.status == StatusEnum.EXECUTING:
                 patches = self.make_patches(message, root, JSONPatchOps.ADD, black_list={"status", "started_at"})
 
@@ -312,7 +312,7 @@ class Worker:
 
         return patches
 
-    async def send_message(self, message: Union[NodeStatus, WorkflowStatus]):
+    async def send_message(self, message: Union[NodeStatusMessage, WorkflowStatusMessage]):
         """ Forms and sends a JSONPatch message to the api_gateway to update the status of an action or workflow """
         patches = self.get_patches(message)
 

@@ -1,0 +1,26 @@
+JSONPatch:
+  description: A JSON-Patch document as defined by RFC 6902
+  required:
+    - "op"
+    - "path"
+  properties:
+    op:
+      type: string
+      description: The operation to be performed
+      enum:
+        - "add"
+        - "remove"
+        - "replace"
+        - "move"
+        - "copy"
+        - "test"
+    path:
+      type: string
+      description: A JSON-Pointer
+      example: "#/level1/level2/level3"
+    value:
+      type: string
+      description: The value to be used within the operations.
+    from:
+      type: string
+      description: A string containing a JSON Pointer value.
