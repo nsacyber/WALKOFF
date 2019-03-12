@@ -6,20 +6,10 @@ import pkgutil
 import sys
 import warnings
 from datetime import datetime
-from uuid import uuid4
+from uuid import uuid4, UUID
 
-try:
-    from importlib import reload as reload_module
-except ImportError:
-    from imp import reload as reload_module
-
-__new_inspection = False
-if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
-    from inspect import signature as getsignature
-
-    __new_inspection = True
-else:
-    from inspect import getargspec as getsignature
+from importlib import reload as reload_module
+from inspect import signature as getsignature
 
 logger = logging.getLogger(__name__)
 
@@ -134,10 +124,7 @@ def format_db_path(db_type, path, username=None, password=None, host="localhost"
 
 
 def get_function_arg_names(func):
-    if __new_inspection:
-        return list(getsignature(func).parameters.keys())
-    else:
-        return getsignature(func).args
+    return list(getsignature(func).parameters.keys())
 
 
 def format_exception_message(exception):
@@ -279,6 +266,14 @@ def read_and_indent(filename, indent):
     indent = '  ' * indent
     with open(filename, 'r') as file_open:
         return ['{0}{1}'.format(indent, line) for line in file_open]
+
+
+def validate_uuid4(id_, stringify=False):
+    try:
+        uuid_ = UUID(id_, version=4)
+        return uuid_ if not stringify else id_
+    except ValueError:
+        return None
 
 
 def compose_api(config):
