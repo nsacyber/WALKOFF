@@ -50,7 +50,6 @@ paths:
   $ref: ./auth.yaml
   $ref: ./configuration.yaml
   $ref: ./global_variables.yaml
-  $ref: ./metadata.yaml
   $ref: ./roles.yaml
   $ref: ./scheduler.yaml
   $ref: ./users.yaml
