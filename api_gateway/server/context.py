@@ -5,7 +5,6 @@ from sqlalchemy.exc import OperationalError
 import gevent
 from redis import Redis
 
-
 import api_gateway.cache
 import api_gateway.config
 import api_gateway.executiondb
@@ -13,7 +12,6 @@ import api_gateway.scheduler
 from api_gateway.config import Config
 from api_gateway.appgateway.appcache import AppCache
 from api_gateway.senders_receivers import WorkflowResultsReceiver, WorkflowResultsSender
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +24,8 @@ class Context(object):
         """
         try:
             self.execution_db = api_gateway.executiondb.ExecutionDatabase(api_gateway.config.Config.EXECUTION_DB_TYPE,
-                                                                      api_gateway.config.Config.EXECUTION_DB_PATH,
-                                                                      api_gateway.config.Config.EXECUTION_DB_HOST)
+                                                                          api_gateway.config.Config.EXECUTION_DB_PATH,
+                                                                          api_gateway.config.Config.EXECUTION_DB_HOST)
         except OperationalError as e:
             if "password" in str(e):
                 logger.error("Incorrect username and/or password for execution database. Please make sure these are "

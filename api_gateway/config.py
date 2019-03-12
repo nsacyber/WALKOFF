@@ -21,7 +21,6 @@ def load_app_apis():
             apps_path variable in Config object
     """
 
-
     from api_gateway.helpers import list_apps, format_exception_message
     global app_apis
     try:
@@ -111,14 +110,12 @@ class Config(object):
 
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
 
-
     WALKOFF_SCHEMA_PATH = join(DATA_PATH, 'walkoff_schema.json')
     WORKFLOWS_PATH = join(DATA_PATH, 'workflows')
 
     KEYS_PATH = join("api_gateway", '.certificates')
     CERTIFICATE_PATH = join(KEYS_PATH, 'api_gateway.crt')
     PRIVATE_KEY_PATH = join(KEYS_PATH, 'api_gateway.key')
-
 
     # AppConfig
     SQLALCHEMY_TRACK_MODIFICATIONS = False

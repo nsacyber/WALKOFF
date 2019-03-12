@@ -25,6 +25,7 @@ def paginate(schema=None):
     Paginates the response to a request.
     Optional schema will schema.dump() the objects returned by the wrapped function
     """
+
     def func_wrapper(func):
         def func_caller(*args, **kwargs):
             page = request.args.get("page", 1, type=int)
@@ -38,7 +39,9 @@ def paginate(schema=None):
                 return [schema.dump(obj) for obj in pages], status_code
 
             return [obj for obj in pages], status_code
+
         return func_caller
+
     return func_wrapper
 
 
@@ -49,16 +52,21 @@ def validate_resource_exists_factory(resource_name, existence_func):
                 return func
             else:
                 return dne_problem(resource_name, operation, ids)
+
         return wrapper
+
     return validate_resource_exists
 
 
 def with_resource_factory(resource_name, getter_func, validator=None):
     """Factory pattern which takes in resource name and resource specific functions, returns a validator decorator"""
+
     def arg_wrapper(operation, id_param):
         """This decorator serves to take in the args to the decorator call and make it available below"""
+
         def func_wrapper(func):
             """This decorator serves to wrap the actual decorated function and return the replacement function below"""
+
             def func_caller(*args, **kwargs):
                 """This decorator is the actual replacement function for the decorated function"""
                 if validator and not validator(kwargs[id_param]):
@@ -75,8 +83,11 @@ def with_resource_factory(resource_name, getter_func, validator=None):
                     return func(**_whitelist_func_kwargs(func, kwargs))
                 else:
                     return dne_problem(resource_name, operation, kwargs[id_param])
+
             return func_caller
+
         return func_wrapper
+
     return arg_wrapper
 
 

@@ -82,7 +82,8 @@ def scheduled_task_name_already_exists_problem(name, operation):
         'Could not {} scheduled task. Scheduled task with name {} already exists.'.format(operation, name))
 
 
-invalid_scheduler_args_problem = Problem(HTTPStatus.BAD_REQUEST, 'Invalid scheduled task.', 'Invalid scheduler arguments.')
+invalid_scheduler_args_problem = Problem(HTTPStatus.BAD_REQUEST, 'Invalid scheduled task.',
+                                         'Invalid scheduler arguments.')
 
 
 def create_scheduled_task():

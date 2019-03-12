@@ -7,7 +7,6 @@ sys.path.append(os.getcwd())
 
 from api_gateway.migrations.database.commonenv import run
 
-
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel

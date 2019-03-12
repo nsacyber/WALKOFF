@@ -24,6 +24,7 @@ class Workflow(ExecutionElement, Execution_Base):
     is_valid = Column(Boolean, default=False)
     children = ("actions", "branches", "conditions", "transforms", "triggers")
     workflow_variables = relationship("WorkflowVariable", cascade="all, delete-orphan", passive_deletes=True)
+
     # __table_args__ = (UniqueConstraint("playbook_id", "name", name="_playbook_workflow"),)
 
     def __init__(self, name, start, id_=None, actions=None, branches=None, conditions=None, transforms=None,

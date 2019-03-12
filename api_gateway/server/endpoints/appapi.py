@@ -118,7 +118,8 @@ def read_all_app_apis(field_name=None):
         # TODO: Remove this once connexion can validate enums with openapi3.
         if field_name and field_name not in ['info', 'action_apis', 'condition_apis', 'transform_apis', 'device_apis',
                                              'tags', 'external_docs']:
-            return Problem(HTTPStatus.BAD_REQUEST, 'Could not read app api.', '{} is not a valid field name.'.format(field_name))
+            return Problem(HTTPStatus.BAD_REQUEST, 'Could not read app api.',
+                           '{} is not a valid field name.'.format(field_name))
 
         ret = []
         for app_name, app_api in redis_cache.hgetall("app-apis").items():
@@ -155,7 +156,8 @@ def read_app_api_field(app_name, field_name):
         # TODO: Remove this once connexion can validate enums with openapi3.
         if field_name not in ['info', 'action_apis', 'condition_apis', 'transform_apis', 'device_apis', 'tags',
                               'externalDocs']:
-            return Problem(HTTPStatus.BAD_REQUEST, 'Could not read app api.', '{} is not a valid field name.'.format(field_name))
+            return Problem(HTTPStatus.BAD_REQUEST, 'Could not read app api.',
+                           '{} is not a valid field name.'.format(field_name))
 
         api = json.loads(redis_cache.hget("app-apis", app_name))
         if api is not None:

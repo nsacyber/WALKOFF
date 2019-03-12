@@ -106,7 +106,8 @@ def update_user_fields(data, user):
         if user_db is None or user_db.id == user.id:
             user.username = data['username']
         else:
-            return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.', 'Username {} is already taken.'.format(data['username']))
+            return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
+                           'Username {} is already taken.'.format(data['username']))
     if 'old_password' in data and 'password' in data:
         if user.verify_password(data['old_password']):
             user.password = data['password']
@@ -134,6 +135,7 @@ def delete_user(user_id):
             return None, HTTPStatus.NO_CONTENT
         else:
             current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
-            return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete', 'Current user cannot delete self.')
+            return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
+                                              'Current user cannot delete self.')
 
     return __func()

@@ -17,12 +17,12 @@ from api_gateway.events import WalkoffEvent
 from api_gateway.executiondb.workflow import Workflow
 from api_gateway.executiondb.workflowresults import WorkflowStatus
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, paginate
+from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
+    paginate
 from api_gateway.server.problem import Problem, dne_problem, invalid_input_problem, improper_json_problem
 from api_gateway.server.endpoints.results import push_to_action_stream_queue, push_to_workflow_stream_queue
 from http import HTTPStatus
 from api_gateway.executiondb.schemas import WorkflowSchema, WorkflowStatusSchema, WorkflowStatusSummarySchema
-
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +42,14 @@ def abort_workflow(execution_id, user=None):
         (bool): True if successfully aborted workflow, False otherwise
     """
     logger.info('User {0} aborting workflow {1}'.format(user, execution_id))
-    workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
+    workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
+        execution_id=execution_id).first()
 
     if workflow_status:
         if workflow_status.status in [StatusEnum.PENDING, StatusEnum.PAUSED,
                                       StatusEnum.AWAITING_DATA]:
-            workflow = current_app.running_context.execution_db.session.query(Workflow).filter_by(id=workflow_status.workflow_id).first()
+            workflow = current_app.running_context.execution_db.session.query(Workflow).filter_by(
+                id=workflow_status.workflow_id).first()
             if workflow is not None:
                 data = {}
                 if user:
@@ -172,7 +174,7 @@ def execute_workflow():
         return improper_json_problem('workflow_status', 'create', workflow['name'], e.messages)
 
 
-#ToDo: Ensure workflow abort works
+# ToDo: Ensure workflow abort works
 def control_workflow():
     data = request.get_json()
     execution_id = data['execution_id']
@@ -197,7 +199,7 @@ def control_workflow():
     return __func()
 
 
-#ToDo: make these clear db endpoints for more resources
+# ToDo: make these clear db endpoints for more resources
 def clear_workflow_status(all=False, days=30):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))

@@ -166,7 +166,7 @@ class ConditionSchema(ExecutionElementBaseSchema):
 class TransformSchema(ExecutionElementBaseSchema):
     """Schema for transforms
     """
-    
+
     name = field_for(Transform, 'name', required=True)
     transform = field_for(Transform, 'transform', required=True)
     parameter = fields.Nested(ParameterSchema())

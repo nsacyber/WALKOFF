@@ -25,7 +25,7 @@ class Dashboard(Execution_Base):
 
 
 class Widget(Execution_Base):
-    __tablename__ = 'widget' 
+    __tablename__ = 'widget'
 
     id_ = Column(UUIDType(binary=False), primary_key=True, default=uuid4)
     dashboard_id = Column(UUIDType(binary=False), ForeignKey('dashboard.id_', ondelete='CASCADE'))
@@ -36,7 +36,7 @@ class Widget(Execution_Base):
     cols = Column(Integer, nullable=False)
     rows = Column(Integer, nullable=False)
     options = Column(JSONType)
-    
+
     def __init__(self, id_=None, name=None, type_=None, x=None, y=None, cols=None, rows=None, options=None):
         self.id_ = validate_uuid4(id_)
         self.name = name if name else ""

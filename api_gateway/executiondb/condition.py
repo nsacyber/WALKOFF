@@ -4,7 +4,6 @@ from sqlalchemy import Column, String, ForeignKey, orm, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
-
 from api_gateway import executiondb
 from api_gateway.appgateway.apiutil import UnknownApp, InvalidParameter, UnknownCondition
 from api_gateway.executiondb.executionelement import ExecutionElement

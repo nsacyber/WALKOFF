@@ -9,7 +9,6 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy_utils import UUIDType
 
-
 # revision identifiers, used by Alembic.
 revision = 'f2bd05b25482'
 down_revision = 'dd74ff55c643'

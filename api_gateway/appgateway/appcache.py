@@ -6,6 +6,7 @@ _logger = logging.getLogger(__name__)
 
 class AppCache:
     """ Object which caches app apis in redis"""
+
     # TODO: Add config options when decided
     def __init__(self, redis, api_key="app-apis"):
         self.redis = redis
@@ -78,4 +79,3 @@ class AppCache:
         for app, api in self.items():
             # TODO: validate these things
             print(app, api)
-

@@ -2,6 +2,7 @@ import json
 
 from flask import current_app
 
+
 def get_app_action_api(app_name, action_name):
     """
     Gets the api for a given app and action

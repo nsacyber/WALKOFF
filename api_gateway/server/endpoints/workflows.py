@@ -14,7 +14,8 @@ from api_gateway.executiondb.workflow import Workflow
 from api_gateway.helpers import regenerate_workflow_ids
 from api_gateway.helpers import strip_device_ids, strip_argument_ids
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, paginate
+from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
+    paginate
 from api_gateway.server.problem import Problem, unique_constraint_problem, improper_json_problem, invalid_input_problem
 from http import HTTPStatus
 

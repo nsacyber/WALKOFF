@@ -56,7 +56,7 @@ class WorkflowResultsReceiver(object):
                 then the current_app must be included in the init. Otherwise, it should not be included.
             message_converter (WorkflowResultsConverter): Class to convert workflow results
         """
-        #TODO: Add figure out better way of doing this import hack
+        # TODO: Add figure out better way of doing this import hack
         import api_gateway.server.workflowresults  # Need this import
 
         self.redis = Redis(host=Config.CACHE["host"], port=Config.CACHE["port"])
@@ -112,6 +112,3 @@ class WorkflowResultsReceiver(object):
         else:
             logger.error('Unknown callback {} sent'.format(event))
             return None, None, None
-
-
-

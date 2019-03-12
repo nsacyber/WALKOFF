@@ -30,11 +30,13 @@ def workflow_getter(workflow_id):
 
 
 def workflow_status_getter(execution_id):
-    return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
+    return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
+        execution_id=execution_id).first()
 
 
 def action_status_getter(combined_id):
-    return current_app.running_context.execution_db.session.query(ActionStatus).filter_by(combined_id=combined_id).first()
+    return current_app.running_context.execution_db.session.query(ActionStatus).filter_by(
+        combined_id=combined_id).first()
 
 
 with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
@@ -106,7 +108,8 @@ def update_workflow_status(execution_id):
 
     # TODO: change these on the db model to be keyed by ID
     if "action_statuses" in old_workflow_status:
-        old_workflow_status["action_statuses"] = {astat['action_id']: astat for astat in old_workflow_status["action_statuses"]}
+        old_workflow_status["action_statuses"] = {astat['action_id']: astat for astat in
+                                                  old_workflow_status["action_statuses"]}
     else:
         old_workflow_status["action_statuses"] = {}
 

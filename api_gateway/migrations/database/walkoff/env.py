@@ -16,7 +16,6 @@ from api_gateway.extensions import db
 from api_gateway.server.app import app
 import api_gateway.config
 
-
 # unclear if commented out app creation is necessary, but may need it in the future
 # api_gateway.config.initialize()
 # app = create_app()

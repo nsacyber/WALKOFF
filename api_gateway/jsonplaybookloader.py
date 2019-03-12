@@ -3,7 +3,8 @@ import logging
 import os.path
 
 import api_gateway.config
-from api_gateway.appgateway.apiutil import UnknownApp, UnknownAppAction, InvalidParameter, UnknownCondition, UnknownTransform
+from api_gateway.appgateway.apiutil import UnknownApp, UnknownAppAction, InvalidParameter, UnknownCondition, \
+    UnknownTransform
 from api_gateway.executiondb.schemas import WorkflowSchema
 from api_gateway.helpers import format_exception_message
 

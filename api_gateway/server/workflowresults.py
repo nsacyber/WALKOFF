@@ -115,5 +115,3 @@ def __action_args_invalid_callback(sender, **kwargs):
 
     action_status.completed_failure(kwargs['data']['data'])
     current_app.running_context.execution_db.session.commit()
-
-

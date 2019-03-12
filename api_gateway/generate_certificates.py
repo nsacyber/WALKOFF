@@ -15,7 +15,6 @@ def generate_certificates():
         shutil.rmtree(keys_dir)
     os.mkdir(keys_dir)
 
-
     # # Move public keys to appropriate dir
     # for key_file in os.listdir(keys_dir):
     #     if key_file.endswith(".key"):

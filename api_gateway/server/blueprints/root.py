@@ -23,11 +23,13 @@ root_page = Blueprint('root_page', __name__, template_folder="api_gateway/client
 def client_app_folder(filename):
     return send_from_directory(os.path.abspath(api_gateway.config.Config.CLIENT_PATH), filename)
 
+
 # Default route to angular application
 @root_page.route('/', defaults={'path': ''})
 @root_page.route('/<path:path>')
 def default(path):
     return send_from_directory(os.path.abspath(api_gateway.config.Config.CLIENT_PATH), "dist/index.html")
+
 
 # Route to login page
 @root_page.route('login')

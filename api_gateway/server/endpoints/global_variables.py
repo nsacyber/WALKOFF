@@ -70,4 +70,3 @@ def update_global(global_id):
     except (IntegrityError, StatementError):
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem("global_variable", "update", data["name"])
-

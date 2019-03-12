@@ -135,7 +135,8 @@ class ActionStatus(Execution_Base):
     status = Column(String, nullable=False)  # ToDo: revisit this and make this a real enum
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
-    workflow_execution_id = Column(UUIDType(binary=False), ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
+    workflow_execution_id = Column(UUIDType(binary=False),
+                                   ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
 
     def __init__(self, combined_id, action_id, name, app_name, action_name, result=None, arguments=None,
                  status=StatusEnum.EXECUTING, started_at=None, completed_at=None):

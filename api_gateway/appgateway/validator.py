@@ -148,7 +148,6 @@ def validate_data_in_param(params, data_in_param_name, message_prefix):
                                                                              data_in_param_name))
 
 
-
 def validate_spec_json(spec, schema_path, spec_url='', http_handlers=None):
     schema_path = os.path.abspath(schema_path)
     with open(schema_path, 'r') as schema_file:
