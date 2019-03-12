@@ -51,7 +51,6 @@ class RedisCacheAdapter(object):
     def __new__(cls, *args, **kwargs):
         if cls.instance is None:
             cls.instance = super(RedisCacheAdapter, cls).__new__(cls)
-            logger.info('Created redis cache connection')
         return cls.instance
 
     def __init__(self, **opts):

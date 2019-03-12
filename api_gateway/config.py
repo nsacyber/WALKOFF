@@ -44,22 +44,22 @@ def load_app_apis():
 
 def setup_logger():
     log_config = None
+    logging.basicConfig()
     if isfile(Config.LOGGING_CONFIG_PATH):
         try:
-            with open(Config.LOGGING_CONFIG_PATH, 'rt') as log_config_file:
+            with open(Config.LOGGING_CONFIG_PATH, 'r') as log_config_file:
                 log_config = json.loads(log_config_file.read())
         except (IOError, OSError):
-            print('Could not read logging JSON file {}'.format(Config.LOGGING_CONFIG_PATH))
+            logger.info(f"Could not read logging config file: {Config.LOGGING_CONFIG_PATH}")
         except ValueError:
-            print('Invalid JSON in logging config file')
+            logger.info(f"Invalid JSON in logging config file: {Config.LOGGING_CONFIG_PATH}")
     else:
-        print('No logging config found')
+        logger.info(f"Could not find logging config file: {Config.LOGGING_CONFIG_PATH}")
 
     if log_config is not None:
         logging.config.dictConfig(log_config)
     else:
-        logging.basicConfig()
-        logger.info("Basic logging is being used")
+        logger.info("Using basic logging config.")
 
     def send_warnings_to_log(message, category, filename, lineno, file=None, *args):
         logging.warning(
@@ -77,7 +77,7 @@ class Config(object):
     # CONFIG VALUES
 
     # IP and port for the webserver
-    HOST = "127.0.0.1"
+    IP = "127.0.0.1"
     PORT = 5000
 
     # IP addresses and ports for IPC (inter-process communication). Do not change these unless necessary. There must
@@ -188,11 +188,11 @@ class Config(object):
                         for key, value in config.items():
                             if value:
                                 setattr(cls, key.upper(), value)
-                        logger.info('Loaded config from {}.'.format(cls.CONFIG_PATH))
+                        logger.info(f"Config file loaded: {cls.CONFIG_PATH}.")
                 else:
-                    logger.info('Config path {} is not a file.'.format(cls.CONFIG_PATH))
+                    logger.info(f"Could not find config file: {cls.CONFIG_PATH}")
             except (IOError, OSError, ValueError):
-                logger.warning('Could not read config file.', exc_info=True)
+                logger.warning(f"Could not read config file: {cls.CONFIG_PATH}", exc_info=True)
 
         cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
                                                      'WALKOFF_DB_PASSWORD', cls.WALKOFF_DB_HOST)
@@ -210,24 +210,26 @@ class Config(object):
 
         with open(cls.CONFIG_PATH, 'w') as config_file:
             config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
-            logger.info("Wrote config to {}".format(cls.CONFIG_PATH))
+            logger.info(f"Wrote config file to: {cls.CONFIG_PATH}")
 
     @classmethod
     def load_env_vars(cls):
         for field in (field for field in dir(cls) if field.isupper()):
             if field in os.environ:
                 var_type = type(getattr(cls, field))
+                var = os.environ.get(field)
                 if var_type == dict:
-                    setattr(cls, field, json.loads(os.environ.get(field)))
+                    setattr(cls, field, json.loads(var))
                 else:
-                    setattr(cls, field, var_type(os.environ.get(field)))
-                logger.info("Loading field {} from environment variables.".format(field))
+                    setattr(cls, field, var_type(var))
+                logger.info((f"Using environment variable: "
+                             f"{field} = {f'{var}' if field not in cls.__passwords else '<hidden>'}"))
 
         cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
                                                      'WALKOFF_DB_PASSWORD', cls.WALKOFF_DB_HOST)
+
 
 # TODO: Figure out nice way of ensuring the order of operations for all of the flask app init stuff
 Config.load_config()
 Config.load_env_vars()
 setup_logger()
-

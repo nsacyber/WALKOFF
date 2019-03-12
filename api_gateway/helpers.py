@@ -8,18 +8,8 @@ import warnings
 from datetime import datetime
 from uuid import uuid4
 
-try:
-    from importlib import reload as reload_module
-except ImportError:
-    from imp import reload as reload_module
-
-__new_inspection = False
-if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
-    from inspect import signature as getsignature
-
-    __new_inspection = True
-else:
-    from inspect import getargspec as getsignature
+from importlib import reload as reload_module
+from inspect import signature as getsignature
 
 logger = logging.getLogger(__name__)
 
@@ -36,80 +26,80 @@ def __list_valid_directories(path):
 
 def list_apps(path):
     """Get a list of the apps.
-    
+
     Args:
         path (str): The path to the apps folder
-        
+
     Returns:
         A list of the apps given the apps path or the apps_path in the configuration.
     """
     return __list_valid_directories(path)
 
 
-def list_interfaces(path=None):
-    return __list_valid_directories(path)
+# def list_interfaces(path=None):
+#     return __list_valid_directories(path)
 
 
-def locate_playbooks_in_directory(path):
-    """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
-    
-    Args:
-        path (str, optional): The directory path from which to locate the workflows.
-        
-    Returns:
-        A list of workflow names from the specified path, or the directory specified in the configuration.
-    """
-    if os.path.exists(path):
-        return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
-                                                              and workflow.endswith('.playbook'))]
-    else:
-        logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
-        return []
+# def locate_playbooks_in_directory(path):
+#     """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
+#
+#     Args:
+#         path (str, optional): The directory path from which to locate the workflows.
+#
+#     Returns:
+#         A list of workflow names from the specified path, or the directory specified in the configuration.
+#     """
+#     if os.path.exists(path):
+#         return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
+#                                                               and workflow.endswith('.playbook'))]
+#     else:
+#         logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
+#         return []
 
 
-def import_submodules(package, recursive=False):
-    """Imports the submodules from a given package.
+# def import_submodules(package, recursive=False):
+#     """Imports the submodules from a given package.
+#
+#     Args:
+#         package (str): The name of the package from which to import the submodules.
+#         recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
+#             Defaults to False.
+#
+#     Returns:
+#         A dictionary containing the imported module objects.
+#     """
+#     successful_base_import = True
+#     if isinstance(package, str):
+#         try:
+#             package = importlib.import_module(package)
+#         except ImportError:
+#             successful_base_import = False
+#             logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
+#     if successful_base_import:
+#         results = {}
+#         if hasattr(package, '__path__'):
+#             for loader, name, is_package in pkgutil.walk_packages(package.__path__):
+#                 full_name = '{0}.{1}'.format(package.__name__, name)
+#                 try:
+#                     results[full_name] = importlib.import_module(full_name)
+#                 except ImportError:
+#                     logger.warning('Could not import {}. Skipping.'.format(full_name), exc_info=True)
+#                 if recursive and is_package:
+#                     results.update(import_submodules(full_name))
+#         return results
+#     return {}
 
-    Args:
-        package (str): The name of the package from which to import the submodules.
-        recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
-            Defaults to False.
 
-    Returns:
-        A dictionary containing the imported module objects.
-    """
-    successful_base_import = True
-    if isinstance(package, str):
-        try:
-            package = importlib.import_module(package)
-        except ImportError:
-            successful_base_import = False
-            logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
-    if successful_base_import:
-        results = {}
-        if hasattr(package, '__path__'):
-            for loader, name, is_package in pkgutil.walk_packages(package.__path__):
-                full_name = '{0}.{1}'.format(package.__name__, name)
-                try:
-                    results[full_name] = importlib.import_module(full_name)
-                except ImportError:
-                    logger.warning('Could not import {}. Skipping.'.format(full_name), exc_info=True)
-                if recursive and is_package:
-                    results.update(import_submodules(full_name))
-        return results
-    return {}
-
-
-def format_db_path(db_type, path, username=None, password=None, host="localhost"):
+def format_db_path(db_type, path, username_env_key=None, password_env_key=None, host="localhost"):
     """
     Formats the path to the database
 
     Args:
         db_type (str): Type of database being used
         path (str): Path to the database
-        username (str): The name of the username environment variable for this db
-        password (str): The name of the password environment variable for this db
-
+        username_env_key (str): The name of the username environment variable for this db
+        password_env_key (str): The name of the password environment variable for this db
+        host (str): The hostname where the database is hosted
     Returns:
         (str): The path of the database formatted for SqlAlchemy
     """
@@ -117,33 +107,35 @@ def format_db_path(db_type, path, username=None, password=None, host="localhost"
                      'mysql', 'mysql+mysqldb', 'mysql+mysqlconnector', 'mysql+oursql',
                      'oracle', 'oracle+cx_oracle', 'mssql+pyodbc', 'mssql+pymssql']
     sqlalchemy_path = None
+
     if db_type == 'sqlite':
-        sqlalchemy_path = '{0}:///{1}'.format(db_type, path)
+        sqlalchemy_path = f"{db_type}:///{path}"
+
     elif db_type in supported_dbs:
-        if username and username in os.environ and password and password in os.environ:
-            sqlalchemy_path = '{0}://{1}:{2}@{3}/{4}'.format(db_type, os.environ[username], os.environ[password],
-                                                             host, path)
-        elif username and username in os.environ:
-            sqlalchemy_path = '{0}://{1}@{2}/{3}'.format(db_type, os.environ[username], host, path)
+        username = os.environ.get(username_env_key, None)
+        password = os.environ.get(password_env_key, None)
+
+        if username and password:
+            sqlalchemy_path = f"{db_type}://{username}:{password}@{host}/{path}"
+        elif username:
+            sqlalchemy_path = f"{db_type}://{username}@{host}/{path}"
         else:
-            logger.error('No username or password found for database')
+            logger.error(f"Database type was set to {db_type}, but no login was found in system environment variables.")
+
     else:
-        logger.error('Database type {0} not supported for database {1}'.format(db_type, path))
+        logger.error(f"Database type {db_type} not supported for database {path}")
 
     return sqlalchemy_path
 
 
 def get_function_arg_names(func):
-    if __new_inspection:
-        return list(getsignature(func).parameters.keys())
-    else:
-        return getsignature(func).args
+    return list(getsignature(func).parameters.keys())
 
 
 def format_exception_message(exception):
     exception_message = str(exception)
     class_name = exception.__class__.__name__
-    return '{0}: {1}'.format(class_name, exception_message) if exception_message else class_name
+    return f"{class_name}: {exception_message}" if exception_message else class_name
 
 
 def convert_action_argument(argument):
@@ -160,24 +152,25 @@ def convert_action_argument(argument):
     return argument
 
 
-def create_sse_event(event_id=None, event=None, data=None):
-    warnings.warn('create_sse_event is deprecated. Please use the api_gateway.sse.SseStream class to construct SSE streams.'
-                  ' This function will be removed in version 0.10.0',
-                  DeprecationWarning)
-    if data is None and event_id is None and event is None:
-        return ''
-    response = ''
-    if event_id is not None:
-        response += 'id: {}\n'.format(event_id)
-    if event is not None:
-        response += 'event: {}\n'.format(event)
-    if data is None:
-        data = ''
-    try:
-        response += 'data: {}\n'.format(json.dumps(data))
-    except ValueError:
-        response += 'data: {}\n'.format(data)
-    return response + '\n'
+# def create_sse_event(event_id=None, event=None, data=None):
+#     warnings.warn('create_sse_event is deprecated.'
+#                   ' Please use the api_gateway.sse.SseStream class to construct SSE streams.'
+#                   ' This function will be removed in version 0.10.0',
+#                   DeprecationWarning)
+#     if data is None and event_id is None and event is None:
+#         return ''
+#     response = ''
+#     if event_id is not None:
+#         response += 'id: {}\n'.format(event_id)
+#     if event is not None:
+#         response += 'event: {}\n'.format(event)
+#     if data is None:
+#         data = ''
+#     try:
+#         response += 'data: {}\n'.format(json.dumps(data))
+#     except ValueError:
+#         response += 'data: {}\n'.format(data)
+#     return response + '\n'
 
 
 def regenerate_workflow_ids(workflow):
@@ -282,7 +275,6 @@ def read_and_indent(filename, indent):
 
 
 def compose_api(config):
-    print(os.getcwd())
     with open(os.path.join(config.API_PATH, 'api.yaml'), 'r') as api_yaml:
         final_yaml = []
         for line_num, line in enumerate(api_yaml):
@@ -295,8 +287,7 @@ def compose_api(config):
                         read_and_indent(os.path.join(config.API_PATH, reference), indentation))
                     final_yaml.append(os.linesep)
                 except (IOError, OSError):
-                    logger.error('Could not find or open referenced YAML file {0} in line {1}'.format(reference,
-                                                                                                      line_num))
+                    logger.error(f"Could not find or open {reference} on line {line_num}")
             else:
                 final_yaml.append(line)
     with open(os.path.join(config.API_PATH, 'composed_api.yaml'), 'w') as composed_yaml:

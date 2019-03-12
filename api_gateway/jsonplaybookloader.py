@@ -5,52 +5,38 @@ import os.path
 import api_gateway.config
 from api_gateway.appgateway.apiutil import UnknownApp, UnknownAppAction, InvalidParameter, UnknownCondition, UnknownTransform
 from api_gateway.executiondb.schemas import WorkflowSchema
-from api_gateway.helpers import (locate_playbooks_in_directory, format_exception_message)
+from api_gateway.helpers import format_exception_message
 
 logger = logging.getLogger(__name__)
 
 
-class JsonPlaybookLoader(object):
-    @staticmethod
-    def load_workflow(resource, workflow_name):
-        """Loads a workflow from a file.
+def load_workflow(resource, workflow_name):
+    """Loads a workflow from a file.
 
-        Args:
-            resource (str): Path to the workflow.
-            workflow_name (str): Name of the workflow to load.
+    Args:
+        resource (str): Path to the workflow.
+        workflow_name (str): Name of the workflow to load.
 
-        Returns:
-            True on success, False otherwise.
-        """
-        try:
-            playbook_file = open(resource, 'r')
-        except (IOError, OSError) as e:
-            logger.error('Could not load workflow from {0}. Reason: {1}'.format(resource, format_exception_message(e)))
-            return None
-        else:
-            with playbook_file:
-                workflow_loaded = playbook_file.read()
-                try:
-                    playbook_json = json.loads(workflow_loaded)
-                    playbook_name = playbook_json['name']
-                    workflow_json = next(
-                        (workflow for workflow in playbook_json['workflows']
-                         if workflow['name'] == workflow_name), None)
-                    if workflow_json is None:
-                        logger.warning('Workflow {0} not found in playbook {0}. '
-                                       'Cannot load.'.format(workflow_name, playbook_name))
-                        return None
-                    workflow = WorkflowSchema().load(workflow_json)
-                    return playbook_name, workflow
-                except ValueError as e:
-                    logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
-                except (InvalidParameter, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
-                    logger.error('Error constructing workflow {0}. Reason: {1}'.format(workflow_name,
-                                                                                       format_exception_message(e)))
-                    return None
-                except KeyError as e:
-                    logger.error('Invalid Playbook JSON format. Details: {}'.format(e))
-                    return None
+    Returns:
+        True on success, False otherwise.
+    """
+    try:
+        with open(resource, 'r') as workflow_file:
+            workflow_string = workflow_file.read()
+            try:
+                workflow_json = json.loads(workflow_string)
+                workflow_name = workflow_json['name']
+                workflow = WorkflowSchema().load(workflow_json)
+                return workflow_name, workflow
+            except ValueError as e:
+                logger.exception(f"Could not parse {resource}: {format_exception_message(e)}")
+                return None
+            except (InvalidParameter, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
+                logger.error(f"Could not validate {workflow_name}: {format_exception_message(e)}")
+                return None
+    except (IOError, OSError) as e:
+        logger.error(f"Could not load {resource}: {format_exception_message(e)}")
+        return None
 
     # @staticmethod
     # def load_playbook(resource):

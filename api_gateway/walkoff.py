@@ -1,5 +1,6 @@
 from gevent import monkey
-monkey.patch_all()
+
+monkey.patch_all()  # noqa: Monkey patching needs to occur as early as possible.
 
 import argparse
 import logging
@@ -11,14 +12,14 @@ from gevent import pywsgi
 
 import api_gateway
 
-# For now, these two imports need to be in this order. We init the config, and then init the app based on the config
+# ToDo: For now, these two imports need to be in this order. We init the config, then init the app based on the config
 import api_gateway.config
 from api_gateway.server.app import app
 
 app.debug = True
 
-# from api_gateway.jsonplaybookloader import JsonPlaybookLoader
-# from api_gateway.executiondb.playbook import Playbook
+# from api_gateway.jsonplaybookloader import load_workflow
+# from api_gateway.executiondb.workflow import Workflow
 # from api_gateway.helpers import compose_api
 
 logger = logging.getLogger('API-GATEWAY')
@@ -55,42 +56,49 @@ def setup_server(host, port, debug):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Script to the WALKOFF server')
-    parser.add_argument('-v', '--version', help='Get the version of WALKOFF running', action='store_true')
-    parser.add_argument('-p', '--port', help='port to run the server on')
-    parser.add_argument('-H', '--host', help='host address to run the server on')
-    parser.add_argument('-c', '--config', help='configuration file to use')
-    parser.add_argument('-d', '--debug', help='enables debug mode', action="store_true")
-    parser.add_argument('-a', '--apponly', help='start WALKOFF app only, no workers', action='store_true')
-    args = parser.parse_args()
-    if args.version:
+    parser = argparse.ArgumentParser(description="Entrypoint for WALKOFF API Gateway")
+    parser.add_argument('-v', '--version', help="Print current version of WALKOFF", action='store_true')
+    parser.add_argument('-p', '--port', help="Port to bind the API Gateway to")
+    parser.add_argument('-i', '--ip', help="IP to bind the API Gateway to", type=int)
+    parser.add_argument('-c', '--config', help="Configuration file to use")
+    parser.add_argument('-d', '--debug', help="Enable debug mode", action="store_true")  # ToDo: does nothing
+    args_ = parser.parse_args()
+    if args_.version:
         print(api_gateway.__version__)
         exit(0)
 
-    return args
+    return args_
 
 
-def convert_host_port(args):
-    host = api_gateway.config.Config.HOST if args.host is None else args.host
-    port = api_gateway.config.Config.PORT if args.port is None else args.port
-    try:
-        port = int(port)
-    except ValueError:
-        print(f'Invalid port {port}. Port must be an integer!')
-        exit(1)
-    return host, port
+def convert_host_port(args_):
+    ip = api_gateway.config.Config.IP if args_.ip is None else args_.ip
+    port = api_gateway.config.Config.PORT if args_.port is None else args_.port
+    return ip, port
 
 
+#
 # def import_workflows():
-#     playbook_name = [playbook.id_ for playbook in app.running_context.execution_db.session.query(Playbook).all()]
 #     if os.path.exists(api_gateway.config.Config.WORKFLOWS_PATH):
-#         logger.info('Importing any workflows not currently in database')
+#         workflow_ids = [workflow.id_ for workflow in app.running_context.execution_db.session.query(Workflow).all()]
+#         workflow_names = [workflow.name for workflow in app.running_context.execution_db.session.query(Workflow).all()]
+#
+#         logger.info(f"Importing workflows from {api_gateway.config.Config.WORKFLOWS_PATH}")
+#
 #         for p in os.listdir(api_gateway.config.Config.WORKFLOWS_PATH):
 #             full_path = os.path.join(api_gateway.config.Config.WORKFLOWS_PATH, p)
+#
 #             if os.path.isfile(full_path):
-#                 playbook = JsonPlaybookLoader.load_playbook(full_path)
-#                 if playbook.name not in playbook_name:
-#                     app.running_context.execution_db.session.add(playbook)
+#                 workflow = load_workflow(full_path)
+#                 if not workflow:
+#                     logger.info(f"Could not load {p}.")
+#                 elif workflow.id_ in workflow_ids:
+#                     logger.info(f"Could not load {p}: Workflow with ID {workflow.id_} already exists.")
+#                 elif workflow.name in workflow_names:
+#                     logger.info(f"Could not load {p}: Workflow with name {workflow.name} already exists.")
+#                 else:
+#                     logger.info(f"Imported {p} with ID {workflow.id_} and name {workflow.name}.")
+#                     app.running_context.execution_db.session.add(workflow)
+#
 #         app.running_context.execution_db.session.commit()
 
 
@@ -101,7 +109,7 @@ if __name__ == "__main__":
     try:
         run(*convert_host_port(args), args.debug)
     except KeyboardInterrupt:
-        logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF to shutdown.')
+        logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF to shut down.')
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exc()

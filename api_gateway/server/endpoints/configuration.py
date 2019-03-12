@@ -13,7 +13,7 @@ from http import HTTPStatus
 def __get_current_configuration():
     return {'db_path': api_gateway.config.Config.DB_PATH,
             'logging_config_path': api_gateway.config.Config.LOGGING_CONFIG_PATH,
-            'host': api_gateway.config.Config.HOST,
+            'host': api_gateway.config.Config.IP,
             'port': int(api_gateway.config.Config.PORT),
             'walkoff_db_type': api_gateway.config.Config.WALKOFF_DB_TYPE,
             'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
