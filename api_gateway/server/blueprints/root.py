@@ -99,5 +99,5 @@ def reschedule_all_workflows():
     from api_gateway.serverdb.scheduledtasks import ScheduledTask
     current_app.logger.info('Scheduling workflows')
     for task in (task for task in ScheduledTask.query.all() if task.status == 'running'):
-        current_app.logger.debug('Rescheduling task {} (id={})'.format(task.name, task.id))
+        current_app.logger.debug(f"Rescheduling task {task.name} (id={task.id})")
         task._start_workflows()

@@ -112,7 +112,7 @@ def update_workflow(workflow_id):
 
     errors = workflow_schema.load(data, instance=workflow_id).errors
     if errors:
-        return invalid_input_problem("global_variable", "update", data["name"], errors)
+        return invalid_input_problem("workflow", "update", data["name"], errors)
 
     try:
         current_app.running_context.execution_db.session.commit()

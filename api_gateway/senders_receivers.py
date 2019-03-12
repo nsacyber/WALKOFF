@@ -110,5 +110,5 @@ class WorkflowResultsReceiver(object):
             return event, message, message
 
         else:
-            logger.error('Unknown callback {} sent'.format(event))
+            logger.error(f'Unknown callback {event} sent')
             return None, None, None

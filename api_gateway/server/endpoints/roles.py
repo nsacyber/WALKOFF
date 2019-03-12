@@ -36,15 +36,15 @@ def create_role():
             new_role = Role(**role_params)
             db.session.add(new_role)
             db.session.commit()
-            current_app.logger.info('Role added: {0}'.format(role_params))
+            current_app.logger.info(f"Role added: {role_params}")
             return new_role.as_json(), HTTPStatus.CREATED
         else:
-            current_app.logger.warning('Cannot add role {0}. Role already exists'.format(json_data['name']))
+            current_app.logger.warning(f"Role with name {json_data['name']} already exists")
             return Problem.from_crud_resource(
                 HTTPStatus.BAD_REQUEST,
                 'role',
                 'create',
-                'Role with name {} already exists'.format(json_data['name']))
+                f"Role with name {json_data['name']} already exists")
 
     return __func()
 
@@ -76,7 +76,7 @@ def update_role():
             resources = json_data['resources']
             role.set_resources(resources)
         db.session.commit()
-        current_app.logger.info('Edited role {0} to {1}'.format(json_data['id'], json_data))
+        current_app.logger.info(f"Edited role {json_data['id']} to {json_data}")
         return role.as_json(), HTTPStatus.OK
 
     return __func()

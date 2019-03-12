@@ -86,7 +86,7 @@ class User(db.Model, TrackModificationsMixIn):
 
         roles_not_added = new_role_ids - {role.id for role in new_roles}
         if roles_not_added:
-            logger.warning('Cannot add roles {0} to user {1}. Roles do not exist'.format(roles_not_added, self.id))
+            logger.warning(f"Cannot add roles {roles_not_added} to user {self.id}. Roles do not exist")
 
     def login(self, ip_address):
         """Tracks login information for the User upon logging in.
@@ -105,7 +105,7 @@ class User(db.Model, TrackModificationsMixIn):
         if self.login_count > 0:
             self.login_count -= 1
         else:
-            logger.warning('User {} logged out, but login count was already at 0'.format(self.id))
+            logger.warning(f"User {self.id} logged out, but login count was already at 0")
         db.session.commit()
 
     def has_role(self, role):

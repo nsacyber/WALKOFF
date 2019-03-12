@@ -44,7 +44,7 @@ class Problem(Response):
 
     @classmethod
     def from_crud_resource(cls, status, resource, operation, detail, instance=None, type_=None, ext=None, headers=None):
-        title = "Could not {} {}.".format(operation, resource)
+        title = f"Could not {operation} {resource}."
         return cls(status, title, detail, instance=instance, type_=type_, ext=ext, headers=headers)
 
 

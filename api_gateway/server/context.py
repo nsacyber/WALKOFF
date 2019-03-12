@@ -30,10 +30,10 @@ class Context(object):
             if "password" in str(e):
                 logger.error("Incorrect username and/or password for execution database. Please make sure these are "
                              "both set correctly in their respective environment variables and try again."
-                             "Error Message: {}".format(str(e)))
+                             f"Error Message: {str(e)}")
             else:
                 logger.error("Error connecting to execution database. Please make sure all database settings are "
-                             "correct and try again. Error Message: {}".format(str(e)))
+                             f"correct and try again. Error Message: {str(e)}")
             os._exit(1)
 
         if init_all:

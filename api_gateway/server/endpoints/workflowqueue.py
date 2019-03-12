@@ -41,7 +41,7 @@ def abort_workflow(execution_id, user=None):
     Returns:
         (bool): True if successfully aborted workflow, False otherwise
     """
-    logger.info('User {0} aborting workflow {1}'.format(user, execution_id))
+    logger.info(f"User {user} aborting workflow {execution_id}")
     workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
         execution_id=execution_id).first()
 
@@ -62,8 +62,7 @@ def abort_workflow(execution_id, user=None):
             # self.zmq_workflow_comm.abort_workflow(execution_id)
         return True
     else:
-        logger.warning(
-            'Cannot resume workflow {0}. Invalid key, or workflow already shutdown.'.format(execution_id))
+        logger.warning(f"Cannot resume workflow {execution_id}. Invalid key, or workflow already shutdown.")
     return False
 
 

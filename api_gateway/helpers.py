@@ -271,7 +271,7 @@ def json_dumps_or_string(val):
 def read_and_indent(filename, indent):
     indent = '  ' * indent
     with open(filename, 'r') as file_open:
-        return ['{0}{1}'.format(indent, line) for line in file_open]
+        return [f'{indent}{line}' for line in file_open]
 
 
 def validate_uuid4(id_, stringify=False):

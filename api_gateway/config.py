@@ -38,7 +38,7 @@ def load_app_apis():
                 app_apis[app] = api
             except Exception as e:
                 logger.error(
-                    'Cannot load apps api for app {0}: Error {1}'.format(app, str(format_exception_message(e))))
+                    f'Cannot load apps api for app {app}: Error {str(format_exception_message(e))}')
 
 
 def setup_logger():

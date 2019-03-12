@@ -64,9 +64,9 @@ class Action(ExecutionElement, Execution_Base):
             try:
                 self._arguments_api = get_app_action_api(self.app_name, self.action_name)
             except UnknownApp:
-                errors.append('Unknown app {}'.format(self.app_name))
+                errors.append(f'Unknown app {self.app_name}')
             except UnknownAppAction:
-                errors.append('Unknown app action {}'.format(self.action_name))
+                errors.append(f'Unknown app action {self.action_name}')
             self.errors = errors
 
     def validate(self):
@@ -76,9 +76,9 @@ class Action(ExecutionElement, Execution_Base):
             self._arguments_api = get_app_action_api(self.app_name, self.action_name)
             validate_app_action_parameters(self._arguments_api, self.parameters, self.app_name, self.action_name)
         except UnknownApp:
-            errors.append('Unknown app {}'.format(self.app_name))
+            errors.append(f'Unknown app {self.app_name}')
         except UnknownAppAction:
-            errors.append('Unknown app action {}'.format(self.action_name))
+            errors.append(f'Unknown app action {self.action_name}')
         except InvalidParameter as e:
             errors.extend(e.errors)
         self.errors = errors

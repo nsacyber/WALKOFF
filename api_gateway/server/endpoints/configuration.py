@@ -62,7 +62,7 @@ def update_configuration():
             return Problem(
                 HTTPStatus.INTERNAL_SERVER_ERROR,
                 'Could not write changes to file.',
-                'Could not write configuration changes to file. Problem: {}'.format(format_exception_message(e)))
+                f"Could not write configuration changes to file. Problem: {format_exception_message(e)}")
 
     return __func()
 

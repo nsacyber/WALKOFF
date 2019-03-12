@@ -35,10 +35,10 @@ def __get_blueprints_in_module(module):
 
 
 def __register_blueprint(flaskapp, blueprint, url_prefix):
-    url_prefix = '{0}{1}'.format(url_prefix, blueprint.url_suffix) if blueprint.url_suffix else url_prefix
+    url_prefix = f'{url_prefix}{blueprint.url_suffix}' if blueprint.url_suffix else url_prefix
     blueprint.url_prefix = url_prefix
     flaskapp.register_blueprint(blueprint, url_prefix=url_prefix)
-    flaskapp.logger.info('Registered custom interface blueprint at url prefix {}'.format(url_prefix))
+    flaskapp.logger.info(f'Registered custom interface blueprint at url prefix {url_prefix}')
 
 
 def register_swagger_blueprint(flaskapp):
@@ -70,7 +70,7 @@ try:
 except Exception as e:
     logger.error("Error initializing walkoff database. Please make sure all settings are properly configured in the"
                  "config file, and that all necessary environment variables are set correctly."
-                 "Error message: {}".format(str(e)))
+                 f"Error message: {str(e)}")
     sys.exit(1)
 
 jwt.init_app(_app)

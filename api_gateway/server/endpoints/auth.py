@@ -56,8 +56,8 @@ def refresh(body=None, token_info=None, user=None):
         revoke_token(get_raw_jwt())
         return Problem(
             HTTPStatus.UNAUTHORIZED,
-            'Could not grant access token.',
-            'User {} from refresh JWT identity could not be found.'.format(current_user_id))
+            "Could not grant access token.",
+            f"User {current_user_id} from refresh JWT identity could not be found.")
     if user.active:
         return {'access_token': create_access_token(identity=current_user_id, fresh=False)}, HTTPStatus.CREATED
     else:

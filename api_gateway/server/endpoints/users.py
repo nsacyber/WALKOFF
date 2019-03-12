@@ -36,15 +36,15 @@ def create_user():
                 role_update_user_fields(data, user)
 
             db.session.commit()
-            current_app.logger.info('User added: {0}'.format(user.as_json()))
+            current_app.logger.info(f'User added: {user.as_json()}')
             return user.as_json(), HTTPStatus.CREATED
         else:
-            current_app.logger.warning('Cannot create user {0}. User already exists.'.format(username))
+            current_app.logger.warning(f'Cannot create user {username}. User already exists.')
             return Problem.from_crud_resource(
                 HTTPStatus.BAD_REQUEST,
                 'user',
                 'create',
-                'User with username {} already exists'.format(username))
+                f'User with username {username} already exists')
 
     return __func()
 
@@ -72,13 +72,12 @@ def update_user():
         else:
             response = role_update_user_fields(data, user, update=True)
             if isinstance(response, tuple) and response[1] == HTTPStatus.FORBIDDEN:
-                current_app.logger.error('User {0} does not have permission to '
-                                         'update user {1}'.format(current_user, user.id))
+                current_app.logger.error(f"User {current_user} does not have permission to update user {user.id}")
                 return Problem.from_crud_resource(
                     HTTPStatus.FORBIDDEN,
                     'user',
                     'update',
-                    'Current user does not have permission to update user {}.'.format(user_id))
+                    f"Current user does not have permission to update user {user_id}.")
             else:
                 return response
 
@@ -107,7 +106,7 @@ def update_user_fields(data, user):
             user.username = data['username']
         else:
             return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
-                           'Username {} is already taken.'.format(data['username']))
+                           f"Username {data['username']} is already taken.")
     if 'old_password' in data and 'password' in data:
         if user.verify_password(data['old_password']):
             user.password = data['password']
@@ -119,7 +118,7 @@ def update_user_fields(data, user):
                 'update',
                 'Current password is incorrect.')
     db.session.commit()
-    current_app.logger.info('Updated user {0}. Updated to: {1}'.format(user.id, user.as_json()))
+    current_app.logger.info(f"Updated user {user.id}. Updated to: {user.as_json()}")
     return user.as_json(), HTTPStatus.OK
 
 
@@ -131,10 +130,10 @@ def delete_user(user_id):
         if user.id != get_jwt_identity():
             db.session.delete(user)
             db.session.commit()
-            current_app.logger.info('User {0} deleted'.format(user.username))
+            current_app.logger.info(f"User {user.username} deleted")
             return None, HTTPStatus.NO_CONTENT
         else:
-            current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
+            current_app.logger.error(f"Could not delete user {user.id}. User is current user.")
             return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
                                               'Current user cannot delete self.')
 
