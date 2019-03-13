@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import Column, String, ForeignKey, orm, event
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import UUIDType
+from sqlalchemy_utils import UUIDType, JSONType
 
 from api_gateway.appgateway.apiutil import InvalidParameter
 from api_gateway.executiondb import Execution_Base
@@ -17,7 +17,8 @@ class Transform(ExecutionElement, Execution_Base):
 
     name = Column(String(255), nullable=False)
     transform = Column(String(80), nullable=False)
-    parameter = relationship('Parameter', cascade='all, delete, delete-orphan', passive_deletes=True)
+    parameter = Column(JSONType)
+    # parameter = relationship('Parameter', cascade='all, delete, delete-orphan', passive_deletes=True)
     position = relationship('Position', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 
     children = ('argument',)

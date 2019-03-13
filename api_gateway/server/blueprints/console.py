@@ -21,7 +21,7 @@ def format_console_data(sender, data):
     return {
         'workflow': sender['name'],
         'app_name': data['app_name'],
-        'action_name': data['action_name'],
+        'name': data['name'],
         'level': logging.getLevelName(level),
         'message': data['message']
     }

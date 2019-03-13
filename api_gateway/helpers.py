@@ -182,6 +182,18 @@ def regenerate_workflow_ids(workflow):
         action['id_'] = str(uuid4())
         id_mapping[prev_id] = action['id_']
 
+    conditions = workflow.get('conditions', [])
+    for condition in conditions:
+        prev_id = condition['id_']
+        condition['id_'] = str(uuid4())
+        id_mapping[prev_id] = condition['id_']
+
+    transforms = workflow.get('transforms', [])
+    for transform in transforms:
+        prev_id = transform['id_']
+        transform['id_'] = str(uuid4())
+        id_mapping[prev_id] = transform['id_']
+
     workflow_variables = workflow.get('workflow_variables', [])
     for workflow_variable in workflow_variables:
         prev_id = workflow_variable["id_"]
@@ -190,6 +202,13 @@ def regenerate_workflow_ids(workflow):
 
     for action in actions:
         regenerate_ids(action, id_mapping, regenerate_id=False)
+
+    # ToDo: These will be needed if condition/transform parameters are changed to be more like actions
+    # for condition in conditions:
+    #     regenerate_ids(condition, id_mapping, regenerate_id=False)
+    #
+    # for transform in transforms:
+    #     regenerate_ids(transform, id_mapping, regenerate_id=False)
 
     for branch in workflow.get('branches', []):
         branch['source_id'] = id_mapping[branch['source_id']]
@@ -222,35 +241,30 @@ def __regenerate_ids_of_list(value, id_mapping, is_arguments=False):
         regenerate_ids(list_element, id_mapping=id_mapping, is_arguments=is_arguments)
 
 
-def strip_device_ids(playbook):
-    for workflow in playbook.get('workflows', []):
-        for action in workflow.get('actions', []):
-            action.pop('device_id', None)
-
-
-def strip_argument_ids(playbook):
-    for workflow in playbook.get('workflows', []):
-        for action in workflow.get('actions', []):
-            strip_argument_ids_from_element(action)
-            if 'device_id' in action:
-                action['device_id'].pop('id_', None)
-        for branch in workflow.get('branches', []):
-            if 'condition' in branch:
-                strip_argument_ids_from_conditional(branch['conditional'])
-
-
-def strip_argument_ids_from_conditional(conditional):
-    for conditional_expression in conditional.get('child_expressions', []):
-        strip_argument_ids_from_conditional(conditional_expression)
-    for condition in conditional.get('conditions', []):
-        strip_argument_ids_from_element(condition)
-        for transform in condition.get('transforms', []):
-            strip_argument_ids_from_element(transform)
-
-
-def strip_argument_ids_from_element(element):
-    for argument in element.get('arguments', []):
-        argument.pop('id_', None)
+# def strip_device_ids(workflow):
+#     for action in workflow.get('actions', []):
+#         action.pop('device_id', None)
+#
+#
+# def strip_argument_ids(workflow):
+#     for action in workflow.get('actions', []):
+#         strip_argument_ids_from_element(action)
+#         if 'device_id' in action:
+#             action['device_id'].pop('id_', None)
+#
+#
+# def strip_argument_ids_from_conditional(conditional):
+#     for conditional_expression in conditional.get('child_expressions', []):
+#         strip_argument_ids_from_conditional(conditional_expression)
+#     for condition in conditional.get('conditions', []):
+#         strip_argument_ids_from_element(condition)
+#         for transform in condition.get('transforms', []):
+#             strip_argument_ids_from_element(transform)
+#
+#
+# def strip_argument_ids_from_element(element):
+#     for argument in element.get('arguments', []):
+#         argument.pop('id_', None)
 
 
 def utc_as_rfc_datetime(timestamp):
@@ -280,6 +294,8 @@ def validate_uuid4(id_, stringify=False):
         return uuid_ if not stringify else id_
     except ValueError:
         return None
+    except TypeError:
+        return uuid4()
 
 
 def compose_api(config):

@@ -169,7 +169,8 @@ class TransformSchema(ExecutionElementBaseSchema):
 
     name = field_for(Transform, 'name', required=True)
     transform = field_for(Transform, 'transform', required=True)
-    parameter = fields.Nested(ParameterSchema())
+    parameter = fields.Raw()
+    # parameter = fields.Nested(ParameterSchema())
     position = fields.Nested(PositionSchema())
 
     class Meta:
@@ -205,8 +206,8 @@ class ActionSchema(ExecutionElementBaseSchema):
     """Schema for actions
     """
     app_name = fields.Str(required=True)
-    action_name = fields.Str(required=True)
     name = field_for(Action, 'name', required=True)
+    label = field_for(Action, 'label', required=True)
     parameters = fields.Nested(ParameterSchema, many=True)
     priority = field_for(Action, 'priority', default=3)
     position = fields.Nested(PositionSchema())
@@ -244,7 +245,7 @@ class ActionStatusSchema(ExecutionBaseSchema):
     action_id = field_for(ActionStatus, 'action_id', required=True)
     name = field_for(ActionStatus, 'name', required=True)
     app_name = field_for(ActionStatus, 'app_name', required=True)
-    action_name = field_for(ActionStatus, 'action_name', required=True)
+    label = field_for(ActionStatus, 'label', required=True)
     result = field_for(ActionStatus, 'result')
     status = field_for(ActionStatus, 'status', required=True)
     started_at = field_for(ActionStatus, 'started_at')
@@ -262,7 +263,7 @@ class ActionStatusSummarySchema(ExecutionBaseSchema):
     action_id = field_for(ActionStatus, 'action_id', required=True)
     name = field_for(ActionStatus, 'name', required=True)
     app_name = field_for(ActionStatus, 'app_name', required=True)
-    action_name = field_for(ActionStatus, 'action_name', required=True)
+    label = field_for(ActionStatus, 'label', required=True)
 
     class Meta:
         model = ActionStatus

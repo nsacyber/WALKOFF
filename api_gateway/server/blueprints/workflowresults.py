@@ -23,7 +23,7 @@ workflowresults_page = StreamableBlueprint(
     streams=(workflow_stream, action_stream, action_summary_stream)
 )
 
-action_summary_keys = ('action_name', 'app_name', 'action_id', 'name', 'timestamp', 'workflow_execution_id')
+action_summary_keys = ('name', 'app_name', 'action_id', 'label', 'timestamp', 'workflow_execution_id')
 
 
 @unique
@@ -36,10 +36,10 @@ class ActionStreamEvent(Enum):
 
 def format_action_data(sender, kwargs, status):
     action_arguments = [convert_action_argument(argument) for argument in sender.get('arguments', [])]
-    return {'action_name': sender['action_name'],
+    return {'name': sender['name'],
             'app_name': sender['app_name'],
             'action_id': sender['id'],
-            'name': sender['name'],
+            'label': sender['label'],
             'combined_id': sender['execution_id'],
             'timestamp': utc_as_rfc_datetime(datetime.utcnow()),
             'status': status.name,

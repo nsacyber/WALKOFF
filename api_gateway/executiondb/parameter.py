@@ -1,8 +1,10 @@
 import logging
+from uuid import uuid4
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm, event
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
+from api_gateway.helpers import validate_uuid4
 from api_gateway.executiondb import Execution_Base
 from api_gateway.executiondb.validatable import Validatable
 
@@ -11,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class Parameter(Execution_Base, Validatable):
     __tablename__ = 'parameter'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_ = Column(UUIDType(binary=False), primary_key=True, default=uuid4)
     action_id = Column(UUIDType(binary=False), ForeignKey('action.id_', ondelete='CASCADE'))
     transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id_', ondelete='CASCADE'))
     name = Column(String(255), nullable=False)
@@ -20,7 +22,7 @@ class Parameter(Execution_Base, Validatable):
     reference = Column(UUIDType(binary=False))
     errors = Column(ScalarListType())
 
-    def __init__(self, name, variant, value=None, reference=None):
+    def __init__(self, name, variant, id_=None, value=None, reference=None):
         """Initializes an Parameter object.
 
         Args:
@@ -29,6 +31,7 @@ class Parameter(Execution_Base, Validatable):
             variant (str): string corresponding to a ParameterVariant. Denotes static value, action output, global, etc.
             reference (int, optional): The ID of the Action, global, or WorkflowVariable from which to grab the result.
         """
+        # self.id_ = validate_uuid4(id_)
         self.name = name
         self.variant = variant
         self.value = value
@@ -57,7 +60,7 @@ class Parameter(Execution_Base, Validatable):
                and self.variant == other.variant
 
     def __hash__(self):
-        return hash(self.id)
+        return hash(self.id_)
 
 
 @event.listens_for(Parameter, 'before_update')

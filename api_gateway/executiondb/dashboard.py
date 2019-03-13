@@ -1,5 +1,5 @@
 import logging
-from uuid import uuid4, UUID
+from uuid import uuid4
 
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref

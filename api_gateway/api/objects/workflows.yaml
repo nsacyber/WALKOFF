@@ -2,7 +2,7 @@ Workflow:
   type: object
   required: [name, start]
   description: A workflow object
-  additionalProperties: false
+  additionalProperties: false #ToDo: verify if this is needed
   properties:
     id_:
       $ref: '#/components/schemas/Uuid'
@@ -107,6 +107,8 @@ Action:
       description: User-specified label for the action
       type: string
       example: action1
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
     parameters:
       description: The input parameters to the action
       type: array
@@ -128,6 +130,8 @@ Branch:
   description: Object representing an edge connecting two nodes in a Workflow
   additionalProperties: false
   properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
     source_id:
       description: The source node ID for this Branch
       $ref: '#/components/schemas/Uuid'
@@ -142,6 +146,8 @@ Parameter:
   minProperties: 2
   additionalProperties: false
   properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
     name:
       type: string
       example: regex

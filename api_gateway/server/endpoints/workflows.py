@@ -12,7 +12,7 @@ from api_gateway.appgateway.apiutil import UnknownApp, UnknownFunction, InvalidP
 from api_gateway.executiondb.schemas import WorkflowSchema
 from api_gateway.executiondb.workflow import Workflow
 from api_gateway.helpers import regenerate_workflow_ids
-from api_gateway.helpers import strip_device_ids, strip_argument_ids
+# from api_gateway.helpers import strip_device_ids, strip_argument_ids
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
     paginate
@@ -54,8 +54,12 @@ def create_workflow():
     if workflow_id:
         return copy_workflow(workflow_id=workflow_id)
 
+    if request.files and 'file' in request.files:
+        data = json.loads(request.files['file'].read().decode('utf-8'))
+
     try:
         workflow = workflow_schema.load(data)
+        print(dir(workflow))
         current_app.running_context.execution_db.session.add(workflow)
         current_app.running_context.execution_db.session.commit()
         current_app.logger.info(f"Created Workflow {workflow.name} ({workflow.id_})")
@@ -101,7 +105,14 @@ def read_all_workflows():
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
 @with_workflow('read', 'workflow_id')
 def read_workflow(workflow_id):
-    return workflow_schema.dump(workflow_id), HTTPStatus.OK
+    workflow_json = workflow_schema.dump(workflow_id)
+    if request.args.get('mode') == "export":
+        f = BytesIO()
+        f.write(json.dumps(workflow_json, sort_keys=True, indent=4, separators=(',', ': ')).encode('utf-8'))
+        f.seek(0)
+        return send_file(f, attachment_filename=workflow_id.name + '.json', as_attachment=True), HTTPStatus.OK
+    else:
+        return workflow_json, HTTPStatus.OK
 
 
 @jwt_required
@@ -113,7 +124,6 @@ def update_workflow(workflow_id):
     errors = workflow_schema.load(data, instance=workflow_id).errors
     if errors:
         return invalid_input_problem("workflow", "update", data["name"], errors)
-
     try:
         current_app.running_context.execution_db.session.commit()
         current_app.logger.info(f"Updated workflow {workflow_id.name} ({workflow_id.id_})")

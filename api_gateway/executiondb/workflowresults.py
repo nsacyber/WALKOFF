@@ -115,9 +115,9 @@ class ActionStatus(Execution_Base):
 
     Attributes:
         action_id (UUID): The ID of the Action
-        name (str): The name of the Action
+        label (str): The label of the Action
         app_name (str): The App name for the Action
-        action_name (str): The Action name for the Action
+        name (str): The Action name for the Action
         result (str): The result of the Action
         status (StatusEnum): The status of the Action
         started_at (datetime): The time the Action started
@@ -129,7 +129,7 @@ class ActionStatus(Execution_Base):
     action_id = Column(UUIDType(binary=False), nullable=False)
     name = Column(String, nullable=False)
     app_name = Column(String, nullable=False)
-    action_name = Column(String, nullable=False)
+    label = Column(String, nullable=False)
     result = Column(String)
     arguments = Column(String)
     status = Column(String, nullable=False)  # ToDo: revisit this and make this a real enum
@@ -138,13 +138,13 @@ class ActionStatus(Execution_Base):
     workflow_execution_id = Column(UUIDType(binary=False),
                                    ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
 
-    def __init__(self, combined_id, action_id, name, app_name, action_name, result=None, arguments=None,
+    def __init__(self, combined_id, action_id, name, app_name, label, result=None, arguments=None,
                  status=StatusEnum.EXECUTING, started_at=None, completed_at=None):
         self.combined_id = combined_id
         self.action_id = action_id
         self.name = name
         self.app_name = app_name
-        self.action_name = action_name
+        self.label = label
         self.result = result
         self.arguments = arguments
         self.status = status
@@ -187,9 +187,9 @@ class ActionStatus(Execution_Base):
         """
         ret = {"execution_id": str(self.combined_id),
                "action_id": str(self.action_id),
-               "name": self.name,
+               "label": self.name,
                "app_name": self.app_name,
-               "action_name": self.action_name}
+               "name": self.action_name}
         if summary:
             return ret
         ret.update(

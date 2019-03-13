@@ -80,8 +80,8 @@ def __action_start_callback(sender, **kwargs):
         workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=workflow_execution_id).first()
         arguments = sender['arguments'] if 'arguments' in sender else []
-        action_status = ActionStatus(sender['execution_id'], sender['id'], sender['name'], sender['app_name'],
-                                     sender['action_name'], json.dumps(arguments))
+        action_status = ActionStatus(sender['execution_id'], sender['id'], sender['label'], sender['app_name'],
+                                     sender['name'], json.dumps(arguments))
         workflow_status.add_action_status(action_status)
         current_app.running_context.execution_db.session.add(action_status)
 

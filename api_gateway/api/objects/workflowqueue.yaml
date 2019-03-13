@@ -75,13 +75,13 @@ WorkflowStatus:
 ActionStatus:
   type: object
   description: The status of an action execution
-  required: [action_id, execution_id, name, action_name, app_name, status, started_at]
+  required: [action_id, execution_id, label, name, app_name, status, started_at]
   properties:
     execution_id:
       $ref: '#/components/schemas/Uuid'
     action_id:
       $ref: '#/components/schemas/Uuid'
-    name:
+    label:
       description: The name of the action
       type: string
       example: 'This One action'
@@ -91,7 +91,7 @@ ActionStatus:
       type: string
       example: ThingGetter
       readOnly: true
-    action_name:
+    name:
       description: The name of the action take by the action
       type: string
       example: get that thing
@@ -121,13 +121,13 @@ ActionStatus:
 ActionIdentification:
   type: object
   description: The descriptive identification of an action
-  required: [action_id, execution_id, name, action_name, app_name]
+  required: [action_id, execution_id, label, name, app_name]
   properties:
     execution_id:
       $ref: '#/components/schemas/Uuid'
     action_id:
       $ref: '#/components/schemas/Uuid'
-    name:
+    label:
       description: The name of the action
       type: string
       example: 'This One action'
@@ -137,7 +137,7 @@ ActionIdentification:
       type: string
       example: ThingGetter
       readOnly: true
-    action_name:
+    name:
       description: The name of the action take by the action
       type: string
       example: get that thing

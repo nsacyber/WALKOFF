@@ -17,8 +17,8 @@ class Action(ExecutionElement, Execution_Base):
     __tablename__ = 'action'
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
     app_name = Column(String(80), nullable=False)
-    action_name = Column(String(80), nullable=False)
     name = Column(String(80), nullable=False)
+    label = Column(String(80), nullable=False)
     priority = Column(Integer)
 
     parameters = relationship('Parameter', cascade='all, delete, delete-orphan', foreign_keys=[Parameter.action_id],
@@ -26,13 +26,13 @@ class Action(ExecutionElement, Execution_Base):
     position = relationship('Position', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     children = ('parameters',)
 
-    def __init__(self, app_name, action_name, name, priority=3, id_=None, parameters=None,
+    def __init__(self, app_name, name, label, priority=3, id_=None, parameters=None,
                  position=None, errors=None):
         """Initializes a new Action object. A Workflow has one or more actions that it executes.
         Args:
             app_name (str): The name of the app associated with the Action
-            action_name (str): The name of the action associated with a Action
-            name (str): The name of the Action object.
+            name (str): The name of the action
+            label (str): The label of the Action object.
              priority (int, optional): Optional priority parameter; defaults to 3 (normal priority).
             id_ (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
                 Defaults to None.
@@ -43,8 +43,8 @@ class Action(ExecutionElement, Execution_Base):
         ExecutionElement.__init__(self, id_, errors)
 
         self.app_name = app_name
-        self.action_name = action_name
         self.name = name
+        self.label = label
         self.priority = priority
 
         self.parameters = []
@@ -62,23 +62,23 @@ class Action(ExecutionElement, Execution_Base):
         if not self.errors:
             errors = []
             try:
-                self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+                self._arguments_api = get_app_action_api(self.app_name, self.name)
             except UnknownApp:
                 errors.append(f'Unknown app {self.app_name}')
             except UnknownAppAction:
-                errors.append(f'Unknown app action {self.action_name}')
+                errors.append(f'Unknown app action {self.name}')
             self.errors = errors
 
     def validate(self):
         """Validates the object"""
         errors = []
         try:
-            self._arguments_api = get_app_action_api(self.app_name, self.action_name)
-            validate_app_action_parameters(self._arguments_api, self.parameters, self.app_name, self.action_name)
+            self._arguments_api = get_app_action_api(self.app_name, self.name)
+            validate_app_action_parameters(self._arguments_api, self.parameters, self.app_name, self.name)
         except UnknownApp:
             errors.append(f'Unknown app {self.app_name}')
         except UnknownAppAction:
-            errors.append(f'Unknown app action {self.action_name}')
+            errors.append(f'Unknown app action {self.name}')
         except InvalidParameter as e:
             errors.extend(e.errors)
         self.errors = errors
