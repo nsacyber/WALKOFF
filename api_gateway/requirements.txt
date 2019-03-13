@@ -30,3 +30,4 @@ werkzeug
 requests
 swagger_spec_validator
 flask-swagger-ui
+jsonpatch
