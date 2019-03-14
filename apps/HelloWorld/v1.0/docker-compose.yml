@@ -1,7 +1,9 @@
 version: '3.4'
 services:
   hello-world:
-    build: ..
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
       - env.txt
     deploy:

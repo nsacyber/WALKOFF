@@ -70,6 +70,13 @@
     summary: Get all globals
     description: ''
     operationId: api_gateway.server.endpoints.global_variables.read_all_globals
+    parameters:
+      - name: page
+        in: query
+        description: page of data to get
+        required: false
+        schema:
+          type: integer
     responses:
       200:
         description: Success

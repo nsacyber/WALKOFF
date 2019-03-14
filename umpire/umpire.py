@@ -1,7 +1,5 @@
 import asyncio
 import logging
-import re
-import os
 import sys
 
 import aioredis
@@ -109,8 +107,8 @@ class Umpire:
 
         try:
             logger.info(f"Building {app}-{version}")
-            path = build_opts.get("context", None)
-            image, logs = self.docker_client.images.build(path=path, tag=full_tag, rm=True, forcerm=True, pull=True)
+            image, logs = self.docker_client.images.build(path=build_opts["context"], tag=full_tag, rm=True,
+                                                          forcerm=True, pull=True)
             for line in logs:
                 if "stream" in line and line["stream"].strip():
                     logger.debug(line["stream"].strip())
@@ -127,7 +125,12 @@ class Umpire:
             logger.exception(f"No build path specified for {app}-{version} build")
             return
 
-        except docker.errors.BuildError:
+        except docker.errors.BuildError as e:
+            for line in e.build_log:
+                if "stream" in line and line["stream"].strip():
+                    logger.debug(line["stream"].strip())
+                elif "status" in line:
+                    logger.info(line["status"].strip())
             logger.exception(f"Error during {app}-{version} build")
             return
 
@@ -143,7 +146,7 @@ class Umpire:
             keys = await self.redis_client.keys(pattern="[A-Z]*-[1-5]", encoding="utf-8")
             services = self.docker_client.services.list()
             logger.info(f"Redis keys: {keys}")
-            logger.info(f"Running apps: {services}")
+            logger.info(f"Running apps: {[service.name for service in services]}")
             await asyncio.sleep(10)
             for key in keys:
                 workload = self.redis_client.llen(key)
@@ -154,8 +157,8 @@ if __name__ == "__main__":
     async def run_umpire():
         async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis:
             ump = await Umpire.init(docker_client=connect_to_docker(), redis_client=redis)
-            # ump.build_app("TestApp", "v0.1.1")
-            # ump.launch_app("TestApp", "v0.1.1")
+            ump.build_app("HelloWorld", "v1.0")
+            ump.launch_app("HelloWorld", "v1.0")
             await ump.monitor_queues()
 
         # Clean up any unfinished tasks (shouldn't really be any though)

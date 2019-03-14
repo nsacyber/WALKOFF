@@ -38,12 +38,6 @@ class Worker:
         """
         while True:
             logger.info("Waiting for workflows...")
-            # TODO: Remove the test code
-            # Push test workflow in for now
-            with open("../data/not_workflows/condition_test.json") as fp:
-                wf = json.load(fp)
-                await redis.lpush(config["REDIS"]["workflow_q"], json.dumps(wf))
-
             workflow = await redis.brpoplpush(sourcekey=config["REDIS"]["workflow_q"],
                                               destkey=config["REDIS"]["workflows_in_process"],
                                               timeout=config.getint("WORKER", "timeout"))
@@ -63,7 +57,7 @@ class Worker:
 
                 try:
                     await worker.execute_workflow()
-                    print(worker.accumulator)
+
                 except Exception:
                     logger.exception(f"Failed execution of workflow: {workflow.name}")
 

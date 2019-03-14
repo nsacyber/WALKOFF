@@ -4,7 +4,6 @@ import enum
 import logging
 from collections import namedtuple, deque
 
-from networkx import DiGraph
 from asteval import Interpreter, make_symbol_table
 
 logger = logging.getLogger("WALKOFF")
@@ -193,12 +192,20 @@ class Node:
         self.app_name = app_name
         self.label = label
         self.position = position
+        if hasattr(self, "priority"):
+            msg = f"Call super().__init__() prior to setting self.priority in Node subclass {self.__class__.__name__}"
+            logger.warning(msg)
+        else:
+            self.priority = 3  # initialize this to mid level for non-Action node types
 
     def __repr__(self):
         return f"Node-{self.id_}"
 
     def __str__(self):
         return f"Node-{self.label}"
+
+    def __gt__(self, other):
+        return self.priority > other.priority
 
 
 class Action(Node):
@@ -214,14 +221,12 @@ class Action(Node):
     def __repr__(self):
         return f"Action: {self.label}::{self.id_}"
 
-    def __gt__(self, other):
-        return self.priority > other.priority
-
 
 class Condition(Node):
     def __init__(self, name, position: Point, app_name, label, conditional, id_=None):
         super().__init__(name, position, label, app_name, id_)
         self.conditional = conditional
+        self.priority = 3  # Conditions have a fixed, mid valued priority
 
     def __str__(self):
         return f"Condition: {self.label}::{self.id_}"
@@ -278,6 +283,7 @@ class Transform(Node):
         super().__init__(name, position, label, app_name, id_)
         self.transform = f"_{self.__class__.__name__}__{transform.lower()}"
         self.parameter = parameter
+        self.priority = 3  # Transforms have a fixed, mid valued priority
 
     def __call__(self, data):
         """ Execute an action and ship its result """
@@ -309,14 +315,69 @@ class Transform(Node):
         return data.split(delimiter)
 
 
+class DiGraph:
+    def __init__(self, nodes, edges):
+        self.nodes = set()
+        self.add_nodes(nodes)
+        self.edges = {node: set() for node in self.nodes}
+        self.rev_adjacency = {}  # all edges inverted for quickly getting parents of a node
+        self.add_edges(edges)
+
+    def add_edges(self, edges):
+        try:
+            iter(edges)  # check we got an iterable
+            if callable(getattr(edges, "items", None)):  # check if it's a dictionary
+                for src, dest in edges.items():
+                    if src in self.edges:
+                        self.edges[src].add(dest)
+                    else:  # This edge introduces new nodes so lets add them
+                        self.nodes.add(src)
+                        self.nodes.add(dest)
+                        self.edges[src] = {dest}
+                    if dest in self.rev_adjacency:
+                        self.edges[dest].add(src)
+                    else:
+                        self.edges[dest] = {src}
+            else:  # it's a different iterable
+                for edge in edges:
+                    if not isinstance(edges, tuple) and not len(edge) == 2:
+                        raise TypeError  # it must be an iterable of (src, dest) edges
+                    src = edge[0]
+                    dest = edge[1]
+                    if src in self.edges:
+                        self.edges[src].add(dest)
+                    else:
+                        self.edges[src] = {dest}
+
+                    if dest in self.rev_adjacency:
+                        self.rev_adjacency[dest].add(src)
+                    else:
+                        self.rev_adjacency[dest] = {src}
+        except TypeError:
+            return
+
+    def add_edge(self, src, dest):
+        self.add_edges({src, dest})
+
+    def add_nodes(self, nodes):
+        self.nodes = set(nodes)
+
+    def add_node(self, node):
+        return self.add_nodes([node])
+
+    def successors(self, node):
+        return self.edges[node]
+
+    def predecessors(self, node):
+        return self.rev_adjacency[node]
+
+
 class Workflow(DiGraph):
     def __init__(self, name, start, actions: [Action], conditions: [Condition], triggers: [Trigger],
                  transforms: [Transform], branches: [Branch], id_=None, execution_id=None, workflow_variables=None,
                  is_valid=None, errors=None):
-        super().__init__()
-        for branch in branches:
-            self.add_edge(branch.source, branch.destination)
-        self.add_nodes_from(actions)
+        super().__init__(nodes=[*actions, *conditions, *triggers, *transforms], edges=branches)
+
         self.start = start
         self.id_ = id_ if id_ is not None else str(uuid.uuid4())
         self.is_valid = is_valid if is_valid is not None else self.validate()

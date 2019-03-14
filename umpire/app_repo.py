@@ -48,7 +48,7 @@ class AppRepo(dict):
                     if re.fullmatch(r"(v(\d\.?)+)", version.name):
                         try:
                             # Store the api while we've got it here
-                            api_name = app.name  # TODO: f"{app.name}-{version.name}"
+                            api_name = f"{app.name}-{version.name}"
                             await self.store_api(validate_app_api(version / "api.yaml"), api_name)
 
                             project = get_project(project_dir=version, environment=load_docker_env())

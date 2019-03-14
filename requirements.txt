@@ -5,6 +5,5 @@ asteval
 #cchardet
 docker
 docker-compose
-networkx
 pyyaml
 sqlalchemy

@@ -3,8 +3,10 @@ import logging
 import os
 import sys
 import time
+import json
 
 import aioredis
+import aiohttp
 
 from common.message_types import NodeStatusMessage, message_dumps
 from common.workflow_types import workflow_loads, Action
@@ -15,23 +17,31 @@ from common.helpers import connect_to_redis_pool
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
 ACTION_RESULT_CH = os.getenv("ACTION_RESULT_CH", "action-results")
 ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
+API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "localhost:5000")
 
 
-class PubSubStream:
+class HTTPStream:
     """ Thin wrapper around a redis pub/sub that plugs into the async logger """
-    def __init__(self, redis=None, channel_base=None):
+    def __init__(self, session=None):
         super().__init__()
-        self.redis: aioredis.Redis = redis
-        self.channel = f"{channel_base}:console"
+        self.session = session
+        self.execution_id = None
 
-    def set_channel(self, channel):
-        self.channel = channel
+    def set_execution_id(self, channel):
+        self.execution_id = channel
 
     async def flush(self):
         pass
 
     async def write(self, message):
-        await self.redis.publish(self.channel, message)
+        data = json.dumps({"message": message})
+        params = {"workflow_execution_id": self.execution_id}
+        url = f"{API_GATEWAY_URI}/api/streams/console/log"
+
+        async with self.session.post(url, data=data, params=params) as resp:
+            print(await resp.json())
+
+        # await self.redis.publish(self.channel, message)
 
     async def close(self):
         pass
@@ -71,7 +81,7 @@ class AppBase:
     async def execute_action(self, action: Action):
         """ Execute an action and ship its result """
         self.logger.debug(f"Attempting execution of: {action.label}-{action.execution_id}")
-        self.console_logger.handlers[0].stream.set_channel(f"{action.execution_id}:console")
+        self.console_logger.handlers[0].stream.set_execution_id(f"{action.execution_id}:console")
         if hasattr(self, action.name):
             start_action_msg = NodeStatusMessage.executing_from_node(action, action.execution_id)
             await self.redis.lpush(action.execution_id, message_dumps(start_action_msg))
@@ -103,14 +113,14 @@ class AppBase:
 
     @classmethod
     async def run(cls):
-        async with connect_to_redis_pool(REDIS_URI) as redis:
+        async with connect_to_redis_pool(REDIS_URI) as redis, aiohttp.ClientSession() as session:
             # TODO: Migrate to the common log config
             logging.basicConfig(format="{asctime} - {name} - {levelname}:{message}", style='{')
             logger = logging.getLogger(f"{cls.__name__}")
             logger.setLevel(logging.DEBUG)
 
             console_logger = AsyncLogger(f"{cls.__name__}", level=logging.DEBUG)
-            handler = AsyncHandler(stream=PubSubStream(redis))
+            handler = AsyncHandler(stream=HTTPStream(session))
             handler.setFormatter(logging.Formatter(fmt="{asctime} - {name} - {levelname}:{message}", style='{'))
             console_logger.addHandler(handler)
 

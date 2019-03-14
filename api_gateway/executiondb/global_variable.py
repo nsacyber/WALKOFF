@@ -9,6 +9,7 @@ from api_gateway.executiondb import Execution_Base
 logger = logging.getLogger(__name__)
 
 
+# TODO: add in an is_encrypted bool for globals
 class GlobalVariable(Execution_Base):
     """SQLAlchemy ORM class for Global, which are variables that can be dynamically loaded into workflow
        execution

@@ -1,7 +1,6 @@
 import socket
 import asyncio
 import time
-import logging
 
 from app_sdk.app_base import AppBase
 
