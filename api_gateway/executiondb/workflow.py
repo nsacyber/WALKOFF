@@ -47,7 +47,7 @@ class Workflow(ExecutionElement, Execution_Base):
         self.actions = actions if actions else []
         self.branches = branches if branches else []
         self.conditions = conditions if conditions else []
-        self.conditions = conditions if transforms else []
+        self.transforms = transforms if transforms else []
         self.triggers = triggers if triggers else []
 
         self.workflow_variables = workflow_variables if workflow_variables else []
@@ -60,17 +60,20 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def validate(self):
         """Validates the object"""
-        action_ids = [action.id_ for action in self.actions]
+        node_ids = [action.id_ for action in self.actions] + \
+                   [conditions.id_ for conditions in self.conditions] + \
+                   [transforms.id_ for transforms in self.transforms]
+
         errors = []
         if not self.start and self.actions:
             errors.append("Workflows with actions require a start parameter")
-        elif self.actions and self.start not in action_ids:
-            errors.append("Workflow start ID {} not found in actions".format(self.start))
+        elif self.actions and self.start not in node_ids:
+            errors.append("Workflow start ID {} not found in nodes".format(self.start))
         for branch in self.branches:
-            if branch.source_id not in action_ids:
-                errors.append("Branch source ID {} not found in workflow actions".format(branch.source_id))
-            if branch.destination_id not in action_ids:
-                errors.append("Branch destination ID {} not found in workflow actions".format(branch.destination_id))
+            if branch.source_id not in node_ids:
+                errors.append("Branch source ID {} not found in workflow nodes".format(branch.source_id))
+            if branch.destination_id not in node_ids:
+                errors.append("Branch destination ID {} not found in workflow nodes".format(branch.destination_id))
         self.errors = errors
         self.is_valid = self._is_valid
 
