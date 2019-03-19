@@ -2,6 +2,7 @@ import uuid
 import json
 import enum
 import logging
+from operator import attrgetter, itemgetter
 from collections import namedtuple, deque
 
 from asteval import Interpreter, make_symbol_table
@@ -23,6 +24,11 @@ def workflow_dump(obj):
 
 def workflow_load(obj):
     return json.load(obj, cls=WorkflowJSONDecoder)
+
+
+def attrs_equal(self, other):
+    attr_getters = (attrgetter(attr) for attr in self.__slots__)
+    return all(attr_getter(self) == attr_getter(other) for attr_getter in attr_getters)
 
 
 class ConditionException(Exception):
@@ -92,8 +98,9 @@ class WorkflowJSONEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, Workflow):
-            branches = [{"source": src.id_, "destination": dst.id_} for src, dst in o.edges]
-            actions = [node for node in o.nodes]
+            branches = [{"source": src.id_, "destination": dst.id_} for src, dsts in o.edges.items() for dst in dsts]
+            branches.sort(key=itemgetter("source", "destination"))
+            actions = [action for action in o.actions]
             conditions = [condition for condition in o.conditions]
             transforms = [transform for transform in o.transforms]
             triggers = [trigger for trigger in o.triggers]
@@ -104,7 +111,8 @@ class WorkflowJSONEncoder(json.JSONEncoder):
                     "errors": None}
 
         elif isinstance(o, Action):
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": o.position,
+            position = {"x": o.position.x, "y": o.position.y}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
                     "parameters": o.parameters, "priority": o.priority, "execution_id": o.execution_id}
 
         elif isinstance(o, Condition):
@@ -146,6 +154,8 @@ class ParameterVariant(enum.Enum):
 
 
 class Parameter:
+    __slots__ = ("name", "value", "variant", "reference")
+
     def __init__(self, name, value=None, variant=None, reference=None):
         self.name = name
         self.value = value
@@ -155,6 +165,14 @@ class Parameter:
 
     def __str__(self):
         return f"Parameter-{self.name}:{self.value or self.reference}"
+
+    def __eq__(self, other):
+        if isinstance(other, Parameter) and self.__slots__ == other.__slots__:
+            return attrs_equal(self, other)
+        return False
+
+    def __hash__(self):
+        return hash(id(self))
 
     def validate(self):
         """Validates the param"""
@@ -177,6 +195,8 @@ class Parameter:
 
 
 class WorkflowVariable:
+    __slots__ = ("id_", "name", "value", "description")
+
     # Previously EnvironmentVariable
     def __init__(self, id_, name, value, description=None):
         self.id_ = id_
@@ -184,8 +204,18 @@ class WorkflowVariable:
         self.value = value
         self.description = description
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
+            return attrs_equal(self, other)
+        return False
+
+    def __hash__(self):
+        return hash(id(self))
+
 
 class Node:
+    __slots__ = ("id_", "name", "app_name", "label", "position", "priority")
+
     def __init__(self, name, position: Point, label, app_name, id_=None):
         self.id_ = id_ if id_ is not None else str(uuid.uuid4())
         self.name = name
@@ -207,8 +237,18 @@ class Node:
     def __gt__(self, other):
         return self.priority > other.priority
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
+            return attrs_equal(self, other)
+        return False
+
+    def __hash__(self):
+        return hash(id(self))
+
 
 class Action(Node):
+    __slots__ = ("parameters", "execution_id")
+
     def __init__(self, name, position, app_name, label, priority, parameters=None, id_=None, execution_id=None):
         super().__init__(name, position, label, app_name, id_)
         self.parameters = parameters if parameters is not None else list()
@@ -221,8 +261,18 @@ class Action(Node):
     def __repr__(self):
         return f"Action: {self.label}::{self.id_}"
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
+            return attrs_equal(self, other)
+        return False
+
+    def __hash__(self):
+        return hash(id(self))
+
 
 class Condition(Node):
+    __slots__ = ("conditional",)
+
     def __init__(self, name, position: Point, app_name, label, conditional, id_=None):
         super().__init__(name, position, label, app_name, id_)
         self.conditional = conditional
@@ -233,6 +283,14 @@ class Condition(Node):
 
     def __repr__(self):
         return f"Condition: {self.label}::{self.id_}"
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
+            return attrs_equal(self, other)
+        return False
+
+    def __hash__(self):
+        return hash(id(self))
 
     @staticmethod
     def format_node_names(nodes):
@@ -254,7 +312,8 @@ class Condition(Node):
         syms = make_symbol_table(use_numpy=False, **parent_symbols, **children_symbols)
         aeval = Interpreter(usersyms=syms, no_for=True, no_while=True, no_try=True, no_functiondef=True, no_ifexp=True,
                             no_listcomp=True, no_augassign=True, no_assert=True, no_delete=True, no_raise=True,
-                            no_print=True, use_numpy=False, builtins_readonly=True, readonly_symbols=children_symbols.keys())
+                            no_print=True, use_numpy=False, builtins_readonly=True,
+                            readonly_symbols=children_symbols.keys())
 
         aeval(self.conditional)
         child_id = getattr(aeval.symtable.get("selected_node", None), "id_", None)
@@ -267,6 +326,8 @@ class Condition(Node):
 
 # TODO: fully realize and implement triggers
 class Trigger(Node):
+    __slots__ = ("trigger",)
+
     def __init__(self, name, position: Point, app_name, label, trigger, id_=None):
         super().__init__(name, position, label, app_name, id_)
         self.trigger = trigger
@@ -277,32 +338,51 @@ class Trigger(Node):
     def __repr__(self):
         return f"Trigger: {self.label}::{self.id_}"
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
+            return attrs_equal(self, other)
+        return False
+
+    def __hash__(self):
+        return hash(id(self))
+
 
 class Transform(Node):
+    __slots__ = ("transform", "parameter")
+
     def __init__(self, name, position: Point, app_name, label, transform, parameter=None, id_=None):
         super().__init__(name, position, label, app_name, id_)
-        self.transform = f"_{self.__class__.__name__}__{transform.lower()}"
+        self.transform = transform.lower()
         self.parameter = parameter
         self.priority = 3  # Transforms have a fixed, mid valued priority
-
-    def __call__(self, data):
-        """ Execute an action and ship its result """
-        logger.debug(f"Attempting execution of: {self.name}-{self.id_}")
-        if hasattr(self, self.transform):
-            if self.parameter is None:
-                result = getattr(self, self.transform)(data=data)
-            else:
-                result = getattr(self, self.transform)(self.parameter, data=data)
-            logger.debug(f"Executed {self.name}-{self.id_} with result: {result}")
-            return result
-        else:
-            logger.error(f"{self.__class__.__name__} has no method {self.transform}")
 
     def __str__(self):
         return f"Transform: {self.label}::{self.id_}"
 
     def __repr__(self):
         return f"Transform: {self.label}::{self.id_}"
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
+            return attrs_equal(self, other)
+        return False
+
+    def __hash__(self):
+        return hash(id(self))
+
+    def __call__(self, data):
+        """ Execute an action and ship its result """
+        logger.debug(f"Attempting execution of: {self.name}-{self.id_}")
+        transform = f"_{self.__class__.__name__}__{self.transform}"
+        if hasattr(self, transform):
+            if self.parameter is None:
+                result = getattr(self, transform)(data=data)
+            else:
+                result = getattr(self, transform)(self.parameter, data=data)
+            logger.debug(f"Executed {self.name}-{self.id_} with result: {result}")
+            return result
+        else:
+            logger.error(f"{self.__class__.__name__} has no method {self.transform}")
 
     # TODO: add JSON to CSV parsing and vice versa.
     def __get_value_at_index(self, index, data=None):
@@ -316,12 +396,22 @@ class Transform(Node):
 
 
 class DiGraph:
+    __slots__ = ("nodes", "edges", "rev_adjacency")
+
     def __init__(self, nodes, edges):
         self.nodes = set()
         self.add_nodes(nodes)
         self.edges = {node: set() for node in self.nodes}
         self.rev_adjacency = {}  # all edges inverted for quickly getting parents of a node
         self.add_edges(edges)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
+            return attrs_equal(self, other)
+        return False
+
+    def __hash__(self):
+        return hash(id(self))
 
     def add_edges(self, edges):
         try:
@@ -372,9 +462,13 @@ class DiGraph:
         return self.rev_adjacency[node]
 
 
+# TODO: Maybe look into pooling nodes/branches and sharing them across a workflow to save memory?
 class Workflow(DiGraph):
+    __slots__ = ("start", "id_", "is_valid", "name", "execution_id", "workflow_variables", "conditions", "transforms",
+                 "triggers", "actions", "errors")
+
     def __init__(self, name, start, actions: [Action], conditions: [Condition], triggers: [Trigger],
-                 transforms: [Transform], branches: [Branch], id_=None, execution_id=None, workflow_variables=None,
+                 transforms: [Transform], branches: [Branch], workflow_variables, id_=None, execution_id=None,
                  is_valid=None, errors=None):
         super().__init__(nodes=[*actions, *conditions, *triggers, *transforms], edges=branches)
 
@@ -383,11 +477,20 @@ class Workflow(DiGraph):
         self.is_valid = is_valid if is_valid is not None else self.validate()
         self.name = name
         self.execution_id = execution_id
-        self.workflow_variables = workflow_variables
+        self.workflow_variables = workflow_variables if workflow_variables is not None else []
         self.conditions = conditions
         self.transforms = transforms
         self.triggers = triggers
-        self.errors = errors
+        self.actions = actions
+        self.errors = errors if errors is not None else []
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
+            return attrs_equal(self, other)
+        return False
+
+    def __hash__(self):
+        return hash(id(self))
 
     def validate(self):
         # TODO: add in workflow validation from old implementation
@@ -413,27 +516,3 @@ class Workflow(DiGraph):
                     visited.add(child)
 
         return visited
-
-
-if __name__ == "__main__":
-    def workflow_dump(fp):
-        return json.dump(fp, cls=WorkflowJSONEncoder)
-
-    def workflow_dumps(obj):
-        return json.dumps(obj, cls=WorkflowJSONEncoder)
-
-
-    def workflow_load(fp):
-        return json.load(fp, cls=WorkflowJSONDecoder)
-
-
-    def workflow_loads(obj):
-        return json.loads(obj, cls=WorkflowJSONDecoder)
-
-
-    with open("../data/workflows/hello.json") as fp:
-        wf = workflow_load(fp)
-        wf_str = workflow_dumps(wf)
-        wf2 = workflow_loads(wf_str)
-        wf2_str = workflow_dumps(wf2)
-        print(wf_str == wf2_str)
