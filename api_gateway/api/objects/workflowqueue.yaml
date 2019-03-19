@@ -176,6 +176,8 @@ ExecuteWorkflow:
   properties:
     workflow_id:
       $ref: '#/components/schemas/Uuid'
+    execution_id:
+      $ref: '#/components/schemas/Uuid'
     start:
       description: The ID of the starting action
       $ref: '#/components/schemas/Uuid'

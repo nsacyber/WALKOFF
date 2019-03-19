@@ -124,6 +124,7 @@ def get_workflow_status(execution_id):
 def execute_workflow():
     data = request.get_json()
     workflow_id = data.get("workflow_id")
+    execution_id = data.get("execution_id", str(uuid.uuid4()))
     workflow = workflow_getter(workflow_id)  # ToDo: should this go under a path param so we can use the decorator
 
     if not workflow:
@@ -145,7 +146,6 @@ def execute_workflow():
         workflow["workflow_variables"] = list(override_wvs.values())
 
     try:
-        execution_id = str(uuid.uuid4())
         workflow_status_json = {  # ToDo: Probably load this directly into db model?
             "execution_id": execution_id,
             "workflow_id": workflow_id,
