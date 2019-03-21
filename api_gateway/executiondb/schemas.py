@@ -304,32 +304,3 @@ class WorkflowStatusSummarySchema(ExecutionBaseSchema):
     class Meta:
         model = WorkflowStatus
         unknown = EXCLUDE
-
-
-# This could be done better with a metaclass which registers subclasses
-_schema_lookup = {
-    Workflow: WorkflowSchema,
-    Position: PositionSchema,
-    Action: ActionSchema,
-    Branch: BranchSchema,
-    Parameter: ParameterSchema,
-    Condition: ConditionSchema,
-    Transform: TransformSchema,
-    Trigger: TriggerSchema,
-    WorkflowVariable: WorkflowVariableSchema,
-    GlobalVariable: GlobalVariableSchema,
-    ActionStatus: ActionStatusSchema,
-    WorkflowStatus: WorkflowStatusSchema
-}
-
-
-def dump_element(element):
-    """Dumps an execution element
-
-    Args:
-        element (ExecutionElement): The element to dump
-
-    Returns:
-        dict: The serialized element
-    """
-    return _schema_lookup[element.__class__]().dump(element)
