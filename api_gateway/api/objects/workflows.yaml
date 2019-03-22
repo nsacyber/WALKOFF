@@ -143,7 +143,6 @@ Parameter:
   type: object
   required: [name, variant]
   description: Object used for passing parameters into actions. The variety of parameter must be provided.
-  minProperties: 2
   additionalProperties: false
   properties:
     id_:
@@ -152,11 +151,7 @@ Parameter:
       type: string
       example: regex
     value:
-      description: The value of the argument
-      example: WALK(.*)
-    reference:
-      $ref: '#/components/schemas/Uuid'
-      description: The ID of the action whose output should be used
+      description: The value of the argument OR The ID of the action whose output should be used
     variant:
       type: string
       enum: [STATIC_VALUE, ACTION_RESULT, WORKFLOW_VARIABLE, GLOBAL]
@@ -250,8 +245,7 @@ Position:
   additionalProperties: false
   properties:
     id_:
-      type: integer
-      description: The ID of the object. If updating a workflow and the Position object already exists, ID is required. Otherwise, do not include it.
+      $ref: '#/components/schemas/Uuid'
     x:
       type: number
       description: The X coordinate for the Action

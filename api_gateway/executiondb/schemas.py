@@ -126,28 +126,26 @@ class ParameterSchema(ExecutionElementBaseSchema):
     """
     name = field_for(Parameter, 'name', required=True)
     value = fields.Raw()
-    reference = field_for(Parameter, 'reference', required=False)
-    variant = field_for(Parameter, 'variant', required=False)
+    variant = field_for(Parameter, 'variant', required=True)
 
     class Meta:
         model = Parameter
         unknown = EXCLUDE
 
-    @validates_schema
-    def validate_argument(self, data):
-        has_value = 'value' in data
-        has_reference = 'reference' in data and bool(data['reference'])
-        if (not has_value and not has_reference) or (has_value and has_reference):
-            raise ValidationError('Parameters must have either a value or a reference.', ['value'])
-
-    @post_load
-    def make_instance(self, data):
-        instance = self.instance or self.get_instance(data)
-        if instance is not None:
-            for key, value in data.items():
-                setattr(instance, key, value)
-            return instance
-        return self.opts.model(**data)
+    # @validates_schema
+    # def validate_parameter(self, data):
+    #     if data['variant'] is not "ACTION_RESULT":
+    #
+    #         raise ValidationError('Parameters must have either a value or a reference.', ['value'])
+    #
+    # @post_load
+    # def make_instance(self, data):
+    #     instance = self.instance or self.get_instance(data)
+    #     if instance is not None:
+    #         for key, value in data.items():
+    #             setattr(instance, key, value)
+    #         return instance
+    #     return self.opts.model(**data)
 
 
 class ConditionSchema(ExecutionElementBaseSchema):

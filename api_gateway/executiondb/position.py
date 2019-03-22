@@ -1,5 +1,5 @@
 import logging
-
+from uuid import uuid4
 from sqlalchemy import Column, Float, ForeignKey, Integer
 from sqlalchemy_utils import UUIDType
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class Position(Execution_Base):
     __tablename__ = 'position'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_ = Column(UUIDType(binary=False), primary_key=True, default=uuid4)
     action_id = Column(UUIDType(binary=False), ForeignKey('action.id_', ondelete='CASCADE'))
     condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id_', ondelete='CASCADE'))
     transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id_', ondelete='CASCADE'))
