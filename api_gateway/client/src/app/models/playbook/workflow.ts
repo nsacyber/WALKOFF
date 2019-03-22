@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Expose } from 'class-transformer';
 import { Select2OptionData } from 'ng2-select2/ng2-select2';
 
 import { Action } from './action';
@@ -21,6 +21,16 @@ export class Workflow extends ExecutionElement {
 	name: string;
 
 	/**
+	 * Name of the workflow. Updated by passing in new_name in POST.
+	 */
+	description: string;
+
+	/**
+	 * Name of the workflow. Updated by passing in new_name in POST.
+	 */
+	tags: string[] = [];
+
+	/**
 	 * Array of actions specified in the workflow.
 	 */
 	@Type(() => Action)
@@ -36,6 +46,7 @@ export class Workflow extends ExecutionElement {
 	 * Array of environment variables.
 	 */
 	@Type(() => EnvironmentVariable)
+	@Expose({name: 'workflow_variables'})
 	environment_variables?: EnvironmentVariable[] = [];
 
 	/**
@@ -84,6 +95,7 @@ export class Workflow extends ExecutionElement {
 	}
 
 	get referenced_variables() : EnvironmentVariable[] {
+		if (!this.environment_variables) return [];
 		return this.environment_variables.filter(variable => this.all_arguments.some(arg => arg.reference == variable.id));
 	}
 

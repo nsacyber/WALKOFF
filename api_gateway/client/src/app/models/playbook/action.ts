@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Expose } from 'class-transformer';
 
 import { Argument } from './argument';
 import { GraphPosition } from './graphPosition';
@@ -7,6 +7,7 @@ import { ExecutionElement } from './executionElement';
 
 export class Action extends ExecutionElement {
 	// _workflow_id: number;
+	@Expose({ name: 'label' })
 	name: string;
 
 	@Type(() => GraphPosition)
@@ -14,6 +15,7 @@ export class Action extends ExecutionElement {
 
 	app_name: string;
 
+	@Expose({ name: 'name' })
 	action_name: string;
 
 	@Type(() => Argument)
@@ -21,6 +23,7 @@ export class Action extends ExecutionElement {
 
 	risk?: number;
 
+	@Expose({ name: 'parameters' })
 	@Type(() => Argument)
 	arguments: Argument[] = [];
 
@@ -31,7 +34,7 @@ export class Action extends ExecutionElement {
 
 	get all_errors(): string[] {
 		return this.errors
-				   .concat(...this.arguments.map(argument => argument.all_errors))
+				   .concat(...(this.arguments) ? this.arguments.map(argument => argument.all_errors) : [])
 				   .concat((this.trigger) ? this.trigger.all_errors : [])
 	}
 }

@@ -1,6 +1,17 @@
+import { Type, Expose, Exclude } from 'class-transformer';
+import { UUID } from 'angular2-uuid';
+
 export class ExecutionElement {
+
+	@Expose({ name: "id_" })
 	id: string;
+
+	@Exclude()
 	errors: string[] = [];
+
+	constructor() {
+		//this.id = UUID.UUID()
+	}
 
 	get all_errors(): string[] {
 		return this.errors;

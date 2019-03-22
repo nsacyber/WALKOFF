@@ -87,7 +87,7 @@ export class UtilitiesService {
 		} else {
 			err = errMsg = error.message ? error.message : error.toString();
 		}
-		console.error(errMsg);
+		// console.error(errMsg);
 		throw new Error(err);
 	}
 }

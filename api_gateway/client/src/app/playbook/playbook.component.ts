@@ -79,14 +79,15 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	users: User[];
 	roles: Role[];
 
-	loadedPlaybook: Playbook;
+	//loadedPlaybook: Playbook;
 	loadedWorkflow: Workflow;
 	playbooks: Playbook[] = [];
+	workflows: Workflow[] = [];
 	cy: any;
 	edgeHandler: any;
 	ur: any;
 	appApis: AppApi[] = [];
-	offset: GraphPosition = { x: -330, y: -170 };
+	offset: GraphPosition = plainToClass(GraphPosition, { x: -330, y: -170 });
 	selectedAction: Action; // node being displayed in json editor
 	selectedActionApi: ActionApi;
 	selectedBranchParams: {
@@ -109,6 +110,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	recalculateConsoleTableCallback: any;
 	actionFilter: string = '';
 	actionFilterControl = new FormControl();
+
+	tags: string[] = [];
 	
 	// Simple bootstrap modal params
 	modalParams: {
@@ -199,6 +202,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
 	}
 
+	changed(data: {value: string[]}) {
+		this.tags = data.value;
+	}
+
     ///------------------------------------------------------------------------------------------------------
 	/// Console functions
 	///------------------------------------------------------------------------------------------------------
@@ -206,10 +213,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Sets up the EventStream for receiving console logs from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getConsoleSSE(workflowExecutionId: string): void {
+	getConsoleSSE(workflowExecutionId: string) {
 		if (this.consoleEventSource) this.consoleEventSource.close();
 
-		this.authService.getEventSource(`/api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
+		return this.authService.getEventSource(`/api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
 			.then(eventSource => {
 				this.consoleEventSource = eventSource
                 this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
@@ -243,10 +250,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Sets up the EventStream for receiving stream actions from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getActionStatusSSE(workflowExecutionId: string): void {
+	getActionStatusSSE(workflowExecutionId: string) {
 		if (this.eventSource) this.eventSource.close();
 
-		this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
+		return this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
 			.then(eventSource => {
 				this.eventSource = eventSource
 				this.eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
@@ -339,14 +346,18 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	executeWorkflow(): void {
 		if (!this.loadedWorkflow) { return; }
 		this.clearExecutionHighlighting();
-		this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id)
-			.then((workflowStatus: WorkflowStatus) => {
-				this.getActionStatusSSE(workflowStatus.id)
-				this.getConsoleSSE(workflowStatus.id)
-				this.toastrService.success(`Starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}.`)
-			})
-			.catch(e => this.toastrService
-				.error(`Error starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}: ${e.message}`));
+
+		const executionId = UUID.UUID();
+		Promise.all([
+			this.getActionStatusSSE(executionId),
+			this.getConsoleSSE(executionId)
+		]).then(() => {
+			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
+				.then((workflowStatus: WorkflowStatus) => {
+					this.toastrService.success(`Starting execution of ${this.loadedWorkflow.name}.`)
+				})
+				.catch(e => this.toastrService.error(`Error starting execution of ${this.loadedWorkflow.name}: ${e.message}`));
+		})
 	}
 
 	/**
@@ -354,20 +365,20 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param playbook Playbook to load
 	 * @param workflow Workflow to load
 	 */
-	loadWorkflow(playbook: Playbook, workflow: Workflow): void {
+	loadWorkflow(workflow: Workflow): void {
 		this.closeWorkflow();
 
-		if (playbook.id && workflow.id) {
+		if (workflow.id) {
 			this.playbookService.loadWorkflow(workflow.id)
 				.then(loadedWorkflow => {
-					this.loadedPlaybook = playbook;
+					//this.loadedPlaybook = playbook;
 					this.loadedWorkflow = loadedWorkflow;
 					this.setupGraph();
 					this._closeWorkflowsModal();
 				})
-				.catch(e => this.toastrService.error(`Error loading workflow "${playbook.name} - ${workflow.name}": ${e.message}`));
+				.catch(e => this.toastrService.error(`Error loading workflow "${workflow.name}": ${e.message}`));
 		} else {
-			this.loadedPlaybook = playbook;
+			//this.loadedPlaybook = playbook;
 			this.loadedWorkflow = workflow;
 			this.setupGraph();
 		}
@@ -703,7 +714,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Closes the active workflow and clears all relevant variables.
 	 */
 	closeWorkflow(): void {
-		this.loadedPlaybook = null;
+		// this.loadedPlaybook = null;
 		this.loadedWorkflow = null;
 		this.selectedBranchParams = null;
 		this.selectedAction = null;
@@ -727,7 +738,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// Clone the loadedWorkflow first, so we don't change the parameters 
 		// in the editor when converting it to the format the backend expects.
-		const workflowToSave: Workflow = classToClass(this.loadedWorkflow);
+		const workflowToSave: Workflow = classToClass(this.loadedWorkflow, { ignoreDecorators: true });
 
 		if (!workflowToSave.start) {
 			this.toastrService.warning('Workflow cannot be saved without a starting action.');
@@ -745,61 +756,66 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				delete action.global_id;
 
 			// Properly sanitize arguments through the tree
-			this._sanitizeArgumentsForSave(action.arguments);
+			if (action.arguments) this._sanitizeArgumentsForSave(action.arguments);
 
-			this._sanitizeExpressionAndChildren(action.trigger);
+			if (action.trigger) this._sanitizeExpressionAndChildren(action.trigger);
 		});
 		workflowToSave.branches.forEach(branch => {
 			this._sanitizeExpressionAndChildren(branch.condition);
 		});
 
 		let savePromise: Promise<Workflow>;
-		if (this.loadedPlaybook.id) {
-			if (this.loadedWorkflow.id) {
-				savePromise = this.playbookService.saveWorkflow(workflowToSave);
-			} else {
-				savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
-			}
+		// if (this.loadedPlaybook.id) {
+		// 	if (this.loadedWorkflow.id) {
+		// 		savePromise = this.playbookService.saveWorkflow(workflowToSave);
+		// 	} else {
+		// 		savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
+		// 	}
+		// } else {
+		// 	const playbookToSave: Playbook = classToClass(this.loadedPlaybook);
+		// 	playbookToSave.workflows = [workflowToSave];
+		// 	savePromise = this.playbookService.newPlaybook(playbookToSave)
+		// 		.then(newPlaybook => {
+		// 			this.loadedPlaybook = newPlaybook;
+		// 			this.playbooks.push(newPlaybook);
+		// 			this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+		// 			// Return our new workflow to be loaded in the editor, etc.
+		// 			return newPlaybook.workflows[0];
+		// 		});
+		// }
+		if (this.loadedWorkflow.id) {
+			savePromise = this.playbookService.saveWorkflow(workflowToSave);
 		} else {
-			const playbookToSave: Playbook = classToClass(this.loadedPlaybook);
-			playbookToSave.workflows = [workflowToSave];
-			savePromise = this.playbookService.newPlaybook(playbookToSave)
-				.then(newPlaybook => {
-					this.loadedPlaybook = newPlaybook;
-					this.playbooks.push(newPlaybook);
-					this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-					// Return our new workflow to be loaded in the editor, etc.
-					return newPlaybook.workflows[0];
-				});
+			savePromise = this.playbookService.newWorkflow(workflowToSave);
 		}
 
 		savePromise
 			.then(savedWorkflow => {
 				// If this workflow doesn't exist, add it to our loaded playbook (and master list for loading)
-				if (!this.loadedPlaybook.workflows.find(w => w.id === savedWorkflow.id)) {
-					this.loadedPlaybook.workflows.push(savedWorkflow);
-					this.loadedPlaybook.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
-				}
+				// if (!this.loadedPlaybook.workflows.find(w => w.id === savedWorkflow.id)) {
+				// 	this.loadedPlaybook.workflows.push(savedWorkflow);
+				// 	this.loadedPlaybook.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
+				// }
 				this.loadedWorkflow = savedWorkflow;
 				this.setupGraph();
-				this.toastrService.success(`Successfully saved workflow ${this.loadedPlaybook.name} - ${workflowToSave.name}.`);
+				this.toastrService.success(`Successfully saved workflow ${workflowToSave.name}.`);
 			})
 			.catch(e => this.toastrService
-				.error(`Error saving workflow ${this.loadedPlaybook.name} - ${workflowToSave.name}: ${e.message}`));
+				.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
 	}
 
 	/**
 	 * Gets a list of all the loaded playbooks along with their workflows.
 	 */
 	getPlaybooksWithWorkflows(): void {
-		this.playbookService.getPlaybooks()
-			.then(playbooks => {
-				this.playbooks = playbooks;
+		this.playbookService.getWorkflows()
+			.then(workflows => {
+				this.workflows = workflows;
 				this.activeRoute.params.subscribe(params => {
 					if (params.workflowId) {
 						this.playbookService.loadWorkflow(params.workflowId).then(workflow => {
-							let playbook = this.playbooks.find(p => p.workflows.some(w => w.id == workflow.id));
-							this.loadWorkflow(playbook, workflow);
+							//let playbook = this.playbooks.find(p => p.workflows.some(w => w.id == workflow.id));
+							this.loadWorkflow(workflow);
 						})
 					}
 				})
@@ -937,16 +953,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	importPlaybook(): void {
 		if (!this.playbookToImport) { return; }
 
-		this.playbookService.importPlaybook(this.playbookToImport).subscribe(
-			data => {
-				this.playbooks.push(data);
-				this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-				this.toastrService.success(`Successfuly imported playbook "${this.playbookToImport.name}".`);
-				this.playbookToImport = null;
-				this.importFile.nativeElement.value = "";
-			},
-			e => this.toastrService.error(`Error importing playbook "${this.playbookToImport.name}": ${e.message}`),
-		);
+		// this.playbookService.importPlaybook(this.playbookToImport).subscribe(
+		// 	data => {
+		// 		this.playbooks.push(data);
+		// 		this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+		// 		this.toastrService.success(`Successfuly imported playbook "${this.playbookToImport.name}".`);
+		// 		this.playbookToImport = null;
+		// 		this.importFile.nativeElement.value = "";
+		// 	},
+		// 	e => this.toastrService.error(`Error importing playbook "${this.playbookToImport.name}": ${e.message}`),
+		// );
 	}
 
 	///------------------------------------------------------------------------------------------------------
@@ -1102,10 +1118,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// The following coordinates is where the user dropped relative to the
 		// top-left of the graph
-		const dropPosition: GraphPosition = {
+		const dropPosition: GraphPosition = plainToClass(GraphPosition, {
 			x: e.mouseEvent.layerX,
 			y: e.mouseEvent.layerY,
-		};
+		});
 
 		this.insertNode(appName, actionApi.name, dropPosition, true);
 	}
@@ -1121,7 +1137,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		const extent = this.cy.extent();
 
-		const centerGraphPosition = { x: this.avg(extent.x1, extent.x2), y: this.avg(extent.y1, extent.y2) };
+		const centerGraphPosition = plainToClass(GraphPosition, { x: this.avg(extent.x1, extent.x2), y: this.avg(extent.y1, extent.y2) });
 		this.insertNode(appName, actionName, centerGraphPosition, false);
 	}
 
@@ -1219,7 +1235,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		newNodes.forEach((n: any) => {
 			// Get a copy of the action we just copied
-			const pastedAction: Action = classToClass(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')));
+			const pastedAction: Action = classToClass(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')), { ignoreDecorators: true });
 			const newActionUuid = UUID.UUID();
 
 			pastedAction.id = newActionUuid;
@@ -1353,14 +1369,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			submitText: 'Rename Playbook',
 			shouldShowPlaybook: true,
 			submit: () => {
-				this.playbookService.renamePlaybook(playbook.id, this.modalParams.newPlaybook)
-					.then(renamedPlaybook => {
-						this.playbooks.find(pb => pb.id === renamedPlaybook.id).name = renamedPlaybook.name;
-						this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						this.toastrService.success(`Successfully renamed playbook "${renamedPlaybook.name}".`);
-						this._closeModal();
-					})
-					.catch(e => this.toastrService.error(`Error renaming playbook "${this.modalParams.newPlaybook}": ${e.message}`));
+				// this.playbookService.renamePlaybook(playbook.id, this.modalParams.newPlaybook)
+				// 	.then(renamedPlaybook => {
+				// 		this.playbooks.find(pb => pb.id === renamedPlaybook.id).name = renamedPlaybook.name;
+				// 		this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+				// 		this.toastrService.success(`Successfully renamed playbook "${renamedPlaybook.name}".`);
+				// 		this._closeModal();
+				// 	})
+				// 	.catch(e => this.toastrService.error(`Error renaming playbook "${this.modalParams.newPlaybook}": ${e.message}`));
 			},
 		};
 
@@ -1382,16 +1398,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			submitText: 'Duplicate Playbook',
 			shouldShowPlaybook: true,
 			submit: () => {
-				this.playbookService.duplicatePlaybook(playbook.id, this.modalParams.newPlaybook)
-					.then(duplicatedPlaybook => {
-						this.playbooks.push(duplicatedPlaybook);
-						this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						this.toastrService
-							.success(`Successfully duplicated playbook "${playbook.name}" as "${duplicatedPlaybook.name}".`);
-						this._closeModal();
-					})
-					.catch(e => this.toastrService
-						.error(`Error duplicating playbook "${this.modalParams.newPlaybook}": ${e.message}`));
+				// this.playbookService.duplicatePlaybook(playbook.id, this.modalParams.newPlaybook)
+				// 	.then(duplicatedPlaybook => {
+				// 		this.playbooks.push(duplicatedPlaybook);
+				// 		this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+				// 		this.toastrService
+				// 			.success(`Successfully duplicated playbook "${playbook.name}" as "${duplicatedPlaybook.name}".`);
+				// 		this._closeModal();
+				// 	})
+				// 	.catch(e => this.toastrService
+				// 		.error(`Error duplicating playbook "${this.modalParams.newPlaybook}": ${e.message}`));
 			},
 		};
 
@@ -1406,19 +1422,19 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	deletePlaybook(event: Event, playbook: Playbook): void {
 		event.stopPropagation();
 
-		if (!confirm(`Are you sure you want to delete playbook "${playbook.name}"?`)) { return; }
+		// if (!confirm(`Are you sure you want to delete playbook "${playbook.name}"?`)) { return; }
 
-		this.playbookService
-			.deletePlaybook(playbook.id)
-			.then(() => {
-				this.playbooks = this.playbooks.filter(p => p.id !== playbook.id);
+		// this.playbookService
+		// 	.deletePlaybook(playbook.id)
+		// 	.then(() => {
+		// 		this.playbooks = this.playbooks.filter(p => p.id !== playbook.id);
 
-				// If our loaded workflow is in this playbook, close it.
-				if (this.loadedPlaybook && playbook.id === this.loadedPlaybook.id) { this.closeWorkflow(); }
-				this.toastrService.success(`Successfully deleted playbook "${playbook.name}".`);
-			})
-			.catch(e => this.toastrService
-				.error(`Error deleting playbook "${playbook.name}": ${e.message}`));
+		// 		// If our loaded workflow is in this playbook, close it.
+		// 		if (this.loadedPlaybook && playbook.id === this.loadedPlaybook.id) { this.closeWorkflow(); }
+		// 		this.toastrService.success(`Successfully deleted playbook "${playbook.name}".`);
+		// 	})
+		// 	.catch(e => this.toastrService
+		// 		.error(`Error deleting playbook "${playbook.name}": ${e.message}`));
 	}
 
 	/**
@@ -1441,16 +1457,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				const newWorkflow = new Workflow();
 				newWorkflow.name = this.modalParams.newWorkflow;
 
-				// Grab our playbook.
-				let pb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
-				// If it doesn't exist, create a new temp playbook and add our temp workflow under it.
-				if (!pb) {
-					pb = new Playbook();
-					pb.name = this.modalParams.newPlaybook;
-					pb.workflows.push(newWorkflow);
-				}
+				// // Grab our playbook.
+				// let pb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
+				// // If it doesn't exist, create a new temp playbook and add our temp workflow under it.
+				// if (!pb) {
+				// 	pb = new Playbook();
+				// 	pb.name = this.modalParams.newPlaybook;
+				// 	pb.workflows.push(newWorkflow);
+				// }
 
-				this.loadWorkflow(pb, newWorkflow);
+				this.loadWorkflow(newWorkflow);
 				this._closeModal();
 			},
 		};
@@ -1476,39 +1492,40 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			submit: () => {
 				// const sourcePb = this.playbooks.find(p => p.id === sourcePlaybookId);
 				// Grab our playbook. If it doesn't exist, set our new playbook name to add
-				let destinationPb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
-				let newPlaybookName: string;
-				if (!destinationPb) { newPlaybookName = this.modalParams.newPlaybook; }
+				// let destinationPb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
+				// let newPlaybookName: string;
+				// if (!destinationPb) { newPlaybookName = this.modalParams.newPlaybook; }
 
 				// Make a new playbook if we're adding this under a new playbook
 				let newPlaybookPromise: Promise<void>;
-				if (newPlaybookName) {
-					const playbookToAdd = new Playbook();
-					playbookToAdd.name = newPlaybookName;
-					newPlaybookPromise = this.playbookService.newPlaybook(playbookToAdd)
-						.then(newPlaybook => {
-							this.playbooks.push(newPlaybook);
-							this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-							destinationPb = newPlaybook;
-							this.modalParams.selectedPlaybookId = newPlaybook.id;
-						});
-				} else {
-					newPlaybookPromise = Promise.resolve();
-				}
+				newPlaybookPromise = Promise.resolve();
+				// if (newPlaybookName) {
+				// 	const playbookToAdd = new Playbook();
+				// 	playbookToAdd.name = newPlaybookName;
+				// 	newPlaybookPromise = this.playbookService.newPlaybook(playbookToAdd)
+				// 		.then(newPlaybook => {
+				// 			this.playbooks.push(newPlaybook);
+				// 			this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+				// 			destinationPb = newPlaybook;
+				// 			this.modalParams.selectedPlaybookId = newPlaybook.id;
+				// 		});
+				// } else {
+				// 	newPlaybookPromise = Promise.resolve();
+				// }
 
 				newPlaybookPromise
 					.then(() => this.playbookService
-						.duplicateWorkflow(sourceWorkflowId, destinationPb.id, this.modalParams.newWorkflow))
+						.duplicateWorkflow(sourceWorkflowId, this.modalParams.newWorkflow))
 					.then(duplicatedWorkflow => {
-						destinationPb.workflows.push(duplicatedWorkflow);
-						destinationPb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
+						// destinationPb.workflows.push(duplicatedWorkflow);
+						// destinationPb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
 
 						this.toastrService
-							.success(`Successfully duplicated workflow "${destinationPb.name} - ${this.modalParams.newWorkflow}".`);
+							.success(`Successfully duplicated workflow "${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
 					.catch(e => this.toastrService
-						.error(`Error duplicating workflow "${destinationPb.name} - ${this.modalParams.newWorkflow}": ${e.message}`));
+						.error(`Error duplicating workflow "${this.modalParams.newWorkflow}": ${e.message}`));
 			},
 		};
 
@@ -1520,24 +1537,23 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param playbook Playbook the workflow resides under
 	 * @param workflow Workflow to delete
 	 */
-	deleteWorkflow(playbook: Playbook, workflow: Workflow): void {
-		if (!confirm(`Are you sure you want to delete workflow "${playbook.name} - ${workflow.name}"?`)) { return; }
+	deleteWorkflow(workflow: Workflow): void {
+		if (!confirm(`Are you sure you want to delete workflow "${workflow.name}"?`)) { return; }
 
 		this.playbookService
 			.deleteWorkflow(workflow.id)
 			.then(() => {
-				const pb = this.playbooks.find(p => p.id === playbook.id);
-				pb.workflows = pb.workflows.filter(w => w.id !== workflow.id);
+				// const pb = this.playbooks.find(p => p.id === playbook.id);
+				// pb.workflows = pb.workflows.filter(w => w.id !== workflow.id);
 
-				if (!pb.workflows.length) { this.playbooks = this.playbooks.filter(p => p.id !== pb.id); }
+				// if (!pb.workflows.length) { this.playbooks = this.playbooks.filter(p => p.id !== pb.id); }
 
 				// Close the workflow if the deleted workflow matches the loaded one
-				if (this.loadedPlaybook && this.loadedWorkflow &&
-					playbook.id === this.loadedPlaybook.id && workflow.id === this.loadedWorkflow.id) { this.closeWorkflow(); }
+				if (this.loadedWorkflow && workflow.id === this.loadedWorkflow.id) { this.closeWorkflow(); }
 
-				this.toastrService.success(`Successfully deleted workflow "${playbook.name} - ${workflow.name}".`);
+				this.toastrService.success(`Successfully deleted workflow "${workflow.name}".`);
 			})
-			.catch(e => this.toastrService.error(`Error deleting workflow "${playbook.name} - ${workflow.name}": ${e.message}`));
+			.catch(e => this.toastrService.error(`Error deleting workflow "${workflow.name}": ${e.message}`));
 	}
 
 	/**
@@ -1803,6 +1819,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	onCreateVariable(argument: Argument) {
 		const modalRef = this.modalService.open(PlaybookEnvironmentVariableModalComponent);
 		modalRef.result.then(variable => {
+			console.log(this.loadedWorkflow.environment_variables, variable)
+			if (!this.loadedWorkflow.environment_variables) this.loadedWorkflow.environment_variables = [];
 			this.loadedWorkflow.environment_variables.push(variable);
 			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
 			argument.reference = variable.id;

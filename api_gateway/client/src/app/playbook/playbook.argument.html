@@ -9,7 +9,7 @@
 	<!-- Columns for allowing users to specify outputs of other action as arguments for this one -->
 	<div class="row">
 		<div class="col-4">
-			<select name="playbookSelect" class="form-control" [(ngModel)]="valueType">
+			<select name="playbookSelect" class="form-control" [(ngModel)]="argument.variant">
 				<option *ngFor="let i of valueTypes" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 			</select>
 		</div>
@@ -43,16 +43,16 @@
 				(valueChanged)="selectChange($event)"></select2>
 
 			<!-- Global select -->
-			<select *ngIf="isGlobalSelect" class="form-control" name="global_id" [(ngModel)]="argument.value" (change)="clearReference()">
+			<select *ngIf="isGlobalSelect" class="form-control" [(ngModel)]="argument.value" (change)="clearReference()">
 				<option [ngValue]="''"></option>
 				<option *ngFor="let i of globals" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 			</select>
 
 			<!-- Branch Counter select -->
-			<select *ngIf="isBranchCounterSelect" class="form-control" [(ngModel)]="argument.reference">
+			<!-- <select *ngIf="isBranchCounterSelect" class="form-control" [(ngModel)]="argument.reference">
 				<option [ngValue]="0"></option>
 				<option *ngFor="let i of branchCounters" [ngValue]="i.id" [label]="i.text">{{i.text}}</option>
-			</select>
+			</select> -->
 			
 			<!-- Action select -->
 			<ng-container *ngIf="isActionSelect">
@@ -60,19 +60,19 @@
                 	<option [ngValue]="''"></option>
                 	<option *ngFor="let i of getPreviousActions()" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 				</select>
-				<input type="text" class="form-control" [(ngModel)]="argument.selection" name="selection" placeholder="(Optional) Dot Notation selection into objects">
+				<!-- <input type="text" class="form-control" [(ngModel)]="argument.selection" name="selection" placeholder="(Optional) Dot Notation selection into objects"> -->
 			</ng-container>
 
 			<!-- Action select -->
 			<ng-container *ngIf="isVariableSelect">
 				<div class="row">
-					<div class="col-8" *ngIf="loadedWorkflow?.environment_variables.length > 0">
+					<div class="col-8" *ngIf="loadedWorkflow?.environment_variables?.length > 0">
 						<select class="form-control" [(ngModel)]="argument.reference">
 							<option [ngValue]="''"></option>
 							<option *ngFor="let i of loadedWorkflow.environment_variables" [ngValue]="i.id" [label]="i.name">{{ i.name }}</option>
 						</select>
 					</div>
-					<button (click)="addVariable()" class="btn btn-primary btn-link">+ {{ (loadedWorkflow?.environment_variables.length > 0) ? 'Add New' : 'Add Environment Variable' }}</button>
+					<button (click)="addVariable()" class="btn btn-primary btn-link">+ {{ (loadedWorkflow?.environment_variables?.length > 0) ? 'Add New' : 'Add Workflow Variable' }}</button>
 				</div>
 			</ng-container>
 

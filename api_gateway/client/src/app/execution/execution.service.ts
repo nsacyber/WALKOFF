@@ -20,8 +20,9 @@ export class ExecutionService {
 	 * Returns the new workflow status for the workflow execution.
 	 * @param workflowId Workflow Id to queue
 	 */
-	addWorkflowToQueue(workflow_id: string, variables: EnvironmentVariable[] = []): Promise<WorkflowStatus> {
+	addWorkflowToQueue(workflow_id: string, execution_id: string = null, variables: EnvironmentVariable[] = []): Promise<WorkflowStatus> {
 		let data: any = { workflow_id };
+		if (execution_id) data.execution_id = execution_id;
 		if (variables.length > 0) data.environment_variables = classToPlain(variables);
 
 		return this.http.post('api/workflowqueue', data)
@@ -78,6 +79,16 @@ export class ExecutionService {
 		return this.http.get('/api/playbooks')
 			.toPromise()
 			.then((data: object[]) => plainToClass(Playbook, data))
+			.catch(this.utils.handleResponseError);
+	}
+
+	/**
+	 * Returns all playbooks and their child workflows in minimal form (id, name).
+	 */
+	getWorkflows(): Promise<Workflow[]> {
+		return this.http.get('/api/workflows')
+			.toPromise()
+			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
 	}
 
