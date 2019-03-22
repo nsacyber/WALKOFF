@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Exclude } from 'class-transformer';
 
 import { ConditionalExpression } from './conditionalExpression';
 import { ExecutionElement } from './executionElement';
@@ -8,10 +8,13 @@ export class Branch extends ExecutionElement {
 
 	destination_id: string;
 
+	@Exclude()
 	status: string;
 
+	@Exclude()
 	priority: number;
 	
+	@Exclude()
 	@Type(() => ConditionalExpression)
 	condition?: ConditionalExpression;
 

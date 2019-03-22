@@ -350,21 +350,17 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	getWorkflows(): void {
 		this.executionService
-			.getPlaybooks()
-			.then(playbooks => {
+			.getWorkflows()
+			.then(workflows => {
 				// Map all of the playbook's workflows and collapse them into a single top-level array.
-				this.workflows = playbooks
-					.map(pb => pb.workflows)
-					.reduce((a, b) => a.concat(b), []);
+				this.workflows = workflows
 
 				const workflowSelectData: Select2OptionData[] = [{ id: '', text: '' }];
 
-				playbooks.forEach(playbook => {
-					playbook.workflows.forEach(workflow => {
-						workflowSelectData.push({
-							id: workflow.id,
-							text: `${playbook.name} - ${workflow.name}`,
-						});
+				workflows.forEach(workflow => {
+					workflowSelectData.push({
+						id: workflow.id,
+						text: `${workflow.name}`,
 					});
 				});
 
@@ -376,7 +372,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Executes a given workflow. Uses the selected workflow (specified via the select2 box).
 	 */
 	executeSelectedWorkflow(environmentVariables: EnvironmentVariable[] = []): void {
-		this.executionService.addWorkflowToQueue(this.selectedWorkflow.id, environmentVariables)
+		this.executionService.addWorkflowToQueue(this.selectedWorkflow.id, null, environmentVariables)
 			.then((workflowStatus: WorkflowStatus) => {
 				this.toastrService.success(`Successfully started execution of "${this.selectedWorkflow.name}"`);
 			})

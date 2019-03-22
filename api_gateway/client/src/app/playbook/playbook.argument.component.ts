@@ -5,7 +5,7 @@ import { Workflow } from '../models/playbook/workflow';
 import { Action } from '../models/playbook/action';
 import { ParameterApi } from '../models/api/parameterApi';
 import { ParameterSchema } from '../models/api/parameterSchema';
-import { Argument } from '../models/playbook/argument';
+import { Argument, Variant } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
 import { User } from '../models/user';
 import { Role } from '../models/role';
@@ -103,18 +103,18 @@ export class PlaybookArgumentComponent implements OnChanges {
 			{ id: 'global', name: 'Global'},
 			{ id: 'action', name: 'Action Output'},
 		] : [
-			{ id: 'static', name: 'Static Value'},
-			{ id: 'action', name: 'Action Output'},
-			{ id: 'branch', name: 'Branch Counter'},
-			{ id: 'variable', name: 'Environment Variable'}
+			{ id: Variant.STATIC_VALUE, name: 'Static Value'},
+			{ id: Variant.ACTION_RESULT, name: 'Action Output'},
+			{ id: Variant.WORKFLOW_VARIABLE, name: 'Workflow Variable'},
+			{ id: Variant.GLOBAL, name: 'Global'}
 		]
 
-		this.valueType = 'static';
-		if (this.isGlobalArgument && !this.argument.reference) this.valueType = 'global';
+		this.valueType = Variant.STATIC_VALUE;
+		if (this.isGlobalArgument && !this.argument.reference) this.valueType = Variant.GLOBAL;
 		else if (this.argument.reference) {
-			if (this.loadedWorkflow.actions.find(action => action.id == this.argument.reference)) this.valueType = 'action';
-			else if (this.loadedWorkflow.branches.find(branch => branch.id == this.argument.reference)) this.valueType = 'branch';
-			else if (this.loadedWorkflow.environment_variables.find(variable => variable.id == this.argument.reference)) this.valueType = 'variable';
+			if (this.loadedWorkflow.actions.find(action => action.id == this.argument.reference)) this.valueType = Variant.ACTION_RESULT;
+			// else if (this.loadedWorkflow.branches.find(branch => branch.id == this.argument.reference)) this.valueType = 'branch';
+			else if (this.loadedWorkflow.environment_variables.find(variable => variable.id == this.argument.reference)) this.valueType = Variant.WORKFLOW_VARIABLE;
 		}
 
 		this.selectedType = this.availableTypes[0];
@@ -375,19 +375,19 @@ export class PlaybookArgumentComponent implements OnChanges {
 	}
 
 	get isReference(): boolean {
-		return ['static', 'global', 'branch', 'variable'].indexOf(this.valueType) == -1;
+		return [Variant.STATIC_VALUE, Variant.GLOBAL, Variant.WORKFLOW_VARIABLE].indexOf(this.argument.variant) == -1;
 	}
 
 	get isStatic(): boolean {
-		return this.valueType == 'static';
+		return this.argument.variant == Variant.STATIC_VALUE;
 	}
 
 	get isActionSelect(): boolean {
-		return this.valueType == 'action';
+		return this.argument.variant == Variant.ACTION_RESULT;
 	}
 
 	get isVariableSelect(): boolean {
-		return this.valueType == 'variable';
+		return this.argument.variant == Variant.WORKFLOW_VARIABLE;
 	}
 
 	get isStringSelect(): boolean {
@@ -407,11 +407,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 	}
 
 	get isGlobalSelect() : boolean {
-		return this.valueType == 'global';
-	}
-
-	get isBranchCounterSelect(): boolean {
-		return this.valueType == 'branch'
+		return this.argument.variant == Variant.GLOBAL;
 	}
 
 	addVariable() {

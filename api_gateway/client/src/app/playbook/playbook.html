@@ -67,7 +67,7 @@
                 <i class="fa fa-eraser"></i>
             </button>
         </div>
-        <label *ngIf="loadedWorkflow" id="currentWorkflowText" class="mr-1">{{loadedPlaybook.name}} -</label>
+        <!-- <label *ngIf="loadedWorkflow" id="currentWorkflowText" class="mr-1">{{loadedPlaybook.name}} -</label> -->
         <input *ngIf="loadedWorkflow" type="text" class="form-control workflowNameInput my-auto" [(ngModel)]="loadedWorkflow.name"
             name="name" required>
         <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" id="currentWorkflowText">(In Progress)</label>
@@ -179,18 +179,18 @@
                     </label>
                     <input type="text" class="form-control" [(ngModel)]="selectedAction.name" name="name" required>
                 </div>
-                <div *ngIf="!selectedActionApi.global" class="form-group globalArgument">
+                <!-- <div *ngIf="!selectedActionApi.global" class="form-group globalArgument">
                     <label for="global_id">Global
                         <i class="fa fa-asterisk required" title="This field is required."></i>
                     </label>
                     <playbook-argument-component [loadedWorkflow]="loadedWorkflow" [argument]="selectedAction.global_id"
                         [id]="id" [users]="users" [roles]="roles" [globals]="relevantGlobals"></playbook-argument-component>
-                </div>
+                </div> -->
                 <!-- Inputs -->
                 <div *ngIf="selectedActionApi.parameters.length">
                     <h4>Arguments</h4>
                     <playbook-argument-component *ngFor="let parameterApi of selectedActionApi.parameters; let id = index"
-                        [loadedWorkflow]="loadedWorkflow" [argument]="getOrInitializeSelectedActionArgument(parameterApi)"
+                        [loadedWorkflow]="loadedWorkflow" [argument]="getOrInitializeSelectedActionArgument(parameterApi)" [globals]="globals"
                         [parameterApi]="parameterApi" [id]="id" [users]="users" [roles]="roles" (createVariable)="onCreateVariable($event)"></playbook-argument-component>
                 </div>
                 <!-- Triggers -->
@@ -362,7 +362,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div *ngIf="modalParams.shouldShowPlaybook" class="form-group">
+                    <!-- <div *ngIf="modalParams.shouldShowPlaybook" class="form-group">
                         <h6>{{modalParams.shouldShowExistingPlaybooks ? 'Select a Playbook' : 'Enter a Playbook'}}</h6>
                         <select *ngIf="modalParams.shouldShowExistingPlaybooks" name="playbookSelect" id="playbookSelect"
                             [(ngModel)]="modalParams.selectedPlaybookId" class="form-control">
@@ -371,10 +371,18 @@
                         </select>
                         <input type="text" *ngIf="modalParams.selectedPlaybookId === '' || !modalParams.shouldShowExistingPlaybooks" 
                             [(ngModel)]="modalParams.newPlaybook" class="form-control mt-2" placeholder="Enter a new playbook name">
+                    </div> -->
+                    <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
+                        <h6>Enter a Workflow Name</h6>
+                        <input type="text" [(ngModel)]="modalParams.newWorkflow" class="form-control" placeholder="Workflow Name">
                     </div>
                     <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
-                        <h6>Enter a Workflow</h6>
-                        <input type="text" [(ngModel)]="modalParams.newWorkflow" class="form-control" placeholder="Enter a new workflow name">
+                        <h6>Enter a Description (Optional)</h6>
+                        <textarea name="description" rows="3" [(ngModel)]="modalParams.newDescription" class="form-control" placeholder="Description (Optional)"></textarea>
+                    </div>
+                    <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
+                        <h6>Add Tags (Optional)</h6>
+                        <select2 [data]="['apples', 'oranges', 'grapes']" [value]="tags" [options]="{ multiple: true, tags: true, width: '100%', placeholder: 'Add Tags...' }" (valueChanged)="changed($event)"></select2>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -406,12 +414,12 @@
                         </div>
                     </div>
                     <div class="panel-group" id="workflowAccordion">
-                        <div *ngFor="let playbook of playbooks" class="card card-default">
-                            <div class="card-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#loadWorkflowCollapse' + removeWhitespace(playbook.name)">
+                        <div class="card card-default">
+                            <div class="card-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#loadWorkflowCollapse' + removeWhitespace('Workflows')">
                                 <h5 class="card-title my-auto p-3">
-                                    {{playbook.name}}
+                                    {{'Workflows'}}
                                     <div class="pull-right">
-                                        <button (click)="renamePlaybookModal($event, playbook)" class="btn btn-primary btn-sm mx-1"
+                                        <!-- <button (click)="renamePlaybookModal($event, playbook)" class="btn btn-primary btn-sm mx-1"
                                             title="Rename Playbook">
                                             <i class="fa fa-i-cursor"></i>
                                         </button>
@@ -426,13 +434,13 @@
                                         <button (click)="deletePlaybook($event, playbook)" class="btn btn-danger btn-sm mx-1"
                                             title="Delete Playbook">
                                             <i class="fa fa-times"></i>
-                                        </button>
+                                        </button> -->
                                     </div>
                                 </h5>
                             </div>
-                            <div id="loadWorkflowCollapse{{removeWhitespace(playbook.name)}}" class="card-collapse collapse">
+                            <div id="loadWorkflowCollapse{{removeWhitespace('Workflows')}}" class="card-collapse collapse">
                                 <div class="card-body p-3">
-                                    <div *ngFor="let workflow of playbook.workflows" class="card card-default workflowPanel my-1">
+                                    <div *ngFor="let workflow of workflows" class="card card-default workflowPanel my-1">
                                         <div class="card-body my-auto p-2">
                                             <!-- <a (click)="loadWorkflow(playbook, workflow)">{{workflow.name}}</a> -->
                                             <a (click)="routeToWorkflow(workflow)">{{workflow.name}}</a>
@@ -440,11 +448,11 @@
                                                 <!-- <button (click)="renameWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary" title="Rename Workflow">
                                                     <i class="fa fa-i-cursor"></i>
                                                 </button> -->
-                                                <button (click)="duplicateWorkflowModal(playbook.id, workflow.id)"
+                                                <button (click)="duplicateWorkflowModal(workflow.id)"
                                                     class="btn btn-primary btn-sm mx-1" title="Duplicate Workflow">
                                                     <i class="fa fa-copy"></i>
                                                 </button>
-                                                <button (click)="deleteWorkflow(playbook, workflow)" class="btn btn-danger btn-sm mx-1"
+                                                <button (click)="deleteWorkflow(workflow)" class="btn btn-danger btn-sm mx-1"
                                                     title="Delete Workflow">
                                                     <i class="fa fa-times"></i>
                                                 </button>

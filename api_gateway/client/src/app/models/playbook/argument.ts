@@ -1,7 +1,15 @@
-import { Transform } from 'class-transformer';
+import { Transform, Exclude, Expose } from 'class-transformer';
 import { TransformationType } from 'class-transformer/TransformOperationExecutor';
 
+export enum Variant {
+	STATIC_VALUE = 'STATIC_VALUE',
+	ACTION_RESULT = 'ACTION_RESULT',
+	WORKFLOW_VARIABLE = 'WORKFLOW_VARIABLE',
+	GLOBAL = 'GLOBAL'
+} 
+
 export class Argument {
+	@Expose({ name: 'id_'})
 	id?: number;
 	// _action_id: number;
 	// _condition_id: number;
@@ -22,6 +30,11 @@ export class Argument {
 	 * Reference to an Action ID to use the output of
 	 */
 	reference?: string;
+
+	/**
+	 * The type of argument in question
+	 */
+	variant: Variant = Variant.STATIC_VALUE;
 	
 	/**
 	 * Selection is currently specified in the UI as a string,

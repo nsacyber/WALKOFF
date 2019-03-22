@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Expose } from 'class-transformer';
 
 import { ActionApi } from './actionApi';
 import { ConditionApi } from './conditionApi';

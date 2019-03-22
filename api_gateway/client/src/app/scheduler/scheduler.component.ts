@@ -188,14 +188,12 @@ export class SchedulerComponent implements OnInit {
 	 */
 	getWorkflows(): void {
 		this.schedulerService
-			.getPlaybooks()
-			.then(playbooks => {
-				playbooks.forEach(playbook => {
-					playbook.workflows.forEach(workflow => {
-						this.availableWorkflows.push({
-							id: workflow.id,
-							text: `${playbook.name} - ${workflow.name}`,
-						});
+			.getWorkflows()
+			.then(workflows => {
+				workflows.forEach(workflow => {
+					this.availableWorkflows.push({
+						id: workflow.id,
+						text: `${workflow.name}`,
 					});
 				});
 			});

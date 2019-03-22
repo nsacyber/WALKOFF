@@ -7,6 +7,7 @@ import { plainToClass } from 'class-transformer';
 import { ScheduledTask } from '../models/scheduler/scheduledTask';
 import { Playbook } from '../models/playbook/playbook';
 import { UtilitiesService } from '../utilities.service';
+import { Workflow } from '../models/playbook/workflow';
 
 const schedulerStatusNumberMapping: { [key: number]: string } = {
 	0: 'stopped',
@@ -71,10 +72,10 @@ export class SchedulerService {
 			.catch(this.utils.handleResponseError);
 	}
 
-	getPlaybooks(): Promise<Playbook[]> {
-		return this.http.get('/api/playbooks')
+	getWorkflows(): Promise<Workflow[]> {
+		return this.http.get('/api/workflows')
 			.toPromise()
-			.then((data: object[]) => plainToClass(Playbook, data))
+			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
 	}
 }
