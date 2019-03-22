@@ -19,10 +19,9 @@ class Parameter(Execution_Base, Validatable):
     name = Column(String(255), nullable=False)
     variant = Column(String(255), nullable=False)
     value = Column(JSONType)
-    reference = Column(UUIDType(binary=False))
     errors = Column(ScalarListType())
 
-    def __init__(self, name, variant, id_=None, value=None, reference=None):
+    def __init__(self, name, variant, id_=None, value=None):
         """Initializes an Parameter object.
 
         Args:
@@ -31,11 +30,10 @@ class Parameter(Execution_Base, Validatable):
             variant (str): string corresponding to a ParameterVariant. Denotes static value, action output, global, etc.
             reference (int, optional): The ID of the Action, global, or WorkflowVariable from which to grab the result.
         """
-        # self.id_ = validate_uuid4(id_)
+        self.id_ = validate_uuid4(id_)
         self.name = name
         self.variant = variant
         self.value = value
-        self.reference = reference
         self.validate()
 
     @orm.reconstructor
@@ -46,21 +44,26 @@ class Parameter(Execution_Base, Validatable):
     def validate(self):
         """Validates the object"""
         self.errors = []
-        if self.value is None and not self.reference:
-            message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
+        logger.info(f"{type(self.variant)}, {self.variant}")
+        if self.variant != "STATIC_VALUE" and not validate_uuid4(self.value):
+            message = f"Value is a reference but {self.value} is not a valid uuid4"
             logger.error(message)
             self.errors = [message]
-        elif self.value is not None and self.reference:
-            message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
-            logger.warning(message)
-            self.reference = None
+        # if self.value is None and not self.reference:
+        #     message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
+        #     logger.error(message)
+        #     self.errors = [message]
+        # elif self.value is not None and self.reference:
+        #     message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
+        #     logger.warning(message)
+        #     self.reference = None
 
-    def __eq__(self, other):
-        return self.name == other.name and self.value == other.value and self.reference == other.reference \
-               and self.variant == other.variant
-
-    def __hash__(self):
-        return hash(self.id_)
+    # def __eq__(self, other):
+    #     return self.name == other.name and self.value == other.value and self.reference == other.reference \
+    #            and self.variant == other.variant
+    #
+    # def __hash__(self):
+    #     return hash(self.id_)
 
 
 @event.listens_for(Parameter, 'before_update')
