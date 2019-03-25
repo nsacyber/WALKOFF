@@ -256,14 +256,14 @@ class Umpire:
                 d = {d["Spec"]["Name"]: d["Spec"]["Mode"]["Replicated"]["Replicas"]}
             d[service["Spec"]["Name"]] = service["Spec"]["Mode"]["Replicated"]["Replicas"]
             return d
-        # TODO: Remove the test code
-        # Push test workflow in for now
-        import uuid
-        with open("data/not_workflows/condition_test.json") as fp:
-            wf = json.load(fp)
-            for i in range(50):
-                wf["execution_id"] = str(uuid.uuid4())
-                await self.redis.lpush(config["REDIS"]["workflow_q"], json.dumps(wf))
+        # # TODO: Remove the test code
+        # # Push test workflow in for now
+        # import uuid
+        # with open("data/not_workflows/condition_test.json") as fp:
+        #     wf = json.load(fp)
+        #     for i in range(50):
+        #         wf["execution_id"] = str(uuid.uuid4())
+        #         await self.redis.lpush(config["REDIS"]["workflow_q"], json.dumps(wf))
 
         count = 0
         while True:
