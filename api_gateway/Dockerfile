@@ -1,4 +1,4 @@
-FROM python:3.7-alpine3.8 as base
+FROM python@sha256:8fe3b17b88644d379ca7e0c724a82a595c8cfbe2b37e1d6d33e7bb5c435a8a29 as base
 
 FROM base as builder
 RUN apk --no-cache add --update alpine-sdk libffi libffi-dev postgresql-dev musl-dev
