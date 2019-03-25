@@ -1,14 +1,11 @@
 from collections import deque
 import asyncio
 import logging
-import json
 import sys
 from typing import Union
 
 import aiohttp
 import aioredis
-import networkx as nx
-import matplotlib.pyplot as plt
 
 from common.message_types import message_dumps, message_loads, NodeStatusMessage, WorkflowStatusMessage, StatusEnum, \
     JSONPatch, JSONPatchOps
@@ -63,6 +60,9 @@ class Worker:
 
                 else:
                     logger.info(f"Completed execution of workflow: {workflow.name}")
+
+                # Clean up workflow in process queue
+                await redis.lrem(config["REDIS"]["workflows_in_process"], workflow_dumps(workflow))
         await Worker.shutdown()
 
     @staticmethod
@@ -212,7 +212,7 @@ class Worker:
 
         if isinstance(node, Action):
             await self.dereference_params(node)
-            await self.redis.lpush(f"{node.app_name}-{node.priority}", workflow_dumps(node))
+            await self.redis.lpush(f"{node.app_name}:{node.priority}", workflow_dumps(node))
 
         elif isinstance(node, Condition):
             await self.evaluate_condition(node, parents, children)

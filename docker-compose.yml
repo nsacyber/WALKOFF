@@ -1,18 +1,20 @@
 version: '3.4'
 services:
-#  umpire:
-#    image: localhost:5000/umpire:latest
-#    build:
-#      context: ./
-#      dockerfile: umpire/Dockerfile
-#
-#    volumes:
-#      - "/var/run/docker.sock:/var/run/docker.sock"
-#    deploy:
-#      placement:
-#        constraints: [node.role==manager]
-#    depends_on:
-#      - redis
+  umpire:
+    image: localhost:5000/umpire:latest
+    build:
+      context: ./
+      dockerfile: umpire/Dockerfile
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /Users/kylezimmer/PycharmProjects/triple-play/apps:/app/apps
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    depends_on:
+      - redis
 
   registry:
     restart: always
@@ -22,6 +24,7 @@ services:
        constraints: [node.role==manager]
     ports:
       - 5000:5000
+# The commented lines are needed to enable auth on the custom registry
 #    environment:
 #      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
 #      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
@@ -34,43 +37,10 @@ services:
 #      - /var/lib/boot2docker:/certs
 #      - /var/lib/boot2docker/auth:/auth
 
-
-#  worker:
-#    image: localhost:5000/worker:latest
-#    build:
-#      context: ./
-#      dockerfile: worker/Dockerfile
-#    deploy:
-#      mode: replicated
-#      replicas: 1
-#    depends_on:
-#      - redis
-
-#  hello_world:
-#    image: localhost:5000/hello_world:latest
-#    build:
-#      context: ./apps/HelloWorld/v1.0
-#      dockerfile: Dockerfile
-#    env_file:
-#      - apps/HelloWorld/v1.0/env.txt
-#    deploy:
-#      mode: replicated
-#      replicas: 10
-
-
-#  test-app:
-#    build:
-#      context: ./apps/TestApp/v0.1.1/
-#      dockerfile: Dockerfile
-#    env_file:
-#      - apps/TestApp/v0.1.1/env.txt
-#    depends_on:
-#      - redis
-#
-  walkoff:
+  api_gateway:
     ports:
     - "8080:8080"
-    image: "localhost:5000/walkoff:latest"
+    image: "localhost:5000/api_gateway:latest"
     build:
       context: ./
       dockerfile: ./api_gateway/Dockerfile
@@ -88,9 +58,6 @@ services:
     - "EXECUTION_DB_PASSWORD=walkoff"
     - "WALKOFF_DB_USERNAME=walkoff"
     - "WALKOFF_DB_PASSWORD=walkoff"
-    depends_on:
-    - "redis"
-    - "postgres"
     stop_signal: SIGINT
     stop_grace_period: 30s
 
@@ -99,11 +66,8 @@ services:
     image: "redis"
     ports:
       - 6379:6379
-#    deploy:
-#      placement:
-#        constraints: [node.role==manager]
-#    volumes:
-#      - /var/lib/boot2docker/redis:/data
+    volumes:
+      - /var/lib/boot2docker/redis:/data
 
   postgres:
     container_name: postgres
@@ -113,8 +77,8 @@ services:
     - "POSTGRES_PASSWORD=walkoff"
     ports:
       - 5432:5432
-#    deploy:
-#      placement:
-#        constraints: [node.role==manager]
-#    volumes:
-#      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    volumes:
+      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data

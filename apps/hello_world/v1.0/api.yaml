@@ -1,7 +1,7 @@
 walkoff: '0.1'
 info:
   version: 1.0.0
-  title: HelloWorldApp
+  title: hello_world
   description: A sample walkoff app specification
   contact:
     name: Walkoff Team
