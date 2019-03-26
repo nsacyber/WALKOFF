@@ -3,14 +3,50 @@ import logging
 from sqlalchemy import Column, ForeignKey, String, Integer, orm, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
+from marshmallow import fields, EXCLUDE
+from marshmallow_sqlalchemy import field_for
+
 
 from api_gateway.appgateway.apiutil import get_app_action_api, UnknownApp, UnknownAppAction, InvalidParameter
 from api_gateway.appgateway.validator import validate_app_action_parameters
 from api_gateway.executiondb import Execution_Base
-from api_gateway.executiondb.parameter import Parameter
+from api_gateway.executiondb.parameter import Parameter, ParameterSchema, ParameterApiSchema
+from api_gateway.executiondb.returns import ReturnApi, ReturnApiSchema
+from api_gateway.executiondb.position import PositionSchema
 from api_gateway.executiondb.executionelement import ExecutionElement
+from api_gateway.executiondb.schemas import ExecutionElementBaseSchema
 
 logger = logging.getLogger(__name__)
+
+
+class ActionApi(ExecutionElement, Execution_Base):
+    __tablename__ = 'action_api'
+    name = Column(String(), nullable=False)
+    description = Column(String())
+    returns = relationship("ReturnApi", uselist=False, cascade="all, delete-orphan", passive_deletes=True)
+    parameters = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
+    app_api_id = Column(UUIDType(binary=False), ForeignKey('app_api.id_', ondelete='CASCADE'))
+
+    def __init__(self, name, id_=None, errors=None, description=None, returns=None, parameters=None):
+        ExecutionElement.__init__(self, id_, errors)
+
+        self.name = name
+        self.description = description
+        self.returns = returns
+        self.parameters = parameters if parameters else []
+
+
+class ActionApiSchema(ExecutionElementBaseSchema):
+    """Schema for actions
+    """
+    name = field_for(ActionApi, 'name', required=True)
+    description = field_for(ActionApi, 'description')
+    returns = fields.Nested(ReturnApiSchema())
+    parameters = fields.Nested(ParameterApiSchema, many=True)
+
+    class Meta:
+        model = ActionApi
+        unknown = EXCLUDE
 
 
 class Action(ExecutionElement, Execution_Base):
@@ -87,3 +123,18 @@ class Action(ExecutionElement, Execution_Base):
 @event.listens_for(Action, 'before_update')
 def validate_before_update(mapper, connection, target):
     target.validate()
+
+
+class ActionSchema(ExecutionElementBaseSchema):
+    """Schema for actions
+    """
+    app_name = fields.Str(required=True)
+    name = field_for(Action, 'name', required=True)
+    label = field_for(Action, 'label', required=True)
+    parameters = fields.Nested(ParameterSchema, many=True)
+    priority = field_for(Action, 'priority', default=3)
+    position = fields.Nested(PositionSchema())
+
+    class Meta:
+        model = Action
+        unknown = EXCLUDE

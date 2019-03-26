@@ -1,35 +1,46 @@
-from api_gateway.executiondb.parameter import Parameter
-from api_gateway.executiondb.action import Action
-from api_gateway.executiondb.branch import Branch
-from api_gateway.executiondb.condition import Condition
-from api_gateway.executiondb.position import Position
-from api_gateway.executiondb.transform import Transform
-from api_gateway.executiondb.trigger import Trigger
-from api_gateway.executiondb.global_variable import GlobalVariable
-from api_gateway.executiondb.workflow_variable import WorkflowVariable
-from api_gateway.executiondb.workflow import Workflow
-from api_gateway.executiondb.workflowresults import WorkflowStatus, ActionStatus
+import logging
 
-from api_gateway.executiondb.schemas import (ParameterSchema, ActionSchema, BranchSchema, ConditionSchema,
-                                             PositionSchema, TransformSchema, TriggerSchema, GlobalVariableSchema,
-                                             WorkflowVariableSchema, WorkflowSchema,
-                                             WorkflowStatusSchema, ActionStatusSchema)
-
+from api_gateway.executiondb.action import (ActionApi, ActionApiSchema,
+                                            Action, ActionSchema)
+from api_gateway.executiondb.appapi import AppApi, AppApiSchema
+from api_gateway.executiondb.branch import Branch, BranchSchema
+from api_gateway.executiondb.condition import Condition, ConditionSchema
+from api_gateway.executiondb.dashboard import (Dashboard, DashboardSchema,
+                                               Widget, WidgetSchema)
+from api_gateway.executiondb.global_variable import GlobalVariable, GlobalVariableSchema
+from api_gateway.executiondb.parameter import (Parameter, ParameterSchema,
+                                               ParameterApi, ParameterApiSchema)
+from api_gateway.executiondb.position import Position, PositionSchema
+from api_gateway.executiondb.returns import ReturnApi, ReturnApiSchema
+from api_gateway.executiondb.transform import Transform, TransformSchema
+from api_gateway.executiondb.trigger import Trigger, TriggerSchema
+from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
+from api_gateway.executiondb.workflow_variable import WorkflowVariable, WorkflowVariableSchema
+from api_gateway.executiondb.workflowresults import (ActionStatus, ActionStatusSchema, ActionStatusSummarySchema,
+                                                     WorkflowStatus, WorkflowStatusSchema, WorkflowStatusSummarySchema)
 # This could be done better with a metaclass which registers subclasses
 _schema_lookup = {
-    Workflow: WorkflowSchema,
-    Position: PositionSchema,
     Action: ActionSchema,
+    ActionApi: ActionApiSchema,
+    AppApi: AppApiSchema,
     Branch: BranchSchema,
-    Parameter: ParameterSchema,
     Condition: ConditionSchema,
+    Dashboard: DashboardSchema,
+    Widget: WidgetSchema,
+    GlobalVariable: GlobalVariableSchema,
+    Parameter: ParameterSchema,
+    ParameterApi: ParameterApiSchema,
+    Position: PositionSchema,
+    ReturnApi: ReturnApiSchema,
     Transform: TransformSchema,
     Trigger: TriggerSchema,
+    Workflow: WorkflowSchema,
     WorkflowVariable: WorkflowVariableSchema,
-    GlobalVariable: GlobalVariableSchema,
     ActionStatus: ActionStatusSchema,
     WorkflowStatus: WorkflowStatusSchema
 }
+
+logger = logging.getLogger(__name__)
 
 
 def dump_element(element):
@@ -41,4 +52,5 @@ def dump_element(element):
     Returns:
         dict: The serialized element
     """
+    logger.info(f"using dump_element on {element.__class__}")
     return _schema_lookup[element.__class__]().dump(element)

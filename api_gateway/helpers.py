@@ -225,7 +225,7 @@ def regenerate_ids(json_in, id_mapping=None, regenerate_id=True, is_arguments=Fa
         json_in.pop('id_', None)
 
     if json_in.get('variant') in ("ACTION_RESULT", "WORKFLOW_VARIABLE"):
-        json_in['reference'] = id_mapping[json_in['reference']]
+        json_in['value'] = id_mapping[json_in['value']]
 
     for field, value in json_in.items():
         is_arguments = field in ['arguments', 'device_id']
@@ -292,10 +292,8 @@ def validate_uuid4(id_, stringify=False):
     try:
         uuid_ = UUID(id_, version=4)
         return uuid_ if not stringify else id_
-    except ValueError:
+    except (ValueError, TypeError):
         return None
-    except TypeError:
-        return uuid4()
 
 
 def compose_api(config):

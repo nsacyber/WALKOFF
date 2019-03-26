@@ -4,6 +4,10 @@ from datetime import datetime
 from sqlalchemy import Column, String, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
+from marshmallow import fields, EXCLUDE
+from marshmallow_sqlalchemy import field_for
+
+from api_gateway.executiondb.schemas import ExecutionBaseSchema
 
 from common.message_types import StatusEnum
 from api_gateway.executiondb import Execution_Base
@@ -200,3 +204,71 @@ class ActionStatus(Execution_Base):
             ret["result"] = json.loads(self.result)
             ret["completed_at"] = utc_as_rfc_datetime(self.completed_at)
         return ret
+
+
+class ActionStatusSchema(ExecutionBaseSchema):
+    """
+    Schema for ActionStatusMessage
+    """
+    action_id = field_for(ActionStatus, 'action_id', required=True)
+    name = field_for(ActionStatus, 'name', required=True)
+    app_name = field_for(ActionStatus, 'app_name', required=True)
+    label = field_for(ActionStatus, 'label', required=True)
+    result = field_for(ActionStatus, 'result')
+    status = field_for(ActionStatus, 'status', required=True)
+    started_at = field_for(ActionStatus, 'started_at')
+    completed_at = field_for(ActionStatus, 'completed_at')
+
+    class Meta:
+        model = ActionStatus
+        unknown = EXCLUDE
+
+
+class ActionStatusSummarySchema(ExecutionBaseSchema):
+    """
+    Summary Schema for ActionStatusMessage
+    """
+    action_id = field_for(ActionStatus, 'action_id', required=True)
+    name = field_for(ActionStatus, 'name', required=True)
+    app_name = field_for(ActionStatus, 'app_name', required=True)
+    label = field_for(ActionStatus, 'label', required=True)
+
+    class Meta:
+        model = ActionStatus
+        unknown = EXCLUDE
+
+
+class WorkflowStatusSchema(ExecutionBaseSchema):
+    """
+    Schema for WorkflowStatusMessage
+    """
+    execution_id = field_for(WorkflowStatus, 'execution_id', required=True)
+    workflow_id = field_for(WorkflowStatus, 'workflow_id', required=True)
+    name = field_for(WorkflowStatus, 'name', required=True)
+    status = field_for(WorkflowStatus, 'status', required=True)
+    started_at = field_for(WorkflowStatus, 'started_at')
+    completed_at = field_for(WorkflowStatus, 'completed_at')
+    user = field_for(WorkflowStatus, 'user')
+    action_statuses = fields.Nested(ActionStatusSchema, many=True)
+
+    class Meta:
+        model = WorkflowStatus
+        unknown = EXCLUDE
+
+
+class WorkflowStatusSummarySchema(ExecutionBaseSchema):
+    """
+    Summary Schema for WorkflowStatusMessage
+    """
+    execution_id = field_for(WorkflowStatus, 'execution_id', required=True)
+    workflow_id = field_for(WorkflowStatus, 'workflow_id', required=True)
+    name = field_for(WorkflowStatus, 'name', required=True)
+    status = field_for(WorkflowStatus, 'status', required=True)
+    started_at = field_for(WorkflowStatus, 'started_at')
+    completed_at = field_for(WorkflowStatus, 'completed_at')
+    user = field_for(WorkflowStatus, 'user')
+    action_status = fields.Nested(ActionStatusSchema)
+
+    class Meta:
+        model = WorkflowStatus
+        unknown = EXCLUDE

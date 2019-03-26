@@ -3,7 +3,10 @@ from uuid import uuid4, UUID
 
 from sqlalchemy import Column, String
 from sqlalchemy_utils import UUIDType
+from marshmallow import fields, EXCLUDE
+from marshmallow_sqlalchemy import field_for
 
+from api_gateway.executiondb.schemas import ExecutionBaseSchema
 from api_gateway.executiondb import Execution_Base
 
 logger = logging.getLogger(__name__)
@@ -36,3 +39,16 @@ class GlobalVariable(Execution_Base):
         self.name = name
         self.value = value
         self.description = description
+
+
+class GlobalVariableSchema(ExecutionBaseSchema):
+    """Schema for global variables
+    """
+    name = field_for(GlobalVariable, 'name')
+    value = field_for(GlobalVariable, 'value', required=True)
+    description = field_for(GlobalVariable, 'description')
+
+    class Meta:
+        model = GlobalVariable
+        unknown = EXCLUDE
+

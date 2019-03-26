@@ -2,9 +2,13 @@ import logging
 
 from sqlalchemy import Column, ForeignKey, event, orm
 from sqlalchemy_utils import UUIDType
+from marshmallow import fields, EXCLUDE
+from marshmallow_sqlalchemy import field_for
 
+from api_gateway.executiondb.schemas import ExecutionElementBaseSchema
 from api_gateway.executiondb import Execution_Base
 from api_gateway.executiondb.executionelement import ExecutionElement
+
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +21,7 @@ class Branch(ExecutionElement, Execution_Base):
 
     def __init__(self, source_id, destination_id, id_=None, errors=None):
         """Initializes a new Branch object.
-        
+
         Args:
             source_id (int): The ID of the source action that will be sending inputs to this Branch.
             destination_id (int): The ID of the destination action that will be returned if the conditions for this
@@ -43,3 +47,14 @@ class Branch(ExecutionElement, Execution_Base):
 @event.listens_for(Branch, 'before_update')
 def validate_before_update(mapper, connection, target):
     target.validate()
+
+
+class BranchSchema(ExecutionElementBaseSchema):
+    """Schema for branches
+    """
+    source_id = field_for(Branch, 'source_id', required=True)
+    destination_id = field_for(Branch, 'destination_id', required=True)
+
+    class Meta:
+        model = Branch
+        unknown = EXCLUDE

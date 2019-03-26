@@ -3,9 +3,17 @@ import logging
 from sqlalchemy import Column, String, ForeignKey, UniqueConstraint, Boolean, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
+from marshmallow import fields, EXCLUDE
+from marshmallow_sqlalchemy import field_for
 
+from api_gateway.executiondb.schemas import ExecutionElementBaseSchema
+from api_gateway.executiondb.condition import ConditionSchema
+from api_gateway.executiondb.transform import TransformSchema
+from api_gateway.executiondb.trigger import TriggerSchema
+from api_gateway.executiondb.branch import BranchSchema
+from api_gateway.executiondb.workflow_variable import WorkflowVariableSchema
 from api_gateway.executiondb import Execution_Base
-from api_gateway.executiondb.action import Action
+from api_gateway.executiondb.action import Action, ActionSchema
 from api_gateway.executiondb.executionelement import ExecutionElement
 
 logger = logging.getLogger(__name__)
@@ -81,3 +89,24 @@ class Workflow(ExecutionElement, Execution_Base):
 @event.listens_for(Workflow, "before_update")
 def validate_before_update(mapper, connection, target):
     target.validate()
+
+
+class WorkflowSchema(ExecutionElementBaseSchema):
+    """Schema for workflows
+    """
+    name = field_for(Workflow, 'name', required=True)
+    start = field_for(Workflow, 'start', required=True)
+    actions = fields.Nested(ActionSchema, many=True)
+    branches = fields.Nested(BranchSchema, many=True)
+    conditions = fields.Nested(ConditionSchema, many=True)
+    transforms = fields.Nested(TransformSchema, many=True)
+    triggers = fields.Nested(TriggerSchema, many=True)
+    workflow_variables = fields.Nested(WorkflowVariableSchema, many=True)
+
+    # TODO: determine if this is needed
+    # exclude = ("is_valid",)
+    # is_valid = field_for(Workflow, 'is_valid')
+
+    class Meta:
+        model = Workflow
+        unknown = EXCLUDE
