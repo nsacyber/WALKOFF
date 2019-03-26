@@ -4,7 +4,7 @@
       - System
     summary: Gets all apps
     description: ''
-    operationId: api_gateway.server.endpoints.appapi.read_all_apps
+    operationId: api_gateway.server.endpoints.appapi.read_all_app_names
     responses:
       200:
         description: Success
@@ -24,14 +24,14 @@
     summary: Get all app apis
     description: ''
     operationId: api_gateway.server.endpoints.appapi.read_all_app_apis
-    parameters:
-      - name: field_name
-        in: query
-        description: The name of the field of the api to get for all apps
-        required: false
-        schema:
-          type: string
-          enum: [info, action_apis, condition_apis, transform_apis, device_apis, tags, external_docs]
+#    parameters:
+#      - name: field_name
+#        in: query
+#        description: The name of the field of the api to get for all apps
+#        required: false
+#        schema:
+#          type: string
+#          enum: [info, action_apis, condition_apis, transform_apis, device_apis, tags, external_docs]
     responses:
       200:
         description: Success
@@ -40,7 +40,27 @@
             schema:
               type: array
               items:
-                type: object
+                $ref: '#/components/schemas/AppApi'
+  post:  # ToDo: Delete this when testing is finished
+    tags:
+      - Apps
+    summary: Create app api
+    description: ''
+    operationId: api_gateway.server.endpoints.appapi.create_app_api
+    requestBody:
+      description: The app api object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AppApi'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppApi'
 
 /apps/apis/{app_name}:
   get:
@@ -70,13 +90,12 @@
             schema:
               $ref: '#/components/schemas/Error'
 
-/apps/apis/{app_name}/{field_name}:
-  get:
+  put:  # ToDo: Delete this when testing is finished
     tags:
       - Apps
-    summary: Get a field of an app's api
+    summary: Replace app api
     description: ''
-    operationId: api_gateway.server.endpoints.appapi.read_app_api_field
+    operationId: api_gateway.server.endpoints.appapi.update_app_api
     parameters:
       - name: app_name
         in: path
@@ -84,23 +103,87 @@
         required: true
         schema:
           type: string
-      - name: field_name
-        in: path
-        description: The name of the field in the app api to get
-        required: true
-        schema:
-          type: string
-          enum: [info, action_apis, condition_apis, transform_apis, device_apis, tags, externalDocs]
+    requestBody:
+      description: The app api object to be updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AppApi'
     responses:
       200:
         description: Success
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/AppApi'
       404:
-        description: App does not exist
+        description: AppApi does not exist.
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+      400:
+        description: AppApi already exists.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+  delete:  # ToDo: Delete this when testing is finished
+    tags:
+      - Apps
+    summary: Delete app api
+    description: ''
+    operationId: api_gateway.server.endpoints.appapi.delete_app_api
+    parameters:
+      - name: app_name
+        in: path
+        description: The name of the app to get
+        required: true
+        schema:
+          type: string
+    responses:
+      204:
+        description: Success
+      404:
+        description: AppApi does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+#/apps/apis/{app_name}/{field_name}:
+#  get:
+#    tags:
+#      - Apps
+#    summary: Get a field of an app's api
+#    description: ''
+#    operationId: api_gateway.server.endpoints.appapi.read_app_api_field
+#    parameters:
+#      - name: app_name
+#        in: path
+#        description: The name of the app to get
+#        required: true
+#        schema:
+#          type: string
+#      - name: field_name
+#        in: path
+#        description: The name of the field in the app api to get
+#        required: true
+#        schema:
+#          type: string
+#          enum: [info, action_apis, condition_apis, transform_apis, device_apis, tags, externalDocs]
+#    responses:
+#      200:
+#        description: Success
+#        content:
+#          application/json:
+#            schema:
+#              type: object
+#      404:
+#        description: App does not exist
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/Error'

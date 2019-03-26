@@ -294,10 +294,6 @@ def validate_uuid4(id_, stringify=False):
         return uuid_ if not stringify else id_
     except (ValueError, TypeError):
         return None
-    # except TypeError:
-    #     r = uuid4()
-    #     logger.error(f"{id_} is not a valid uuid4, generating new uuid4: f{r}")
-    #     return r
 
 
 def compose_api(config):

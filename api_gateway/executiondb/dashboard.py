@@ -4,7 +4,10 @@ from uuid import uuid4
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType, JSONType
+from marshmallow import fields, EXCLUDE
+from marshmallow_sqlalchemy import field_for
 
+from api_gateway.executiondb.schemas import ExecutionBaseSchema
 from api_gateway.helpers import validate_uuid4
 from api_gateway.executiondb import Execution_Base
 
@@ -46,3 +49,31 @@ class Widget(Execution_Base):
         self.cols = cols if cols else 1
         self.rows = rows if rows else 1
         self.options = options
+
+
+class WidgetSchema(ExecutionBaseSchema):
+    """Schema for Dashboard Widgets"""
+
+    name = field_for(Widget, 'name', required=True)
+    type_ = field_for(Widget, 'type_', required=True)
+    x = field_for(Widget, 'x', required=True)
+    y = field_for(Widget, 'y', required=True)
+    cols = field_for(Widget, 'cols', required=True)
+    rows = field_for(Widget, 'rows', required=True)
+    options = fields.Raw()
+
+    class Meta:
+        model = Widget
+        exclude = ('dashboard',)
+        unknown = EXCLUDE
+
+
+class DashboardSchema(ExecutionBaseSchema):
+    """Schema for Dashboards"""
+
+    name = field_for(Dashboard, 'name')
+    widgets = fields.Nested(WidgetSchema, many=True)
+
+    class Meta:
+        model = Dashboard
+        unknown = EXCLUDE

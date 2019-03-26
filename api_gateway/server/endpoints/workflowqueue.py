@@ -14,15 +14,14 @@ from sqlalchemy.exc import IntegrityError, StatementError
 
 from common.message_types import StatusEnum, WorkflowStatusMessage
 from api_gateway.events import WalkoffEvent
-from api_gateway.executiondb.workflow import Workflow
-from api_gateway.executiondb.workflowresults import WorkflowStatus
+from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
+from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusSchema, WorkflowStatusSummarySchema
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
     paginate
 from api_gateway.server.problem import Problem, dne_problem, invalid_input_problem, improper_json_problem
 from api_gateway.server.endpoints.results import push_to_action_stream_queue, push_to_workflow_stream_queue
 from http import HTTPStatus
-from api_gateway.executiondb.schemas import WorkflowSchema, WorkflowStatusSchema, WorkflowStatusSummarySchema
 
 logger = logging.getLogger(__name__)
 

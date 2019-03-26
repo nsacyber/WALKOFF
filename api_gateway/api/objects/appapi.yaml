@@ -1,11 +1,26 @@
 AppApi:
   type: object
   description: Api used for an app
-  required: [info]
+  required: [name]
   properties:
-    info:
-      $ref: '#/components/schemas/ApiInfo'
-    action_apis:
+    name:
+      type: string
+      description: A unique and precise title of the API
+      example: Splunk
+    walkoff_version:
+      type: string
+      description: A semantic version number of the API
+    app_version:
+      type: string
+      description: A semantic version number of the API
+    description:
+      type: string
+      description: A longer description of the API. Should be different from the title.
+    contact:
+      $ref: '#/components/schemas/ApiContact'
+    license:
+      $ref: '#/components/schemas/ApiLicense'
+    actions:
       description: Actions associated with this app
       type: array
       items:
@@ -19,29 +34,7 @@ AppApi:
       type: array
       items:
         $ref: '#/components/schemas/ExternalDoc'
-    
-ApiInfo:
-  type: object
-  description: General information about the API
-  required: [version, title]
-  properties:
-    title:
-      type: string
-      description: A unique and precise title of the API
-      example: Splunk
-    version:
-      type: string
-      description: A semantic version number of the API
-    description:
-      type: string
-      description: A longer description of the API. Should be different from the title.
-    terms_of_service:
-      type: string
-      description: Terms of service for the API
-    contact:
-      $ref: '#/components/schemas/ApiContact'
-    license:
-      $ref: '#/components/schemas/ApiLicense'
+
 
 ApiContact:
   type: object
@@ -75,22 +68,13 @@ ApiLicense:
 ActionApi:
   type: object
   description: The api of an app's action
-  required: [name, run, returns]
+  required: [name]
   properties:
     name:
       type: string
       description: Unique name of the action
-    run:
-      type: string
-      description: The path to the executable function
-    default_return:
-      type: string
-      description: The name of the default return code (if none specified, defaults to "Success")
     returns:
-      type: array
-      items:
-        $ref: '#/components/schemas/ReturnApi'
-      description: The return types of this action
+      $ref: '#/components/schemas/ReturnApi'
     parameters:
       type: array
       items:
@@ -100,15 +84,6 @@ ActionApi:
       type: boolean
       default: false
       description: Is this action deprecated?
-    tags:
-      type: array
-      items:
-        type: string
-      description: Tags for this action
-      uniqueItems: true
-    summary:
-      type: string
-      description: A brief summary of this action
     description:
       type: string
       description: A longer description of the operation
@@ -142,22 +117,14 @@ ParameterApi:
 ReturnApi:
   type: object
   description: A specification of what an action returns
-  required: [status]
   properties:
-    status:
-      type: string
-      description: Status of the return
     description:
       type: string
       description: Description of the return type
-    failure:
-      type: boolean
-      description: Whether this return type indicates action failure
-      default: false
     schema:
       $ref: '#/components/schemas/ParameterSchema'
-    examples:
-      description: An exaple of the returned type
+    example:
+      description: An example of the returned type
 
 ExternalDoc:
   type: object
@@ -187,7 +154,7 @@ ApiTag:
       type: array
       items:
         $ref: '#/components/schemas/ExternalDoc'
-      
+
 ParameterSchema:
   type: object
   description: Fields used to validate parameter against a JSON schema (Draft 4)
