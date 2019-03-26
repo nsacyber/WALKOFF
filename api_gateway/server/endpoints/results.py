@@ -16,9 +16,9 @@ from sqlalchemy.exc import IntegrityError, StatementError
 import jsonpatch
 
 from api_gateway.server.decorators import with_resource_factory, paginate, is_valid_uid
-from api_gateway.executiondb.workflow import Workflow
-from api_gateway.executiondb.workflowresults import WorkflowStatus, ActionStatus
-from api_gateway.executiondb.schemas import WorkflowSchema, WorkflowStatusSchema, ActionStatusSchema
+from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
+from api_gateway.executiondb.workflowresults import (WorkflowStatus, ActionStatus, WorkflowStatusSchema,
+                                                     ActionStatusSchema)
 
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_id_problem

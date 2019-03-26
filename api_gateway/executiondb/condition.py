@@ -3,15 +3,19 @@ import logging
 from sqlalchemy import Column, String, ForeignKey, orm, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
+from marshmallow import fields, EXCLUDE
+from marshmallow_sqlalchemy import field_for
 
-from api_gateway import executiondb
+from api_gateway.executiondb.schemas import ExecutionElementBaseSchema
+from api_gateway.executiondb import Execution_Base
 from api_gateway.appgateway.apiutil import UnknownApp, InvalidParameter, UnknownCondition
 from api_gateway.executiondb.executionelement import ExecutionElement
+from api_gateway.executiondb.position import PositionSchema
 
 logger = logging.getLogger(__name__)
 
 
-class Condition(ExecutionElement, executiondb.Execution_Base):
+class Condition(ExecutionElement, Execution_Base):
     __tablename__ = 'condition'
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
 
@@ -59,3 +63,18 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
 @event.listens_for(Condition, 'before_update')
 def validate_before_update(mapper, connection, target):
     target.validate()
+
+
+class ConditionSchema(ExecutionElementBaseSchema):
+    """Schema for conditions
+    """
+
+    name = field_for(Condition, 'name', required=True)
+    conditional = field_for(Condition, 'conditional', required=True)
+    position = fields.Nested(PositionSchema())
+
+    class Meta:
+        model = Condition
+        unknown = EXCLUDE
+
+

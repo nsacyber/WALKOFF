@@ -9,7 +9,7 @@ from api_gateway.serverdb.user import User
 logger = logging.getLogger(__name__)
 
 default_resource_permissions_admin = [
-    {"name": "app_apis", "permissions": ["read"]},
+    {"name": "app_apis", "permissions": ["create", "read", "update", "delete"]},
     {"name": "configuration", "permissions": ["read", "update"]},
     {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
     {"name": "workflow_variables", "permissions": ["create", "read", "update", "delete"]},

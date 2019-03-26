@@ -3,7 +3,10 @@ from uuid import uuid4, UUID
 
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy_utils import UUIDType
+from marshmallow import fields, EXCLUDE
+from marshmallow_sqlalchemy import field_for
 
+from api_gateway.executiondb.schemas import ExecutionBaseSchema
 from api_gateway.executiondb import Execution_Base
 
 logger = logging.getLogger(__name__)
@@ -37,3 +40,15 @@ class WorkflowVariable(Execution_Base):
         self.name = name
         self.value = value
         self.description = description
+
+
+class WorkflowVariableSchema(ExecutionBaseSchema):
+    """Schema for workflow variables
+    """
+    name = field_for(WorkflowVariable, 'name')
+    value = field_for(WorkflowVariable, 'value', required=True)
+    description = field_for(WorkflowVariable, 'description')
+
+    class Meta:
+        model = WorkflowVariable
+        unknown = EXCLUDE

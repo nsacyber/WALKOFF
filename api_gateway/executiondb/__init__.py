@@ -30,8 +30,10 @@ class ExecutionDatabase(object):
 
     def __init__(self, execution_db_type, execution_db_path, execution_db_host="localhost"):
         # All of these imports are necessary
-        from api_gateway.executiondb.parameter import Parameter
-        from api_gateway.executiondb.action import Action
+        from api_gateway.executiondb.returns import ReturnApi
+        from api_gateway.executiondb.parameter import Parameter, ParameterApi
+        from api_gateway.executiondb.action import Action, ActionApi
+        from api_gateway.executiondb.appapi import AppApi
         from api_gateway.executiondb.branch import Branch
         from api_gateway.executiondb.condition import Condition
         from api_gateway.executiondb.position import Position

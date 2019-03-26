@@ -1,77 +1,73 @@
-walkoff: '0.1'
-info:
-  version: 1.0.0
-  title: hello_world
-  description: A sample walkoff app specification
-  contact:
-    name: Walkoff Team
-  license:
-    name: Creative Commons
+walkoff_version: 1.0.0
+app_version: 1.0.0
+name: HelloWorldApp
+description: An example of a Walkoff App specification
+contact:
+  name: Walkoff Team
+  url: https://github.com/nsacyber/walkoff
+  email: walkoff@nsa.gov
+license:
+  name: Creative Commons
+  url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
 actions:
-  hello_world:
-    description: Returns an introductory message
+  - name: hello_world
+    description: Returns Hello World from the hostname the action is run on
     returns:
-      Success:
-        description: introductory message
-        schema:
-          type: object
-          properties:
-            message:
-              type: string
-  repeat_back_to_me:
-    description: Repeats the call argument
+      schema:
+        type: string
+      example: HELLO WORLD FROM host.name
+  - name: repeat_back_to_me
+    description: Repeats the call parameter
     parameters:
-        - name: call
-          description: message to repeat
-          required: true
+      - name: call
+        description: message to repeat
+        required: true
+        schema:
           type: string
     returns:
-      Success:
-        description: repeated method
-        schema:
-          type: string
-  return_plus_one:
-    description: Increments a given number by 1
+      schema:
+        type: string
+      example: "REPEATING: Hello world"
+  - name: return_plus_one
+    description: Increments the number parameter by 1
     parameters:
-        - name: number
-          description: number to increment
-          required: true
-          type: integer
-          format: int32
-    returns:
-      Success:
-        description: incremented number
+      - name: number
+        description: number to increment
+        required: true
         schema:
-          type: integer
-  pause:
-    description: pauses execution for an amount of time
+          type: number
+        example: 1
+    returns:
+      schema:
+        type: number
+      example: 2
+  - name: pause
+    description: Pause execution by the seconds parameter
     parameters:
       - name: seconds
-        description: The seconds to pause for
+        description: seconds to pause for
         required: true
-        type: number
-    returns:
-      Success:
-        description: successfully paused
-  echo_array:
-    description: echos the given array
+        schema:
+          type: number
+  - name: echo_array
+    description: Echo the data parameter
     parameters:
       - name: data
-        description: The data to echo
+        description: array to echo
         required: true
-        type: array
-    returns:
-      Success:
         schema:
           type: array
-  echo_json:
+    returns:
+      schema:
+        type: array
+  - name: echo_json
     description: echos the given JSON object
     parameters:
       - name: data
         description: The data to echo
         required: true
-        type: object
-    returns:
-      Success:
         schema:
           type: object
+    returns:
+      schema:
+        type: object

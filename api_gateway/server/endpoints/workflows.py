@@ -9,8 +9,7 @@ from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError, StatementError
 
 from api_gateway.appgateway.apiutil import UnknownApp, UnknownFunction, InvalidParameter
-from api_gateway.executiondb.schemas import WorkflowSchema
-from api_gateway.executiondb.workflow import Workflow
+from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.helpers import regenerate_workflow_ids
 # from api_gateway.helpers import strip_device_ids, strip_argument_ids
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
@@ -67,7 +66,7 @@ def create_workflow():
     except ValidationError as e:
         current_app.running_context.execution_db.session.rollback()
         return improper_json_problem('workflow', 'create', workflow_name, e.messages)
-    except IntegrityError:
+    except IntegrityError:  # ToDo: Make sure this fires on duplicate
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem('workflow', 'create', workflow_name)
 
