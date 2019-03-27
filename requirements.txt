@@ -1,7 +1,7 @@
 #aiodns
+aiodocker
 aiohttp
 aioredis
-asteval
 #cchardet
 docker
 docker-compose

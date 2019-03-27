@@ -9,7 +9,7 @@ import aioredis
 import aiohttp
 
 from common.message_types import NodeStatusMessage, message_dumps
-from common.workflow_types import workflow_loads, Action
+from common.workflow_types import workflow_loads, workflow_dumps, Action
 from common.async_logger import AsyncLogger, AsyncHandler
 from common.helpers import connect_to_redis_pool
 
@@ -18,10 +18,11 @@ REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
 ACTION_RESULT_CH = os.getenv("ACTION_RESULT_CH", "action-results")
 ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
 API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "localhost:5000")
+APP_NAME = os.getenv("APP_NAME", None)
 
 
 class HTTPStream:
-    """ Thin wrapper around a redis pub/sub that plugs into the async logger """
+    """ Thin wrapper around an HTTP stream that plugs into the async logger """
     def __init__(self, session=None):
         super().__init__()
         self.session = session
@@ -41,16 +42,19 @@ class HTTPStream:
         async with self.session.post(url, data=data, params=params) as resp:
             print(await resp.json())
 
-        # await self.redis.publish(self.channel, message)
-
     async def close(self):
         pass
 
 
 class AppBase:
     def __init__(self, redis=None, logger=None, console_logger=None):
-        # Creates redis keys of format "{AppName}-{Version}-{Priority}"
-        self.action_queue_keys = tuple(f"{self.__class__.__name__}-{self.__version__}-{i}" for i in range(5, 0, -1))
+        if APP_NAME is None:
+            logger.error("APP_NAME not set. Please ensure 'APP_NAME' environment variable is set to match the"
+                         + "docker-compose service name.")
+            sys.exit(1)
+
+        # Creates redis keys of format "{AppName}_{Version}-{Priority}"
+        self.action_queue_keys = tuple(f"{APP_NAME}:{self.__version__}:{i}" for i in range(5, 0, -1))
         self.redis: aioredis.Redis = redis
         self.logger = logger if logger is not None else logging.getLogger("AppBaseLogger")
         self.console_logger = console_logger if console_logger is not None else logging.getLogger("ConsoleBaseLogger")
@@ -72,7 +76,7 @@ class AppBase:
                 i += 1
                 await asyncio.sleep(0)
 
-                if time.time() - start > 30: # We've timed out with no work. Guess we'll die now...
+                if time.time() - start > 30:  # We've timed out with no work. Guess we'll die now...
                     sys.exit(1)
 
             action = workflow_loads(action)
@@ -110,6 +114,9 @@ class AppBase:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
             action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, error="Action does not exist")
             await self.redis.lpush(action.execution_id, message_dumps(action_result))
+
+        # Remove the action from the in process queue regardless of success
+        await self.redis.lrem(ACTIONS_IN_PROCESS, 0, workflow_dumps(action))
 
     @classmethod
     async def run(cls):

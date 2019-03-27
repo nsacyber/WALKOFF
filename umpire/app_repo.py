@@ -4,12 +4,13 @@ import json
 import asyncio
 from pathlib import Path
 
-
+import aiohttp
 from compose.cli.command import get_project
 
 
 from common.config import config
-from common.helpers import load_docker_env, validate_app_api
+from common.helpers import validate_app_api
+from common.docker_helpers import get_project
 
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -19,9 +20,9 @@ logger = logging.getLogger("AppRepo")
 class AppRepo(dict):
     class RepositoryNotInitialized(Exception): pass
 
-    def __init__(self, path, db, **apps):
+    def __init__(self, path, session, **apps):
         self.path = Path(path)
-        self.db = db
+        self.session = session
         super().__init__(**apps)
 
     @classmethod
@@ -31,8 +32,16 @@ class AppRepo(dict):
         return AppRepo(path, db, **apps)
 
     async def store_api(self, api, api_name):
-        # TODO: Store apis in db and not redis. "We get the validation for free" - adpham
-        await self.db.hset(config["REDIS"]["api_key"], api_name, json.dumps(api))
+        url = f"{config['WORKER']['api_gateway_uri']}/api/apps/apis"
+        while True:
+            try:
+                async with self.session.post(url, json=api) as resp:
+                    results = await resp.json()
+                    logger.debug(f"API-Gateway app-api create response: {results}")
+                    return results
+            except aiohttp.ClientConnectionError as e:
+                pass
+                # logger.error(f"Could not send app api to {url}: {e!r}")
 
     async def load_apps_and_apis(self):
         if not getattr(self, "path", False) and getattr(self, "db", False):
@@ -48,13 +57,13 @@ class AppRepo(dict):
                     if re.fullmatch(r"(v(\d\.?)+)", version.name):
                         try:
                             # Store the api while we've got it here
-                            api_name = f"{app.name}-{version.name}"
+                            api_name = f"{app.name}:{version.name}"
                             await self.store_api(validate_app_api(version / "api.yaml"), api_name)
 
-                            project = get_project(project_dir=version, environment=load_docker_env())
+                            project = get_project(version)
                             if not len(project.services) == 1:
                                 logger.error(
-                                    f"{app.name}-{version.name} compose file must define exactly one(1) service.")
+                                    f"{app.name}:{version.name} compose file must define exactly one(1) service.")
                             else:
                                 apps[app.name][version.name] = project
 
@@ -63,9 +72,9 @@ class AppRepo(dict):
 
                         # TODO: Improve the error handling here
                         except Exception:
-                            logger.exception(f"Error during {app.name}-{version.name} load.")
+                            logger.exception(f"Error during {app.name}:{version.name} load.")
 
-                logger.info(f"Loaded {app.name} versions: {apps[app.name].keys()}")
+                logger.info(f"Loaded {app.name} versions: {[k for k in apps[app.name].keys()]}")
         return apps
 
 

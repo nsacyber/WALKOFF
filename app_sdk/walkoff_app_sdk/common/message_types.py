@@ -54,13 +54,12 @@ class MessageJSONEncoder(json.JSONEncoder):
             if o.op in JSONPatchOps:
                 ret = {"op": o.op, "path": o.path}
 
-                if o.op in {JSONPatchOps.TEST, JSONPatchOps.ADD, JSONPatchOps.REPLACE}:
+                if o.op in JSONPatchOps.requires_value.value:
                     if o.value is not None:
                         ret["value"] = o.value
                     else:
                         raise ValueError(f"Value must be provided for JSONPatch Op: {o.op}")
-
-                if o.op in {JSONPatchOps.MOVE, JSONPatchOps.COPY}:
+                if o.op in JSONPatchOps.requires_from.value:
                     if o.from_ is not None:
                         ret["from"] = o.from_
                     else:
@@ -77,19 +76,12 @@ class MessageJSONEncoder(json.JSONEncoder):
             return o.value.lower()
 
         elif isinstance(o, JSONPatch):
-            return {k: getattr(o, k, None) for k in o.__slots__ if getattr(o, k, None) is not None}
+            return {"op": o.op, "path": o.path, "value": o.value, "from_": o.from_}
         else:
             return o
 
 
-class JSONPatch:
-    __slots__ = ("op", "path", "value", "from_")
-
-    def __init__(self, op=None, path=None, value=None, from_=None):
-        self.op = op
-        self.path = path
-        self.value = value
-        self.from_ = from_
+JSONPatch = namedtuple("JSONPatch", ("op", "path", "value", "from_"), defaults=(None, None))
 
 
 class JSONPatchOps(enum.Enum):
@@ -99,6 +91,9 @@ class JSONPatchOps(enum.Enum):
     REPLACE = "REPLACE"
     MOVE = "MOVE"
     COPY = "COPY"
+
+    requires_value = {TEST, ADD, REPLACE}
+    requires_from = {MOVE, COPY}
 
 
 class StatusEnum(enum.Enum):

@@ -61,6 +61,7 @@
           application/json:
             schema:
               $ref: '#/components/schemas/AppApi'
+    security: []
 
 /apps/apis/{app_name}:
   get:

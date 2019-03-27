@@ -31,7 +31,7 @@ def load_config():
 
         return config
 
-    except KeyError as e:
+    except configparser.NoSectionError as e:
         logger.exception(f"Config section {e.args[0]} not found.")
         sys.exit(1)  # Invalid config is grounds for immediate app termination
 

@@ -3,7 +3,7 @@ services:
   test-app:
     build: ./
     env_file:
-      - ../../HelloWorld/v1.0/env.txt
+      - ../../hello_world/v1.0/env.txt
     deploy:
       mode: replicated
       replicas: 6

@@ -1,14 +1,11 @@
 from collections import deque
 import asyncio
 import logging
-import json
 import sys
 from typing import Union
 
 import aiohttp
 import aioredis
-import networkx as nx
-import matplotlib.pyplot as plt
 
 from common.message_types import message_dumps, message_loads, NodeStatusMessage, WorkflowStatusMessage, StatusEnum, \
     JSONPatch, JSONPatchOps
@@ -49,7 +46,8 @@ class Worker:
 
     @staticmethod
     async def run():
-        async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis, aiohttp.ClientSession() as session:
+        async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis,\
+                aiohttp.ClientSession(json_serialize=message_dumps) as session:
             async for workflow in Worker.get_workflow(redis):
                 # Setup worker launch the event loop
                 worker = Worker(workflow, redis=redis, session=session)
@@ -63,6 +61,9 @@ class Worker:
 
                 else:
                     logger.info(f"Completed execution of workflow: {workflow.name}")
+
+                # Clean up workflow in process queue
+                await redis.lrem(config["REDIS"]["workflows_in_process"], 0, workflow_dumps(workflow))
         await Worker.shutdown()
 
     @staticmethod
@@ -212,7 +213,7 @@ class Worker:
 
         if isinstance(node, Action):
             await self.dereference_params(node)
-            await self.redis.lpush(f"{node.app_name}-{node.priority}", workflow_dumps(node))
+            await self.redis.lpush(f"{node.app_name}:{node.priority}", workflow_dumps(node))
 
         elif isinstance(node, Condition):
             await self.evaluate_condition(node, parents, children)
@@ -265,7 +266,7 @@ class Worker:
         # Clean up our redis mess
         await self.redis.delete(read_messages_queue)
 
-    def make_patches(self, message, root, op, white_list=None, black_list=None):
+    def make_patch(self, message, root, op, white_list=None, black_list=None):
         if white_list is None and black_list is None:
             raise ValueError("Either white_list or black_list must be provided")
 
@@ -274,35 +275,38 @@ class Worker:
 
         # convert blacklist to whitelist and grab those attrs from the message
         white_list = set(message.__slots__).difference(black_list) if black_list is not None else white_list
-        fields = {'/'.join((root, k)): getattr(message, k) for k in message.__slots__ if k in white_list}
+        values = {k: getattr(message, k) for k in message.__slots__ if k in white_list}
 
-        return [JSONPatch(op, path=path, value=value) for path, value in fields.items()]
+        return JSONPatch(op, path=root, value=values)
 
     def get_patches(self, message):
-        patches = None
+        patches = []
         if isinstance(message, NodeStatusMessage):
             root = f"/action_statuses/{message.id_}"
             if message.status == StatusEnum.EXECUTING:
-                patches = self.make_patches(message, root, JSONPatchOps.ADD, black_list={"result", "completed_at"})
+                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, black_list={"result", "completed_at"}))
 
             elif message.status == StatusEnum.SUCCESS:
-                patches = self.make_patches(message, root, JSONPatchOps.REPLACE,
-                                            white_list={"status", "result", "completed_at"})
+                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
+                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, white_list={"result", "completed_at"}))
 
             elif message.status == StatusEnum.FAILURE:
-                patches = self.make_patches(message, root, JSONPatchOps.REPLACE,
-                                            white_list={"status", "error", "completed_at"})
+                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
+                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, white_list={"error", "completed_at"}))
 
         elif isinstance(message, WorkflowStatusMessage):
             root = f"/"
             if message.status == StatusEnum.EXECUTING:
-                patches = self.make_patches(message, root, JSONPatchOps.ADD, black_list={"status", "started_at"})
+                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
+                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, black_list={"status", "completed_at"}))
 
             elif message.status == StatusEnum.COMPLETED:
-                patches = self.make_patches(message, root, JSONPatchOps.REPLACE, white_list={"status", "completed_at"})
+                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
+                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, white_list={"completed_at"}))
 
             elif message.status == StatusEnum.ABORTED:
-                patches = self.make_patches(message, root, JSONPatchOps.REPLACE, white_list={"status", "completed_at"})
+                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
+                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, white_list={"completed_at"}))
 
         return patches
 
@@ -310,15 +314,16 @@ class Worker:
         """ Forms and sends a JSONPatch message to the api_gateway to update the status of an action or workflow """
         patches = self.get_patches(message)
 
-        if patches is None:
+        if len(patches) < 1:
             raise ValueError(f"Attempting to send improper message type: {type(message)}")
 
-        data = message_dumps(patches)
         params = {"event": message.status.value}
-        url = f"{config['WORKER']['api_gateway_uri']}/iapi/workflowstatus/{self.workflow.execution_id}"
+        url = f"{config['WORKER']['api_gateway_uri']}/api/internal/workflowstatus/{self.workflow.execution_id}"
         try:
-            async with self.session.patch(url, data=data, params=params) as resp:
-                return resp.json(loads=message_loads)
+            async with self.session.patch(url, json=patches, params=params) as resp:
+                results = await resp.json(loads=message_loads)
+                logger.debug(f"API-Gateway status update response: {results}")
+                return results
         except aiohttp.ClientConnectionError as e:
             logger.error(f"Could not send status message to {url}: {e!r}")
 

@@ -1,7 +1,6 @@
-FROM python:3.7-alpine as base
+FROM localhost:5000/walkoff_app_sdk as base
 
 FROM base as builder
-RUN apk --no-cache add --update alpine-sdk
 
 RUN mkdir /install
 WORKDIR /install
