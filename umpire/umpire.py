@@ -352,7 +352,8 @@ class Umpire:
             if count * 5 >= config.getint("UMPIRE", "app_refresh"):
                 count = 0
                 logger.info("Refreshing apps.")
-                self.apps = await AppRepo.create(config["UMPIRE"]["apps_path"], self.redis)
+                # TODO: maybe do this a bit more intelligently? Presently it throws uniqueness errors for db
+                await self.apps.load_apps_and_apis()
 
             await asyncio.sleep(5)
             count += 1

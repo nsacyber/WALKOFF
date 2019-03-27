@@ -33,13 +33,15 @@ class AppRepo(dict):
 
     async def store_api(self, api, api_name):
         url = f"{config['WORKER']['api_gateway_uri']}/api/apps/apis"
-        try:
-            async with self.session.post(url, json=api) as resp:
-                results = await resp.json()
-                logger.debug(f"API-Gateway app-api create response: {results}")
-                return results
-        except aiohttp.ClientConnectionError as e:
-            logger.error(f"Could not send status message to {url}: {e!r}")
+        while True:
+            try:
+                async with self.session.post(url, json=api) as resp:
+                    results = await resp.json()
+                    logger.debug(f"API-Gateway app-api create response: {results}")
+                    return results
+            except aiohttp.ClientConnectionError as e:
+                pass
+                # logger.error(f"Could not send app api to {url}: {e!r}")
 
     async def load_apps_and_apis(self):
         if not getattr(self, "path", False) and getattr(self, "db", False):
