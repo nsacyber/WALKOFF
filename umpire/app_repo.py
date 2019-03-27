@@ -32,7 +32,7 @@ class AppRepo(dict):
         return AppRepo(path, db, **apps)
 
     async def store_api(self, api, api_name):
-        url = f"{config['WORKER']['api_gateway_uri']}/api/internal/apps/apis/"
+        url = f"{config['WORKER']['api_gateway_uri']}/api/apps/apis"
         try:
             async with self.session.post(url, json=api) as resp:
                 results = await resp.json()
@@ -40,8 +40,6 @@ class AppRepo(dict):
                 return results
         except aiohttp.ClientConnectionError as e:
             logger.error(f"Could not send status message to {url}: {e!r}")
-
-        # await self.session.hset(config["REDIS"]["api_key"], api_name, json.dumps(api))
 
     async def load_apps_and_apis(self):
         if not getattr(self, "path", False) and getattr(self, "db", False):

@@ -37,8 +37,8 @@ def read_all_app_names():
 
 
 # ToDo: Delete this when testing is done, or it can be used by the umpire
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('app_apis', ['create']))
+# @jwt_required
+# @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['create']))
 def create_app_api():
     data = request.data
     if request.files and 'file' in request.files:
