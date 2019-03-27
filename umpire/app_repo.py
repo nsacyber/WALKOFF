@@ -4,7 +4,7 @@ import json
 import asyncio
 from pathlib import Path
 
-
+import aiohttp
 from compose.cli.command import get_project
 
 
@@ -20,9 +20,9 @@ logger = logging.getLogger("AppRepo")
 class AppRepo(dict):
     class RepositoryNotInitialized(Exception): pass
 
-    def __init__(self, path, db, **apps):
+    def __init__(self, path, session, **apps):
         self.path = Path(path)
-        self.db = db
+        self.session = session
         super().__init__(**apps)
 
     @classmethod
@@ -32,8 +32,16 @@ class AppRepo(dict):
         return AppRepo(path, db, **apps)
 
     async def store_api(self, api, api_name):
-        # TODO: Store apis in db and not redis. "We get the validation for free" - adpham
-        await self.db.hset(config["REDIS"]["api_key"], api_name, json.dumps(api))
+        url = f"{config['WORKER']['api_gateway_uri']}/api/internal/apps/apis/"
+        try:
+            async with self.session.post(url, json=api) as resp:
+                results = await resp.json()
+                logger.debug(f"API-Gateway app-api create response: {results}")
+                return results
+        except aiohttp.ClientConnectionError as e:
+            logger.error(f"Could not send status message to {url}: {e!r}")
+
+        # await self.session.hset(config["REDIS"]["api_key"], api_name, json.dumps(api))
 
     async def load_apps_and_apis(self):
         if not getattr(self, "path", False) and getattr(self, "db", False):

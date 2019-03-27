@@ -98,9 +98,9 @@ def push_to_action_stream_queue(action_statuses, event):
 #         current_app.running_context.execution_db.session.rollback()
 #         return unique_constraint_problem('workflow_status', 'create', workflow.name)
 
-
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("workflowstatus", ["create"]))
+# TODO: maybe make an internal user for the worker/umpire?
+# @jwt_required
+# @permissions_accepted_for_resources(ResourcePermissions("workflowstatus", ["create"]))
 @with_workflow_status('update', 'execution_id')
 def update_workflow_status(execution_id):
     old_workflow_status = workflow_status_schema.dump(execution_id)

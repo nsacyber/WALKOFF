@@ -18,18 +18,28 @@ services:
 #    depends_on:
 #      - redis
 
-  app_sdk:
-    build:
-      context: ./app_sdk
-      dockerfile: ./Dockerfile
-    image: walkoff_app_sdk
-
-  worker:
-    image: localhost:5000/worker:latest
-    build:
-      context: ./
-      dockerfile: worker/Dockerfile
-    command: echo "Successfully built local worker image."
+  registry:
+    restart: always
+    image: registry:2
+    deploy:
+      placement:
+       constraints: [node.role==manager]
+    ports:
+      - 5000:5000
+    networks:
+      - walkoff_default
+# The commented lines are needed to enable auth on the custom registry
+#    environment:
+#      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
+#      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+#      REGISTRY_AUTH: htpasswd
+#      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+#      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+    volumes:
+#      - ./data/config.yml:/etc/docker/registry/config.yml
+      - /var/lib/boot2docker/registry:/var/lib/registry
+#      - /var/lib/boot2docker:/certs
+#      - /var/lib/boot2docker/auth:/auth
 
   api_gateway:
     ports:
@@ -64,8 +74,8 @@ services:
       - 6379:6379
     networks:
       - walkoff_default
-#    volumes:
-#      - /var/lib/boot2docker/redis:/data
+    volumes:
+      - /var/lib/boot2docker/redis:/data
 
   postgres:
     container_name: postgres
@@ -80,8 +90,8 @@ services:
         constraints: [node.role==manager]
     networks:
       - walkoff_default
-#    volumes:
-#      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data
+    volumes:
+      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data
 
 networks:
   walkoff_default:

@@ -8,6 +8,8 @@ WORKDIR /install
 
 COPY requirements.txt /requirements.txt
 
+RUN pip install --prefix="/install" --no-deps asteval
+RUN pip install --prefix="/install" six
 RUN pip install --prefix="/install" -r /requirements.txt
 
 FROM base

@@ -3,8 +3,10 @@ import logging
 import json
 from pathlib import Path
 from functools import reduce
+from itertools import compress
 
 import aiodocker
+import aiohttp
 import aioredis
 from aiodocker.exceptions import DockerError
 from docker.types.services import SecretReference
@@ -19,7 +21,7 @@ from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("UMPIRE")
-# logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 
 
 # TODO: Add verification that AppRepo got initialized before use
@@ -32,11 +34,12 @@ class Umpire:
         self.worker = None
 
     @classmethod
-    async def init(cls, docker_client=None, redis=None):
+    async def init(cls, docker_client, redis, session):
         self = cls(docker_client, redis)
-        self.apps = await AppRepo.create(config["UMPIRE"]["apps_path"], redis)
+        self.apps = await AppRepo.create(config["UMPIRE"]["apps_path"], session)
         self.running_apps = await self.get_running_apps()
         self.worker = await self.get_service("worker")
+        await self.build_app_sdk()
 
         if len(self.apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
@@ -45,10 +48,10 @@ class Umpire:
 
     @staticmethod
     async def run():
-        async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis, connect_to_aiodocker() as docker_:
-            ump = await Umpire.init(docker_client=docker_, redis=redis)
+        async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis, aiohttp.ClientSession() as session, \
+                connect_to_aiodocker() as docker_client:
+            ump = await Umpire.init(docker_client=docker_client, redis=redis, session=session)
             await ump.monitor_queues()
-            # await ump.build_worker()
         await Umpire.shutdown()
 
     @staticmethod
@@ -82,7 +85,7 @@ class Umpire:
         try:
             await self.docker_client.images.pull(worker.image_name)
         except DockerError:
-            logger.debug(f"Could not pull {worker.image_name}. Trying to see build local instead.")
+            logger.debug(f"Could not pull {worker.image_name}. Trying to build local instead.")
 
         try:
             secrets = await self.load_secrets(project=project)
@@ -94,6 +97,7 @@ class Umpire:
 
         except DockerError:
             try:
+                self.worker = await self.get_service(self.worker["id"])
                 await update_service(self.docker_client, service_id=self.worker["id"], version=self.worker["version"],
                                      image=worker.image_name, mode={"replicated": {"Replicas": replicas}})
                 self.worker = await self.get_service(self.worker["id"])
@@ -125,6 +129,33 @@ class Umpire:
             logger.exception(f"Error during worker build")
             return
 
+    async def build_app_sdk(self):
+        try:
+            logger.info(f"Building walkoff_app_sdk")
+            sdk_name = "walkoff_app_sdk"
+            repo = f"{config['UMPIRE']['DOCKER_REGISTRY']}/{sdk_name}"
+            project = get_project(project_dir=Path(__file__).parent, project_name=sdk_name)
+            sdk = [service for service in project.services if service.name == sdk_name][0]
+            build_opts = sdk.options.get('build', {})
+
+            with docker_context(Path(build_opts["context"])) as context:
+                log_stream = await self.docker_client.images.build(fileobj=context, tag=sdk.image_name, rm=True,
+                                                                   forcerm=True, pull=True, stream=True,
+                                                                   path_dockerfile=build_opts["dockerfile"],
+                                                                   encoding="application/x-tar")
+            await stream_docker_log(log_stream)
+
+            # Give image a locally accessible tag as well for docker-compose up runs
+            await self.docker_client.images.tag(repo, sdk_name)
+
+            logger.info(f"Pushing walkoff_app_sdk")
+            log_stream = await self.docker_client.images.push(repo, stream=True)
+            await stream_docker_log(log_stream)
+
+        except DockerBuildError:
+            logger.exception(f"Error during walkoff_app_sdk build")
+            return
+
     async def launch_app(self, app, version, replicas=1):
         app_name = f"{config['UMPIRE']['app_prefix']}_{app}"
         repo = f"{config['UMPIRE']['DOCKER_REGISTRY']}/{app_name}"
@@ -140,11 +171,11 @@ class Umpire:
 
         logger.debug(f"Launching {app}...")
 
-        # see if the image provided by the docker-compose file can be pulled
-        try:
-            image = await self.docker_client.images.pull(image_name)
-        except DockerError:
-            logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
+        # # see if the image provided by the docker-compose file can be pulled
+        # try:
+        #     image = await self.docker_client.images.pull(image_name)
+        # except DockerError:
+        #     logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
 
         # if we didn't find the image, try to build it
         if image is None:
@@ -192,9 +223,9 @@ class Umpire:
 
         try:
             mode = {"replicated": {'Replicas': replicas}}
+            self.running_apps[app_name] = await self.get_service(app_name)
             await update_service(self.docker_client, service_id=self.running_apps[app_name]["id"],
                                  version=self.running_apps[app_name]["version"], image=image_name, mode=mode)
-
             self.running_apps[app_name] = await self.get_service(app_name)
 
         except DockerError:
@@ -238,10 +269,14 @@ class Umpire:
             logger.info(f"Building {app}:{version}")
             with docker_context(build_opts["context"]) as context:
                 log_stream = await self.docker_client.images.build(fileobj=context, tag=full_tag, rm=True, forcerm=True,
-                                                                   path_dockerfile="Dockerfile", pull=True, stream=True,
+                                                                   path_dockerfile="Dockerfile", stream=True,
                                                                    encoding="application/x-tar")
             await stream_docker_log(log_stream)
 
+            # Give image a locally accessible tag as well for docker-compose up runs
+            await self.docker_client.images.tag(full_tag, app_name, tag=version)
+
+            # TODO: don't push failed builds
             logger.info(f"Pushing {app}:{version}")
             log_stream = await self.docker_client.images.push(repo, tag=version, stream=True)
             await stream_docker_log(log_stream)
@@ -250,36 +285,53 @@ class Umpire:
             logger.exception(f"Error during {app}:{version} build")
             return
 
+    async def remove_service(self, service):
+        try:
+            return await self.docker_client.services.delete(service)
+        except DockerError:
+            logger.exception(f"Could not delete {service}.")
+            return False
+
     async def monitor_queues(self):
         def replicas_getter(d, service):
             if "ID" in d:
                 d = {d["Spec"]["Name"]: d["Spec"]["Mode"]["Replicated"]["Replicas"]}
             d[service["Spec"]["Name"]] = service["Spec"]["Mode"]["Replicated"]["Replicas"]
             return d
-        # # TODO: Remove the test code
+        # # # TODO: Remove the test code
         # # Push test workflow in for now
-        # import uuid
-        # with open("data/not_workflows/condition_test.json") as fp:
-        #     wf = json.load(fp)
-        #     for i in range(50):
-        #         wf["execution_id"] = str(uuid.uuid4())
-        #         await self.redis.lpush(config["REDIS"]["workflow_q"], json.dumps(wf))
+        import uuid
+        with open("data/not_workflows/condition_test.json") as fp:
+            wf = json.load(fp)
+            for i in range(50):
+                wf["execution_id"] = str(uuid.uuid4())
+                await self.redis.lpush(config["REDIS"]["workflow_q"], json.dumps(wf))
 
         count = 0
         while True:
             # TODO: Come up with a more robust system of naming queues
             # Find all redis keys matching our "{AppName}-{Priority}" pattern
-            keys = await self.redis.keys(pattern="*:*:[1-5]", encoding="utf-8")
+            keys = set(await self.redis.keys(pattern="*:*:[1-5]", encoding="utf-8"))
             logger.info(f"Redis keys: {keys}")
+
+            self.running_apps = await self.get_running_apps()
             logger.info(f"Running apps: {[service for service in self.running_apps.keys()]}")
+
             num_workflows = await self.redis.llen(config["REDIS"]["workflow_q"])
             logger.info(f"Number of Workflows: {num_workflows}")
-            service_replicas = reduce(replicas_getter, await self.docker_client.services.list())
+
+            services = await self.docker_client.services.list()
+            service_replicas = reduce(replicas_getter, services) if len(services) > 0 else {}
 
             workers_needed = min((num_workflows - service_replicas.get("worker", 0)),
                                  config.getint("UMPIRE", "max_workers"))
             if workers_needed > 0:
                 await self.launch_workers(workers_needed)
+
+            else:
+                if self.worker:
+                    await self.remove_service("worker")
+                    self.worker = {}
 
             if len(keys) > 0:  # we have some work for the apps, let's spin some up
                 for key in keys:
@@ -288,11 +340,23 @@ class Umpire:
                     curr_replicas = service_replicas.get(app_name, 0)
                     max_replicas = self.apps[app_name][version].services[0].options["deploy"]["replicas"]
                     replicas_needed = min((workload - curr_replicas), max_replicas)
-                    print(max_replicas)
                     if curr_replicas == 0:
                         await self.launch_app(app_name, version, replicas=replicas_needed)
                     logger.info(f"Launched copy of {':'.join([app_name, version])}")
 
+            else:  # There isn't any work so lets kill any running apps and workers
+                mask = [await self.remove_service(app) for app in self.running_apps]
+                removed_apps = list(compress(self.running_apps, mask))
+                logger.debug(f"Removed apps: {removed_apps}")
+
+            # Check to see if any apps are running that we don't have work for and kill them
+            for key in filter(lambda s: any([app.lstrip(config["UMPIRE"]["app_prefix"]) not in s
+                                             for app in self.running_apps]), keys):
+                app, _, __ = key.split(':')
+                await self.remove_service(app)
+                logger.debug(f"Removed app: {app}")
+
+            # Reload the app projects and apis every once in a while
             if count * 5 >= config.getint("UMPIRE", "app_refresh"):
                 count = 0
                 logger.info("Refreshing apps.")

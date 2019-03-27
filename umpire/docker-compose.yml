@@ -1,35 +1,17 @@
 version: '3.4'
 services:
   worker:
-    image: localhost:5000/worker:latest
+    image: localhost:5000/worker
     build:
       context: ./
-      dockerfile: worker/Dockerfile
+      dockerfile: ./worker/Dockerfile
     deploy:
       mode: replicated
       replicas: 1
 
-
-  walkoff:
-    ports:
-    - "8080:8080"
-    image: "localhost:5000/walkoff:latest"
+  walkoff_app_sdk:
     build:
-      context: ./
-      dockerfile: ./api_gateway/Dockerfile
-    environment:
-    - "CACHE={\"type\": \"redis\", \"host\": \"redis\", \"port\": 6379}"
-    - "IP=0.0.0.0"
-    - "PORT=8080"
-    - "WALKOFF_DB_TYPE=postgresql"
-    - "EXECUTION_DB_TYPE=postgresql"
-    - "DB_PATH=walkoff"
-    - "EXECUTION_DB_PATH=execution"
-    - "WALKOFF_DB_HOST=postgres"
-    - "EXECUTION_DB_HOST=postgres"
-    - "EXECUTION_DB_USERNAME=walkoff"
-    - "EXECUTION_DB_PASSWORD=walkoff"
-    - "WALKOFF_DB_USERNAME=walkoff"
-    - "WALKOFF_DB_PASSWORD=walkoff"
-    stop_signal: SIGINT
-    stop_grace_period: 30s
+      context: ../app_sdk
+      dockerfile: ./Dockerfile
+    image: localhost:5000/walkoff_app_sdk
+

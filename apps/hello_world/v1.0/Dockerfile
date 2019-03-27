@@ -1,4 +1,4 @@
-FROM walkoff_app_sdk as base
+FROM localhost:5000/walkoff_app_sdk as base
 
 FROM base as builder
 
@@ -12,8 +12,6 @@ FROM base
 
 COPY --from=builder /install /usr/local
 COPY src /app
-COPY src/common /app
-COPY src/app_sdk /app
 
 WORKDIR /app
 
