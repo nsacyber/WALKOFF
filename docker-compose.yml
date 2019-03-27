@@ -1,22 +1,22 @@
 version: '3.5'
 services:
-#  umpire:
-#    image: localhost:5000/umpire:latest
-#    build:
-#      context: ./
-#      dockerfile: umpire/Dockerfile
-#    networks:
-#      - walkoff_default
-#    volumes:
-#      - /var/run/docker.sock:/var/run/docker.sock
-#      - /Users/kylezimmer/PycharmProjects/triple-play/apps:/app/apps
-#    environment:
-#      - DOCKER_HOST=unix:///var/run/docker.sock
-#    deploy:
-#      placement:
-#        constraints: [node.role==manager]
-#    depends_on:
-#      - redis
+ umpire:
+   image: localhost:5000/umpire:latest
+   build:
+     context: ./
+     dockerfile: umpire/Dockerfile
+   networks:
+     - walkoff_default
+   volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+     - /Users/kylezimmer/PycharmProjects/triple-play/apps:/app/apps
+   environment:
+     - DOCKER_HOST=unix:///var/run/docker.sock
+   deploy:
+     placement:
+       constraints: [node.role==manager]
+   depends_on:
+     - redis
 
   app_sdk:
     build:
