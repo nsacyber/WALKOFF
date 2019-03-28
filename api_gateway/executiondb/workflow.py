@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import Column, String, ForeignKey, UniqueConstraint, Boolean, event
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import UUIDType
+from sqlalchemy_utils import UUIDType, JSONType
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
@@ -30,13 +30,15 @@ class Workflow(ExecutionElement, Execution_Base):
     transforms = relationship("Transform", cascade="all, delete-orphan", passive_deletes=True)
     triggers = relationship("Trigger", cascade="all, delete-orphan", passive_deletes=True)
     is_valid = Column(Boolean, default=False)
+    tags = Column(JSONType)
+    description = Column(String())
     children = ("actions", "branches", "conditions", "transforms", "triggers")
     workflow_variables = relationship("WorkflowVariable", cascade="all, delete-orphan", passive_deletes=True)
 
     # __table_args__ = (UniqueConstraint("playbook_id", "name", name="_playbook_workflow"),)
 
     def __init__(self, name, start, id_=None, actions=None, branches=None, conditions=None, transforms=None,
-                 triggers=None, workflow_variables=None, is_valid=False, errors=None):
+                 triggers=None, workflow_variables=None, is_valid=False, errors=None, tags=None, description=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
 
@@ -57,11 +59,13 @@ class Workflow(ExecutionElement, Execution_Base):
         self.conditions = conditions if conditions else []
         self.transforms = transforms if transforms else []
         self.triggers = triggers if triggers else []
-
+        self.tags = tags if tags else []
         self.workflow_variables = workflow_variables if workflow_variables else []
 
         self.start = start
         self.is_valid = is_valid
+
+        self.description = description
 
         if not self.is_valid:
             self.validate()
@@ -102,6 +106,8 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     transforms = fields.Nested(TransformSchema, many=True)
     triggers = fields.Nested(TriggerSchema, many=True)
     workflow_variables = fields.Nested(WorkflowVariableSchema, many=True)
+    tags = fields.Raw()
+    description = field_for(Workflow, 'description')
 
     # TODO: determine if this is needed
     # exclude = ("is_valid",)
