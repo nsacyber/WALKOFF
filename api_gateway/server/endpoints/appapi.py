@@ -28,6 +28,28 @@ app_api_schema = AppApiSchema()
 with_app_api_name = with_resource_factory('app_api', app_api_getter_name)
 
 
+# ToDo: App APIs should be stored in some nosql db instead to avoid this
+def add_locations(appapi):
+    app_name = appapi['name']
+    for action in appapi.get('actions', []):
+        action['location'] = f"{app_name}.{action['name']}"
+        for param in action.get('parameters', []):
+            param['location'] = f"{app_name}.{action['name']}:{param['name']}"
+        if 'returns' in action:
+            action['returns']['location'] = f"{app_name}.{action['name']}.returns"
+    return appapi
+
+
+def remove_locations(appapi):
+    for action in appapi.get('actions', []):
+        action.pop('location', None)
+        for param in action.get('parameters', []):
+            param.pop('location', None)
+        if 'returns' in action:
+            action['returns'].pop('location', None)
+    return appapi
+
+
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
 def read_all_app_names():
@@ -46,7 +68,7 @@ def create_app_api():
 
     data = json.loads(data)
     app_name = data['name']
-
+    add_locations(data)
     try:
         # ToDo: make a proper common type for this when the other components need it
         app_api = app_api_schema.load(data)
@@ -151,7 +173,7 @@ def create_app_api():
 def read_all_app_apis():
     ret = []
     for app_api in current_app.running_context.execution_db.session.query(AppApi).order_by(AppApi.name).all():
-        ret.append(app_api_schema.dump(app_api))
+        ret.append(remove_locations(app_api_schema.dump(app_api)))
     return ret, HTTPStatus.OK
 
 
@@ -159,7 +181,7 @@ def read_all_app_apis():
 @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
 @with_app_api_name('read', 'app_name')
 def read_app_api(app_name):
-    return app_api_schema.dump(app_name), HTTPStatus.OK
+    return remove_locations(app_api_schema.dump(app_name)), HTTPStatus.OK
 
 
 @jwt_required
@@ -167,6 +189,7 @@ def read_app_api(app_name):
 @with_app_api_name('update', 'app_name')
 def update_app_api(app_name):
     data = request.get_json()
+    add_locations(data)
     try:
         app_api_schema.load(data, instance=app_name)
         current_app.running_context.execution_db.session.commit()

@@ -6,7 +6,12 @@ from sqlalchemy_utils import UUIDType, JSONType
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
+from flask import current_app
+
+from common.workflow_types import ParameterVariant
+
 from api_gateway.executiondb.schemas import ExecutionElementBaseSchema
+from api_gateway.executiondb.global_variable import GlobalVariable
 from api_gateway.executiondb.condition import ConditionSchema
 from api_gateway.executiondb.transform import TransformSchema
 from api_gateway.executiondb.trigger import TriggerSchema
@@ -76,16 +81,25 @@ class Workflow(ExecutionElement, Execution_Base):
                    [conditions.id_ for conditions in self.conditions] + \
                    [transforms.id_ for transforms in self.transforms]
 
+        work_var_ids = [workflow_var.id_ for workflow_var in self.workflow_variables]
+        global_ids = current_app.running_context.execution_db.session.query(GlobalVariable.id_).all()
+
+        params = [param for action in [action.parameters for action in self.actions] for param in action]
+
         errors = []
         if not self.start and self.actions:
-            errors.append("Workflows with actions require a start parameter")
+            errors.append("Workflows must have a starting action.")
         elif self.actions and self.start not in node_ids:
-            errors.append("Workflow start ID {} not found in nodes".format(self.start))
+            errors.append(f"Workflow start ID {self.start} not found in nodes")
         for branch in self.branches:
             if branch.source_id not in node_ids:
-                errors.append("Branch source ID {} not found in workflow nodes".format(branch.source_id))
+                errors.append(f"Branch source ID {branch.source_id} not found in nodes")
             if branch.destination_id not in node_ids:
-                errors.append("Branch destination ID {} not found in workflow nodes".format(branch.destination_id))
+                errors.append(f"Branch destination ID {branch.destination_id} not found in nodes")
+        for param in params:
+            if param.variant != ParameterVariant.STATIC_VALUE.name:
+                if param.value not in node_ids and param.value not in work_var_ids and param.value not in global_ids:
+                    errors.append(f"Parameter {param.name} refers to {param.value} not found in {param.variant}.")
         self.errors = errors
         self.is_valid = self._is_valid
 

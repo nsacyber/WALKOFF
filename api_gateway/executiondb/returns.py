@@ -18,17 +18,20 @@ class ReturnApi(ExecutionElement, Execution_Base):
     __tablename__ = 'return_api'
     action_api_id = Column(UUIDType(binary=False), ForeignKey('action_api.id_', ondelete='CASCADE'))
     description = Column(String())
+    location = Column(String(), nullable=False)
     example = Column(JSONType)
     schema = Column(JSONType)
 
-    def __init__(self, id_=None, errors=None, description=None, example=None, schema=None):
+    def __init__(self, location, id_=None, errors=None, description=None, example=None, schema=None):
         ExecutionElement.__init__(self, id_, errors)
+        self.location = location
         self.description = description
         self.example = example
         self.schema = schema
 
 
 class ReturnApiSchema(ExecutionElementBaseSchema):
+    location = field_for(ReturnApi, 'location', required=True)
     description = field_for(ReturnApi, 'description')
     example = fields.Raw()
     schema = fields.Raw()

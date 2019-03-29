@@ -1,12 +1,15 @@
 import logging
 from uuid import uuid4
 
+from flask import current_app
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm, event, Boolean
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 from marshmallow_sqlalchemy import field_for
+
+from common.workflow_types import ParameterVariant
 
 from api_gateway.executiondb.schemas import ExecutionElementBaseSchema
 
@@ -21,16 +24,18 @@ class ParameterApi(Execution_Base, ExecutionElement):
     __tablename__ = 'parameter_api'
     action_api_id = Column(UUIDType(binary=False), ForeignKey('action_api.id_', ondelete='CASCADE'))
     name = Column(String(), nullable=False)
+    location = Column(String(), nullable=False)
     description = Column(String())
     example = Column(JSONType)
     required = Column(Boolean())
     placeholder = Column(JSONType)
     schema = Column(JSONType)
 
-    def __init__(self, name, id_=None, errors=None, description=None, example=None, required=False, placeholder=None,
+    def __init__(self, name, location, id_=None, errors=None, description=None, example=None, required=False, placeholder=None,
                  schema=None):
         ExecutionElement.__init__(self, id_, errors)
         self.name = name
+        self.location = location
         self.description = description
         self.example = example
         self.required = required
@@ -40,6 +45,7 @@ class ParameterApi(Execution_Base, ExecutionElement):
 
 class ParameterApiSchema(ExecutionElementBaseSchema):
     name = field_for(ParameterApi, 'name', required=True)
+    location = field_for(ParameterApi, 'location', required=True)
     description = field_for(ParameterApi, 'description')
     example = fields.Raw()
     required = field_for(ParameterApi, 'required')
@@ -81,9 +87,10 @@ class Parameter(Execution_Base, ExecutionElement):
     transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id_', ondelete='CASCADE'))
     name = Column(String(255), nullable=False)
     variant = Column(String(255), nullable=False)
+    api_location = Column(String(255), nullable=False)
     value = Column(JSONType)
 
-    def __init__(self, name, variant, id_=None, errors=None, value=None):
+    def __init__(self, name, variant, api_location, id_=None, errors=None, value=None):
         """Initializes an Parameter object.
 
         Args:
@@ -95,6 +102,7 @@ class Parameter(Execution_Base, ExecutionElement):
         ExecutionElement.__init__(self, id_, errors)
         self.name = name
         self.variant = variant
+        self.api_location = api_location
         self.value = value
         self.validate()
 
@@ -104,12 +112,25 @@ class Parameter(Execution_Base, ExecutionElement):
         pass
 
     def validate(self):
-        """Validates the object"""
-        self.errors = []
-        if self.variant != "STATIC_VALUE" and not validate_uuid4(self.value):
-            message = f"Value is a reference but {self.value} is not a valid uuid4"
-            logger.error(message)
-            self.errors = [message]
+        if self.variant != ParameterVariant.STATIC_VALUE.name:
+            # Parameter is a reference, verify the uuid is valid
+            if not validate_uuid4(self.value):
+                message = f"Value is a reference but {self.value} is not a valid uuid4"
+                logger.error(message)
+                self.errors = [message]
+            # ToDo: verify that the uuid exists in the workflow.
+            # Doing this with SQLAlchemy results in circular imports.
+        else:
+            # Parameter is a value, verify that the value is valid under the schema given in App Api, if applicable
+            api = current_app.running_context.execution_db.session.query(ParameterApi).filter(
+                ParameterApi.location == self.api_location
+            ).first()
+            try:
+                Draft4Validator(api.schema).validate(self.value)
+            except JSONSchemaValidationError as e:
+                message = f"Parameter {self.name} has value {self.value} that is not valid under schema {api.schema}."
+                logger.error(message)
+                self.errors = [message]
 
     # def __eq__(self, other):
     #     return self.name == other.name and self.value == other.value and self.reference == other.reference \
@@ -132,7 +153,8 @@ class ParameterSchema(ExecutionElementBaseSchema):
     """
     name = field_for(Parameter, 'name', required=True)
     value = fields.Raw()
-    variant = field_for(Parameter, 'variant', required=False)
+    variant = field_for(Parameter, 'variant', required=True)
+    api_location = field_for(Parameter, 'api_location', required=True)
 
     class Meta:
         model = Parameter
