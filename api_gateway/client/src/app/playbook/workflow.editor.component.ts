@@ -18,8 +18,6 @@ import * as gridGuide from 'cytoscape-grid-guide';
 import * as panzoom from 'cytoscape-panzoom';
 import * as undoRedo from 'cytoscape-undo-redo';
 
-import * as Fuse from 'fuse.js';
-
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 import { UtilitiesService } from '../utilities.service';
@@ -56,17 +54,17 @@ import { Variable } from '../models/variable';
 import { MetadataModalComponent } from './metadata.modal.component';
 
 @Component({
-	selector: 'playbook-component',
-	templateUrl: './playbook.html',
+	selector: 'workflow-editor-component',
+	templateUrl: './workflow.editor.html',
 	styleUrls: [
-		'./playbook.scss',
+		'./workflow.editor.scss',
 		'../../../node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css',
 		'../../../node_modules/ng2-dnd/bundles/style.css',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [AuthService, GlobalsService, SettingsService],
 })
-export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
+export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;
 	@ViewChild('workflowResultsTable') workflowResultsTable: DatatableComponent;
 	@ViewChild('consoleContainer') consoleContainer: ElementRef;
@@ -113,8 +111,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	recalculateConsoleTableCallback: any;
 	actionFilter: string = '';
 	actionFilterControl = new FormControl();
-	filterQuery: FormControl = new FormControl();
-	filteredWorkflows: Workflow[] = [];
+
+	tags: string[] = [];
 	
 	// Simple bootstrap modal params
 	modalParams: {
@@ -126,8 +124,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		newPlaybook?: string,
 		shouldShowWorkflow?: boolean,
 		newWorkflow?: string,
-		newDescription?: string,
-		newTags?: string[],
 		submit: () => any,
 	} = {
 		title: '',
@@ -184,11 +180,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			}, 0);
 		});
 
-		this.filterQuery
-			.valueChanges
-			.debounceTime(500)
-			.subscribe(() => this.filterWorkflows());
-
 	}
 
 	/**
@@ -210,6 +201,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	ngOnDestroy(): void {
 		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
 		if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
+	}
+
+	changed(data: {value: string[]}) {
+		this.tags = data.value;
 	}
 
     ///------------------------------------------------------------------------------------------------------
@@ -377,17 +372,21 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		if (workflow.id) {
 			this.playbookService.loadWorkflow(workflow.id)
 				.then(loadedWorkflow => {
-					//this.loadedPlaybook = playbook;
 					this.loadedWorkflow = loadedWorkflow;
 					this.setupGraph();
 					this._closeWorkflowsModal();
 				})
 				.catch(e => this.toastrService.error(`Error loading workflow "${workflow.name}": ${e.message}`));
 		} else {
-			//this.loadedPlaybook = playbook;
 			this.loadedWorkflow = workflow;
 			this.setupGraph();
 		}
+	}
+
+	returnToWorkflows() : void {
+		if (confirm(`Are you sure you? Any unsaved changes to "${this.loadedWorkflow.name}" will be lost!`)) {
+			this.router.navigateByUrl(`/workflows`);
+		};
 	}
 
 	routeToWorkflow(workflow: Workflow): void {
@@ -765,44 +764,20 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this._sanitizeExpressionAndChildren(branch.condition);
 		});
 
-		let savePromise: Promise<Workflow>;
-		// if (this.loadedPlaybook.id) {
-		// 	if (this.loadedWorkflow.id) {
-		// 		savePromise = this.playbookService.saveWorkflow(workflowToSave);
-		// 	} else {
-		// 		savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
-		// 	}
-		// } else {
-		// 	const playbookToSave: Playbook = classToClass(this.loadedPlaybook);
-		// 	playbookToSave.workflows = [workflowToSave];
-		// 	savePromise = this.playbookService.newPlaybook(playbookToSave)
-		// 		.then(newPlaybook => {
-		// 			this.loadedPlaybook = newPlaybook;
-		// 			this.playbooks.push(newPlaybook);
-		// 			this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-		// 			// Return our new workflow to be loaded in the editor, etc.
-		// 			return newPlaybook.workflows[0];
-		// 		});
-		// }
 		if (this.loadedWorkflow.id) {
-			savePromise = this.playbookService.saveWorkflow(workflowToSave);
-		} else {
-			savePromise = this.playbookService.newWorkflow(workflowToSave);
-		}
-
-		savePromise
-			.then(savedWorkflow => {
-				// If this workflow doesn't exist, add it to our loaded playbook (and master list for loading)
-				// if (!this.loadedPlaybook.workflows.find(w => w.id === savedWorkflow.id)) {
-				// 	this.loadedPlaybook.workflows.push(savedWorkflow);
-				// 	this.loadedPlaybook.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
-				// }
+			this.playbookService.saveWorkflow(workflowToSave).then(savedWorkflow => {
 				this.loadedWorkflow = savedWorkflow;
 				this.setupGraph();
-				this.toastrService.success(`Successfully saved workflow ${workflowToSave.name}.`);
-			})
-			.catch(e => this.toastrService
-				.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
+				this.toastrService.success(`Successfully saved workflow ${ savedWorkflow.name }.`);
+			}).catch(e => this.toastrService.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
+		} else {
+			this.playbookService.newWorkflow(workflowToSave).then(savedWorkflow => {
+				//this.loadedWorkflow = savedWorkflow;
+				//this.setupGraph()
+				this.toastrService.success(`Successfully saved workflow ${ savedWorkflow.name }.`);
+				this.router.navigateByUrl(`/workflows/${ savedWorkflow.id }`);
+			}).catch(e => this.toastrService.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
+		}
 	}
 
 	/**
@@ -812,24 +787,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.playbookService.getWorkflows()
 			.then(workflows => {
 				this.workflows = workflows;
-				this.filterWorkflows();
-
-				this.playbookService.workflowsChange.subscribe(workflows => {
-					this.workflows = workflows
-					this.filterWorkflows();
-				});
-
 				this.activeRoute.params.subscribe(params => {
 					if (params.workflowId) {
-						this.playbookService.loadWorkflow(params.workflowId).then(workflow => {
-							//let playbook = this.playbooks.find(p => p.workflows.some(w => w.id == workflow.id));
-							this.loadWorkflow(workflow);
-						})
+						this.playbookService.loadWorkflow(params.workflowId).then(workflow => this.loadWorkflow(workflow))
 					}
 					else {
-						this.activeRoute.data.subscribe(data => {
-
-						})
+						let workflowToCreate: Workflow = this.playbookService.workflowToCreate;
+						if (!workflowToCreate) {
+							return this.router.navigateByUrl(`/workflows`);
+						}
+						this.loadWorkflow(workflowToCreate);
 					}
 				})
 			});
@@ -1460,30 +1427,31 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			return;
 		}
 
-		const modalRef = this.modalService.open(MetadataModalComponent);
-		modalRef.componentInstance.workflow = new Workflow();
-		modalRef.componentInstance.currentTags = this.currentTags;
-		modalRef.componentInstance.existing = true;
-		modalRef.result.then(workflow => {
-			this.playbookService.workflowToCreate = workflow;
-			this.router.navigateByUrl(`/workflows/new`);
-		}).catch(() => null)
-	}
+		this.modalParams = {
+			title: 'Create New Workflow',
+			submitText: 'Add Workflow',
+			shouldShowExistingPlaybooks: true,
+			shouldShowPlaybook: true,
+			shouldShowWorkflow: true,
+			submit: () => {
+				const newWorkflow = new Workflow();
+				newWorkflow.name = this.modalParams.newWorkflow;
 
-	/**
-	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
-	 */
-	async editDescription(workflow: Workflow): Promise<void> {
-		workflow = await this.playbookService.loadWorkflow(workflow.id);
-		const modalRef = this.modalService.open(MetadataModalComponent);
-		modalRef.componentInstance.workflow = workflow;
-		modalRef.componentInstance.currentTags = this.currentTags;
-		modalRef.componentInstance.existing = true;
-		modalRef.result.then(w => {
-			this.playbookService.saveWorkflow(w)
-				.then(w => this.toastrService.success(`Updated workflow "${workflow.name}"`))
-				.catch(e => this.toastrService.error(`Error loading workflow "${workflow.name}": ${e.message}`));
-		}).catch(() => null)
+				// // Grab our playbook.
+				// let pb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
+				// // If it doesn't exist, create a new temp playbook and add our temp workflow under it.
+				// if (!pb) {
+				// 	pb = new Playbook();
+				// 	pb.name = this.modalParams.newPlaybook;
+				// 	pb.workflows.push(newWorkflow);
+				// }
+
+				this.loadWorkflow(newWorkflow);
+				this._closeModal();
+			},
+		};
+
+		this._openModal();
 	}
 
 	/**
@@ -1840,10 +1808,25 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		}).catch(() => argument.value = '')
 	}
 
-	filterWorkflows() {
-		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
-		const fuse = new Fuse(this.workflows, { tokenize: true,  matchAllTokens: true, threshold: 0.5, keys: ['name', 'description', 'tags']})
-		this.filteredWorkflows = (searchFilter) ? fuse.search(searchFilter.trim()) : this.workflows;
+	workflowVariablesModal() {
+		const modalRef = this.modalService.open(PlaybookEnvironmentVariableModalComponent);
+		modalRef.result.then(variable => {
+			console.log(this.loadedWorkflow.environment_variables, variable)
+			if (!this.loadedWorkflow.environment_variables) this.loadedWorkflow.environment_variables = [];
+			this.loadedWorkflow.environment_variables.push(variable);
+			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
+		}).catch(() => null)
+	}
+
+	/**
+	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
+	 */
+	async editDescription(): Promise<void> {
+		const modalRef = this.modalService.open(MetadataModalComponent);
+		modalRef.componentInstance.workflow = this.loadedWorkflow.clone();
+		modalRef.componentInstance.currentTags = this.currentTags;
+		modalRef.componentInstance.existing = true;
+		modalRef.result.then(workflow => this.loadedWorkflow = workflow).catch(() => null)
 	}
 
 	get currentTags(): string[] {

@@ -21,21 +21,6 @@
 	}
 }
 
-.workflow-card {
-	height: 100%;
-	max-height: 300px;
-
-	.card-body {
-		overflow: hidden;
-	}
-
-	.card-text {
-		min-height: 0;
-		overflow: hidden;
-  		text-overflow: ellipsis;
-	}
-}
-
 #playbookToolbar {
 	background-color: #aecbdc;
 	margin-left: 0;
@@ -91,18 +76,6 @@
 
 .playbookMain .panel-heading.playbook-heading {
 	cursor: pointer;
-}
-
-.workflow-menu {
-	cursor: pointer;
-	padding: unset;
-	position: absolute;
-	top: 0px;
-	right: 0px;
-
-	.workflow-menu-link::after {
-		content: none;
-	}
 }
 
 #playbookEditorTabs {

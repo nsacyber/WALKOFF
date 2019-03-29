@@ -32,7 +32,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 
 	@Output() createVariable = new EventEmitter<Argument>();
 
-	valueType: string = 'static';
+	valueType: string = Variant.STATIC_VALUE;
 	valueTypes: any[];
 
 	propertyName: string = '';
@@ -199,6 +199,14 @@ export class PlaybookArgumentComponent implements OnChanges {
 	 */
 	clearReference(): void {
 		delete this.argument.reference;
+	}
+
+	/**
+	 * Event fired on the select2 change for users/roles. Updates the value based on the event value.
+	 * @param $event JS Event Fired
+	 */
+	clearValue(): void {
+		this.argument.value = '';
 	}
 
 	/**

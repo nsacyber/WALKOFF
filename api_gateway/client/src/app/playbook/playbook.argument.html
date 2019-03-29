@@ -9,30 +9,30 @@
 	<!-- Columns for allowing users to specify outputs of other action as arguments for this one -->
 	<div class="row">
 		<div class="col-4">
-			<select name="playbookSelect" class="form-control" [(ngModel)]="argument.variant">
+			<select name="playbookSelect" class="form-control" [(ngModel)]="argument.variant" (change)="clearValue()">
 				<option *ngFor="let i of valueTypes" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 			</select>
 		</div>
 		<div class="col-8">
 			<!-- Normal string text entries -->
-			<input *ngIf="isStringSelect" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" (change)="clearReference()"
+			<input *ngIf="isStringSelect" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value"
 				type="text" [attr.minlength]="parameterSchema.minLength > 0 ? parameterSchema.minLength : null" [attr.maxlength]="parameterSchema.maxLength > 0 ? parameterSchema.maxLength : null"
 				[attr.pattern]="parameterSchema.pattern ? parameterSchema.pattern : null" [attr.required]="parameterApi.required" [attr.placeholder]="parameterApi.placeholder">
 
 			<!-- Enum types, make a select box -->
-			<select *ngIf="isEnumSelect" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value"  (change)="clearReference()" [attr.required]="parameterApi.required">
+			<select *ngIf="isEnumSelect" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value"  [attr.required]="parameterApi.required">
 				<option *ngIf="!parameterApi.required" value=""></option>
 				<option *ngFor="let i of parameterSchema.enum" [value]="i" [label]="i">{{i}}</option>
 			</select>
 
 			<!-- For numbers enter number info -->
 			<input *ngIf="isNumberSelect" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" 
-				(change)="clearReference()" type="number" [attr.min]="getMin(parameterSchema)" [attr.max]="getMax(parameterSchema)"
+			 type="number" [attr.min]="getMin(parameterSchema)" [attr.max]="getMax(parameterSchema)"
 				[attr.step]="parameterSchema.multipleOf > 0 ? parameterSchema.multipleOf : null" [attr.required]="parameterApi.required"
 				[attr.placeholder]="parameterApi.placeholder">
 
 			<!-- Checkbox for boolean values -->
-			<input *ngIf="isBooleanSelect" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" (change)="clearReference()">
+			<input *ngIf="isBooleanSelect" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value">
 
 			<!-- User select -->
 			<select2 *ngIf="isStatic && isUserSelect" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"
@@ -43,7 +43,7 @@
 				(valueChanged)="selectChange($event)"></select2>
 
 			<!-- Global select -->
-			<select *ngIf="isGlobalSelect" class="form-control" [(ngModel)]="argument.value" (change)="clearReference()">
+			<select *ngIf="isGlobalSelect" class="form-control" [(ngModel)]="argument.value">
 				<option [ngValue]="''"></option>
 				<option *ngFor="let i of globals" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 			</select>
@@ -56,7 +56,7 @@
 			
 			<!-- Action select -->
 			<ng-container *ngIf="isActionSelect">
-				<select class="form-control" [(ngModel)]="argument.reference">
+				<select class="form-control" [(ngModel)]="argument.value">
                 	<option [ngValue]="''"></option>
                 	<option *ngFor="let i of getPreviousActions()" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 				</select>
@@ -65,14 +65,15 @@
 
 			<!-- Action select -->
 			<ng-container *ngIf="isVariableSelect">
-				<div class="row">
-					<div class="col-8" *ngIf="loadedWorkflow?.environment_variables?.length > 0">
-						<select class="form-control" [(ngModel)]="argument.reference">
-							<option [ngValue]="''"></option>
-							<option *ngFor="let i of loadedWorkflow.environment_variables" [ngValue]="i.id" [label]="i.name">{{ i.name }}</option>
-						</select>
-					</div>
-					<button (click)="addVariable()" class="btn btn-primary btn-link">+ {{ (loadedWorkflow?.environment_variables?.length > 0) ? 'Add New' : 'Add Workflow Variable' }}</button>
+				<div>
+					<select class="form-control" [(ngModel)]="argument.value" [disabled]="!loadedWorkflow?.environment_variables?.length > 0">
+						<option [ngValue]="''">
+							<span *ngIf="!loadedWorkflow?.environment_variables?.length > 0">
+								None Created
+							</span>
+						</option>
+						<option *ngFor="let i of loadedWorkflow.environment_variables" [ngValue]="i.id" [label]="i.name">{{ i.name }}</option>
+					</select>
 				</div>
 			</ng-container>
 

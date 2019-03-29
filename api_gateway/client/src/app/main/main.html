@@ -16,7 +16,7 @@
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <i class="fa fa-area-chart"></i><span class="navLink">Dashboards</span>
             </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <div class="dropdown-menu border-0" aria-labelledby="navbarDropdown">
               <a *ngFor="let dashboard of dashboards" class="dropdown-item installedDashboard" routerLink="/dashboard/{{dashboard.id}}">
                 <span>{{ dashboard.name }}</span>
               </a>
@@ -81,7 +81,7 @@
               <!-- hidden-xs hides the username on small devices so only the image appears. -->
               <span class="userName">{{currentUser}}</span>
             </a>
-            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarUserDropdown">
+            <div class="dropdown-menu dropdown-menu-right border-0" aria-labelledby="navbarUserDropdown">
               <a class="dropdown-item installedDashboard" href="/login" (click)="logout()">Sign Out</a>
             </div>
           </li>

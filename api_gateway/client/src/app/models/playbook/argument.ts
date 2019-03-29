@@ -10,6 +10,7 @@ export enum Variant {
 
 export class Argument {
 	@Expose({ name: 'id_'})
+	@Exclude({ toPlainOnly: true})
 	id?: number;
 	// _action_id: number;
 	// _condition_id: number;
@@ -29,6 +30,7 @@ export class Argument {
 	/**
 	 * Reference to an Action ID to use the output of
 	 */
+	@Exclude()
 	reference?: string;
 
 	/**
@@ -57,6 +59,7 @@ export class Argument {
 	/**
 	 * Array of errors returned from the server for this Argument
 	 */
+	@Exclude()
 	errors?: string[] = [];
 
 	/**

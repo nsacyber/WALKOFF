@@ -8,6 +8,29 @@ import { DeviceApi } from './deviceApi';
 export class AppApi {
 	name: string;
 
+	walkoff_version?: string;
+
+	app_version?: string;
+
+	description?: string;
+
+	contact?: {
+		name: string,
+		url: string,
+		email: string
+	};
+
+	license?: {
+		name: string,
+		url: string
+	};
+
+	tags?: any[];
+
+	external_docs?: any[];
+
+
+	@Expose({ name: 'actions'})
 	@Type(() => ActionApi)
 	action_apis?: ActionApi[] = [];
 

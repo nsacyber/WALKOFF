@@ -1,6 +1,19 @@
 <div id="main" class="playbookMain">
+    <div class="d-flex align-items-center">
+    <nav aria-label="breadcrumb">
+        <ol id="playbookBreadcrumbs" class="breadcrumb">
+            <li class="breadcrumb-item">Workflows</li>
+            <li class="breadcrumb-item"><a routerLink="" (click)="newWorkflowModal()">Create New...</a></li>
+            <!-- <li class="breadcrumb-item active" aria-current="page">My Workflow <a href="#" class="font-weight-normal small">(Workflows)</a></li> -->
+        </ol>
+    </nav>
+    <div class="col-4 my-1 my-lg-none ml-auto pr-0">
+		<input class="form-control" [formControl]="filterQuery" placeholder="Filter Workflows..." />
+	</div>
+    </div>
+
     <!-- Graph editor toolbar -->
-    <div id="playbookToolbar" class=btn-toolbar role=toolbar>
+    <div *ngIf="false" id="playbookToolbar" class="btn-toolbar" role=toolbar>
         <div class="btn-group" role="group">
             <button id="new-button" type="button" class="btn btn-default" data-toggle="tooltip" title="New Workflow"
                 (click)="newWorkflowModal()">
@@ -68,287 +81,67 @@
             </button>
         </div>
         <!-- <label *ngIf="loadedWorkflow" id="currentWorkflowText" class="mr-1">{{loadedPlaybook.name}} -</label> -->
-        <input *ngIf="loadedWorkflow" type="text" class="form-control workflowNameInput my-auto" [(ngModel)]="loadedWorkflow.name"
+        <input *ngIf="loadedWorkflow" type="text" class="form-control workflowNameInput my-auto ml-3" [(ngModel)]="loadedWorkflow.name"
             name="name" required>
-        <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" id="currentWorkflowText">(In Progress)</label>
+        <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" class="my-auto" id="currentWorkflowText">(In Progress)</label>
     </div>
     <!-- Graph editor -->
-    <div class="row graphEditorRow">
-        <!-- Column for app/action display for drag and drop -->
+    <div class="row">
 
-        <div class="col-md-2 graphEditorColumn">
-            <div class="panel-group" id="accordion" #accordion [hidden]="!loadedWorkflow">
-                <div class="card my-1">
-                    <input class="form-control" placeholder="Filter Actions..." [formControl]="actionFilterControl" />
-                </div>
-                <div *ngFor="let app of getAppsWithActions()" class="card card-default my-1">
-                    <div class="card-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + removeWhitespace(app.name)"
-                        [title]="app.info ? app.info.description : ''">
-                        <h5 class="card-title my-auto p-2">{{app.name}}</h5>
-                    </div>
-                    <div id="actionsCollapse{{removeWhitespace(app.name)}}" class="card-collapse collapse action-panel">
-                        <div class="card-body my-auto p-3">
-                            <div *ngFor="let actionApi of app.getFilteredActionApis(actionFilter)" class="card card-default actionPanel my-1"
-                                dnd-draggable [dragEnabled]="true" [dragData]="{ appName: app.name, actionApi: actionApi }"
-                                (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)" [title]="actionApi.description">
-                                <div class="card-body my-auto p-2">
-                                    <span>{{actionApi.name}}</span>
-                                    <!-- <i class="fa fa-bars pull-right" aria-hidden="true"></i> -->
+            <div *ngFor="let w of filteredWorkflows" class="col-md-6 col-lg-4 col-xl-3 my-4">
+                    <div class="card workflow-card shadow">
+                            <div ngbDropdown placement="bottom-right" class="d-inline-block workflow-menu mt-3">
+                                    <a class="workflow-menu-link text-muted h2 px-3" ngbDropdownToggle><i class="fa fa-ellipsis-v"></i></a>
+                                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                                      <button class="dropdown-item" (click)="editDescription(w)">Edit Description...</button>
+                                      <button class="dropdown-item" (click)="duplicateWorkflowModal(w.id)">Duplicate</button>
+                                      <button class="dropdown-item" (click)="deleteWorkflow(w)">Delete</button>
+                                    </div>
+                                  </div>
+                            <div class="card-body d-flex flex-column">
+                                    
+                              <h5 class="card-title">
+                                    {{ w.name }}
+                                    <div *ngIf="w.tags?.length > 0" class="small mt-1">
+                                        <span *ngFor="let tag of w.tags" class="badge badge-pill badge-primary small mr-1"> {{ tag }} </span>
+                                    </div>
+                              </h5>
+                              
+                              <p class="card-text flex-grow-1">{{ w.description }}</p>
+                              <div class="d-flex justify-content-around">
+                                  <button class="btn btn-outline-primary" (click)="routeToWorkflow(w)"><i class="fa fa-sitemap"></i> Workflow Editor</button>
+                                  <button class="btn btn-outline-primary" [disabled]="!w.is_valid"  ><i class="fa fa-play-circle"></i> Execute Workflow</button>
                                 </div>
                             </div>
-                        </div>
                     </div>
                 </div>
+
+        <!-- <div *ngFor="let w of [1,2,3,4,5,6,7]" class="col-md-6 col-lg-4 col-xl-3 my-4">
+            <div class="card workflow-card shadow">
+                    <div class="card-body d-flex flex-column">
+                            <div ngbDropdown placement="bottom-right" class="d-inline-block">
+                                    <a class="workflow-menu text-muted h2 m-0 px-3" ngbDropdownToggle><i class="fa fa-ellipsis-v"></i></a>
+                                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                                      <button class="dropdown-item">Edit Metadata...</button>
+                                      <button class="dropdown-item">Duplicate</button>
+                                      <button class="dropdown-item">Delete</button>
+                                    </div>
+                                  </div>
+                                  <h5 class="card-title flex-shrink-0">
+                                        Special title treatment
+                                        <div *ngIf="w != 3" class="small mt-1">
+                                            <span *ngFor="let tag of ['UI', 'Automation', 'Bro']" class="badge badge-pill badge-primary small mr-1"> {{ tag }} </span>
+                                        </div>
+                                  </h5>
+                      <p class="card-text flex-grow-1 flex-shrink-1">With supporting text below as a natural lead-in to additional contentWith supporting text below as a natural lead-in to additional contentWith supporting text below as a natural lead-in</p>
+                      <div class="d-flex flex-shrink-0 justify-content-around">
+                          <button class="btn btn-outline-primary"><i class="fa fa-sitemap"></i> Workflow Editor</button>
+                          <button class="btn btn-outline-primary"><i class="fa fa-play-circle"></i> Execute Workflow</button>
+                        </div>
+                    </div>
             </div>
-        </div>
+        </div> -->
 
-        <!-- Actual cytoscape graph editor -->
-        <div class="col-md-6 graphEditorColumn">
-            <div id="cy" #cyRef dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow"
-                tabindex="0"></div>
-            <div id="cy-instructions" [hidden]="loadedWorkflow">
-                <p>Instructions:</p>
-                <p>
-                    <button class="btn btn-primary" data-toggle="modal" data-target="#workflowsModal">Load Workflow</button>
-                </p>
-                <p>
-                    Use this button to load the workflow into the graph. After loading an initial workflow you may use
-                    the Load Workflow button
-                    on the toolbar.
-                </p>
-                <p>
-                    <b>Drag and drop</b> items from Actions tab into the graph to create a new workflow action.
-                    <b>Double click</b> also works.
-                </p>
-            </div>
-        </div>
-
-        <!-- Parameter editors -->
-        <div class="col-md-4 graphEditorColumn">
-            <!-- Editor for Actions -->
-            <div *ngIf="!waitingOnData && selectedAction" class="parametersEditor">
-                <h3>Action Parameters</h3>
-                <div class="form-row">
-                    <div class="col-4">
-                        <div class="input-group input-group-sm mb-3" data-toggle="tooltip" [title]="selectedAction.app_name">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text text-white bg-primary">App</span>
-                            </div>
-                            <input type="text" disabled class="form-control" [value]="selectedAction.app_name">
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="input-group input-group-sm mb-3" data-toggle="tooltip" [title]="selectedAction.action_name">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text text-white bg-primary">Action</span>
-                            </div>
-                            <input type="text" disabled class="form-control" [value]="selectedAction.action_name">
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary"
-                            (click)="setStartNode(selectedAction.id)">Set as Start Action</button>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <label class="col-sm-2 col-form-label">Description:</label>
-                    <!-- <div class="col-sm-10">
-                        <input type="text" disabled class="form-control-plaintext" [value]="selectedActionApi.description">
-                    </div> -->
-                </div>
-                <div class="form-row ml-3">
-                    <span>{{ selectedActionApi.description }}</span>
-                </div>
-                <div class="form-row">
-                        <label class="col-sm-2 col-form-label">Returns:</label>
-                    </div>
-                <div class="form-row ml-3 mr-1" *ngFor="let i of selectedActionApi.returns">
-                    <div class="input-group input-group-sm mb-3" data-toggle="tooltip" [title]="i.description">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text text-white bg-primary" 
-                                [ngClass]="{'bg-primary': !i.failure, 'bg-secondary': i.failure}">
-                                {{ i.status }}
-                            </span>
-                        </div>
-                        <input type="text" disabled class="form-control" [value]="i.description">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="name">Name
-                        <i class="fa fa-asterisk required" title="This field is required."></i>
-                    </label>
-                    <input type="text" class="form-control" [(ngModel)]="selectedAction.name" name="name" required>
-                </div>
-                <!-- <div *ngIf="!selectedActionApi.global" class="form-group globalArgument">
-                    <label for="global_id">Global
-                        <i class="fa fa-asterisk required" title="This field is required."></i>
-                    </label>
-                    <playbook-argument-component [loadedWorkflow]="loadedWorkflow" [argument]="selectedAction.global_id"
-                        [id]="id" [users]="users" [roles]="roles" [globals]="relevantGlobals"></playbook-argument-component>
-                </div> -->
-                <!-- Inputs -->
-                <div *ngIf="selectedActionApi.parameters.length">
-                    <h4>Arguments</h4>
-                    <playbook-argument-component *ngFor="let parameterApi of selectedActionApi.parameters; let id = index"
-                        [loadedWorkflow]="loadedWorkflow" [argument]="getOrInitializeSelectedActionArgument(parameterApi)" [globals]="globals"
-                        [parameterApi]="parameterApi" [id]="id" [users]="users" [roles]="roles" (createVariable)="onCreateVariable($event)"></playbook-argument-component>
-                </div>
-                <!-- Triggers -->
-                <div>
-                    <div class="row">
-                        <div class="col-6">
-                            <h4>Trigger Condition</h4>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-group">
-                                <button *ngIf="!selectedAction.trigger" class="btn btn-primary pull-right" (click)="specifyTrigger(selectedAction)">
-                                    <i class="fa fa-plus"></i>Specify Trigger Condition
-                                </button>
-                                <button *ngIf="selectedAction.trigger" class="btn btn-danger pull-right" (click)="removeTrigger(selectedAction)">
-                                    <i class="fa fa-close"></i>Remove Trigger Condition
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <playbook-conditional-expression-component *ngIf="selectedAction.trigger" [conditionalExpression]="selectedAction.trigger"
-                        [appApis]="appApis" [selectedAppName]="selectedAction.app_name" [loadedWorkflow]="loadedWorkflow"
-                        (createVariable)="onCreateVariable($event)"></playbook-conditional-expression-component>
-                </div>
-            </div>
-            <!-- Editor for Branches (edges) -->
-            <div *ngIf="selectedBranchParams && selectedBranchParams.branch" class="parametersEditor">
-                <h3>Branch Parameters</h3>
-                <div class="form-group">
-                    <label for="status">Return Type
-                        <i class="fa fa-asterisk required" title="This field is required."></i>
-                    </label>
-                    <select class="form-control" [(ngModel)]="selectedBranchParams.branch.status" name="status">
-                        <option *ngFor="let i of selectedBranchParams.returnTypes" [value]="i.status" [label]="i.status"
-                            [class.failure]="i.failure">{{i.status}}</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="priority">Priority
-                        <i class="fa fa-asterisk required" title="This field is required."></i>
-                    </label>
-                    <input type="number" max="999" min="1" class="form-control" [(ngModel)]="selectedBranchParams.branch.priority"
-                        name="priority" required>
-                </div>
-                <div>
-                    <div class="row">
-                        <div class="col-6">
-                            <h4>Condition</h4>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-group">
-                                <button *ngIf="!selectedBranchParams.branch.condition" class="btn btn-primary pull-right"
-                                    (click)="specifyCondition(selectedBranchParams.branch)">
-                                    <i class="fa fa-plus"></i>Specify Condition
-                                </button>
-                                <button *ngIf="selectedBranchParams.branch.condition" class="btn btn-danger pull-right"
-                                    (click)="removeCondition(selectedBranchParams.branch)">
-                                    <i class="fa fa-close"></i>Remove Condition
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <playbook-conditional-expression-component *ngIf="selectedBranchParams.branch.condition"
-                        [conditionalExpression]="selectedBranchParams.branch.condition" [appApis]="appApis"
-                        [selectedAppName]="selectedBranchParams.appName" [loadedWorkflow]="loadedWorkflow"
-                        (createVariable)="onCreateVariable($event)"></playbook-conditional-expression-component>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="mb-3">
-    <ngb-tabset *ngIf="loadedWorkflow?.id || loadedWorkflow?.environment_variables?.length > 0" destoryOnHide="false" (tabChange)="recalculateConsoleTable($event)">
-        <ngb-tab *ngIf="loadedWorkflow?.id && !loadedWorkflow?.has_errors" title="Console" id="console-tab">
-            <ng-template ngbTabContent>
-                <ngx-codemirror #consoleArea
-                    [(ngModel)]="consoleContent" 
-                    [options]="{
-                        lineNumbers: true,
-                        mode: 'shell',
-                        theme: 'darcula',
-                        readOnly: true
-                    }" 
-                ></ngx-codemirror>
-            </ng-template>
-        </ngb-tab>
-
-        <ngb-tab *ngIf="loadedWorkflow?.id && !loadedWorkflow?.has_errors" title="Execution" id="execution-tab">
-            <ng-template ngbTabContent>
-                <div id="executionResultsModal">
-                    <div #workflowResultsContainer>
-                        <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="actionStatuses"
-                            [sortType]="'multi'" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
-                            [limit]="10">
-                            <!-- Column Templates -->
-                            <ngx-datatable-column name="Action IDs" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
-                            <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>
-                            <ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="1"></ngx-datatable-column>
-                            <ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
-                                <ng-template let-row="row" ngx-datatable-cell-template>
-                                    <span [title]="row.localized_started_at">
-                                        {{actionStatusStartedRelativeTimes[row.execution_id]}}
-                                    </span>
-                                </ng-template>
-                            </ngx-datatable-column>
-                            <ngx-datatable-column name="Completed At" prop="completed_at" [flexGrow]="1">
-                                <ng-template let-row="row" ngx-datatable-cell-template>
-                                    <span [title]="row.localized_completed_at">
-                                        {{actionStatusCompletedRelativeTimes[row.execution_id]}}
-                                    </span>
-                                </ng-template>
-                            </ngx-datatable-column>
-                            <ngx-datatable-column name="Status" prop="status" [flexGrow]="1"></ngx-datatable-column>
-                            <ngx-datatable-column name="Arguments" [sortable]="false" [flexGrow]="2">
-                                <ng-template let-row="row" ngx-datatable-cell-template>
-                                    {{getFriendlyArguments(row.arguments)}}
-                                </ng-template>
-                            </ngx-datatable-column>
-                            <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="4">
-                                <ng-template let-row="row" ngx-datatable-cell-template>
-                                    {{getFriendlyJSON(row.result)}}
-                                </ng-template>
-                            </ngx-datatable-column>
-                        </ngx-datatable>
-                    </div>
-                </div>
-            </ng-template>
-        </ngb-tab>
-
-        <ngb-tab *ngIf="loadedWorkflow?.environment_variables?.length > 0" title="Environment Variables" id="variable-tab">
-            <ng-template ngbTabContent>
-                <ngx-datatable #environmentVariableTable class='material expandable' [columnMode]="'flex'" [rows]="getVariables()"
-                    [sortType]="'multi'" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]" [limit]="10">
-                    <ngx-datatable-column name="Namea" prop="name" [sortable]="false" [flexGrow]="1"></ngx-datatable-column>
-                    <ngx-datatable-column name="Default Value" prop="value" [sortable]="false" [flexGrow]="1"></ngx-datatable-column>
-                    <ngx-datatable-column name="Description" prop="description" [sortable]="false" [flexGrow]="3"></ngx-datatable-column>
-                    <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false"
-                        [flexGrow]="2">
-                        <ng-template let-row="row" ngx-datatable-cell-template>
-                            <button (click)="editVariableModal(row)" class="btn btn-primary mx-1" title="Edit Variable"><i
-                                    class="fa fa-edit"></i></button>
-                            <button (click)="deleteVariable(row)" class="btn btn-danger mx-1" title="Delete Variable"><i
-                                    class="fa fa-times"></i></button>
-                        </ng-template>
-                    </ngx-datatable-column>
-                </ngx-datatable>
-            </ng-template>
-        </ngb-tab>
-
-        <ngb-tab *ngIf="loadedWorkflow?.has_errors" title="Workflow Errors ({{ loadedWorkflow?.all_errors.length }})" id="error-tab">
-            <ng-template ngbTabContent>
-                <ngx-datatable #errorLogTable class='material expandable' [columnMode]="'flex'" [rows]="getErrors()"
-                    [sortType]="'multi'" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]" [limit]="10">
-                    <ngx-datatable-column name="Error" prop="error" [sortable]="false" [flexGrow]="1"></ngx-datatable-column>
-                </ngx-datatable>
-            </ng-template>
-        </ngb-tab>
-
-    </ngb-tabset>
     </div>
 
     <div class="modal fade" id="playbookAndWorkflowActionModal" role="dialog" aria-labelledby="playbookAndWorkflowActionModalTitle"
@@ -382,7 +175,7 @@
                     </div>
                     <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
                         <h6>Add Tags (Optional)</h6>
-                        <select2 [data]="['apples', 'oranges', 'grapes']" [value]="tags" [options]="{ multiple: true, tags: true, width: '100%', placeholder: 'Add Tags...' }" (valueChanged)="changed($event)"></select2>
+                        <select2 [data]="['apples', 'oranges', 'grapes']" [value]="modalParams.newTags" [options]="{ multiple: true, tags: true, width: '100%', placeholder: 'Add Tags...' }" (valueChanged)="changed($event)"></select2>
                     </div>
                 </div>
                 <div class="modal-footer">

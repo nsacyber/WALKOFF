@@ -40,7 +40,25 @@ export class MainComponent implements OnInit, OnDestroy {
 		private mainService: MainService, private authService: AuthService,
 		private modalService: NgbModal, private toastrService: ToastrService,
 		public utils: UtilitiesService, private dashboardService: DashboardService
-	) {}
+	) {
+		/* Hack along with styles.scss for modal animations in ng-bootstrap */
+		NgbModalRef.prototype['c'] = NgbModalRef.prototype.close;
+        NgbModalRef.prototype.close = function (reason: string) {
+            document.querySelector('.modal-backdrop').classList.remove('show');
+            document.querySelector('.modal.show').classList.remove('show');
+            setTimeout(() => {
+                this['c'](reason);
+            }, 500);
+        };
+        NgbModalRef.prototype['d'] = NgbModalRef.prototype.dismiss;
+        NgbModalRef.prototype.dismiss = function (reason: string) {
+			document.querySelector('.modal-backdrop').classList.remove('show');
+			document.querySelector('.modal.show').classList.remove('show');
+            setTimeout(() => {
+                this['d'](reason);
+            }, 500);
+        };
+	}
 
 	/**
 	 * On init, set the current user from our JWT.

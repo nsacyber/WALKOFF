@@ -1,4 +1,4 @@
-import { Type, Expose, Exclude } from 'class-transformer';
+import { Type, Expose, Exclude, classToClass } from 'class-transformer';
 import { UUID } from 'angular2-uuid';
 
 export class ExecutionElement {
@@ -19,5 +19,9 @@ export class ExecutionElement {
 	
 	get has_errors(): boolean {
 		return (this.all_errors.length > 0) ? true : false;
+	}
+
+	clone() {
+		return classToClass(this, { ignoreDecorators: true });
 	}
 }

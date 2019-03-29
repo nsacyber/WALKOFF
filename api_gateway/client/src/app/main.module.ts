@@ -50,6 +50,8 @@ import { UtilitiesService } from './utilities.service';
 import { ManageDashboardsComponent } from './dashboards/manage.dashboards.component';
 import { WidgetModalComponent } from './dashboards/widget.modal.component';
 import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
+import { WorkflowEditorComponent } from './playbook/workflow.editor.component';
+import { MetadataModalComponent } from './playbook/metadata.modal.component';
 
 @NgModule({
 	imports: [
@@ -80,6 +82,7 @@ import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 		MainComponent,
 		//Router module components
 		PlaybookComponent,
+		WorkflowEditorComponent,
 		SchedulerComponent,
 		GlobalsComponent,
 		MessagesComponent,
@@ -96,6 +99,7 @@ import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 		SettingsTimeoutModalComponent,
 		MessagesModalComponent,
 		PlaybookEnvironmentVariableModalComponent,
+		MetadataModalComponent,
 		ExecutionVariableModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
@@ -134,6 +138,7 @@ import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 		MessagesModalComponent,
 		ExecutionVariableModalComponent,
 		PlaybookEnvironmentVariableModalComponent,
+		MetadataModalComponent,
 		WidgetModalComponent
 	],
 	bootstrap: [MainComponent],

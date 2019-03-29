@@ -114,7 +114,7 @@ export class Workflow extends ExecutionElement {
 	deleteVariable(deletedVariable: EnvironmentVariable) {
 		this.environment_variables = this.environment_variables.filter(variable => variable.id !== deletedVariable.id);
 		this.all_arguments
-			.filter(arg => arg.reference == deletedVariable.id)
-			.forEach(arg => arg.reference = '');
+			.filter(arg => arg.value == deletedVariable.id)
+			.forEach(arg => arg.value = '');
 	}
 }
