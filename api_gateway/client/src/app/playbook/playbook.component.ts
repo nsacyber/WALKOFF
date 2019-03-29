@@ -1558,17 +1558,17 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param workflow Workflow to delete
 	 */
 	async deleteWorkflow(workflow: Workflow) {
-		await this.utils.confirm(`Are you sure you want to delete workflow "${workflow.name}"?`);
+		await this.utils.confirm(`Are you sure you want to delete <b>${workflow.name}</b>?`);
 
 		try {
 			await this.playbookService.deleteWorkflow(workflow.id);
 			if (this.loadedWorkflow && workflow.id === this.loadedWorkflow.id) { 
 				this.closeWorkflow(); 
 			}
-			this.toastrService.success(`Successfully deleted workflow "${workflow.name}".`);
+			this.toastrService.success(`Successfully deleted "${workflow.name}".`);
 		}
 		catch(e) {
-			this.toastrService.error(`Error deleting workflow "${workflow.name}": ${e.message}`)
+			this.toastrService.error(`Error deleting "${workflow.name}": ${e.message}`)
 		}
 	}
 
