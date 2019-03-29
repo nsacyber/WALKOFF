@@ -1,9 +1,9 @@
-<div [hidden]="!loadedWorkflow" id="main" class="playbookMain">
+<div [hidden]="!loadedWorkflow" id="main" class="workflowEditorMain">
 
-    <div class="d-flex align-items-center">
+    <div *ngIf="false" class="d-flex align-items-center">
         <nav aria-label="breadcrumb">
             <ol id="playbookBreadcrumbs" class="breadcrumb">
-                <li class="breadcrumb-item"><a routerLink="" (click)="returnToWorkflows()">Workflows</a></li>
+                <li class="breadcrumb-item"><a href="" (click)="returnToWorkflows()">Workflows</a></li>
                 <li class="breadcrumb-item">{{ loadedWorkflow?.name }}
                     <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" class="my-auto"
                         id="currentWorkflowText">(Incomplete)</label>
@@ -17,7 +17,7 @@
     </div>
 
     <!-- Graph editor toolbar -->
-    <div id="playbookToolbar" class=btn-toolbar role=toolbar>
+    <div id="playbookToolbar" class="btn-toolbar d-flex align-items-center" role=toolbar>
         <!-- <div class="btn-group" role="group">
             <button id="new-button" type="button" class="btn btn-default" data-toggle="tooltip" title="New Workflow"
                 (click)="newWorkflowModal()">
@@ -98,6 +98,20 @@
                 <i class="fa fa-code"></i>
             </button>
         </div>
+        <nav class="ml-auto" aria-label="breadcrumb">
+                <ol id="playbookBreadcrumbs" class="breadcrumb py-0 px-3 d-flex align-items-center">
+                    <li class="breadcrumb-item"><a href="" (click)="returnToWorkflows()">Workflows</a></li>
+                    <li class="breadcrumb-item d-flex align-items-center">
+                            <span>{{ loadedWorkflow?.name }}</span>
+                            <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" class=""
+                            id="currentWorkflowText"> (Incomplete)</label>
+                            <a id="copy-button" class="ml-1" href="" data-toggle="tooltip" title="Edit Description" (click)="editDescription()">
+                                <i class="fa fa-info-circle"></i>
+                            </a>
+                            
+                    </li>
+                </ol>
+            </nav>
     </div>
     <!-- Graph editor -->
     <div class="row graphEditorRow">
@@ -157,9 +171,15 @@
         <div class="col-md-3 graphEditorColumn">
             <!-- Editor for Actions -->
             <div *ngIf="!waitingOnData && selectedAction" class="parametersEditor">
-                <h4>Action Parameters</h4>
+                <div class="d-flex justify-content-between my-2">
+                        <h4 class="mb-0">Action Parameters</h4>
+                        <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary"
+                            (click)="setStartNode(selectedAction.id)">Set Start Action</button>
+
+                </div>
+                
                 <div class="form-row">
-                    <div class="col-12 col-xl-4">
+                    <div class="col-12 col-xl-6">
                         <div class="input-group input-group-sm mb-3" data-toggle="tooltip"
                             [title]="selectedAction.app_name">
                             <div class="input-group-prepend">
@@ -168,7 +188,7 @@
                             <input type="text" disabled class="form-control" [value]="selectedAction.app_name">
                         </div>
                     </div>
-                    <div class="col-12 col-xl-4">
+                    <div class="col-12 col-xl-6">
                         <div class="input-group input-group-sm mb-3" data-toggle="tooltip"
                             [title]="selectedAction.action_name">
                             <div class="input-group-prepend">
@@ -176,10 +196,6 @@
                             </div>
                             <input type="text" disabled class="form-control" [value]="selectedAction.action_name">
                         </div>
-                    </div>
-                    <div class="col-12 col-xl-4">
-                        <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary"
-                            (click)="setStartNode(selectedAction.id)">Set Start Action</button>
                     </div>
                 </div>
                 <div class="d-flex">

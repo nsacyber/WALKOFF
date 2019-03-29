@@ -48,7 +48,7 @@ export class MainComponent implements OnInit, OnDestroy {
             document.querySelector('.modal.show').classList.remove('show');
             setTimeout(() => {
                 this['c'](reason);
-            }, 500);
+            }, 250);
         };
         NgbModalRef.prototype['d'] = NgbModalRef.prototype.dismiss;
         NgbModalRef.prototype.dismiss = function (reason: string) {
@@ -56,7 +56,7 @@ export class MainComponent implements OnInit, OnDestroy {
 			document.querySelector('.modal.show').classList.remove('show');
             setTimeout(() => {
                 this['d'](reason);
-            }, 500);
+            }, 250);
         };
 	}
 

@@ -83,6 +83,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	roles: Role[];
 
 	//loadedPlaybook: Playbook;
+	workflowsLoaded: boolean = false;
 	loadedWorkflow: Workflow;
 	playbooks: Playbook[] = [];
 	workflows: Workflow[] = [];
@@ -188,7 +189,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			.valueChanges
 			.debounceTime(500)
 			.subscribe(() => this.filterWorkflows());
-
 	}
 
 	/**
@@ -811,6 +811,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getPlaybooksWithWorkflows(): void {
 		this.playbookService.getWorkflows()
 			.then(workflows => {
+				this.workflowsLoaded = true;
 				this.workflows = workflows;
 				this.filterWorkflows();
 
@@ -1453,17 +1454,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	/**
 	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
 	 */
-	newWorkflowModal(): void {
-		if (this.loadedWorkflow && 
-			!confirm('Are you sure you want to create a new workflow? ' +
-				`Any unsaved changes on "${this.loadedWorkflow.name}" will be lost!`)) {
-			return;
-		}
-
+	createWorkflow(): void {
 		const modalRef = this.modalService.open(MetadataModalComponent);
 		modalRef.componentInstance.workflow = new Workflow();
 		modalRef.componentInstance.currentTags = this.currentTags;
-		modalRef.componentInstance.existing = true;
 		modalRef.result.then(workflow => {
 			this.playbookService.workflowToCreate = workflow;
 			this.router.navigateByUrl(`/workflows/new`);
@@ -1544,28 +1538,38 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this._openModal();
 	}
 
+	async duplicateWorkflow(workflow: Workflow) {
+		let name = await this.utils.prompt('Enter a name for the duplicate workflow');
+		console.log(name);
+
+		try {
+			const duplicateWorkflow: Workflow = await this.playbookService.duplicateWorkflow(workflow.id, name);
+			this.toastrService.success(`Successfully duplicated workflow "${ duplicateWorkflow.name }".`);
+
+		}
+		catch(e) {
+			this.toastrService.error(`Error duplicating workflow "${ name }": ${e.message}`);
+		}
+	}
+
 	/**
 	 * Opens a modal to delete a given workflow and performs the delete action on submit.
 	 * @param playbook Playbook the workflow resides under
 	 * @param workflow Workflow to delete
 	 */
-	deleteWorkflow(workflow: Workflow): void {
-		if (!confirm(`Are you sure you want to delete workflow "${workflow.name}"?`)) { return; }
+	async deleteWorkflow(workflow: Workflow) {
+		await this.utils.confirm(`Are you sure you want to delete workflow "${workflow.name}"?`);
 
-		this.playbookService
-			.deleteWorkflow(workflow.id)
-			.then(() => {
-				// const pb = this.playbooks.find(p => p.id === playbook.id);
-				// pb.workflows = pb.workflows.filter(w => w.id !== workflow.id);
-
-				// if (!pb.workflows.length) { this.playbooks = this.playbooks.filter(p => p.id !== pb.id); }
-
-				// Close the workflow if the deleted workflow matches the loaded one
-				if (this.loadedWorkflow && workflow.id === this.loadedWorkflow.id) { this.closeWorkflow(); }
-
-				this.toastrService.success(`Successfully deleted workflow "${workflow.name}".`);
-			})
-			.catch(e => this.toastrService.error(`Error deleting workflow "${workflow.name}": ${e.message}`));
+		try {
+			await this.playbookService.deleteWorkflow(workflow.id);
+			if (this.loadedWorkflow && workflow.id === this.loadedWorkflow.id) { 
+				this.closeWorkflow(); 
+			}
+			this.toastrService.success(`Successfully deleted workflow "${workflow.name}".`);
+		}
+		catch(e) {
+			this.toastrService.error(`Error deleting workflow "${workflow.name}": ${e.message}`)
+		}
 	}
 
 	/**
@@ -1849,6 +1853,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	get currentTags(): string[] {
 		let tags = [];
 		this.workflows.forEach(w => tags = tags.concat(w.tags));
-		return tags;
+		return tags.filter((v, i, a) => a.indexOf(v) == i);
 	}
 }

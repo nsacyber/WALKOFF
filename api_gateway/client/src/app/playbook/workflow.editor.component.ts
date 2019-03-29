@@ -383,10 +383,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 	}
 
-	returnToWorkflows() : void {
-		if (confirm(`Are you sure you? Any unsaved changes to "${this.loadedWorkflow.name}" will be lost!`)) {
+	returnToWorkflows() {
+		this.utils.confirm('Are you sure you? Any unsaved changes will be lost!').then(() => {
 			this.router.navigateByUrl(`/workflows`);
-		};
+		})
+		return false;
 	}
 
 	routeToWorkflow(workflow: Workflow): void {
@@ -1821,17 +1822,18 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	/**
 	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
 	 */
-	async editDescription(): Promise<void> {
+	editDescription() {
 		const modalRef = this.modalService.open(MetadataModalComponent);
 		modalRef.componentInstance.workflow = this.loadedWorkflow.clone();
 		modalRef.componentInstance.currentTags = this.currentTags;
 		modalRef.componentInstance.existing = true;
 		modalRef.result.then(workflow => this.loadedWorkflow = workflow).catch(() => null)
+		return false;
 	}
 
 	get currentTags(): string[] {
 		let tags = [];
 		this.workflows.forEach(w => tags = tags.concat(w.tags));
-		return tags;
+		return tags.filter((v, i, a) => a.indexOf(v) == i);
 	}
 }

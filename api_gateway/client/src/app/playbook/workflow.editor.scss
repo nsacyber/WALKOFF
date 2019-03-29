@@ -1,11 +1,11 @@
 /* @import '/client/node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css';
 @import '/client/node_modules/ng2-dnd/bundles/style.css'; */
 
-#main.playbookMain {
+#main.workflowEditorMain {
 	padding: 10px 15px 0 15px;
 }
 
-.playbookMain .parametersEditor .failure {
+.workflowEditorMain .parametersEditor .failure {
     color: crimson;
 }
 
@@ -69,12 +69,12 @@
 }
 
 /* Console Row = 200px */
-.playbookMain .graphEditorRow, .playbookMain .graphEditorColumn {
+.workflowEditorMain .graphEditorRow, .workflowEditorMain .graphEditorColumn {
 	height: calc(100vh - 310px);
 	overflow: auto;
 }
 
-.playbookMain .panel-heading.playbook-heading {
+.workflowEditorMain .panel-heading.playbook-heading {
 	cursor: pointer;
 }
 
@@ -113,7 +113,7 @@
 	resize: none;
 }
 
-.playbookMain #accordion .card-heading .card-title:after {
+.workflowEditorMain #accordion .card-heading .card-title:after {
 	/* symbol for "opening" panels */
 	font: normal normal normal 14px/1 FontAwesome;
 	font-size: inherit;
@@ -127,31 +127,31 @@
     transition: none !important;
 }
 
-.playbookMain #accordion .card-heading.collapsed .card-title:after {
+.workflowEditorMain #accordion .card-heading.collapsed .card-title:after {
 	/* symbol for "collapsed" panels */
 	content: "\f054";    /* adjust as needed, taken from bootstrap.css */
 }
 
-.playbookMain .card-default > .card-heading {
+.workflowEditorMain .card-default > .card-heading {
 	background-color: #eaf2f6;
 	font-weight: bolder;
 }
 
-.playbookMain .parametersEditor input[type=checkbox].form-control {
+.workflowEditorMain .parametersEditor input[type=checkbox].form-control {
 	width: 34px;
 	margin: 0 5px;
 }
 
-.playbookMain .parametersEditor .form-group.argument {
+.workflowEditorMain .parametersEditor .form-group.argument {
 	margin-bottom: 5px;
 	padding: 5px;
 }
 
-.playbookMain .parametersEditor .form-group.argument.odd {
+.workflowEditorMain .parametersEditor .form-group.argument.odd {
 	background-color: #EEE;
 }
 
-.playbookMain .parametersEditor .indent {
+.workflowEditorMain .parametersEditor .indent {
 	border-left: 3px solid #DDD;
 	border-top: 1px solid #DDD;
 	border-bottom: 1px solid #DDD;
@@ -160,24 +160,24 @@
 	margin-bottom: 5px;
 }
 
-.playbookMain .parametersEditor .addBar {
+.workflowEditorMain .parametersEditor .addBar {
 	margin-bottom: 10px;
 }
 
-.playbookMain .parametersEditor .addBar button {
+.workflowEditorMain .parametersEditor .addBar button {
 	margin-top: 25px;
 }
 
-.playbookMain .parametersEditor .propertyHeader {
+.workflowEditorMain .parametersEditor .propertyHeader {
 	margin-bottom: 5px;
 }
 
-.playbookMain .parametersEditor .required {
+.workflowEditorMain .parametersEditor .required {
 	color: crimson;
 	margin-left: 5px;
 }
 
-.playbookMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
+.workflowEditorMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
 	white-space: initial;
 }
 

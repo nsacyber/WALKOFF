@@ -1,5 +1,5 @@
 <div class="modal-header">
-    <h4 class="modal-title">{{ 'Create new Workflow' }}</h4>
+    <h4 class="modal-title">{{ existing ? 'Edit Workflow' : 'Create Workflow' }}</h4>
 </div>
 <div class="modal-body">
     <div class="form-group">
@@ -17,6 +17,6 @@
     </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Close</button>
-    <button type="button" class="btn btn-primary" (click)="activeModal.close(workflow)">Submit</button>
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="activeModal.close(workflow)">{{ existing ? 'Save' : 'Continue' }}</button>
 </div>

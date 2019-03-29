@@ -90,4 +90,28 @@ export class UtilitiesService {
 		// console.error(errMsg);
 		throw new Error(err);
 	}
+
+	confirm(message: string, options: {} = {}) : Promise<boolean> {
+		return new Promise((resolve) => {
+			const defaults = {
+				message,
+				backdrop: true,
+				className: "mt-5 pt-5",
+				callback: (result) => { if(result) resolve(result) } 
+			}
+			bootbox.confirm(Object.assign({}, defaults, options));
+		})
+	}
+
+	prompt(title: string, options: {} = {}) : Promise<any> {
+		return new Promise((resolve) => {
+			const defaults = {
+				title,
+				backdrop: true,
+				className: "mt-5 pt-5",
+				callback: (result) => { if(result) resolve(result) } 
+			}
+			bootbox.prompt(Object.assign({}, defaults, options));
+		})
+	}
 }

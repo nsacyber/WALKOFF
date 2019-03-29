@@ -635,10 +635,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 MIT
 MIT
 
-ng2-select2@1.0.0-beta.16
-MIT
-MIT
-
 @swimlane/ngx-datatable@13.1.0
 MIT
 (The MIT License)
@@ -1176,6 +1172,10 @@ Apache License
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+ng2-select2@1.0.0-beta.16
+MIT
+MIT
 
 ng2-charts@1.6.0
 MIT
