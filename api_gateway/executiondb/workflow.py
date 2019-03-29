@@ -42,7 +42,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
     # __table_args__ = (UniqueConstraint("playbook_id", "name", name="_playbook_workflow"),)
 
-    def __init__(self, name, start, id_=None, actions=None, branches=None, conditions=None, transforms=None,
+    def __init__(self, name, start=None, id_=None, actions=None, branches=None, conditions=None, transforms=None,
                  triggers=None, workflow_variables=None, is_valid=False, errors=None, tags=None, description=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
@@ -113,7 +113,7 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     """Schema for workflows
     """
     name = field_for(Workflow, 'name', required=True)
-    start = field_for(Workflow, 'start', required=True)
+    start = field_for(Workflow, 'start')
     actions = fields.Nested(ActionSchema, many=True)
     branches = fields.Nested(BranchSchema, many=True)
     conditions = fields.Nested(ConditionSchema, many=True)

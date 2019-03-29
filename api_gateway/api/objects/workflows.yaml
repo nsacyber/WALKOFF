@@ -1,6 +1,6 @@
 Workflow:
   type: object
-  required: [name, start]
+  required: [name]
   description: A workflow object
   additionalProperties: false #ToDo: verify if this is needed
   properties:

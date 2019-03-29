@@ -80,7 +80,6 @@ def create_workflow():
     add_locations(data)
     try:
         workflow = workflow_schema.load(data)
-        print(dir(workflow))
         current_app.running_context.execution_db.session.add(workflow)
         current_app.running_context.execution_db.session.commit()
         current_app.logger.info(f"Created Workflow {workflow.name} ({workflow.id_})")
