@@ -21,18 +21,16 @@ logger = logging.getLogger(__name__)
 class ActionApi(ExecutionElement, Execution_Base):
     __tablename__ = 'action_api'
     name = Column(String(), nullable=False)
-    location = Column(String(), nullable=False)
     description = Column(String())
     returns = relationship("ReturnApi", uselist=False, cascade="all, delete-orphan", passive_deletes=True)
     parameters = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
     app_api_id = Column(UUIDType(binary=False), ForeignKey('app_api.id_', ondelete='CASCADE'))
     action_id = Column(UUIDType(binary=False), ForeignKey('action.id_', ondelete='CASCADE'))
 
-    def __init__(self, name, location, id_=None, errors=None, description=None, returns=None, parameters=None):
+    def __init__(self, name, id_=None, errors=None, description=None, returns=None, parameters=None):
         ExecutionElement.__init__(self, id_, errors)
 
         self.name = name
-        self.location = location
         self.description = description
         self.returns = returns
         self.parameters = parameters if parameters else []
@@ -42,7 +40,6 @@ class ActionApiSchema(ExecutionElementBaseSchema):
     """Schema for actions
     """
     name = field_for(ActionApi, 'name', required=True)
-    location = field_for(ActionApi, 'location', required=True)
     description = field_for(ActionApi, 'description')
     returns = fields.Nested(ReturnApiSchema())
     parameters = fields.Nested(ParameterApiSchema, many=True)
@@ -58,7 +55,6 @@ class Action(ExecutionElement, Execution_Base):
     app_name = Column(String(80), nullable=False)
     name = Column(String(80), nullable=False)
     label = Column(String(80), nullable=False)
-    api_location = Column(String(), nullable=False)
     priority = Column(Integer)
 
     parameters = relationship('Parameter', cascade='all, delete, delete-orphan', foreign_keys=[Parameter.action_id],
@@ -66,7 +62,7 @@ class Action(ExecutionElement, Execution_Base):
     position = relationship('Position', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     children = ('parameters',)
 
-    def __init__(self, app_name, name, label, api_location, priority=3, id_=None, parameters=None,
+    def __init__(self, app_name, name, label, priority=3, id_=None, parameters=None,
                  position=None, errors=None):
         """Initializes a new Action object. A Workflow has one or more actions that it executes.
         Args:
@@ -85,7 +81,6 @@ class Action(ExecutionElement, Execution_Base):
         self.app_name = app_name
         self.name = name
         self.label = label
-        self.api_location = api_location
         self.priority = priority
 
         self.parameters = []
@@ -134,7 +129,6 @@ class ActionSchema(ExecutionElementBaseSchema):
     app_name = fields.Str(required=True)
     name = field_for(Action, 'name', required=True)
     label = field_for(Action, 'label', required=True)
-    api_location = field_for(Action, 'api_location', required=True)
     parameters = fields.Nested(ParameterSchema, many=True)
     priority = field_for(Action, 'priority', default=3)
     position = fields.Nested(PositionSchema())

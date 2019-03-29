@@ -43,27 +43,6 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-# ToDo: App APIs should be stored in some nosql db instead to avoid this
-def add_locations(workflow):
-    for action in workflow.get('actions', []):
-        action['api_location'] = f"{action['app_name']}.{action['name']}"
-        for param in action.get('parameters', []):
-            param['api_location'] = f"{action['app_name']}.{action['name']}:{param['name']}"
-        if 'returns' in action:
-            action['returns']['api_location'] = f"{action['app_name']}.{action['name']}.returns"
-    return workflow
-
-
-def remove_locations(workflow):
-    for action in workflow.get('actions', []):
-        action.pop('api_location', None)
-        for param in action.get('parameters', []):
-            param.pop('api_location', None)
-        if 'returns' in action:
-            action['returns'].pop('api_location', None)
-    return workflow
-
-
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['create']))
 def create_workflow():
@@ -77,7 +56,6 @@ def create_workflow():
     if request.files and 'file' in request.files:
         data = json.loads(request.files['file'].read().decode('utf-8'))
 
-    add_locations(data)
     try:
         workflow = workflow_schema.load(data)
         current_app.running_context.execution_db.session.add(workflow)
@@ -100,7 +78,6 @@ def copy_workflow(workflow_id):
     workflow_json['name'] = data.get("name", f"{workflow_id.name}_copy")
 
     regenerate_workflow_ids(workflow_json)
-    add_locations(workflow_json)
     try:
         new_workflow = workflow_schema.load(workflow_json)
         current_app.running_context.execution_db.session.add(new_workflow)
@@ -119,7 +96,7 @@ def copy_workflow(workflow_id):
 def read_all_workflows():
     r = current_app.running_context.execution_db.session.query(Workflow).order_by(Workflow.name).all()
     for workflow in r:
-        remove_locations(workflow_schema.dump(workflow))
+        workflow_schema.dump(workflow)
     return r, HTTPStatus.OK
 
 
@@ -134,7 +111,7 @@ def read_workflow(workflow_id):
         f.seek(0)
         return send_file(f, attachment_filename=workflow_id.name + '.json', as_attachment=True), HTTPStatus.OK
     else:
-        return remove_locations(workflow_json), HTTPStatus.OK
+        return workflow_json, HTTPStatus.OK
 
 
 @jwt_required
@@ -142,7 +119,6 @@ def read_workflow(workflow_id):
 @with_workflow('update', 'workflow_id')
 def update_workflow(workflow_id):
     data = request.get_json()
-    add_locations(data)
     errors = workflow_schema.load(data, instance=workflow_id).errors
     if errors:
         return invalid_input_problem("workflow", "update", data["name"], errors)

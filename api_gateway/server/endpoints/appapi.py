@@ -32,21 +32,15 @@ with_app_api_name = with_resource_factory('app_api', app_api_getter_name)
 def add_locations(appapi):
     app_name = appapi['name']
     for action in appapi.get('actions', []):
-        action['location'] = f"{app_name}.{action['name']}"
         for param in action.get('parameters', []):
             param['location'] = f"{app_name}.{action['name']}:{param['name']}"
-        if 'returns' in action:
-            action['returns']['location'] = f"{app_name}.{action['name']}.returns"
     return appapi
 
 
 def remove_locations(appapi):
     for action in appapi.get('actions', []):
-        action.pop('location', None)
         for param in action.get('parameters', []):
             param.pop('location', None)
-        if 'returns' in action:
-            action['returns'].pop('location', None)
     return appapi
 
 
