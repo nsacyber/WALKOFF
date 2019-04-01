@@ -8,7 +8,6 @@ from marshmallow import ValidationError
 from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError, StatementError
 
-from api_gateway.appgateway.apiutil import UnknownApp, UnknownFunction, InvalidParameter
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.helpers import regenerate_workflow_ids
 # from api_gateway.helpers import strip_device_ids, strip_argument_ids
@@ -19,8 +18,6 @@ from api_gateway.server.problem import Problem, unique_constraint_problem, impro
 from http import HTTPStatus
 
 workflow_schema = WorkflowSchema()
-
-invalid_execution_element_exceptions = (InvalidParameter, UnknownApp, UnknownFunction)
 
 
 def does_workflow_exist(workflow_id):

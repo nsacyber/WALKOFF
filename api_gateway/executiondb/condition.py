@@ -8,7 +8,6 @@ from marshmallow_sqlalchemy import field_for
 
 from api_gateway.executiondb.schemas import ExecutionElementBaseSchema
 from api_gateway.executiondb import Execution_Base
-from api_gateway.appgateway.apiutil import UnknownApp, InvalidParameter, UnknownCondition
 from api_gateway.executiondb.executionelement import ExecutionElement
 from api_gateway.executiondb.position import PositionSchema
 
@@ -49,15 +48,7 @@ class Condition(ExecutionElement, Execution_Base):
     def validate(self):
         """Validates the object"""
         errors = []
-        try:
-            pass
-        except UnknownApp:
-            errors.append('Unknown app {}'.format(self.name))
-        except UnknownCondition:
-            errors.append('Unknown condition {}'.format(self.name))
-        except InvalidParameter as e:
-            errors.extend(e.errors)
-        self.errors = errors
+        pass
 
 
 @event.listens_for(Condition, 'before_update')

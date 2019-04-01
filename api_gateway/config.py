@@ -100,7 +100,7 @@ class Config(object):
     DATA_PATH = 'data'
 
     API_PATH = join("api_gateway", "api")
-    CACHE = {'type': 'redis', 'host': 'localhost', 'port': 6379}
+    REDIS_OPTIONS = {'host': 'localhost', 'port': 6379}
 
     CLIENT_PATH = join("api_gateway", "client")
     CONFIG_PATH = join(DATA_PATH, 'api_gateway.config')

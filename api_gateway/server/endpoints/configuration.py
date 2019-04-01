@@ -22,7 +22,7 @@ def __get_current_configuration():
             'zmq_communication_address': api_gateway.config.Config.ZMQ_COMMUNICATION_ADDRESS,
             'number_processes': int(api_gateway.config.Config.NUMBER_PROCESSES),
             'number_threads_per_process': int(api_gateway.config.Config.NUMBER_THREADS_PER_PROCESS),
-            'cache': api_gateway.config.Config.CACHE}
+            'cache': api_gateway.config.Config.REDIS_OPTIONS}
 
 
 def read_config_values():

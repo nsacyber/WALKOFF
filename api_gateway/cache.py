@@ -7,10 +7,7 @@ from redis import Redis
 
 logger = logging.getLogger(__name__)
 
-try:
-    from io import BytesIO
-except ImportError:
-    from cStringIO import StringIO as BytesIO
+from io import BytesIO
 
 unsubscribe_message = b'__UNSUBSCRIBE__'
 """(str): The message used to unsubscribe from and close a PubSub channel
@@ -295,52 +292,3 @@ class RedisCacheAdapter(object):
         """
         return self.cache.lock(name, timeout=timeout, sleep=sleep, blocking_timeout=blocking_timeout)
 
-    @classmethod
-    def from_json(cls, json_in):
-        """Constructs this cache from its JSON representation
-
-        Args:
-            json_in (dict): The JSON representation of this cache configuration
-
-        Returns:
-            (RedisCacheAdapter): A RedisCacheAdapter with a configuration reflecting the values in the JSON
-        """
-        password = os.getenv('WALKOFF_REDIS_PASSWORD')
-        if password is not None:
-            json_in['password'] = password
-        if 'timeout' in json_in and json_in['timeout'] > 0:
-            json_in['socket_timeout'] = json_in.pop('timeout')
-        return cls(**json_in)
-
-
-cache_translation = {'redis': RedisCacheAdapter}
-"""(dict): A mapping between a string type and the corresponding cache adapter
-"""
-
-
-def make_cache(config=None, cache_mapping=cache_translation):
-    """Factory method for constructing Cache Adapters from configuration JSON
-
-    Args:
-        config (dict): The JSON configuration of the cache adapter
-        cache_mapping(dict{str:cls}): A mapping from a string describing the type of cache to make and the class to make
-    Returns:
-        The constructed cache object
-    """
-    if config is None:
-        config = {}
-    config = deepcopy(config)
-    cache_type = config.pop('type', 'redis').lower()
-    default_cache = cache_mapping.get('redis', RedisCacheAdapter)
-    try:
-        cache = cache_mapping[cache_type].from_json(config)
-    except KeyError:
-        logger.error('Unknown cache type {} selected. Creating default Redis Cache'.format(cache_type))
-        cache = default_cache.from_json(config)
-    except ImportError:
-        logger.error(
-            'Could not import required packages to create cache type {0}. '
-            'Cache type requires the following packages {1}. '
-            'Using default Redis Cache'.format(cache_type, getattr(cache_mapping[cache_type], '_requires', [])))
-        cache = default_cache.from_json(config)
-    return cache

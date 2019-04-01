@@ -6,8 +6,6 @@ from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
-
-from api_gateway.appgateway.apiutil import get_app_action_api, UnknownApp, UnknownAppAction, InvalidParameter
 from api_gateway.executiondb import Execution_Base
 from api_gateway.executiondb.parameter import Parameter, ParameterSchema, ParameterApiSchema
 from api_gateway.executiondb.returns import ReturnApi, ReturnApiSchema

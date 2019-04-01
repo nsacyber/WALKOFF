@@ -4,7 +4,6 @@ import yaml
 from http import HTTPStatus
 
 from flask_jwt_extended import jwt_required
-from redis import Redis
 from flask import jsonify, current_app, request
 
 from marshmallow import ValidationError
