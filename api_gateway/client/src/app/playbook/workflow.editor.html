@@ -123,11 +123,11 @@
                 </div>
                 <div *ngFor="let app of getAppsWithActions()" class="card card-default my-1">
                     <div class="card-heading playbook-heading collapsed" data-toggle="collapse"
-                        [attr.data-target]="'#actionsCollapse' + removeWhitespace(app.name)"
+                        [attr.data-target]="'#actionsCollapse-' + app.id"
                         [title]="app.info ? app.info.description : ''">
                         <h5 class="card-title my-auto p-2">{{app.name}}</h5>
                     </div>
-                    <div id="actionsCollapse{{removeWhitespace(app.name)}}" class="card-collapse collapse action-panel">
+                    <div id="actionsCollapse-{{app.id}}" class="card-collapse collapse action-panel">
                         <div class="card-body my-auto p-3">
                             <div *ngFor="let actionApi of app.getFilteredActionApis(actionFilter)"
                                 class="card card-default actionPanel my-1" dnd-draggable [dragEnabled]="true"

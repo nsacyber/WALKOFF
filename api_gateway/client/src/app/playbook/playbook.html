@@ -38,7 +38,7 @@
 
                     <p class="card-text flex-grow-1">{{ w.description }}</p>
                     <div class="d-flex justify-content-around">
-                        <button class="btn btn-outline-primary" (click)="routeToWorkflow(w)"><i
+                        <button class="btn btn-outline-primary mr-1" (click)="routeToWorkflow(w)"><i
                                 class="fa fa-sitemap"></i> Workflow Editor</button>
                         <button class="btn btn-outline-primary" [disabled]="!w.is_valid"><i
                                 class="fa fa-play-circle"></i> Execute Workflow</button>
@@ -52,9 +52,9 @@
     <div *ngIf="workflowsLoaded && workflows.length == 0" class="instruction-container d-flex justify-content-center align-items-center">
         <div class="card bg-light shadow-lg">
             <div class="card-body">
-                <h4 class="mb-3">Welcome to Walkoff</h4>
+                <h4 class="mb-3">Welcome to WALKOFF</h4>
                 <p>
-                    Walkoff is a flexible, easy to use,
+                    <b>WALKOFF</b> is a flexible, easy to use,
                     automation framework allowing users to integrate their capabilities and devices to cut through the
                     repetitive,
                     tedious tasks slowing them down.
