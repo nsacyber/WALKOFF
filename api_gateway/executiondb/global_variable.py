@@ -2,7 +2,7 @@ import logging
 from uuid import uuid4, UUID
 
 from sqlalchemy import Column, String
-from sqlalchemy_utils import UUIDType
+from sqlalchemy_utils import UUIDType, JSONType
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
@@ -27,7 +27,7 @@ class GlobalVariable(Execution_Base):
     __tablename__ = 'global_variable'
     id_ = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
     name = Column(String(80))
-    value = Column(String(80), nullable=False)
+    value = Column(JSONType, nullable=False)
     description = Column(String(255))
 
     def __init__(self, value, id_=None, name=None, description=None):
@@ -45,7 +45,7 @@ class GlobalVariableSchema(ExecutionBaseSchema):
     """Schema for global variables
     """
     name = field_for(GlobalVariable, 'name')
-    value = field_for(GlobalVariable, 'value', required=True)
+    value = fields.Raw()
     description = field_for(GlobalVariable, 'description')
 
     class Meta:

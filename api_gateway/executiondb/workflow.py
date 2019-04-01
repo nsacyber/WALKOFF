@@ -108,13 +108,13 @@ class Workflow(ExecutionElement, Execution_Base):
                         errors.append(f"Parameter {param.name} refers to {param.value} not found in {param.variant}.")
                 else:
                     logger.info("Parameter schema validation to be implemented.")
-                    # api = current_app.running_context.execution_db.session.query(ParameterApi).filter(
-                    #     ParameterApi.location == f"{action.app_name}.{action.name}:{param.name}"
-                    # ).first()
-                    # try:
-                    #     Draft4Validator(api.schema).validate(param.value)
-                    # except JSONSchemaValidationError as e:
-                    #     errors.append(f"Parameter {param.name} has value {param.value} that is not valid under schema {api.schema}.")
+                    api = current_app.running_context.execution_db.session.query(ParameterApi).filter(
+                        ParameterApi.location == f"{action.app_name}.{action.name}:{param.name}"
+                    ).first()
+                    try:
+                        Draft4Validator(api.schema).validate(param.value)
+                    except JSONSchemaValidationError as e:
+                        errors.append(f"Parameter {param.name} has value {param.value} that is not valid under schema {api.schema}.")
 
         self.errors = errors
         self.is_valid = self._is_valid

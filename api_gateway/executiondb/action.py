@@ -53,6 +53,7 @@ class Action(ExecutionElement, Execution_Base):
     __tablename__ = 'action'
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
     app_name = Column(String(80), nullable=False)
+    app_version = Column(String(80), nullable=False)
     name = Column(String(80), nullable=False)
     label = Column(String(80), nullable=False)
     priority = Column(Integer)
@@ -62,7 +63,7 @@ class Action(ExecutionElement, Execution_Base):
     position = relationship('Position', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     children = ('parameters',)
 
-    def __init__(self, app_name, name, label, priority=3, id_=None, parameters=None,
+    def __init__(self, app_name, app_version, name, label, priority=3, id_=None, parameters=None,
                  position=None, errors=None):
         """Initializes a new Action object. A Workflow has one or more actions that it executes.
         Args:
@@ -79,6 +80,7 @@ class Action(ExecutionElement, Execution_Base):
         ExecutionElement.__init__(self, id_, errors)
 
         self.app_name = app_name
+        self.app_version = app_version
         self.name = name
         self.label = label
         self.priority = priority
@@ -126,7 +128,8 @@ def validate_before_update(mapper, connection, target):
 class ActionSchema(ExecutionElementBaseSchema):
     """Schema for actions
     """
-    app_name = fields.Str(required=True)
+    app_name = field_for(Action, 'app_name', required=True)
+    app_version = field_for(Action, 'app_version', required=True)
     name = field_for(Action, 'name', required=True)
     label = field_for(Action, 'label', required=True)
     parameters = fields.Nested(ParameterSchema, many=True)

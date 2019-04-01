@@ -88,7 +88,7 @@ WorkflowMetaData:
 
 Action:
   type: object
-  required: [id_, app_name, label, name]
+  required: [id_, app_name, app_version, label, name]
   description: Encapsulation of executing an action in an app.
   additionalProperties: false
   properties:
@@ -99,6 +99,10 @@ Action:
       description: The app to which the action belongs
       type: string
       example: CyberAnalytics
+    app_version:
+      description: The version of the app to which the action belongs
+      type: string
+      example: 1.0.0
     name:
       description: The name of the function this Action will take
       type: string
