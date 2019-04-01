@@ -25,11 +25,34 @@ services:
     image: walkoff_app_sdk
 
   worker:
-    image: localhost:5000/worker:latest
+    image: localhost:5000/worker
     build:
       context: ./
       dockerfile: worker/Dockerfile
     command: echo "Successfully built local worker image."
+
+  registry:
+    restart: always
+    image: registry:2
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    ports:
+      - 5000:5000
+    networks:
+      - walkoff_default
+    # The commented lines are needed to enable auth on the custom registry
+    #    environment:
+    #      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
+    #      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+    #      REGISTRY_AUTH: htpasswd
+    #      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+    #      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+    volumes:
+      #      - ./data/config.yml:/etc/docker/registry/config.yml
+      - ./data/registry:/var/lib/registry
+  #      - /var/lib/boot2docker:/certs
+  #      - /var/lib/boot2docker/auth:/auth
 
   api_gateway:
     ports:

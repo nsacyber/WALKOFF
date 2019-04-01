@@ -39,7 +39,7 @@ class AppRepo(dict):
                     results = await resp.json()
                     logger.debug(f"API-Gateway app-api create response: {results}")
                     return results
-            except aiohttp.ClientConnectionError as e:
+            except aiohttp.ClientConnectionError:
                 pass
                 # logger.error(f"Could not send app api to {url}: {e!r}")
 
@@ -54,7 +54,7 @@ class AppRepo(dict):
                 apps[app.name] = {}
                 for version in app.iterdir():
                     # grabs all valid version directories of form "v0.12.3.45..."
-                    if re.fullmatch(r"(v(\d\.?)+)", version.name):
+                    if re.fullmatch(r"((\d\.?)+)", version.name):
                         try:
                             # Store the api while we've got it here
                             api_name = f"{app.name}:{version.name}"

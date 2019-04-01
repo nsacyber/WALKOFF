@@ -54,8 +54,8 @@ class WorkflowJSONDecoder(json.JSONDecoder):
             o["variant"] = ParameterVariant[o["variant"]]
             return Parameter(**o)
 
-        elif "source" and "destination" in o:
-            self.branches.add(Branch(source=o["source"], destination=o["destination"]))
+        elif "source_id" and "destination_id" in o:
+            self.branches.add(Branch(source_id=o["source_id"], destination_id=o["destination_id"], id_=o["id_"]))
 
         elif "conditional" in o:
             node = Condition(**o)
@@ -76,7 +76,7 @@ class WorkflowJSONDecoder(json.JSONDecoder):
             return WorkflowVariable(**o)
 
         elif "actions" and "branches" in o:
-            branches = {Branch(self.nodes[b.source], self.nodes[b.destination]) for b in self.branches}
+            branches = {Branch(self.nodes[b.source_id], self.nodes[b.destination_id], b.id_) for b in self.branches}
             workflow_variables = {var.id_: var for var in o["workflow_variables"]}
             start = self.nodes[o["start"]]
             o["branches"] = branches
@@ -98,8 +98,10 @@ class WorkflowJSONEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, Workflow):
-            branches = [{"source": src.id_, "destination": dst.id_} for src, dsts in o.edges.items() for dst in dsts]
-            branches.sort(key=itemgetter("source", "destination"))
+            # Unpack the adjacency matrix into edges
+            branches = [{"source_id": src.id_, "destination_id": dst.id_} for src, dsts in o.edges.items()
+                        for dst in dsts]
+            branches.sort(key=itemgetter("source_id", "destination_id"))
             actions = [action for action in o.actions]
             conditions = [condition for condition in o.conditions]
             transforms = [transform for transform in o.transforms]
@@ -111,24 +113,27 @@ class WorkflowJSONEncoder(json.JSONEncoder):
                     "errors": None}
 
         elif isinstance(o, Action):
-            position = {"x": o.position.x, "y": o.position.y}
+            position = {"x": o.position.x, "y": o.position.y, "id_": o.position.id_}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
                     "parameters": o.parameters, "priority": o.priority, "execution_id": o.execution_id}
 
         elif isinstance(o, Condition):
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": o.position,
+            position = {"x": o.position.x, "y": o.position.y, "id_": o.position.id_}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
                     "conditional": o.conditional}
 
         elif isinstance(o, Transform):
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": o.position,
+            position = {"x": o.position.x, "y": o.position.y, "id_": o.position.id_}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
                     "transform": o.transform, "parameter": o.parameter}
 
         elif isinstance(o, Trigger):
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": o.position,
+            position = {"x": o.position.x, "y": o.position.y, "id_": o.position.id_}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
                     "trigger": o.trigger}
 
         elif isinstance(o, Parameter):
-            return {"name": o.name, "variant": o.variant, "value": o.value, "reference": o.reference}
+            return {"name": o.name, "variant": o.variant, "value": o.value, "reference": o.reference, "id_": o.id_}
 
         elif isinstance(o, ParameterVariant):
             return o.value
@@ -140,8 +145,8 @@ class WorkflowJSONEncoder(json.JSONEncoder):
             return o
 
 
-Point = namedtuple("Point", ("x", "y"))
-Branch = namedtuple("Branch", ("source", "destination"))
+Point = namedtuple("Point", ("x", "y", "id_"))
+Branch = namedtuple("Branch", ("source_id", "destination_id", "id_"))
 ParentSymbol = namedtuple("ParentSymbol", "result")  # used inside conditions to further mask the parent node attrs
 ChildSymbol = namedtuple("ChildSymbol", "id_")  # used inside conditions to further mask the child node attrs
 
@@ -154,13 +159,15 @@ class ParameterVariant(enum.Enum):
 
 
 class Parameter:
-    __slots__ = ("name", "value", "variant", "reference")
+    __slots__ = ("name", "value", "variant", "reference", "id_", "errors")
 
-    def __init__(self, name, value=None, variant=None, reference=None):
+    def __init__(self, name, id_=None, value=None, variant=None, reference=None, errors=None):
+        self.id_ = id_
         self.name = name
         self.value = value
         self.variant: ParameterVariant = variant
         self.reference = reference
+        self.errors = errors
         self.validate()
 
     def __str__(self):
@@ -214,14 +221,15 @@ class WorkflowVariable:
 
 
 class Node:
-    __slots__ = ("id_", "name", "app_name", "label", "position", "priority")
+    __slots__ = ("id_", "name", "app_name", "label", "position", "priority", "errors")
 
-    def __init__(self, name, position: Point, label, app_name, id_=None):
+    def __init__(self, name, position: Point, label, app_name, id_=None, errors=None):
         self.id_ = id_ if id_ is not None else str(uuid.uuid4())
         self.name = name
         self.app_name = app_name
         self.label = label
         self.position = position
+        self.errors = errors if errors is not None else []
         if hasattr(self, "priority"):
             msg = f"Call super().__init__() prior to setting self.priority in Node subclass {self.__class__.__name__}"
             logger.warning(msg)
@@ -249,8 +257,9 @@ class Node:
 class Action(Node):
     __slots__ = ("parameters", "execution_id")
 
-    def __init__(self, name, position, app_name, label, priority, parameters=None, id_=None, execution_id=None):
-        super().__init__(name, position, label, app_name, id_)
+    def __init__(self, name, position, app_name, label, priority, parameters=None, id_=None, execution_id=None,
+                 errors=None):
+        super().__init__(name, position, label, app_name, id_, errors)
         self.parameters = parameters if parameters is not None else list()
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue
@@ -273,8 +282,8 @@ class Action(Node):
 class Condition(Node):
     __slots__ = ("conditional",)
 
-    def __init__(self, name, position: Point, app_name, label, conditional, id_=None):
-        super().__init__(name, position, label, app_name, id_)
+    def __init__(self, name, position: Point, app_name, label, conditional, id_=None, errors=None):
+        super().__init__(name, position, label, app_name, id_, errors)
         self.conditional = conditional
         self.priority = 3  # Conditions have a fixed, mid valued priority
 
@@ -328,8 +337,8 @@ class Condition(Node):
 class Trigger(Node):
     __slots__ = ("trigger",)
 
-    def __init__(self, name, position: Point, app_name, label, trigger, id_=None):
-        super().__init__(name, position, label, app_name, id_)
+    def __init__(self, name, position: Point, app_name, label, trigger, id_=None, errors=None):
+        super().__init__(name, position, label, app_name, id_, errors)
         self.trigger = trigger
 
     def __str__(self):
@@ -350,8 +359,8 @@ class Trigger(Node):
 class Transform(Node):
     __slots__ = ("transform", "parameter")
 
-    def __init__(self, name, position: Point, app_name, label, transform, parameter=None, id_=None):
-        super().__init__(name, position, label, app_name, id_)
+    def __init__(self, name, position: Point, app_name, label, transform, parameter=None, id_=None, errors=None):
+        super().__init__(name, position, label, app_name, id_, errors)
         self.transform = transform.lower()
         self.parameter = parameter
         self.priority = 3  # Transforms have a fixed, mid valued priority
@@ -465,11 +474,11 @@ class DiGraph:
 # TODO: Maybe look into pooling nodes/branches and sharing them across a workflow to save memory?
 class Workflow(DiGraph):
     __slots__ = ("start", "id_", "is_valid", "name", "execution_id", "workflow_variables", "conditions", "transforms",
-                 "triggers", "actions", "errors")
+                 "triggers", "actions", "errors", "description", "tags")
 
     def __init__(self, name, start, actions: [Action], conditions: [Condition], triggers: [Trigger],
                  transforms: [Transform], branches: [Branch], workflow_variables, id_=None, execution_id=None,
-                 is_valid=None, errors=None):
+                 is_valid=None, errors=None, description=None, tags=None):
         super().__init__(nodes=[*actions, *conditions, *triggers, *transforms], edges=branches)
 
         self.start = start
@@ -483,6 +492,8 @@ class Workflow(DiGraph):
         self.triggers = triggers
         self.actions = actions
         self.errors = errors if errors is not None else []
+        self.description = description
+        self.tags = tags if tags is not None else []
 
     def __eq__(self, other):
         if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:

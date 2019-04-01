@@ -2,11 +2,11 @@ import socket
 import asyncio
 import time
 
-from app_sdk.app_base import AppBase
+from walkoff_app_sdk.app_base import AppBase
 
 
 class HelloWorld(AppBase):
-    __version__ = "v1.0"
+    __version__ = "1.0.0"
 
     def __init__(self, redis, logger, console_logger=None):
         super().__init__(redis, logger, console_logger)

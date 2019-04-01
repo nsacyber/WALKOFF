@@ -1,9 +1,0 @@
-version: '3.4'
-services:
-  test-app:
-    build: ./
-    env_file:
-      - ../../hello_world/v1.0/env.txt
-    deploy:
-      mode: replicated
-      replicas: 6

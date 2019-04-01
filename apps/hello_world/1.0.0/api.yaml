@@ -1,6 +1,6 @@
 walkoff_version: 1.0.0
 app_version: 1.0.0
-name: HelloWorldApp
+name: hello_world:1.0.0
 description: An example of a Walkoff App specification
 contact:
   name: Walkoff Team

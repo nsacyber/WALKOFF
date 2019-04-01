@@ -24,7 +24,6 @@ logger = logging.getLogger("UMPIRE")
 logger.setLevel(logging.DEBUG)
 
 
-# TODO: Add verification that AppRepo got initialized before use
 class Umpire:
     def __init__(self, docker_client=None, redis=None):
         self.redis: aioredis.Redis = redis
@@ -40,6 +39,7 @@ class Umpire:
         self.running_apps = await self.get_running_apps()
         self.worker = await self.get_service("worker")
         await self.build_app_sdk()
+        await self.build_worker()
 
         if len(self.apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
@@ -86,6 +86,7 @@ class Umpire:
             await self.docker_client.images.pull(worker.image_name)
         except DockerError:
             logger.debug(f"Could not pull {worker.image_name}. Trying to build local instead.")
+            await self.build_worker()
 
         try:
             secrets = await self.load_secrets(project=project)
@@ -97,7 +98,9 @@ class Umpire:
 
         except DockerError:
             try:
-                self.worker = await self.get_service(self.worker["id"])
+                self.worker = await self.get_service("worker")
+                if self.worker == {}:
+                    raise DockerError
                 await update_service(self.docker_client, service_id=self.worker["id"], version=self.worker["version"],
                                      image=worker.image_name, mode={"replicated": {"Replicas": replicas}})
                 self.worker = await self.get_service(self.worker["id"])
@@ -120,13 +123,17 @@ class Umpire:
                                                                    path_dockerfile=build_opts["dockerfile"],
                                                                    encoding="application/x-tar")
             await stream_docker_log(log_stream)
+        except DockerBuildError:
+            logger.exception(f"Error during worker build")
+            return
 
+        try:
             logger.info(f"Pushing worker")
             log_stream = await self.docker_client.images.push(repo, stream=True)
             await stream_docker_log(log_stream)
 
         except DockerBuildError:
-            logger.exception(f"Error during worker build")
+            logger.exception(f"Error during worker push")
             return
 
     async def build_app_sdk(self):
@@ -147,14 +154,18 @@ class Umpire:
 
             # Give image a locally accessible tag as well for docker-compose up runs
             await self.docker_client.images.tag(repo, sdk_name)
-
-            logger.info(f"Pushing walkoff_app_sdk")
-            log_stream = await self.docker_client.images.push(repo, stream=True)
-            await stream_docker_log(log_stream)
-
         except DockerBuildError:
             logger.exception(f"Error during walkoff_app_sdk build")
             return
+
+        try:
+            logger.info(f"Pushing walkoff_app_sdk")
+            log_stream = await self.docker_client.images.push(repo, stream=True)
+            await stream_docker_log(log_stream)
+        except DockerBuildError:
+            logger.exception(f"Error during walkoff_app_sdk push")
+            return
+
 
     async def launch_app(self, app, version, replicas=1):
         app_name = f"{config['UMPIRE']['app_prefix']}_{app}"
@@ -275,14 +286,17 @@ class Umpire:
 
             # Give image a locally accessible tag as well for docker-compose up runs
             await self.docker_client.images.tag(full_tag, app_name, tag=version)
+        except DockerBuildError:
+            logger.exception(f"Error during {app}:{version} build")
+            return
 
-            # TODO: don't push failed builds
+        try:
             logger.info(f"Pushing {app}:{version}")
             log_stream = await self.docker_client.images.push(repo, tag=version, stream=True)
             await stream_docker_log(log_stream)
 
         except DockerBuildError:
-            logger.exception(f"Error during {app}:{version} build")
+            logger.exception(f"Error during {app}:{version} push")
             return
 
     async def remove_service(self, service):
@@ -301,8 +315,7 @@ class Umpire:
 
         count = 0
         while True:
-            # TODO: Come up with a more robust system of naming queues
-            # Find all redis keys matching our "{AppName}-{Priority}" pattern
+            # Find all redis keys matching our "{AppName}:{AppVersion}:{Priority}" pattern
             keys = set(await self.redis.keys(pattern="*:*:[1-5]", encoding="utf-8"))
             logger.info(f"Redis keys: {keys}")
 
