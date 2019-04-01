@@ -37,50 +37,6 @@
               $ref: '#/components/schemas/Role'
       400:
         description: Object exists.
-  put:
-    tags:
-      - Roles
-    summary: Update a role
-    description: ''
-    operationId: api_gateway.server.endpoints.roles.update_role
-    requestBody:
-      description: Updated fields for the role object
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Role'
-    responses:
-      200:
-        description: Success
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Role'
-      404:
-        description: Object does not exist.
-  patch:
-    tags:
-      - Roles
-    summary: Update a role
-    description: ''
-    operationId: api_gateway.server.endpoints.roles.patch_role
-    requestBody:
-      description: Updated fields for the role object
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Role'
-    responses:
-      200:
-        description: Success
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Role'
-      404:
-        description: Object does not exist.
 /roles/{role_id}:
   parameters:
     - name: role_id
@@ -95,6 +51,28 @@
     summary: Read a role
     description: ''
     operationId: api_gateway.server.endpoints.roles.read_role
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      404:
+        description: Object does not exist.
+  put:
+    tags:
+      - Roles
+    summary: Update a role
+    description: ''
+    operationId: api_gateway.server.endpoints.roles.update_role
+    requestBody:
+      description: Updated fields for the role object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Role'
     responses:
       200:
         description: Success

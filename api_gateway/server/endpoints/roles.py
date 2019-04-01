@@ -12,97 +12,76 @@ from api_gateway.serverdb.role import Role
 with_role = with_resource_factory('role', lambda role_id: Role.query.filter_by(id=role_id).first())
 
 
+@jwt_required
+@admin_required
 def read_all_roles():
-    @jwt_required
-    @admin_required
-    def __func():
-        return [role.as_json() for role in Role.query.all()], HTTPStatus.OK
-
-    return __func()
+    return [role.as_json() for role in Role.query.all()], HTTPStatus.OK
 
 
+@jwt_required
+@admin_required
 def create_role():
-    @jwt_required
-    @admin_required
-    def __func():
-        json_data = request.get_json()
-        if not Role.query.filter_by(name=json_data['name']).first():
-            resources = json_data['resources'] if 'resources' in json_data else []
-            if '/roles' in resources:
-                resources.remove('/roles')
-            role_params = {'name': json_data['name'],
-                           'description': json_data['description'] if 'description' in json_data else '',
-                           'resources': resources}
-            new_role = Role(**role_params)
-            db.session.add(new_role)
-            db.session.commit()
-            current_app.logger.info(f"Role added: {role_params}")
-            return new_role.as_json(), HTTPStatus.CREATED
-        else:
-            current_app.logger.warning(f"Role with name {json_data['name']} already exists")
-            return Problem.from_crud_resource(
-                HTTPStatus.BAD_REQUEST,
-                'role',
-                'create',
-                f"Role with name {json_data['name']} already exists")
-
-    return __func()
+    json_data = request.get_json()
+    if not Role.query.filter_by(name=json_data['name']).first():
+        resources = json_data['resources'] if 'resources' in json_data else []
+        if '/roles' in resources:
+            resources.remove('/roles')
+        role_params = {'name': json_data['name'],
+                       'description': json_data['description'] if 'description' in json_data else '',
+                       'resources': resources}
+        new_role = Role(**role_params)
+        db.session.add(new_role)
+        db.session.commit()
+        current_app.logger.info(f"Role added: {role_params}")
+        return new_role.as_json(), HTTPStatus.CREATED
+    else:
+        current_app.logger.warning(f"Role with name {json_data['name']} already exists")
+        return Problem.from_crud_resource(
+            HTTPStatus.BAD_REQUEST,
+            'role',
+            'create',
+            f"Role with name {json_data['name']} already exists")
 
 
+@jwt_required
+@admin_required
+@with_role('read', 'role_id')
 def read_role(role_id):
-    @jwt_required
-    @admin_required
-    @with_role('read', role_id)
-    def __func(role):
-        return role.as_json(), HTTPStatus.OK
-
-    return __func()
+    return role_id.as_json(), HTTPStatus.OK
 
 
-def update_role():
-    @jwt_required
-    @admin_required
-    @with_role('update', request.get_json()['id'])
-    def __func(role):
-        json_data = request.get_json()
-        if 'name' in json_data:
-            new_name = json_data['name']
-            role_db = Role.query.filter_by(name=new_name).first()
-            if role_db is None or role_db.id == json_data['id']:
-                role.name = new_name
-        if 'description' in json_data:
-            role.description = json_data['description']
-        if 'resources' in json_data:
-            resources = json_data['resources']
-            role.set_resources(resources)
-        db.session.commit()
-        current_app.logger.info(f"Edited role {json_data['id']} to {json_data}")
-        return role.as_json(), HTTPStatus.OK
-
-    return __func()
+@jwt_required
+@admin_required
+@with_role('update', 'role_id')
+def update_role(role_id):
+    json_data = request.get_json()
+    if 'name' in json_data:
+        new_name = json_data['name']
+        role_db = Role.query.filter_by(name=new_name).first()
+        if role_db is None or role_db.id == json_data['id']:
+            role_id.name = new_name
+    if 'description' in json_data:
+        role_id.description = json_data['description']
+    if 'resources' in json_data:
+        resources = json_data['resources']
+        role_id.set_resources(resources)
+    db.session.commit()
+    current_app.logger.info(f"Edited role {json_data['id']} to {json_data}")
+    return role_id.as_json(), HTTPStatus.OK
 
 
-def patch_role():
-    return update_role()
-
-
+@jwt_required
+@admin_required
+@with_role('delete', 'role_id')
 def delete_role(role_id):
-    @jwt_required
-    @admin_required
-    @with_role('delete', role_id)
-    def __func(role):
-        clear_resources_for_role(role.name)
-        db.session.delete(role)
-        db.session.commit()
-        return None, HTTPStatus.NO_CONTENT
-
-    return __func()
+    clear_resources_for_role(role_id.name)
+    db.session.delete(role_id)
+    db.session.commit()
+    return None, HTTPStatus.NO_CONTENT
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
 def read_available_resource_actions():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
-    def __func():
-        return get_all_available_resource_actions(), HTTPStatus.OK
+    return get_all_available_resource_actions(), HTTPStatus.OK
 
-    return __func()

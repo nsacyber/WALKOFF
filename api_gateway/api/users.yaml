@@ -42,6 +42,35 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+
+/users/{user_id}:
+  parameters:
+    - name: user_id
+      in: path
+      description: The id of the user to be fetched
+      required: true
+      schema:
+        type: integer
+  get:
+    tags:
+      - Users
+    summary: Get a user
+    description: ''
+    operationId: api_gateway.server.endpoints.users.read_user
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              description: The user object matching the user id inputted
+              $ref: '#/components/schemas/DisplayUser'
+      404:
+        description: Could not display user <username>. User does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   put:
     tags:
       - Users
@@ -71,35 +100,6 @@
               $ref: '#/components/schemas/Error'
       404:
         description: Could not edit user <username>. User does not exist.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Error'
-
-/users/{user_id}:
-  parameters:
-    - name: user_id
-      in: path
-      description: The id of the user to be fetched
-      required: true
-      schema:
-        type: integer
-  get:
-    tags:
-      - Users
-    summary: Get a user
-    description: ''
-    operationId: api_gateway.server.endpoints.users.read_user
-    responses:
-      200:
-        description: Success
-        content:
-          application/json:
-            schema:
-              description: The user object matching the user id inputted
-              $ref: '#/components/schemas/DisplayUser'
-      404:
-        description: Could not display user <username>. User does not exist.
         content:
           application/json:
             schema:
