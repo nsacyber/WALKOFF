@@ -595,7 +595,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					let defaultStatus = '';
 					if (sourceActionApi.default_return) {
 						defaultStatus = sourceActionApi.default_return;
-					} else if (sourceActionApi.returns.length) {
+					} else if (sourceActionApi.returns && sourceActionApi.returns.length) {
 						defaultStatus = sourceActionApi.returns[0].status;
 					}
 
