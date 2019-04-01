@@ -1832,7 +1832,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	get currentTags(): string[] {
-		let tags = [];
+		let tags = this.loadedWorkflow.tags || [];
 		this.workflows.forEach(w => tags = tags.concat(w.tags));
 		return tags.filter((v, i, a) => a.indexOf(v) == i);
 	}

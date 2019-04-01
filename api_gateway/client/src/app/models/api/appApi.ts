@@ -6,6 +6,10 @@ import { TransformApi } from './transformApi';
 import { DeviceApi } from './deviceApi';
 
 export class AppApi {
+
+	@Expose({ name: 'id_'})
+	id: string;
+
 	name: string;
 
 	walkoff_version?: string;
