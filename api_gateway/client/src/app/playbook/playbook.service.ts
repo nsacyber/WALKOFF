@@ -222,7 +222,15 @@ emitChange(data: any) {
 	getApis(): Promise<AppApi[]> {
 		return this.http.get('/api/apps/apis')
 			.toPromise()
-		  .then((data) => plainToClass(AppApi, data))
+			.then((data: any[]) => plainToClass(AppApi, data))
+			.then((appApis : AppApi[]) => {
+				appApis.forEach(app => app.action_apis.map(action => {
+					action.app_name = app.name;
+					action.app_version = app.app_version;
+					return action;
+				}))
+				return appApis;
+			})
 			.catch(this.utils.handleResponseError);
 	}
 

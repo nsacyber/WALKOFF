@@ -15,6 +15,8 @@ export class Action extends ExecutionElement {
 
 	app_name: string;
 
+	app_version: string;
+
 	@Expose({ name: 'name' })
 	action_name: string;
 
