@@ -589,7 +589,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					}
 
 					const sourceAction = this.loadedWorkflow.actions.find(a => a.id === sourceId);
-					const sourceActionApi = this._getAction(sourceAction.app_name, sourceAction.action_name);
+					const sourceActionApi = this._getAction(sourceAction.app_name, sourceAction.app_version, sourceAction.action_name);
 
 					// Get our default status either from the default return if specified, or the first return status
 					let defaultStatus = '';
@@ -964,7 +964,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		const action = this.loadedWorkflow.actions.find(a => a.id === data._id);
 		if (!action) { return; }
-		const actionApi = this._getAction(action.app_name, action.action_name);
+		const actionApi = this._getAction(action.app_name, action.app_version, action.action_name);
 
 		const queryPromises: Array<Promise<any>> = [];
 
@@ -1017,7 +1017,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		this.selectedBranchParams = {
 			branch,
-			returnTypes: this._getAction(sourceAction.app_name, sourceAction.action_name).returns,
+			returnTypes: this._getAction(sourceAction.app_name, sourceAction.app_version, sourceAction.action_name).returns,
 			appName: sourceAction.app_name,
 			actionName: sourceAction.action_name,
 		};
@@ -1104,7 +1104,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			y: e.mouseEvent.layerY,
 		});
 
-		this.insertNode(appName, actionApi.name, dropPosition, true);
+		this.insertNode(appName, actionApi.app_version, actionApi.name, dropPosition, true);
 	}
 
 	/**
@@ -1113,13 +1113,13 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param appName App name the action resides under
 	 * @param actionName Name of the action that was double clicked
 	 */
-	handleDoubleClickEvent(appName: string, actionName: string): void {
+	handleDoubleClickEvent(actionApi: ActionApi): void {
 		if (this.cy === null) { return; }
 
 		const extent = this.cy.extent();
 
 		const centerGraphPosition = plainToClass(GraphPosition, { x: this.avg(extent.x1, extent.x2), y: this.avg(extent.y1, extent.y2) });
-		this.insertNode(appName, actionName, centerGraphPosition, false);
+		this.insertNode(actionApi.app_name, actionApi.app_version, actionApi.name, centerGraphPosition, false);
 	}
 
 	/**
@@ -1138,16 +1138,16 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param location Graph Position, where to create the node
 	 * @param shouldUseRenderedPosition Whether or not to use rendered or "real" graph position
 	 */
-	insertNode(appName: string, actionName: string, location: GraphPosition, shouldUseRenderedPosition: boolean): void {
+	insertNode(appName: string, appVersion: string, actionName: string, location: GraphPosition, shouldUseRenderedPosition: boolean): void {
 		// Grab a new ID for both the ID of the node and the ID of the action in the workflow
 		const newActionUuid = UUID.UUID();
 
 		const args: Argument[] = [];
-		const parameters = this._getAction(appName, actionName).parameters;
+		const parameters = this._getAction(appName, appVersion, actionName).parameters;
 		// TODO: might be able to remove this entirely
 		// due to the argument component auto-initializing default values
 		if (parameters && parameters.length) {
-			this._getAction(appName, actionName).parameters.forEach((parameter) => {
+			this._getAction(appName, appVersion, actionName).parameters.forEach((parameter) => {
 				args.push(this.getDefaultArgument(parameter));
 			});
 		}
@@ -1162,6 +1162,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		actionToBeAdded.id = newActionUuid;
 		actionToBeAdded.name = uniqueActionName;
 		actionToBeAdded.app_name = appName;
+		actionToBeAdded.app_version = appVersion;
 		actionToBeAdded.action_name = actionName;
 		actionToBeAdded.arguments = args;
 
@@ -1239,7 +1240,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	_setNodeDisplayProperties(actionNode: any, action: Action): void {
 		//add a type field to handle node styling
-		if (this._getAction(action.app_name, action.action_name).event) {
+		if (this._getAction(action.app_name, action.app_version, action.action_name).event) {
 			actionNode.type = 'eventAction';
 		} else { actionNode.type = 'action'; }
 	}
@@ -1581,8 +1582,9 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param appName App name the action resides under
 	 * @param actionName Name of the ActionApi to query
 	 */
-	_getAction(appName: string, actionName: string): ActionApi {
-		return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
+	_getAction(appName: string, appVersion: string, actionName: string): ActionApi {
+		return this.appApis.find(a => a.name === appName && a.app_version == appVersion)
+				.action_apis.find(a => a.name === actionName);
 	}
 
 	/**
@@ -1644,8 +1646,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param actionName Name of the ActionApi to query
 	 * @param inputName Name of the action input to query
 	 */
-	getInputApiArgs(appName: string, actionName: string, inputName: string): ParameterApi {
-		return this._getAction(appName, actionName).parameters.find(a => a.name === inputName);
+	getInputApiArgs(appName: string, appVersion: string, actionName: string, inputName: string): ParameterApi {
+		return this._getAction(appName, appVersion, actionName).parameters.find(a => a.name === inputName);
 	}
 
 	/**

@@ -132,7 +132,7 @@
                             <div *ngFor="let actionApi of app.getFilteredActionApis(actionFilter)"
                                 class="card card-default actionPanel my-1" dnd-draggable [dragEnabled]="true"
                                 [dragData]="{ appName: app.name, actionApi: actionApi }"
-                                (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)"
+                                (dblclick)="handleDoubleClickEvent(actionApi)"
                                 [title]="actionApi.description">
                                 <div class="card-body my-auto p-2">
                                     <span>{{actionApi.name}}</span>

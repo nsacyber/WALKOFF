@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Exclude } from 'class-transformer';
 
 import { ParameterApi } from './parameterApi';
 import { ReturnApi } from './returnApi';
@@ -22,6 +22,12 @@ export class ActionApi {
 	run: string;
 
 	deprecated: boolean;
+
+	@Exclude()
+	app_name: string;
+
+	@Exclude()
+	app_version: string;
 
 	// tags: Tag[] = [];
 
