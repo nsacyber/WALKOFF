@@ -75,40 +75,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-  patch:
-    tags:
-      - Users
-    summary: Update a user
-    description: ''
-    operationId: api_gateway.server.endpoints.users.patch_user
-    requestBody:
-      description: Updated fields for the user object
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/EditUser'
-    responses:
-      200:
-        description: Success
-        content:
-          application/json:
-            schema:
-              description: The updated user.
-              $ref: '#/components/schemas/DisplayUser'
-      400:
-        description: Invalid password
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Error'
-      404:
-        description: Could not edit user <username>. User does not exist.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Error'
-
 
 /users/{user_id}:
   parameters:
