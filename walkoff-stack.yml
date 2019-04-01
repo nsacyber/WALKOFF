@@ -51,7 +51,7 @@ services:
     networks:
       - walkoff_default
     environment:
-    - "CACHE={\"type\": \"redis\", \"host\": \"redis\", \"port\": 6379}"
+    - "REDIS_OPTIONS={\"type\": \"redis\", \"host\": \"redis\", \"port\": 6379}"
     - "IP=0.0.0.0"
     - "PORT=8080"
     - "WALKOFF_DB_TYPE=postgresql"
