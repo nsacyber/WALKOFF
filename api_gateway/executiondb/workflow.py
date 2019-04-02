@@ -70,13 +70,12 @@ class Workflow(ExecutionElement, Execution_Base):
         self.tags = tags if tags else []
         self.workflow_variables = workflow_variables if workflow_variables else []
 
-        self.start = start
+        self.start = start if start else ""
         self.is_valid = is_valid
 
-        self.description = description
+        self.description = description if description else ""
 
-        if not self.is_valid:
-            self.validate()
+        self.validate()
 
     def validate(self):
         """Validates the object"""

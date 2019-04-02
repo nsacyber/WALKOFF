@@ -29,7 +29,7 @@ class ActionApi(ExecutionElement, Execution_Base):
         ExecutionElement.__init__(self, id_, errors)
 
         self.name = name
-        self.description = description
+        self.description = description if description else ""
         self.returns = returns
         self.parameters = parameters if parameters else []
 
@@ -83,9 +83,7 @@ class Action(ExecutionElement, Execution_Base):
         self.label = label
         self.priority = priority
 
-        self.parameters = []
-        if parameters:
-            self.parameters = parameters
+        self.parameters = parameters if parameters else []
 
         self.position = position
 
@@ -94,8 +92,8 @@ class Action(ExecutionElement, Execution_Base):
     @orm.reconstructor
     def init_on_load(self):
         """Loads all necessary fields upon Action being loaded from database"""
-        # if not self.errors:
-        #     errors = []
+        if not self.errors:
+            self.errors = []
         #     try:
         #         self._arguments_api = get_app_action_api(self.app_name, self.name)
         #     except UnknownApp:
@@ -106,7 +104,7 @@ class Action(ExecutionElement, Execution_Base):
 
     def validate(self):
         """Validates the object"""
-        # errors = []
+        self.errors = []
         # try:
         #     validate_app_action_parameters(self._arguments_api, self.parameters, self.app_name, self.name)
         # except UnknownApp:

@@ -259,7 +259,7 @@ Position:
 
 WorkflowVariable:
   type: object
-  required: [value]
+  required: [name, value]
   description: A workflow variable object that is available in the workflow scope
   additionalProperties: false
   properties:

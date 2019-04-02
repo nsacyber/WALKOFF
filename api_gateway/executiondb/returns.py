@@ -23,9 +23,9 @@ class ReturnApi(ExecutionElement, Execution_Base):
 
     def __init__(self, id_=None, errors=None, description=None, example=None, schema=None):
         ExecutionElement.__init__(self, id_, errors)
-        self.description = description
-        self.example = example
-        self.schema = schema
+        self.description = description if description else ""
+        self.example = example if example else ""
+        self.schema = schema if schema else ""
 
 
 class ReturnApiSchema(ExecutionElementBaseSchema):
