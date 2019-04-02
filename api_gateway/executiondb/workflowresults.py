@@ -130,22 +130,22 @@ class ActionStatus(Execution_Base):
     """
     __tablename__ = 'action_status'
     combined_id = Column(String, primary_key=True)
-    action_id = Column(UUIDType(binary=False), nullable=False)
+    node_id = Column(UUIDType(binary=False), nullable=False)
     name = Column(String, nullable=False)
     app_name = Column(String, nullable=False)
     label = Column(String, nullable=False)
     result = Column(String)
-    arguments = Column(String)
+    arguments = Column(String)  # TODO: refactor this to parameters to match every other node model
     status = Column(String, nullable=False)  # ToDo: revisit this and make this a real enum
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
     workflow_execution_id = Column(UUIDType(binary=False),
                                    ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
 
-    def __init__(self, combined_id, action_id, name, app_name, label, result=None, arguments=None,
-                 status=StatusEnum.EXECUTING, started_at=None, completed_at=None):
+    def __init__(self, combined_id, node_id, name, app_name, label, result=None, arguments=None,
+                 status=StatusEnum.EXECUTING, started_at=None, completed_at=None, execution_id=None):
         self.combined_id = combined_id
-        self.action_id = action_id
+        self.node_id = node_id
         self.name = name
         self.app_name = app_name
         self.label = label
@@ -154,6 +154,7 @@ class ActionStatus(Execution_Base):
         self.status = status
         self.started_at = started_at
         self.completed_at = completed_at
+        self.execution_id = execution_id
 
     def aborted(self):
         """Sets status to aborted"""
@@ -189,11 +190,11 @@ class ActionStatus(Execution_Base):
         Returns:
             (dict): The JSON representation of the object
         """
-        ret = {"execution_id": str(self.combined_id),
-               "action_id": str(self.action_id),
-               "label": self.name,
+        ret = {"execution_id": str(self.workflow_execution_id),
+               "action_id": str(self.node_id),
+               "label": self.label,
                "app_name": self.app_name,
-               "name": self.action_name}
+               "name": self.name}
         if summary:
             return ret
         ret.update(
@@ -210,7 +211,7 @@ class ActionStatusSchema(ExecutionBaseSchema):
     """
     Schema for ActionStatusMessage
     """
-    action_id = field_for(ActionStatus, 'action_id', required=True)
+    node_id = field_for(ActionStatus, 'node_id', required=True)
     name = field_for(ActionStatus, 'name', required=True)
     app_name = field_for(ActionStatus, 'app_name', required=True)
     label = field_for(ActionStatus, 'label', required=True)
@@ -228,7 +229,7 @@ class ActionStatusSummarySchema(ExecutionBaseSchema):
     """
     Summary Schema for ActionStatusMessage
     """
-    action_id = field_for(ActionStatus, 'action_id', required=True)
+    node_id = field_for(ActionStatus, 'node_id', required=True)
     name = field_for(ActionStatus, 'name', required=True)
     app_name = field_for(ActionStatus, 'app_name', required=True)
     label = field_for(ActionStatus, 'label', required=True)
