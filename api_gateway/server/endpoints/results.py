@@ -7,7 +7,7 @@ from datetime import datetime
 import gevent
 from gevent.queue import Queue
 
-from flask import Flask, Response, current_app, request, jsonify
+from flask import Blueprint, Response, current_app, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_claims
 
 from marshmallow import ValidationError
@@ -45,7 +45,7 @@ with_workflow_status = with_resource_factory('workflow', workflow_status_getter,
 action_status_schema = ActionStatusSchema()
 workflow_status_schema = WorkflowStatusSchema()
 
-results_stream = Flask(__name__)
+results_stream = Blueprint('results_stream', __name__)
 workflow_stream_subs = {}
 action_stream_subs = {}
 
@@ -169,7 +169,7 @@ def workflow_stream():
     return Response(workflow_results_generator(), mimetype="test/event-stream")
 
 
-@results_stream.route('/action_status')
+@results_stream.route('/actions')
 def action_stream():
     execution_id = request.args.get('workflow_execution_id', 'all')
     if execution_id != 'all':
