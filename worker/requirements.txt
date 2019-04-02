@@ -1,0 +1,9 @@
+#aiodns
+aiodocker
+aiohttp
+aioredis
+#cchardet
+docker
+docker-compose
+pyyaml
+sqlalchemy
