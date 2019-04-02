@@ -321,6 +321,7 @@ def compose_api(config):
                 final_yaml.append(line)
     with open(os.path.join(config.API_PATH, 'composed_api.yaml'), 'w') as composed_yaml:
         composed_yaml.writelines(final_yaml)
+        logger.info("Wrote composed_api.yaml")
 
 
 class ExecutionError(Exception):
