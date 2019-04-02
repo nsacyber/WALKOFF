@@ -17,7 +17,7 @@ from common.helpers import connect_to_redis_pool
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
 ACTION_RESULT_CH = os.getenv("ACTION_RESULT_CH", "action-results")
 ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
-API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "localhost:5000")
+API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "http://api_gateway:8080")
 APP_NAME = os.getenv("APP_NAME", None)
 
 

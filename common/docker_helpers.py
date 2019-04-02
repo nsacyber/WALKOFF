@@ -183,10 +183,11 @@ async def connect_to_aiodocker():
 
 
 @contextmanager
-def docker_context(path):
+def docker_context(path, dirs=None):
     """
     Tars and compresses the given docker context in memory. Useful for sending contexts to `docker build` commands.
     :param path: str or pathlib.Path object representing the path of the context
+    :param dirs: white list of directories under path to grab
     :return: an in memory tar of the context
     """
     if not isinstance(path, Path):
@@ -194,9 +195,17 @@ def docker_context(path):
             path = Path(path)
         except (ValueError, NotImplementedError):
             logger.exception(f"Error accessing path: \"{path}\"")
+            return
+
     fileobj = BytesIO()
     tar = tarfile.open(fileobj=fileobj, mode="w")
-    tar.add(path, arcname='')
+
+    # If a list of subdirectories is listed, only grab them
+    if dirs is not None:
+        for d in dirs:
+            tar.add(path / d, arcname=d)
+    else:
+        tar.add(path, arcname='')
     tar.close()
     try:
         fileobj.seek(0)  # must go back to start of file after tarfile writes to it

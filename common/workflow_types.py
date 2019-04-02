@@ -114,8 +114,9 @@ class WorkflowJSONEncoder(json.JSONEncoder):
 
         elif isinstance(o, Action):
             position = {"x": o.position.x, "y": o.position.y, "id_": o.position.id_}
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
-                    "parameters": o.parameters, "priority": o.priority, "execution_id": o.execution_id}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
+                    "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
+                    "execution_id": o.execution_id}
 
         elif isinstance(o, Condition):
             position = {"x": o.position.x, "y": o.position.y, "id_": o.position.id_}
@@ -255,11 +256,13 @@ class Node:
 
 
 class Action(Node):
-    __slots__ = ("parameters", "execution_id")
+    __slots__ = ("parameters", "execution_id", "app_version")
 
-    def __init__(self, name, position, app_name, label, priority, parameters=None, id_=None, execution_id=None,
+    def __init__(self, name, position, app_name, app_version, label, priority, parameters=None, id_=None,
+                 execution_id=None,
                  errors=None):
         super().__init__(name, position, label, app_name, id_, errors)
+        self.app_version = app_version
         self.parameters = parameters if parameters is not None else list()
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue

@@ -6,7 +6,7 @@ import sys
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WALKOFF")
-CONFIG_PATH = (Path(__file__).parent / "../data/config.ini").resolve()
+CONFIG_PATH = (Path(__file__).parent / "config.ini").resolve()
 
 
 def load_config():

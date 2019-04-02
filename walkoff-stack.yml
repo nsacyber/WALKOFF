@@ -9,7 +9,7 @@ services:
       - walkoff_default
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /Users/kylezimmer/PycharmProjects/triple-play/apps:/app/apps
+      - ./apps:/app/apps
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
     deploy:

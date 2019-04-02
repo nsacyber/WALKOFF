@@ -6,14 +6,17 @@ RUN apk --no-cache add --update alpine-sdk
 RUN mkdir /install
 WORKDIR /install
 
-COPY umpire/requirements.txt /requirements.txt
+COPY ./umpire/requirements.txt /requirements.txt
 
 RUN pip install --prefix="/install" -r /requirements.txt
 
 FROM base
 
 COPY --from=builder /install /usr/local
-COPY ./ /app
+COPY ./app_sdk /app/app_sdk
+COPY ./worker /app/worker
+COPY ./common /app/common
+COPY ./umpire /app/umpire
 
 WORKDIR /app
 

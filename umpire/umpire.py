@@ -117,7 +117,7 @@ class Umpire:
             worker = [service for service in project.services if service.name == "worker"][0]
             build_opts = worker.options.get('build', {})
 
-            with docker_context(Path(build_opts["context"]).parent) as context:
+            with docker_context(Path(build_opts["context"]).parent, dirs=["common", "worker"]) as context:
                 log_stream = await self.docker_client.images.build(fileobj=context, tag=worker.image_name, rm=True,
                                                                    forcerm=True, pull=True, stream=True,
                                                                    path_dockerfile=build_opts["dockerfile"],

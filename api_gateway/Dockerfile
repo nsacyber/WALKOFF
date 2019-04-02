@@ -13,7 +13,8 @@ FROM base
 
 COPY --from=builder /install /usr/local
 RUN apk --no-cache add --update libpq
-COPY ./ /app
+COPY ./common /app/common
+COPY ./api_gateway /app/api_gateway
 WORKDIR /app
 
 
