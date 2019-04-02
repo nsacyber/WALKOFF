@@ -13,7 +13,6 @@ from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError, StatementError
 
 from common.message_types import StatusEnum, WorkflowStatusMessage
-from api_gateway.events import WalkoffEvent
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusSchema, WorkflowStatusSummarySchema
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
@@ -24,11 +23,6 @@ from api_gateway.server.endpoints.results import push_to_action_stream_queue, pu
 from http import HTTPStatus
 
 logger = logging.getLogger(__name__)
-
-
-def log_and_send_event(event, sender=None, data=None, workflow=None):
-    sender = sender
-    current_app.running_context.results_sender.handle_event(workflow, sender, event=event, data=data)
 
 
 def abort_workflow(execution_id, user=None):
@@ -53,9 +47,6 @@ def abort_workflow(execution_id, user=None):
                 data = {}
                 if user:
                     data['user'] = user
-                log_and_send_event(event=WalkoffEvent.WorkflowAborted,
-                                   sender={'execution_id': execution_id, 'id': workflow_status.workflow_id,
-                                           'name': workflow.name}, workflow=workflow, data=data)
         elif workflow_status.status == StatusEnum.EXECUTING:
             print("I guess Im here")
             # self.zmq_workflow_comm.abort_workflow(execution_id)
@@ -123,7 +114,7 @@ def get_workflow_status(execution_id):
 def execute_workflow():
     data = request.get_json()
     workflow_id = data.get("workflow_id")
-    execution_id = data.get("execution_id", str(uuid.uuid4()))
+    execution_id = data.get("execution_id", None)
     workflow = workflow_getter(workflow_id)  # ToDo: should this go under a path param so we can use the decorator
 
     if not workflow:
@@ -145,32 +136,42 @@ def execute_workflow():
         workflow["workflow_variables"] = list(override_wvs.values())
 
     try:
-        workflow_status_json = {  # ToDo: Probably load this directly into db model?
-            "execution_id": execution_id,
-            "workflow_id": workflow_id,
-            "name": workflow["name"],
-            "status": StatusEnum.PENDING.name,
-            "started_at": None,
-            "completed_at": None,
-            "user": get_jwt_claims().get('username', None),
-            "action_statuses": []
-        }
-        workflow_status = workflow_status_schema.load(workflow_status_json)
-        current_app.running_context.execution_db.session.add(workflow_status)
-        current_app.running_context.execution_db.session.commit()
-
-        # Assign the execution id to the workflow so the worker
-        workflow["execution_id"] = execution_id
-        # ToDo: self.__box.encrypt(message))
-        current_app.running_context.cache.lpush("workflow-queue", json.dumps(workflow))
-
-        gevent.spawn(push_to_workflow_stream_queue, workflow_status_json, "PENDING")
-        current_app.logger.info(f"Created Workflow Status {workflow['name']} ({execution_id})")
-
+        execution_id = execute_workflow_helper(workflow_id, execution_id, workflow)
         return jsonify({'execution_id': execution_id}), HTTPStatus.ACCEPTED
     except ValidationError as e:
         current_app.running_context.execution_db.session.rollback()
         return improper_json_problem('workflow_status', 'create', workflow['name'], e.messages)
+
+
+def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
+    if not execution_id:
+        execution_id = str(uuid.uuid4())
+    if not workflow:
+        workflow = workflow_schema.dump(workflow_getter(workflow_id))
+    logger.info(f"here be a workflow: {workflow}")
+    workflow_status_json = {  # ToDo: Probably load this directly into db model?
+        "execution_id": execution_id,
+        "workflow_id": workflow_id,
+        "name": workflow["name"],
+        "status": StatusEnum.PENDING.name,
+        "started_at": None,
+        "completed_at": None,
+        "user": get_jwt_claims().get('username', None),
+        "action_statuses": []
+    }
+    workflow_status = workflow_status_schema.load(workflow_status_json)
+    current_app.running_context.execution_db.session.add(workflow_status)
+    current_app.running_context.execution_db.session.commit()
+
+    # Assign the execution id to the workflow so the worker
+    workflow["execution_id"] = execution_id
+    # ToDo: self.__box.encrypt(message))
+    current_app.running_context.cache.lpush("workflow-queue", json.dumps(workflow))
+
+    gevent.spawn(push_to_workflow_stream_queue, workflow_status_json, "PENDING")
+    current_app.logger.info(f"Created Workflow Status {workflow['name']} ({execution_id})")
+
+    return execution_id
 
 
 # ToDo: Ensure workflow abort works

@@ -35,7 +35,4 @@ class Context(object):
 
         if init_all:
             self.cache = api_gateway.cache.RedisCacheAdapter(**api_gateway.config.Config.REDIS_OPTIONS)
-            self.scheduler = api_gateway.scheduler.Scheduler()
-
-    def inject_app(self, app):
-        self.scheduler.app = app
+            self.scheduler = api_gateway.scheduler.Scheduler(app)

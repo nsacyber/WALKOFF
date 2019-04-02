@@ -1,8 +1,5 @@
 import logging
 
-from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
-                                EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
-                                EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED)
 from apscheduler.schedulers.base import JobLookupError
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 from apscheduler.schedulers.gevent import GeventScheduler
@@ -10,7 +7,6 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from api_gateway.events import WalkoffEvent
 
 logger = logging.getLogger(__name__)
 
@@ -69,15 +65,10 @@ def split_task_id(task_id):
 
 # A thin wrapper around APScheduler
 class Scheduler(object):
-    def __init__(self):
+    def __init__(self, app=None):
         self.scheduler = GeventScheduler()
-        self.scheduler.add_listener(self.__scheduler_listener(),
-                                    EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN
-                                    | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED
-                                    | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
-                                    | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.id = 'controller'
-        self.app = None
+        self.app = app
 
     def schedule_workflows(self, task_id, executable, workflow_ids, trigger):
         """
@@ -117,7 +108,7 @@ class Scheduler(object):
 
     def get_scheduled_workflows(self, task_id):
         """
-        Gets all the scheduled worfklows for a given task id
+        Gets all the scheduled workflow for a given task id
 
         Args:
             task_id (str): The task id
@@ -147,7 +138,7 @@ class Scheduler(object):
 
     def unschedule_workflows(self, task_id, workflow_execution_ids):
         """
-        Unschedules a workflow
+        Unschedule a workflow
 
         Args:
             task_id (str|int): The task ID to unschedule
@@ -254,22 +245,3 @@ class Scheduler(object):
                 logger.info('Resumed job {0}'.format(job_id))
             except JobLookupError:
                 logger.warning('Cannot resume scheduled workflow {}. Workflow ID not found'.format(job_id))
-
-    def __scheduler_listener(self):
-        event_selector_map = {EVENT_SCHEDULER_START: WalkoffEvent.SchedulerStart,
-                              EVENT_SCHEDULER_SHUTDOWN: WalkoffEvent.SchedulerShutdown,
-                              EVENT_SCHEDULER_PAUSED: WalkoffEvent.SchedulerPaused,
-                              EVENT_SCHEDULER_RESUMED: WalkoffEvent.SchedulerResumed,
-                              EVENT_JOB_ADDED: WalkoffEvent.SchedulerJobAdded,
-                              EVENT_JOB_REMOVED: WalkoffEvent.SchedulerJobRemoved,
-                              EVENT_JOB_EXECUTED: WalkoffEvent.SchedulerJobExecuted,
-                              EVENT_JOB_ERROR: WalkoffEvent.SchedulerJobError}
-
-        def event_selector(event):
-            try:
-                event = event_selector_map[event.code]
-                event.send(self)
-            except KeyError:  # pragma: no cover
-                logger.error('Unknown event sent triggered in scheduler {}'.format(event))
-
-        return event_selector

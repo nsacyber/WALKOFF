@@ -6,6 +6,7 @@ from sqlalchemy_utils import UUIDType
 from api_gateway.extensions import db
 from api_gateway.scheduler import construct_trigger
 from api_gateway.serverdb.mixins import TrackModificationsMixIn
+from api_gateway.server.endpoints.workflowqueue import execute_workflow_helper
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +119,7 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
         from flask import current_app
         trigger = trigger if trigger is not None else construct_trigger(self._reconstruct_scheduler_args())
         current_app.running_context.scheduler.schedule_workflows(self.id,
-                                                                 current_app.running_context.executor.execute_workflow,
+                                                                 execute_workflow_helper,
                                                                  self._get_workflow_ids_as_list(), trigger)
 
     def _stop_workflows(self):
@@ -137,7 +138,7 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
             trigger = trigger if trigger is not None else construct_trigger(self._reconstruct_scheduler_args())
             if new:
                 current_app.running_context.scheduler.schedule_workflows(self.id,
-                                                                         current_app.running_context.executor.execute_workflow,
+                                                                         execute_workflow_helper,
                                                                          new, trigger)
             if removed:
                 current_app.running_context.scheduler.unschedule_workflows(self.id, removed)

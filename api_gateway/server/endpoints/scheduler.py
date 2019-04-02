@@ -24,47 +24,38 @@ def validate_uuids(uuids):
     return invalid_uuids
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
 def get_scheduler_status():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
-    def __func():
-        return {"status": current_app.running_context.scheduler.scheduler.state}, HTTPStatus.OK
-
-    return __func()
+    return {"status": current_app.running_context.scheduler.scheduler.state}, HTTPStatus.OK
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['update', 'execute']))
 def update_scheduler_status():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['update', 'execute']))
-    def __func():
-        status = request.get_json()['status']
-        updated_status = current_app.running_context.scheduler.scheduler.state
-        if status == "start":
-            updated_status = current_app.running_context.scheduler.start()
-            current_app.logger.info('Scheduler started. Status {0}'.format(updated_status))
-        elif status == "stop":
-            updated_status = current_app.running_context.scheduler.stop()
-            current_app.logger.info('Scheduler stopped. Status {0}'.format(updated_status))
-        elif status == "pause":
-            updated_status = current_app.running_context.scheduler.pause()
-            current_app.logger.info('Scheduler paused. Status {0}'.format(updated_status))
-        elif status == "resume":
-            updated_status = current_app.running_context.scheduler.resume()
-            current_app.logger.info('Scheduler resumed. Status {0}'.format(updated_status))
-        return {"status": updated_status}, HTTPStatus.OK
-
-    return __func()
+    status = request.get_json()['status']
+    updated_status = current_app.running_context.scheduler.scheduler.state
+    if status == "start":
+        updated_status = current_app.running_context.scheduler.start()
+        current_app.logger.info('Scheduler started. Status {0}'.format(updated_status))
+    elif status == "stop":
+        updated_status = current_app.running_context.scheduler.stop()
+        current_app.logger.info('Scheduler stopped. Status {0}'.format(updated_status))
+    elif status == "pause":
+        updated_status = current_app.running_context.scheduler.pause()
+        current_app.logger.info('Scheduler paused. Status {0}'.format(updated_status))
+    elif status == "resume":
+        updated_status = current_app.running_context.scheduler.resume()
+        current_app.logger.info('Scheduler resumed. Status {0}'.format(updated_status))
+    return {"status": updated_status}, HTTPStatus.OK
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
 def read_all_scheduled_tasks():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
-    def __func():
-        page = request.args.get('page', 1, type=int)
-        return [task.as_json() for task in
-                ScheduledTask.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], HTTPStatus.OK
-
-    return __func()
+    page = request.args.get('page', 1, type=int)
+    return [task.as_json() for task in
+            ScheduledTask.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], HTTPStatus.OK
 
 
 def invalid_uuid_problem(invalid_uuids):
@@ -86,89 +77,72 @@ invalid_scheduler_args_problem = Problem(HTTPStatus.BAD_REQUEST, 'Invalid schedu
                                          'Invalid scheduler arguments.')
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['create', 'execute']))
 def create_scheduled_task():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['create', 'execute']))
-    def __func():
-        data = request.get_json()
-        invalid_uuids = validate_uuids(data['workflows'])
-        if invalid_uuids:
-            return invalid_uuid_problem(invalid_uuids)
-        task = ScheduledTask.query.filter_by(name=data['name']).first()
-        if task is None:
-            try:
-                task = ScheduledTask(**data)
-            except InvalidTriggerArgs:
-                return invalid_scheduler_args_problem
-            else:
-                db.session.add(task)
-                db.session.commit()
-                return task.as_json(), HTTPStatus.CREATED
-        else:
-            return scheduled_task_name_already_exists_problem(data['name'], 'create')
-
-    return __func()
-
-
-def read_scheduled_task(scheduled_task_id):
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
-    @with_task('read', scheduled_task_id)
-    def __func(task):
-        return task.as_json(), HTTPStatus.OK
-
-    return __func()
-
-
-def update_scheduled_task():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['update', 'execute']))
-    @with_task('update', request.get_json()['id'])
-    def __func(task):
-        data = request.get_json()
-        invalid_uuids = validate_uuids(data.get('workflows', []))
-        if invalid_uuids:
-            return invalid_uuid_problem(invalid_uuids)
-        if 'name' in data:
-            same_name = ScheduledTask.query.filter_by(name=data['name']).first()
-            if same_name is not None and same_name.id != data['id']:
-                return scheduled_task_name_already_exists_problem(same_name, 'update')
+    data = request.get_json()
+    invalid_uuids = validate_uuids(data['workflows'])
+    if invalid_uuids:
+        return invalid_uuid_problem(invalid_uuids)
+    task = ScheduledTask.query.filter_by(name=data['name']).first()
+    if task is None:
         try:
-            task.update(data)
+            task = ScheduledTask(**data)
         except InvalidTriggerArgs:
             return invalid_scheduler_args_problem
         else:
+            db.session.add(task)
             db.session.commit()
-            return task.as_json(), HTTPStatus.OK
+            return task.as_json(), HTTPStatus.CREATED
+    else:
+        return scheduled_task_name_already_exists_problem(data['name'], 'create')
 
-    return __func()
+
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
+@with_task('read', 'scheduled_task_id')
+def read_scheduled_task(scheduled_task_id):
+    return scheduled_task_id.as_json(), HTTPStatus.OK
 
 
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['update', 'execute']))
+@with_task('update', 'scheduled_task_id')
+def update_scheduled_task(scheduled_task_id):
+    data = request.get_json()
+    invalid_uuids = validate_uuids(data.get('workflows', []))
+    if invalid_uuids:
+        return invalid_uuid_problem(invalid_uuids)
+    if 'name' in data:
+        same_name = ScheduledTask.query.filter_by(name=data['name']).first()
+        if same_name is not None and same_name.id != data['id']:
+            return scheduled_task_name_already_exists_problem(same_name, 'update')
+    try:
+        scheduled_task_id.update(data)
+    except InvalidTriggerArgs:
+        return invalid_scheduler_args_problem
+    else:
+        db.session.commit()
+        return scheduled_task_id.as_json(), HTTPStatus.OK
+
+
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['delete']))
+@with_task('delete', 'scheduled_task_id')
 def delete_scheduled_task(scheduled_task_id):
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['delete']))
-    @with_task('delete', scheduled_task_id)
-    def __func(task):
-        db.session.delete(task)
+        db.session.delete(scheduled_task_id)
         db.session.commit()
         return None, HTTPStatus.NO_CONTENT
 
-    return __func()
 
-
-def control_scheduled_task():
-    scheduled_task_id = request.get_json()['id']
-
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['execute']))
-    @with_task('control', scheduled_task_id)
-    def __func(task):
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['execute']))
+@with_task('control', 'scheduled_task_id')
+def control_scheduled_task(scheduled_task_id):
         action = request.get_json()['action']
         if action == 'start':
-            task.start()
+            scheduled_task_id.start()
         elif action == 'stop':
-            task.stop()
+            scheduled_task_id.stop()
         db.session.commit()
         return {}, HTTPStatus.OK
-
-    return __func()
