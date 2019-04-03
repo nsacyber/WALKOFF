@@ -32,8 +32,7 @@ export class SchedulerComponent implements OnInit {
 
 	constructor(
 		private schedulerService: SchedulerService, private modalService: NgbModal,
-		private toastrService: ToastrService,
-		private utils: UtilitiesService,
+		private toastrService: ToastrService, private utils: UtilitiesService,
 	) {}
 
 	/**
@@ -133,8 +132,8 @@ export class SchedulerComponent implements OnInit {
 	 * Removes it from our list of scheduled tasks to display.
 	 * @param taskToDelete Scheduled Task to delete
 	 */
-	deleteScheduledTask(taskToDelete: ScheduledTask): void {
-		if (!confirm(`Are you sure you want to delete the scheduled task "${taskToDelete.name}"?`)) { return; }
+	async deleteScheduledTask(taskToDelete: ScheduledTask) {
+		await this.utils.confirm(`Are you sure you want to delete <b>${taskToDelete.name}</b>?`);
 
 		this.schedulerService
 			.deleteScheduledTask(taskToDelete.id)

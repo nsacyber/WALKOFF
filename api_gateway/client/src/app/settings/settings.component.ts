@@ -14,6 +14,7 @@ import { User } from '../models/user';
 import { WorkingUser } from '../models/workingUser';
 import { Role } from '../models/role';
 import { SettingsTimeoutModalComponent } from './settings.timeout.modal.component';
+import { UtilitiesService } from '../utilities.service';
 
 @Component({
 	selector: 'settings-component',
@@ -38,7 +39,7 @@ export class SettingsComponent {
 
 	constructor(
 		private settingsService: SettingsService, private modalService: NgbModal,
-		private toastrService: ToastrService,
+		private toastrService: ToastrService, private utils: UtilitiesService,
 	) {
 
 		this.getConfiguration();
@@ -132,8 +133,8 @@ export class SettingsComponent {
 		this._handleModalClose(modalRef);
 	}
 
-	deleteUser(userToDelete: User): void {
-		if (!confirm(`Are you sure you want to delete the user "${userToDelete.username}"?`)) { return; }
+	async deleteUser(userToDelete: User) {
+		await this.utils.confirm(`Are you sure you want to delete <b>${userToDelete.username}</b>?`)
 
 		this.settingsService
 			.deleteUser(userToDelete.id)

@@ -31,8 +31,7 @@ export class SettingsRolesComponent {
 
 	constructor(
 		private settingsService: SettingsService, private modalService: NgbModal,
-		private toastrService: ToastrService,
-		private utils: UtilitiesService,
+		private toastrService: ToastrService, private utils: UtilitiesService,
 	) {
 
 		this.getAvailableResourceActions();
@@ -86,8 +85,8 @@ export class SettingsRolesComponent {
 		this._handleModalClose(modalRef);
 	}
 
-	deleteRole(roleToDelete: Role): void {
-		if (!confirm(`Are you sure you want to delete the role "${roleToDelete.name}"?`)) { return; }
+	async deleteRole(roleToDelete: Role) {
+		await this.utils.confirm(`Are you sure you want to delete <b>${roleToDelete.name}</b>?`)
 
 		this.settingsService
 			.deleteRole(roleToDelete.id)

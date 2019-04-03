@@ -7,6 +7,7 @@ import { GlobalsService } from './globals.service';
 import { Variable } from '../models/variable';
 
 import { classToClass } from 'class-transformer';
+import { UtilitiesService } from '../utilities.service';
 
 @Component({
 	selector: 'globals-component',
@@ -23,7 +24,7 @@ export class GlobalsComponent implements OnInit {
 
 	constructor(
 		private globalsService: GlobalsService, private modalService: NgbModal, 
-		private toastrService: ToastrService,
+		private toastrService: ToastrService, private utils: UtilitiesService,
 	) {}
 
 	/**
@@ -82,9 +83,8 @@ export class GlobalsComponent implements OnInit {
 	 * Removes it from our list of globals to display.
 	 * @param globalToDelete Global to delete
 	 */
-	deleteGlobal(globalToDelete: Variable): void {
-		if (!confirm(`Are you sure you want to delete the global "${ globalToDelete.name }"?`)) { return; }
-
+	async deleteGlobal(globalToDelete: Variable) {
+		await this.utils.confirm(`Are you sure you want to delete <b>${ globalToDelete.name }</b>?`);
 		this.globalsService
 			.deleteGlobal(globalToDelete)
 			.then(() => this.toastrService.success(`Global "${ globalToDelete.name }" successfully deleted.`))

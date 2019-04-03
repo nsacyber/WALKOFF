@@ -22,8 +22,6 @@ export class MetadataModalComponent {
     constructor(public activeModal: NgbActiveModal) { }
 
     tagsChanged($event: any): void {
-        // Convert strings to numbers here
-        console.log('Hihi', $event)
 		this.workflow.tags = $event.value;
 	}
 }

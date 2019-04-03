@@ -399,6 +399,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// Convert our selection arrays to a string
 		if (!this.loadedWorkflow.actions) { this.loadedWorkflow.actions = []; }
 
+		// Refresh the console log so that it displays correctly after being hidden
+		setTimeout(() => {
+			if (this.consoleArea && this.consoleArea.codeMirror) this.consoleArea.codeMirror.refresh();
+		});
+
 		// Create the Cytoscape graph
 		this.cy = cytoscape({
 			container: document.getElementById('cy'),
@@ -790,7 +795,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				this.workflows = workflows;
 				this.activeRoute.params.subscribe(params => {
 					if (params.workflowId) {
-						this.playbookService.loadWorkflow(params.workflowId).then(workflow => this.loadWorkflow(workflow))
+						this.playbookService.loadWorkflow(params.workflowId)
+							.then(workflow => this.loadWorkflow(workflow))
 					}
 					else {
 						let workflowToCreate: Workflow = this.playbookService.workflowToCreate;
@@ -1280,7 +1286,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// Clear start node highlighting of the previous start node(s)
 		this.cy.elements('node[?isStartNode]').data('isStartNode', false);
 		// Apply start node highlighting to the new start node.
-		this.cy.elements(`node[_id="${start}"]`).data('isStartNode', true);
+		this.cy.elements(`node[_id="${ this.loadedWorkflow.start }"]`).data('isStartNode', true);
 	}
 
 	/**

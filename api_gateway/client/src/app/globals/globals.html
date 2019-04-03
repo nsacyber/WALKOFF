@@ -9,12 +9,7 @@
             <!-- <select2 [data]="availableApps" [options]="appSelectConfig" (valueChanged)="appSelectChange($event)"></select2> -->
         </div>
         <div class="col-4">
-            <div class="row">
-                <label class="col-auto col-form-label">Search Filter</label>
-                <div class="col">
-                    <input class="form-control" [formControl]="filterQuery" />
-                </div>
-            </div>
+            <input class="form-control" placeholder="Filter Globals..." [formControl]="filterQuery" />
         </div>
     </div>
 

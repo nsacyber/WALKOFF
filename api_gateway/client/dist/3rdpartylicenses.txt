@@ -202,7 +202,7 @@ Apache License
  See the License for the specific language governing permissions and
  limitations under the License.
 
-codemirror@5.43.0
+codemirror@5.45.0
 MIT
 MIT License
 

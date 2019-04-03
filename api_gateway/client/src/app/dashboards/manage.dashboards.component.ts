@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { WidgetModalComponent } from './widget.modal.component';
+import { UtilitiesService } from '../utilities.service';
 
 @Component({
     selector: 'manage-dashboards-component',
@@ -31,7 +32,8 @@ export class ManageDashboardsComponent implements OnInit {
         private toastrService: ToastrService,
         private activeRoute: ActivatedRoute,
         private router: Router,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private utils: UtilitiesService
     ) {}
 
     ngOnInit() {
@@ -136,12 +138,12 @@ export class ManageDashboardsComponent implements OnInit {
         this.router.navigate(['/dashboard', this.dashboard.id]);
     }
 
-    delete() {
-        if(confirm(`Are you sure you want to delete this Dashboard?`)) {
-            const dashboardName = this.dashboard.name;
-            this.dashboardService.deleteDashboard(this.dashboard);
-            this.toastrService.success(`"${ dashboardName }" Deleted`);
-            this.router.navigate(['/dashboard/new']);
-        }
+    async delete() {
+        await this.utils.confirm(`Are you sure you want to delete this dashboard?`);
+
+        const dashboardName = this.dashboard.name;
+        this.dashboardService.deleteDashboard(this.dashboard);
+        this.toastrService.success(`"${ dashboardName }" Deleted`);
+        this.router.navigate(['/dashboard/new']);
     }
 }

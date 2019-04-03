@@ -13,10 +13,9 @@
                     <button (click)="editTimeout()" class="btn btn-outline-primary mx-1">Timeout Settings</button>
                 </div>
                 <div class="col-6">
-                    <div class="form-group row">
-                        <label class="col-2 col-form-label">Search Filter</label>
-                        <div class="col-10">
-                            <input class="form-control" [formControl]="filterQuery" />
+                    <div class="form-group d-flex justify-content-end">
+                        <div class="col-8 px-0">
+                            <input class="form-control" placeholder="Filter Users..." [formControl]="filterQuery" />
                         </div>
                     </div>
                 </div>
