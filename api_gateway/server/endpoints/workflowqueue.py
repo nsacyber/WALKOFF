@@ -10,16 +10,15 @@ from sqlalchemy import exists, and_, or_
 import gevent
 
 from marshmallow import ValidationError
-from sqlalchemy.exc import IntegrityError, StatementError
 
-from common.message_types import StatusEnum, WorkflowStatusMessage
+from common.message_types import StatusEnum
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusSchema, WorkflowStatusSummarySchema
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
     paginate
-from api_gateway.server.problem import Problem, dne_problem, invalid_input_problem, improper_json_problem
-from api_gateway.server.endpoints.results import push_to_action_stream_queue, push_to_workflow_stream_queue
+from api_gateway.server.problem import dne_problem, invalid_input_problem, improper_json_problem
+from api_gateway.server.endpoints.results import push_to_workflow_stream_queue
 from http import HTTPStatus
 
 logger = logging.getLogger(__name__)
@@ -200,11 +199,11 @@ def control_workflow():
 
 
 # ToDo: make these clear db endpoints for more resources
-def clear_workflow_status(all=False, days=30):
+def clear_workflow_status(all_=False, days=30):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
     def __func():
-        if all:
+        if all_:
             current_app.running_context.execution_db.session.query(WorkflowStatus).filter(or_(
                 WorkflowStatus.status == StatusEnum.ABORTED,
                 WorkflowStatus.status == StatusEnum.COMPLETED

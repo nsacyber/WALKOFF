@@ -42,8 +42,7 @@ class Trigger(ExecutionElement, Execution_Base):
     # TODO: Implement validation of conditional against asteval library
     def validate(self):
         """Validates the object"""
-        errors = []
-        pass
+        self.errors = []
 
     @orm.reconstructor
     def init_on_load(self):
@@ -54,7 +53,6 @@ class Trigger(ExecutionElement, Execution_Base):
 @event.listens_for(Trigger, 'before_update')
 def validate_before_update(mapper, connection, target):
     target.validate()
-
 
 
 class TriggerSchema(ExecutionElementBaseSchema):

@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE
@@ -118,7 +118,7 @@ class ActionStatus(Execution_Base):
     """ORM for an Action event in the database
 
     Attributes:
-        action_id (UUID): The ID of the Action
+        node_id (UUID): The ID of the Action
         label (str): The label of the Action
         app_name (str): The App name for the Action
         name (str): The Action name for the Action
@@ -126,7 +126,7 @@ class ActionStatus(Execution_Base):
         status (StatusEnum): The status of the Action
         started_at (datetime): The time the Action started
         completed_at (datetime): The time the Action completed
-        _workflow_status_id (UUID): The FK ID of the WorkflowStatusMessage
+        workflow_execution_id (UUID): The FK ID of the WorkflowStatusMessage
     """
     __tablename__ = 'action_status'
     combined_id = Column(String, primary_key=True)

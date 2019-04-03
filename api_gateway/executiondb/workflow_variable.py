@@ -3,7 +3,7 @@ from uuid import uuid4, UUID
 
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy_utils import UUIDType
-from marshmallow import fields, EXCLUDE
+from marshmallow import EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
 from api_gateway.executiondb.schemas import ExecutionBaseSchema

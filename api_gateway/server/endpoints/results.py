@@ -1,27 +1,23 @@
-import re
 import uuid
 import json
 from http import HTTPStatus
-from datetime import datetime
 
 import gevent
 from gevent.queue import Queue
 
-from flask import Blueprint, Response, current_app, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_claims
+from flask import Blueprint, Response, current_app, request
 
-from marshmallow import ValidationError
-from sqlalchemy.exc import IntegrityError, StatementError
+from sqlalchemy.exc import IntegrityError
 
 import jsonpatch
 
 from api_gateway.server.decorators import with_resource_factory, paginate, is_valid_uid
-from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
+from api_gateway.executiondb.workflow import Workflow
 from api_gateway.executiondb.workflowresults import (WorkflowStatus, ActionStatus, WorkflowStatusSchema,
                                                      ActionStatusSchema)
 
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_id_problem
+from api_gateway.server.problem import unique_constraint_problem, invalid_id_problem
 from api_gateway.sse import SseEvent
 
 

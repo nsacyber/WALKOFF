@@ -7,7 +7,6 @@ import gevent
 from gevent.lock import RLock
 from gevent.queue import Queue
 from flask import Blueprint, Response, current_app, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_claims
 
 from api_gateway.server.problem import Problem
 from api_gateway.server.problem import invalid_id_problem

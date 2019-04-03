@@ -31,7 +31,7 @@ class Transform(ExecutionElement, Execution_Base):
 
         Args:
             name (str): The app name associated with this transform
-            id_ (str|UUID, optional): Optional UUID to pass into the Transform. Must be UUID object or valid UUID string.
+            id_ (str|UUID, optional): Optional UUID to pass into the Transform. Must be UUID object or UUID string.
                 Defaults to None.
             position (Position, optional): Position object for the Action. Defaults to None.
             transform (str): The name of the transform function to be applied
@@ -47,8 +47,7 @@ class Transform(ExecutionElement, Execution_Base):
     # TODO: Implement validation of conditional against asteval library
     def validate(self):
         """Validates the object"""
-        errors = []
-        pass
+        self.errors = []
 
     @orm.reconstructor
     def init_on_load(self):
@@ -59,7 +58,6 @@ class Transform(ExecutionElement, Execution_Base):
 @event.listens_for(Transform, 'before_update')
 def validate_before_update(mapper, connection, target):
     target.validate()
-
 
 
 class TransformSchema(ExecutionElementBaseSchema):

@@ -76,7 +76,7 @@ def convert_host_port(args_):
     return ip, port
 
 
-#
+# ToDo: implement a more robust way to automatically import workflows
 # def import_workflows():
 #     if os.path.exists(api_gateway.config.Config.WORKFLOWS_PATH):
 #         workflow_ids = [workflow.id_ for workflow in app.running_context.execution_db.session.query(Workflow).all()]

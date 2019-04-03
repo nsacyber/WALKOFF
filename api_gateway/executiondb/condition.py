@@ -47,8 +47,7 @@ class Condition(ExecutionElement, Execution_Base):
     # TODO: Implement validation of conditional against asteval library
     def validate(self):
         """Validates the object"""
-        errors = []
-        pass
+        self.errors = []
 
 
 @event.listens_for(Condition, 'before_update')

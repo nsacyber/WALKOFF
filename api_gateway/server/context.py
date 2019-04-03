@@ -2,7 +2,6 @@ import logging
 import os
 
 from sqlalchemy.exc import OperationalError
-import gevent
 
 import api_gateway.cache
 import api_gateway.config

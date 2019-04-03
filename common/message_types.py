@@ -2,6 +2,7 @@ import enum
 import json
 import datetime
 
+
 def message_dumps(obj):
     return json.dumps(obj, cls=MessageJSONEncoder)
 

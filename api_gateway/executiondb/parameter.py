@@ -1,19 +1,14 @@
 import logging
-from uuid import uuid4
 
-from flask import current_app
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 
-from sqlalchemy import Column, Integer, ForeignKey, String, orm, event, Boolean
-from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
+from sqlalchemy import Column, ForeignKey, String, orm, event, Boolean
+from sqlalchemy_utils import UUIDType, JSONType
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 from marshmallow_sqlalchemy import field_for
 
-from common.workflow_types import ParameterVariant
-
 from api_gateway.executiondb.schemas import ExecutionElementBaseSchema
 
-from api_gateway.helpers import validate_uuid4
 from api_gateway.executiondb import Execution_Base
 from api_gateway.executiondb.executionelement import ExecutionElement
 
@@ -96,7 +91,6 @@ class Parameter(Execution_Base, ExecutionElement):
             name (str): The name of the Parameter.
             value (any, optional): The value of the Parameter. Defaults to None. Value or reference must be included.
             variant (str): string corresponding to a ParameterVariant. Denotes static value, action output, global, etc.
-            reference (int, optional): The ID of the Action, global, or WorkflowVariable from which to grab the result.
         """
         ExecutionElement.__init__(self, id_, errors)
         self.name = name

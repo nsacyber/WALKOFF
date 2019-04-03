@@ -6,22 +6,42 @@ from walkoff_app_sdk.app_base import AppBase
 
 
 class HelloWorld(AppBase):
+    """
+    An example of a Walkoff App.
+    Inherit from the AppBase class to have Redis, logging, and console logging set up behind the scenes.
+    """
     __version__ = "1.0.0"
 
     def __init__(self, redis, logger, console_logger=None):
+        """
+        Each app should have this __init__ to set up Redis and logging.
+        :param redis:
+        :param logger:
+        :param console_logger:
+        """
         super().__init__(redis, logger, console_logger)
-    
+
     async def hello_world(self):
-        self.logger.debug(f"This is a test from {socket.gethostname()}")
-        await self.console_logger.info(f"This is a test from {socket.gethostname()}")
-        return {f"message": "HELLO WORLD FROM {socket.gethostname()}"}
+        """
+        Returns Hello World from the hostname the action is run on
+        :return: Hello World from your hostname
+        """
+        message = f"Hello World from {socket.gethostname()}!"
+
+        # This logs locally (?)
+        self.logger.info(message)
+
+        # This sends a log message to the frontend
+        await self.console_logger.info(message)
+
+        return {"message": message}
 
     async def repeat_back_to_me(self, call):
         return f"REPEATING: {call}"
 
     async def return_plus_one(self, number):
         return number + 1
-    
+
     async def pause(self, seconds):
         time.sleep(seconds)
         return seconds
@@ -39,4 +59,3 @@ class HelloWorld(AppBase):
 
 if __name__ == "__main__":
     asyncio.run(HelloWorld.run())
-

@@ -118,7 +118,7 @@ class SseStream(object):
 
         Args:
             event (str, optional): The default event to use on this stream. This can be overwritten by returning a
-                `tuple` of (data, event) from the decorated function. If no event is specified, no event will be appended
+                `tuple` of (data, event) from the decorated function. If no event specified, no event will be appended
                 to the Server-Sent Event
 
         Returns:

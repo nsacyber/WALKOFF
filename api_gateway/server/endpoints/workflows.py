@@ -1,12 +1,11 @@
 import json
 from io import BytesIO
-from uuid import uuid4
 
 from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
 from sqlalchemy import exists, and_
-from sqlalchemy.exc import IntegrityError, StatementError
+from sqlalchemy.exc import IntegrityError
 
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.helpers import regenerate_workflow_ids
@@ -14,7 +13,7 @@ from api_gateway.helpers import regenerate_workflow_ids
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
     paginate
-from api_gateway.server.problem import Problem, unique_constraint_problem, improper_json_problem, invalid_input_problem
+from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_input_problem
 from http import HTTPStatus
 
 workflow_schema = WorkflowSchema()

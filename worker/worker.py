@@ -146,7 +146,8 @@ class Worker:
         try:
             child_id = condition(parents, children, self.accumulator)
             selected_node = children.pop(child_id)
-            await self.send_message(NodeStatusMessage.success_from_node(condition, self.workflow.execution_id, selected_node))
+            await self.send_message(NodeStatusMessage.success_from_node(condition, self.workflow.execution_id,
+                                                                        selected_node))
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
             # We preemptively schedule all branches of execution so we must cancel all "false" branches here
@@ -157,7 +158,8 @@ class Worker:
 
         except ConditionException as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
-            await self.send_message(NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id, error=repr(e)))
+            await self.send_message(NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id,
+                                                                        error=repr(e)))
 
         except Exception:
             logger.exception("Something happened in Condition evaluation")
@@ -176,7 +178,8 @@ class Worker:
         # TODO: figure out exactly what can be raised by the possible transforms
         except Exception as e:
             logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
-            await self.send_message(NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, error=repr(e)))
+            await self.send_message(NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id,
+                                                                        error=repr(e)))
 
     async def dereference_params(self, action: Action):
         global_vars = set(await self.redis.hkeys(config["REDIS"]["globals_key"]))

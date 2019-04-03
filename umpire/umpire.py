@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import json
 from pathlib import Path
 from functools import reduce
 from itertools import compress
@@ -66,8 +65,8 @@ class Umpire:
         await asyncio.gather(*tasks)
 
     async def get_running_apps(self):
-        func = lambda s: s['Spec']['Name'].count(config["UMPIRE"]["app_prefix"]) > 0
-        services = filter(func, (await self.docker_client.services.list()))
+        services = filter(lambda s: s['Spec']['Name'].count(config["UMPIRE"]["app_prefix"]) > 0,
+                          (await self.docker_client.services.list()))
         return {s['Spec']['Name']:  {'id': s["ID"], 'version': s['Version']['Index']} for s in services}
 
     async def get_service(self, service_id):
@@ -165,7 +164,6 @@ class Umpire:
         except DockerBuildError:
             logger.exception(f"Error during walkoff_app_sdk push")
             return
-
 
     async def launch_app(self, app, version, replicas=1):
         app_name = f"{config['UMPIRE']['app_prefix']}_{app}"

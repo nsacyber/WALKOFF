@@ -15,9 +15,9 @@ def load_config():
     """
     try:
         # Load the user configurable parameters
-        config = configparser.ConfigParser()
-        config.optionxform = str  # override optionxform to preserve case of config keys
-        config.read(CONFIG_PATH)
+        config_ = configparser.ConfigParser()
+        config_.optionxform = str  # override optionxform to preserve case of config keys
+        config_.read(CONFIG_PATH)
 
         # Append dev config options or overwrite config options the user shouldn't have set
         redis_keys = {"action_results_ch": "action-results", "actions_in_process": "actions-in-process",
@@ -27,9 +27,9 @@ def load_config():
 
         # Add redis dev config options to the config
         for key, val in redis_keys.items():
-            config.set("REDIS", key, val)
+            config_.set("REDIS", key, val)
 
-        return config
+        return config_
 
     except configparser.NoSectionError as e:
         logger.exception(f"Config section {e.args[0]} not found.")

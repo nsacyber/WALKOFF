@@ -112,7 +112,7 @@
 
 /workflowqueue/cleardb:
   parameters:
-    - name: all
+    - name: all_
       in: query
       description: Whether or not to delete all workflow statuses, defaults to false
       required: false

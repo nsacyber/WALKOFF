@@ -1,5 +1,4 @@
 import logging
-from uuid import uuid4
 
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 from sqlalchemy import Column, ForeignKey, String

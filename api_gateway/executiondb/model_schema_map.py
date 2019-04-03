@@ -18,6 +18,7 @@ from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.executiondb.workflow_variable import WorkflowVariable, WorkflowVariableSchema
 from api_gateway.executiondb.workflowresults import (ActionStatus, ActionStatusSchema, ActionStatusSummarySchema,
                                                      WorkflowStatus, WorkflowStatusSchema, WorkflowStatusSummarySchema)
+
 # This could be done better with a metaclass which registers subclasses
 _schema_lookup = {
     Action: ActionSchema,
@@ -52,5 +53,4 @@ def dump_element(element):
     Returns:
         dict: The serialized element
     """
-    logger.info(f"using dump_element on {element.__class__}")
     return _schema_lookup[element.__class__]().dump(element)

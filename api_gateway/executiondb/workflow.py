@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column, String, ForeignKey, UniqueConstraint, Boolean, event
+from sqlalchemy import Column, String, Boolean, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType, JSONType
 from marshmallow import fields, EXCLUDE
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 class Workflow(ExecutionElement, Execution_Base):
     __tablename__ = "workflow"
     # playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook.id_', ondelete='CASCADE'))
-    name = Column(String(80), nullable=False)
+    name = Column(String(80), nullable=False, unique=True)
     start = Column(UUIDType(binary=False))
     actions = relationship("Action", cascade="all, delete-orphan", passive_deletes=True)
     branches = relationship("Branch", cascade="all, delete-orphan", passive_deletes=True)
@@ -86,8 +86,6 @@ class Workflow(ExecutionElement, Execution_Base):
         work_var_ids = [workflow_var.id_ for workflow_var in self.workflow_variables]
         global_ids = current_app.running_context.execution_db.session.query(GlobalVariable.id_).all()
 
-        params = [param for action in [action.parameters for action in self.actions] for param in action]
-
         errors = []
         if not self.start and self.actions:
             errors.append("Workflows must have a starting action.")
@@ -99,21 +97,20 @@ class Workflow(ExecutionElement, Execution_Base):
             if branch.destination_id not in node_ids:
                 errors.append(f"Branch destination ID {branch.destination_id} not found in nodes")
         for action in self.actions:
-            for param in action.parameters:
-                if param.variant != ParameterVariant.STATIC_VALUE.name:
-                    if not validate_uuid4(param.value):
-                        errors.append(f"Value is a reference but {param.value} is not a valid uuid4")
-                    elif param.value not in node_ids and param.value not in work_var_ids and param.value not in global_ids:
-                        errors.append(f"Parameter {param.name} refers to {param.value} not found in {param.variant}.")
+            for p in action.parameters:
+                if p.variant != ParameterVariant.STATIC_VALUE.name:
+                    if not validate_uuid4(p.value):
+                        errors.append(f"Value is a reference but {p.value} is not a valid uuid4")
+                    elif p.value not in node_ids and p.value not in work_var_ids and p.value not in global_ids:
+                        errors.append(f"Parameter {p.name} refers to {p.value} not found in {p.variant}.")
                 else:
-                    logger.info("Parameter schema validation to be implemented.")
                     api = current_app.running_context.execution_db.session.query(ParameterApi).filter(
-                        ParameterApi.location == f"{action.app_name}.{action.name}:{param.name}"
+                        ParameterApi.location == f"{action.app_name}.{action.name}:{p.name}"
                     ).first()
                     try:
-                        Draft4Validator(api.schema).validate(param.value)
+                        Draft4Validator(api.schema).validate(p.value)
                     except JSONSchemaValidationError as e:
-                        errors.append(f"Parameter {param.name} has value {param.value} that is not valid under schema {api.schema}.")
+                        errors.append(f"Parameter {p.name} value {p.value} not valid under schema {api.schema}.")
 
         self.errors = errors
         self.is_valid = self._is_valid

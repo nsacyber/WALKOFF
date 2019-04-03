@@ -1,9 +1,8 @@
 from uuid import UUID
 from itertools import islice
-from operator import itemgetter
 from inspect import getfullargspec
 
-from flask import current_app, request, send_file, jsonify
+from flask import current_app, request
 
 from api_gateway.server.problem import dne_problem, invalid_id_problem
 
