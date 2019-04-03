@@ -58,14 +58,15 @@ class ExecutionDatabase(object):
                 try:
                     create_database(self.engine.url)
                 except IntegrityError as e:
+
                     pass
 
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
-        Session = sessionmaker()
-        Session.configure(bind=self.engine)
-        self.session = scoped_session(Session)
+        session = sessionmaker()
+        session.configure(bind=self.engine)
+        self.session = scoped_session(session)
 
         Execution_Base.metadata.bind = self.engine
         Execution_Base.metadata.create_all(self.engine)

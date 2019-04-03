@@ -206,7 +206,7 @@ class AsyncLogger(logging.Logger):
         found = 0
         while c:
             for hdlr in c.handlers:
-                found = found + 1
+                found += 1
                 if record.levelno >= hdlr.level:
                     await hdlr.handle(record)
             if not c.propagate:

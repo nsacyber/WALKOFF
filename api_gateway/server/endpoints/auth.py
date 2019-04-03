@@ -45,7 +45,7 @@ def login():
 
 
 def fresh_login():
-    return _authenticate_and_grant_tokens(request.get_json(), with_refresh=False)
+    return _authenticate_and_grant_tokens(request.get_json())
 
 
 @jwt_refresh_token_required
@@ -59,7 +59,7 @@ def refresh(body=None, token_info=None, user=None):
             "Could not grant access token.",
             f"User {current_user_id} from refresh JWT identity could not be found.")
     if user.active:
-        return {'access_token': create_access_token(identity=current_user_id, fresh=False)}, HTTPStatus.CREATED
+        return {'access_token': create_access_token(identity=current_user_id)}, HTTPStatus.CREATED
     else:
         return user_deactivated_problem
 

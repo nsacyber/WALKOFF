@@ -7,8 +7,6 @@ from redis import Redis
 
 logger = logging.getLogger(__name__)
 
-from io import BytesIO
-
 unsubscribe_message = b'__UNSUBSCRIBE__'
 """(str): The message used to unsubscribe from and close a PubSub channel
 """
@@ -109,9 +107,6 @@ class RedisCacheAdapter(object):
         Args:
             key: The key to increment
             amount (int, optional): The amount to increment the key by. Defaults to 1
-            retry (bool, optional): Should this operation be retried if the transaction times out? Defaults to
-                `self.retry`
-
         Returns:
             (int): The incremented value
         """
@@ -125,9 +120,6 @@ class RedisCacheAdapter(object):
         Args:
             key: The key to decrement
             amount (int, optional): The amount to decrement the key by. Defaults to 1
-            retry (bool, optional): Should this operation be retried if the transaction times out? Defaults to
-                `self.retry`
-
         Returns:
             (int): The decremented value
         """
@@ -152,7 +144,6 @@ class RedisCacheAdapter(object):
 
         Args:
             key: The key of the deque to push the values to
-            *values: The values to push to the deque
 
         Returns:
             The rightmost value on the deque or None if the key is not a deque or the deque is empty
@@ -178,7 +169,6 @@ class RedisCacheAdapter(object):
 
         Args:
             key: The key of the deque to push the values to
-            *values: The values to push to the deque
 
         Returns:
             The leftmost value on the deque or None if the key is not a deque or the deque is empty

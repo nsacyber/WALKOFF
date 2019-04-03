@@ -40,7 +40,7 @@ class WorkflowStatus(Execution_Base):
                                    cascade='all, delete-orphan')
 
     def __init__(self, execution_id, workflow_id, name, status=StatusEnum.PENDING, started_at=None, completed_at=None,
-                 user=None, action_statuses=[]):
+                 user=None, action_statuses=None):
         self.execution_id = execution_id
         self.workflow_id = workflow_id
         self.name = name
@@ -48,7 +48,7 @@ class WorkflowStatus(Execution_Base):
         self.started_at = started_at
         self.completed_at = completed_at
         self.user = user
-        self.action_statuses = action_statuses
+        self.action_statuses = action_statuses if action_statuses else []
 
     def running(self):
         """Sets the status to running"""

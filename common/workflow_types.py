@@ -4,7 +4,6 @@ import enum
 import logging
 from operator import attrgetter, itemgetter
 from collections import namedtuple, deque
-
 from asteval import Interpreter, make_symbol_table
 
 logger = logging.getLogger("WALKOFF")

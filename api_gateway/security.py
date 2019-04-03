@@ -48,7 +48,7 @@ def admin_required(fn):
 
 
 def permissions_accepted_for_resources(*resource_permissions):
-    return _permissions_decorator(resource_permissions, all_required=False)
+    return _permissions_decorator(resource_permissions)
 
 
 def permissions_required_for_resources(*resource_permissions):
@@ -88,7 +88,7 @@ def expired_token_callback():
 
 # This function is necessary for connexion update to v2.0
 def decode_token(token):
-    return decode_jwt(encoded_token=token, secret=config.decode_key, algorithm=config.algorithm, csrf_value=None,
+    return decode_jwt(encoded_token=token, secret=config.decode_key, algorithm=config.algorithm,
                       user_claims_key=config.user_claims_key, identity_claim_key=config.identity_claim_key)
 
 

@@ -31,8 +31,8 @@ class ParameterApi(Execution_Base, ExecutionElement):
     placeholder = Column(JSONType)
     schema = Column(JSONType)
 
-    def __init__(self, name, location, id_=None, errors=None, description=None, example=None, required=False, placeholder=None,
-                 schema=None):
+    def __init__(self, name, location, id_=None, errors=None, description=None, example=None, required=False,
+                 placeholder=None, schema=None):
         ExecutionElement.__init__(self, id_, errors)
         self.name = name
         self.location = location

@@ -13,34 +13,6 @@ from api_gateway.helpers import format_db_path
 logger = logging.getLogger(__name__)
 
 
-def load_app_apis():
-    """Loads App APIs
-
-    Args:
-        apps_path (str, optional): Optional path to specify for the apps. Defaults to None, but will be set to the
-            apps_path variable in Config object
-    """
-
-    from api_gateway.helpers import list_apps, format_exception_message
-    global app_apis
-    try:
-        with open(join(Config.WALKOFF_SCHEMA_PATH), 'r') as schema_file:
-            json.loads(schema_file.read())
-    except Exception as e:
-        logger.fatal('Could not load JSON schema for apps. Shutting down...: ' + str(e))
-        sys.exit(1)
-    else:
-        for app, api in _cache.items():
-            try:
-                api = yaml.load(function_file.read())
-                from api_gateway.appgateway.validator import validate_app_spec
-                validate_app_spec(api, app, Config.WALKOFF_SCHEMA_PATH)
-                app_apis[app] = api
-            except Exception as e:
-                logger.error(
-                    f'Cannot load apps api for app {app}: Error {str(format_exception_message(e))}')
-
-
 def setup_logger():
     log_config = None
     logging.basicConfig()

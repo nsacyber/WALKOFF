@@ -18,7 +18,7 @@ REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
 ACTION_RESULT_CH = os.getenv("ACTION_RESULT_CH", "action-results")
 ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
 API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "http://api_gateway:8080")
-APP_NAME = os.getenv("APP_NAME", None)
+APP_NAME = os.getenv("APP_NAME")
 
 
 class HTTPStream:
@@ -47,10 +47,11 @@ class HTTPStream:
 
 
 class AppBase:
+    """ The base class for Python-based Walkoff applications, handles Redis and logging configurations. """
     def __init__(self, redis=None, logger=None, console_logger=None):
         if APP_NAME is None:
-            logger.error("APP_NAME not set. Please ensure 'APP_NAME' environment variable is set to match the"
-                         + "docker-compose service name.")
+            logger.error(("APP_NAME not set. Please ensure 'APP_NAME' environment variable is set to match the "
+                          "docker-compose service name."))
             sys.exit(1)
 
         # Creates redis keys of format "{AppName}_{Version}-{Priority}"
@@ -83,7 +84,7 @@ class AppBase:
             asyncio.create_task(self.execute_action(action))
 
     async def execute_action(self, action: Action):
-        """ Execute an action and ship its result """
+        """ Execute an action, and push its result to Redis. """
         self.logger.debug(f"Attempting execution of: {action.label}-{action.execution_id}")
         self.console_logger.handlers[0].stream.set_execution_id(f"{action.execution_id}:console")
         if hasattr(self, action.name):
@@ -112,7 +113,8 @@ class AppBase:
 
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
-            action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, error="Action does not exist")
+            action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
+                                                                error="Action does not exist")
             await self.redis.lpush(action.execution_id, message_dumps(action_result))
 
         # Remove the action from the in process queue regardless of success
@@ -120,6 +122,7 @@ class AppBase:
 
     @classmethod
     async def run(cls):
+        """ Connect to Redis and HTTP session, await actions """
         async with connect_to_redis_pool(REDIS_URI) as redis, aiohttp.ClientSession() as session:
             # TODO: Migrate to the common log config
             logging.basicConfig(format="{asctime} - {name} - {levelname}:{message}", style='{')

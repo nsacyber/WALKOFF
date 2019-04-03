@@ -18,7 +18,8 @@ logger = logging.getLogger("AppRepo")
 
 
 class AppRepo(dict):
-    class RepositoryNotInitialized(Exception): pass
+    class RepositoryNotInitialized(Exception):
+        pass
 
     def __init__(self, path, session, **apps):
         self.path = Path(path)

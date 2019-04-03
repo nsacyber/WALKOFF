@@ -8,7 +8,7 @@ from marshmallow_sqlalchemy import field_for
 
 from api_gateway.executiondb import Execution_Base
 from api_gateway.executiondb.parameter import Parameter, ParameterSchema, ParameterApiSchema
-from api_gateway.executiondb.returns import ReturnApi, ReturnApiSchema
+from api_gateway.executiondb.returns import ReturnApiSchema
 from api_gateway.executiondb.position import PositionSchema
 from api_gateway.executiondb.executionelement import ExecutionElement
 from api_gateway.executiondb.schemas import ExecutionElementBaseSchema

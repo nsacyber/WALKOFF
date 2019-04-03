@@ -28,7 +28,7 @@ class Condition(ExecutionElement, Execution_Base):
         Args:
             name (str): The name of this condition
             position (Position, optional): Position object for the Action. Defaults to None.
-            id_ (str|UUID, optional): Optional UUID to pass into the Condition. Must be UUID object or valid UUID string.
+            id_ (str|UUID, optional): Optional UUID to for the Condition. Must be UUID object or valid UUID string.
                 Defaults to None.
         """
         ExecutionElement.__init__(self, id_, errors)
