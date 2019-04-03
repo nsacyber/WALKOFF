@@ -1,8 +1,6 @@
 import enum
 import json
-import time
-from collections import namedtuple
-
+import datetime
 
 def message_dumps(obj):
     return json.dumps(obj, cls=MessageJSONEncoder)
@@ -42,9 +40,10 @@ class MessageJSONEncoder(json.JSONEncoder):
     """ A custom encoder for encoding Message types to JSON strings. """
     def default(self, o):
         if isinstance(o, NodeStatusMessage):
-            return {"name": o.name, "id_": o.id_, "label": o.label, "app_name": o.app_name,
+            return {"name": o.name, "node_id": o.node_id, "label": o.label, "app_name": o.app_name,
                     "execution_id": o.execution_id, "result": o.result, "error": o.error, "status": o.status,
-                    "started_at": o.started_at, "completed_at": o.completed_at}
+                    "started_at": o.started_at, "completed_at": o.completed_at, "combined_id": o.combined_id,
+                    "arguments": o.arguments}
 
         elif isinstance(o, WorkflowStatusMessage):
             return {"execution_id": o.execution_id, "workflow_id": o.workflow_id, "name": o.name, "status": o.status,
@@ -52,20 +51,23 @@ class MessageJSONEncoder(json.JSONEncoder):
 
         elif isinstance(o, JSONPatch):
             if o.op in JSONPatchOps:
-                ret = {"op": o.op, "path": o.path}
-
-                if o.op in JSONPatchOps.requires_value.value:
-                    if o.value is not None:
-                        ret["value"] = o.value
-                    else:
-                        raise ValueError(f"Value must be provided for JSONPatch Op: {o.op}")
-                if o.op in JSONPatchOps.requires_from.value:
-                    if o.from_ is not None:
-                        ret["from"] = o.from_
-                    else:
-                        raise ValueError(f"From must be provided for JSONPatch Op: {o.op}")
-
-                return ret
+                # ret = {"op": o.op, "path": o.path}
+                #
+                # if o.op in {JSONPatchOps.TEST, JSONPatchOps.ADD, JSONPatchOps.REPLACE}:
+                #     if o.value is not None:
+                #         ret["value"] = o.value
+                #     else:
+                #         raise ValueError(f"Value must be provided for JSONPatch Op: {o.op}")
+                #
+                # if o.op in {JSONPatchOps.MOVE, JSONPatchOps.COPY}:
+                #     if o.from_ is not None:
+                #         ret["from"] = o.from_
+                #     else:
+                #         raise ValueError(f"From must be provided for JSONPatch Op: {o.op}")
+                #
+                # return ret
+                # elif isinstance(o, JSONPatch):
+                return {k: getattr(o, k, None) for k in o.__slots__ if getattr(o, k, None) is not None}
             else:
                 raise ValueError("Improper JSON Patch operation")
 
@@ -76,12 +78,23 @@ class MessageJSONEncoder(json.JSONEncoder):
             return o.value.lower()
 
         elif isinstance(o, JSONPatch):
-            return {"op": o.op, "path": o.path, "value": o.value, "from_": o.from_}
+            return {k: getattr(o, k, None) for k in o.__slots__ if getattr(o, k, None) is not None}
+
+        elif isinstance(o, datetime.datetime):
+            return str(o)
+
         else:
             return o
 
 
-JSONPatch = namedtuple("JSONPatch", ("op", "path", "value", "from_"), defaults=(None, None))
+class JSONPatch:
+    __slots__ = ("op", "path", "value", "from_")
+
+    def __init__(self, op=None, path=None, value=None, from_=None):
+        self.op = op
+        self.path = path
+        self.value = value
+        self.from_ = from_
 
 
 class JSONPatchOps(enum.Enum):
@@ -91,9 +104,6 @@ class JSONPatchOps(enum.Enum):
     REPLACE = "REPLACE"
     MOVE = "MOVE"
     COPY = "COPY"
-
-    requires_value = {TEST, ADD, REPLACE}
-    requires_from = {MOVE, COPY}
 
 
 class StatusEnum(enum.Enum):
@@ -127,33 +137,35 @@ class WorkflowStatusMessage(object):
 
     @classmethod
     def execution_started(cls, execution_id, workflow_id, name, user=None):
-        start_time = time.time()
+        start_time = datetime.datetime.now()
         return cls(execution_id, workflow_id, name, started_at=start_time, status=StatusEnum.EXECUTING, user=user)
 
     @classmethod
     def execution_completed(cls, execution_id, workflow_id, name, user=None):
-        end_time = time.time()
+        end_time = datetime.datetime.now()
         return cls(execution_id, workflow_id, name, completed_at=end_time, status=StatusEnum.COMPLETED, user=user)
 
     @classmethod
     def execution_aborted(cls, execution_id, workflow_id, name, user=None):
-        end_time = time.time()
+        end_time = datetime.datetime.now()
         return cls(execution_id, workflow_id, name, completed_at=end_time, status=StatusEnum.ABORTED, user=user)
 
 
 class NodeStatusMessage(object):
     """ Class that formats a NodeStatusMessage message. """
-    __slots__ = ("name", "id_", "label", "app_name", "execution_id", "result", "error", "status", "started_at",
-                 "completed_at")
+    __slots__ = ("name", "node_id", "label", "app_name", "execution_id", "arguments", "combined_id", "result", "error",
+                 "status", "started_at", "completed_at")
 
-    def __init__(self, name, id_, label, app_name, execution_id, result=None, error=None, status=None, started_at=None,
-                 completed_at=None):
+    def __init__(self, name, node_id, label, app_name, execution_id, combined_id=None, arguments=None, result=None,
+                 error=None, status=None, started_at=None, completed_at=None):
         self.name = name
-        self.id_ = id_
+        self.node_id = node_id
         self.label = label
         self.app_name = app_name
         self.execution_id = execution_id
+        self.combined_id = combined_id if combined_id is not None else ':'.join((node_id, execution_id))
         self.result = result
+        self.arguments = arguments
         self.error = error
         self.status = status
         self.started_at = started_at
@@ -170,17 +182,17 @@ class NodeStatusMessage(object):
 
     @classmethod
     def executing_from_node(cls, node, execution_id):
-        started_at = time.time()
+        started_at = datetime.datetime.now()
         return NodeStatusMessage.from_node(node, execution_id, started_at=started_at, status=StatusEnum.EXECUTING)
 
     @classmethod
     def success_from_node(cls, node, execution_id, result):
-        completed_at = time.time()
+        completed_at = datetime.datetime.now()
         return NodeStatusMessage.from_node(node, execution_id, result=result, completed_at=completed_at,
                                            status=StatusEnum.SUCCESS)
 
     @classmethod
     def failure_from_node(cls, node, execution_id, error=None):
-        completed_at = time.time()
+        completed_at = datetime.datetime.now()
         return NodeStatusMessage.from_node(node, execution_id, error=error, completed_at=completed_at,
                                            status=StatusEnum.FAILURE)

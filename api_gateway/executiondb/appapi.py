@@ -32,10 +32,10 @@ class AppApi(ExecutionElement, Execution_Base):
         self.name = name
         self.app_version = app_version
         self.walkoff_version = walkoff_version
-        self.description = description
-        self.contact = contact
-        self.license_ = license_
-        self.external_docs = external_docs
+        self.description = description if description else ""
+        self.contact = contact if contact else {}
+        self.license_ = license_ if license_ else {}
+        self.external_docs = external_docs if external_docs else {}
         self.actions = actions if actions is not None else []
         self.validate()
 

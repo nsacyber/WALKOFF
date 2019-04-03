@@ -36,11 +36,11 @@ class ParameterApi(Execution_Base, ExecutionElement):
         ExecutionElement.__init__(self, id_, errors)
         self.name = name
         self.location = location
-        self.description = description
-        self.example = example
-        self.required = required
-        self.placeholder = placeholder
-        self.schema = schema
+        self.description = description if description else ""
+        self.example = example if example else ""
+        self.required = required if required else ""
+        self.placeholder = placeholder if placeholder else ""
+        self.schema = schema if schema else ""
 
 
 class ParameterApiSchema(ExecutionElementBaseSchema):

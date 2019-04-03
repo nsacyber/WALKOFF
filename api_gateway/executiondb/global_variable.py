@@ -30,7 +30,7 @@ class GlobalVariable(Execution_Base):
     value = Column(JSONType, nullable=False)
     description = Column(String(255))
 
-    def __init__(self, value, id_=None, name=None, description=None):
+    def __init__(self, name, value, id_=None, description=None):
         if id_:
             if not isinstance(id_, UUID):
                 self.id_ = UUID(id_)
@@ -38,13 +38,13 @@ class GlobalVariable(Execution_Base):
                 self.id_ = id_
         self.name = name
         self.value = value
-        self.description = description
+        self.description = description if description else ""
 
 
 class GlobalVariableSchema(ExecutionBaseSchema):
     """Schema for global variables
     """
-    name = field_for(GlobalVariable, 'name')
+    name = field_for(GlobalVariable, 'name', required=True)
     value = fields.Raw()
     description = field_for(GlobalVariable, 'description')
 

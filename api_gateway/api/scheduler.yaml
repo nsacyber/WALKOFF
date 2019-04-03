@@ -88,6 +88,33 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+
+/scheduledtasks/{scheduled_task_id}:
+  parameters:
+    - name: scheduled_task_id
+      in: path
+      description: The ID of the scheduled task.
+      required: true
+      schema:
+        type: string
+  get:
+    tags:
+      - Scheduler
+    summary: Get the scheduled task
+    operationId: api_gateway.server.endpoints.scheduler.read_scheduled_task
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduledTask'
+      404:
+        description: Scheduled task does not exist
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   put:
     tags:
       - Scheduler
@@ -115,62 +142,6 @@
               $ref: '#/components/schemas/Error'
       400:
         description: Scheduled task name already exists
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Error'
-  patch:
-    tags:
-      - Scheduler
-    summary: Enable the scheduled task
-    operationId: api_gateway.server.endpoints.scheduler.control_scheduled_task
-    requestBody:
-      description: The updated Scheduled Task object
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required: [id, action]
-            properties:
-              id:
-                type: integer
-              action:
-                type: string
-                description: The requested status of the task
-                enum: [start, stop]
-    responses:
-      200:
-        description: Success
-      404:
-        description: Scheduled task does not exist
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Error'
-
-/scheduledtasks/{scheduled_task_id}:
-  parameters:
-    - name: scheduled_task_id
-      in: path
-      description: The ID of the scheduled task.
-      required: true
-      schema:
-        type: string
-  get:
-    tags:
-      - Scheduler
-    summary: Get the scheduled task
-    operationId: api_gateway.server.endpoints.scheduler.read_scheduled_task
-    responses:
-      200:
-        description: Success
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScheduledTask'
-      404:
-        description: Scheduled task does not exist
         content:
           application/json:
             schema:

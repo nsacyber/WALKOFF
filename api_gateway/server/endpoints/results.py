@@ -7,7 +7,7 @@ from datetime import datetime
 import gevent
 from gevent.queue import Queue
 
-from flask import Flask, Response, current_app, request, jsonify
+from flask import Blueprint, Response, current_app, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_claims
 
 from marshmallow import ValidationError
@@ -45,7 +45,7 @@ with_workflow_status = with_resource_factory('workflow', workflow_status_getter,
 action_status_schema = ActionStatusSchema()
 workflow_status_schema = WorkflowStatusSchema()
 
-results_stream = Flask(__name__)
+results_stream = Blueprint('results_stream', __name__)
 workflow_stream_subs = {}
 action_stream_subs = {}
 
@@ -61,11 +61,14 @@ def push_to_workflow_stream_queue(workflow_status, event):
 
 
 def push_to_action_stream_queue(action_statuses, event):
+    event_id = 0
     for action_status in action_statuses:
         action_status_json = action_status_schema.dump(action_status)
         sse_event = SseEvent(event, action_status_json)
-        if action_status.combined_id in action_stream_subs:
-            action_stream_subs[action_status.combined_id].put(sse_event.format(action_status.combined_id))
+        execution_id = str(action_status_json["execution_id"])
+        if execution_id in action_stream_subs:
+            action_stream_subs[execution_id].put(sse_event.format(event_id))
+        event_id += 1
 
 
 # @jwt_required
@@ -127,19 +130,14 @@ def update_workflow_status(execution_id):
         current_app.running_context.execution_db.session.commit()
 
         action_statuses = []
-
-        uuid_regex = "([0-9a-f]{8}\-[0-9a-f]{4}\-4[0-9a-f]{3}\-[89ab][0-9a-f]{3}\-[0-9a-f]{12})"
-        combined_id_re = re.compile(f"{uuid_regex}")
         for patch in data:
             if "action_statuses" in patch["path"]:
-                print(patch["path"])
-                combined_id = combined_id_re.search(patch["path"]).group(0)
-                action_statuses.append(action_status_getter(combined_id))
+                action_statuses.append(action_status_getter(patch["value"]["combined_id"]))
 
         # TODo: Replace this when moving to sanic
-        if resource == "workflow":
+        if len(action_statuses) < 1:
             gevent.spawn(push_to_workflow_stream_queue, new_workflow_status, event)
-        elif resource == "action":
+        else:
             gevent.spawn(push_to_action_stream_queue, action_statuses, event)
 
         current_app.logger.info(f"Updated workflow status {execution_id.execution_id} ({execution_id.name})")
@@ -169,7 +167,7 @@ def workflow_stream():
     return Response(workflow_results_generator(), mimetype="test/event-stream")
 
 
-@results_stream.route('/action_status')
+@results_stream.route('/actions')
 def action_stream():
     execution_id = request.args.get('workflow_execution_id', 'all')
     if execution_id != 'all':
@@ -182,8 +180,10 @@ def action_stream():
         action_stream_subs[execution_id] = events = action_stream_subs.get(execution_id, Queue())
         try:
             while True:
-                yield events.get().encode()
+                event = events.get().encode()
+                print(event)
+                yield event
         except GeneratorExit:
-            action_stream_subs.pop(events)
+            action_stream_subs.pop(execution_id)
 
     return Response(action_results_generator(), mimetype="text/event-stream")

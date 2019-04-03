@@ -14,7 +14,7 @@ class ExecutionElement(Validatable):
         if id_:
             self.id_ = id_
         if errors:
-            self.errors = errors
+            self.errors = errors if errors else []
 
     def __repr__(self):
         from .model_schema_map import dump_element
