@@ -104,6 +104,9 @@ class Worker:
         queue = deque([self.start_action])
         tasks = set()
 
+        await self.send_message(WorkflowStatusMessage.execution_started(self.workflow.execution_id, self.workflow.id_,
+                                                                        self.workflow.name))
+
         while queue:
             node = queue.pop()
             parents = {n.id_: n for n in self.workflow.predecessors(node)} if node is not self.start_action else {}
@@ -133,6 +136,9 @@ class Worker:
                     raise e
                 except:
                     logger.exception(f"Exception while executing Workflow:{self.workflow}")
+
+        await self.send_message(WorkflowStatusMessage.execution_completed(self.workflow.execution_id, self.workflow.id_,
+                                                                          self.workflow.name))
 
     async def evaluate_condition(self, condition, parents, children):
         """
@@ -248,6 +254,7 @@ class Worker:
             if msg.execution_id == self.workflow.execution_id and msg.node_id in self.in_process:
                 if msg.status == StatusEnum.EXECUTING:
                     logger.info(f"App started execution of: {msg.label}-{msg.execution_id}")
+                    await self.send_message(msg)
 
                 elif msg.status == StatusEnum.SUCCESS:
                     self.accumulator[msg.node_id] = msg.result
@@ -256,10 +263,12 @@ class Worker:
                     # Remove the action from our local in_process queue as well as the one in redis
                     action = self.in_process.pop(msg.node_id)
                     await self.redis.lrem(config["REDIS"]["actions_in_process"], 0, workflow_dumps(action))
+                    await self.send_message(msg)
 
                 elif msg.status == StatusEnum.FAILURE:
                     self.accumulator[msg.node_id] = msg.error
                     logger.info(f"Worker recieved error \"{msg.error}\" for: {msg.label}-{msg.execution_id}")
+                    await self.send_message(msg)
 
                 else:
                     logger.error(f"Unknown message status received: {msg}")
