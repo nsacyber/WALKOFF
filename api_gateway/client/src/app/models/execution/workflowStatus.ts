@@ -1,9 +1,9 @@
 import { Type, Exclude } from 'class-transformer';
 
 import { ActionStatus } from './actionStatus';
-import { CurrentAction } from './currentAction';
 
 import * as moment from 'moment';
+import { ActionIdentification } from './actionIdentification';
 
 export class WorkflowStatus {
 	
@@ -31,8 +31,8 @@ export class WorkflowStatus {
 	 */
 	status: string; 
 
-	@Type(() => CurrentAction)
-	current_action?: CurrentAction;
+	@Type(() => ActionIdentification)
+	action_status?: ActionIdentification;
 
 	@Type(() => ActionStatus)
 	action_statuses?: ActionStatus[] = [];

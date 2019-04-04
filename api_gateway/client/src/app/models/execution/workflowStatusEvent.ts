@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 
-import { CurrentAction } from './currentAction';
 import { WorkflowStatus } from './workflowStatus';
+import { ActionIdentification } from './actionIdentification';
 
 export class WorkflowStatusEvent {
 	execution_id: string;
@@ -16,8 +16,8 @@ export class WorkflowStatusEvent {
 
 	status: string;
 
-	@Type(() => CurrentAction)
-	current_action?: CurrentAction;
+	@Type(() => ActionIdentification)
+	action_status?: ActionIdentification;
 
 	toNewWorkflowStatus(): WorkflowStatus {
 		const out = new WorkflowStatus();
@@ -26,7 +26,7 @@ export class WorkflowStatusEvent {
 		out.workflow_id = this.workflow_id;
 		out.name = this.name;
 		out.status = this.status;
-		out.current_action = this.current_action;
+		out.action_status = this.action_status;
 
 		return out;
 	}

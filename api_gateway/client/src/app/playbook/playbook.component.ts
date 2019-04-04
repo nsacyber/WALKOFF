@@ -262,7 +262,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		return this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
 			.then(eventSource => {
 				this.eventSource = eventSource
-				this.eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
+				this.eventSource.addEventListener('executing', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
@@ -318,13 +318,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			matchingActionStatus.status = actionStatusEvent.status;
 
 			switch (message.type) {
-				case 'started':
+				case 'executing':
 					// shouldn't happen
-					matchingActionStatus.started_at = actionStatusEvent.timestamp;
+					matchingActionStatus.started_at = actionStatusEvent.started_at;
 					break;
 				case 'success':
 				case 'failure':
-					matchingActionStatus.completed_at = actionStatusEvent.timestamp;
+					matchingActionStatus.completed_at = actionStatusEvent.completed_at;
 					matchingActionStatus.result = actionStatusEvent.result;
 					break;
 				case 'awaiting_data':

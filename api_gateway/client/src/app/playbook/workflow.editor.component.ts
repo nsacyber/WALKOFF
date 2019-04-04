@@ -225,6 +225,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
     consoleEventHandler(message: any): void {
+		console.log('c', message)
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
 
@@ -270,6 +271,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
 	actionStatusEventHandler(message: any): void {
+		console.log('a', message);
 		const actionStatusEvent = plainToClass(ActionStatusEvent, (JSON.parse(message.data) as object));
 
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
@@ -315,11 +317,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			switch (message.type) {
 				case 'started':
 					// shouldn't happen
-					matchingActionStatus.started_at = actionStatusEvent.timestamp;
+					matchingActionStatus.started_at = actionStatusEvent.started_at;
 					break;
 				case 'success':
 				case 'failure':
-					matchingActionStatus.completed_at = actionStatusEvent.timestamp;
+					matchingActionStatus.completed_at = actionStatusEvent.completed_at;
 					matchingActionStatus.result = actionStatusEvent.result;
 					break;
 				case 'awaiting_data':

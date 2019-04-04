@@ -91,6 +91,18 @@ export class UtilitiesService {
 		throw new Error(err);
 	}
 
+	alert(message: string, options: {} = {}) : Promise<boolean> {
+		return new Promise((resolve) => {
+			const defaults = {
+				message,
+				backdrop: true,
+				className: "mt-5 pt-5",
+				callback: () => { resolve() } 
+			}
+			bootbox.alert(Object.assign({}, defaults, options));
+		})
+	}
+
 	confirm(message: string, options: {} = {}) : Promise<boolean> {
 		return new Promise((resolve) => {
 			const defaults = {
