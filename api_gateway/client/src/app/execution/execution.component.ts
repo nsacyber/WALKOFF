@@ -13,13 +13,13 @@ import { ExecutionService } from './execution.service';
 import { AuthService } from '../auth/auth.service';
 import { UtilitiesService } from '../utilities.service';
 
-import { WorkflowStatus } from '../models/execution/workflowStatus';
+import { WorkflowStatus, WorkflowStatuses } from '../models/execution/workflowStatus';
 import { WorkflowStatusEvent } from '../models/execution/workflowStatusEvent';
 import { Workflow } from '../models/playbook/workflow';
 import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 import { Argument } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
-import { ActionStatus } from '../models/execution/actionStatus';
+import { ActionStatus, ActionStatuses } from '../models/execution/actionStatus';
 
 import { ExecutionVariableModalComponent } from './execution.variable.modal.component';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
@@ -177,16 +177,10 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.authService.getEventSource('/api/streams/workflowqueue/workflow_status')
 			.then(eventSource => {
 				this.workflowStatusEventSource = eventSource;
-				this.workflowStatusEventSource.addEventListener('PENDING', (e: any) => this.workflowStatusEventHandler(e));
-				this.workflowStatusEventSource.addEventListener('EXECUTING', (e: any) => this.workflowStatusEventHandler(e));
-				this.workflowStatusEventSource.addEventListener('PAUSED', (e: any) => this.workflowStatusEventHandler(e));
-				//this.workflowStatusEventSource.addEventListener('resumed', (e: any) => this.workflowStatusEventHandler(e));
-				this.workflowStatusEventSource.addEventListener('AWAITING_DATA', (e: any) => this.workflowStatusEventHandler(e));
-				//this.workflowStatusEventSource.addEventListener('triggered', (e: any) => this.workflowStatusEventHandler(e));
-				this.workflowStatusEventSource.addEventListener('ABORTED', (e: any) => this.workflowStatusEventHandler(e));
-				this.workflowStatusEventSource.addEventListener('COMPLETED', (e: any) => this.workflowStatusEventHandler(e));
-				this.workflowStatusEventSource.onmessage = (m: any) => console.log(m);
 				this.workflowStatusEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
+
+				Object.values(WorkflowStatuses)
+					  .forEach(status => this.workflowStatusEventSource.addEventListener(status, (e: any) => this.workflowStatusEventHandler(e)));
 			});
 	}
 
@@ -196,7 +190,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param message EventSource message for workflow status
 	 */
 	workflowStatusEventHandler(message: any): void {
-		console.log('w', message)
+		console.log('w', message, JSON.parse(message.data));
 		const workflowStatusEvent = plainToClass(WorkflowStatusEvent, (JSON.parse(message.data) as object));
 
 		const matchingWorkflowStatus = this.workflowStatuses.find(ws => ws.execution_id === workflowStatusEvent.execution_id);
@@ -205,10 +199,10 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 			matchingWorkflowStatus.status = workflowStatusEvent.status;
 
 			switch (message.type) {
-				case 'PENDING':
+				case WorkflowStatuses.PENDING:
 					delete matchingWorkflowStatus.action_status;
 					break;
-				case 'EXECUTING':
+				case WorkflowStatuses.EXECUTING:
 					if (!matchingWorkflowStatus.started_at) {
 						matchingWorkflowStatus.started_at = workflowStatusEvent.timestamp;
 						this.workflowStatusStartedRelativeTimes[matchingWorkflowStatus.execution_id] =
@@ -217,13 +211,13 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 					matchingWorkflowStatus.user = workflowStatusEvent.user;
 					matchingWorkflowStatus.action_status = workflowStatusEvent.action_status;
 					break;
-				case 'PAUSED':
-				case 'resumed':
-				case 'AWAITING_DATA':
-				case 'triggered':
+				case WorkflowStatuses.PAUSED:
+				case WorkflowStatuses.AWAITING_DATA:
+				//case 'resumed':
+				//case 'triggered':
 					matchingWorkflowStatus.action_status = workflowStatusEvent.action_status;
 					break;
-				case 'COMPLETED':
+				case WorkflowStatuses.COMPLETED:
 					// Add a delay to ensure completed status is updated in quick executing workflows
 					setTimeout(() => {
 						matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
@@ -232,7 +226,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 						delete matchingWorkflowStatus.action_status;
 					}, 250);
 					break;
-				case 'ABORTED':
+				case WorkflowStatuses.ABORTED:
 					matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
 					this.workflowStatusCompletedRelativeTimes[matchingWorkflowStatus.execution_id] =
 						this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
@@ -266,11 +260,10 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.authService.getEventSource(url)
 			.then(eventSource => {
 				this.actionStatusEventSource = eventSource;
-				this.actionStatusEventSource.addEventListener('executing', (e: any) => this.actionStatusEventHandler(e));
-				this.actionStatusEventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
-				this.actionStatusEventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
-				this.actionStatusEventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
 				this.actionStatusEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
+
+				Object.values(ActionStatuses)
+					  .forEach(status => this.actionStatusEventSource.addEventListener(status, (e: any) => this.actionStatusEventHandler(e)));
 			});
 	}
 
@@ -281,7 +274,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param message EventSource message for action status
 	 */
 	actionStatusEventHandler(message: any): void {
-		console.log('a', message);
+		console.log('a', message, JSON.parse(message.data));
 		const actionStatusEvent = plainToClass(ActionStatusEvent, (JSON.parse(message.data) as object));
 
 		// if we have a matching workflow status, update the current app/action info.
@@ -307,19 +300,19 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 				matchingActionStatus.status = actionStatusEvent.status;
 
 				switch (message.type) {
-					case 'executing':
+					case ActionStatuses.EXECUTING:
 						matchingActionStatus.started_at = actionStatusEvent.started_at;
 						this.actionStatusStartedRelativeTimes[matchingActionStatus.execution_id] =
 							this.utils.getRelativeLocalTime(actionStatusEvent.started_at);
 						break;
-					case 'success':
-					case 'failure':
+					case ActionStatuses.SUCCESS:
+					case ActionStatuses.FAILURE:
 						matchingActionStatus.completed_at = actionStatusEvent.completed_at;
 						matchingActionStatus.result = actionStatusEvent.result;
 						this.actionStatusCompletedRelativeTimes[matchingActionStatus.execution_id] =
 							this.utils.getRelativeLocalTime(actionStatusEvent.completed_at);
 						break;
-					case 'awaiting_data':
+					case ActionStatuses.AWAITING_DATA:
 						// don't think anything needs to happen here
 						break;
 					default:

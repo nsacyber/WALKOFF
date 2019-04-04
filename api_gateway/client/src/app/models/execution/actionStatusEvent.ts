@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Expose } from 'class-transformer';
 
 import { Argument } from '../playbook/argument';
 import { ActionStatus } from './actionStatus';
@@ -6,6 +6,7 @@ import { ActionStatus } from './actionStatus';
 export class ActionStatusEvent {
 	execution_id: string;
 
+	@Expose({name: 'node_id'})
 	action_id: string;
 
 	label: string;

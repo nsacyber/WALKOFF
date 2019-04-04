@@ -5,6 +5,17 @@ import { ActionStatus } from './actionStatus';
 import * as moment from 'moment';
 import { ActionIdentification } from './actionIdentification';
 
+export enum WorkflowStatuses {
+	PAUSED = "PAUSED",
+    AWAITING_DATA = "AWAITING_DATA",
+    PENDING = "PENDING",
+    COMPLETED = "COMPLETED",
+    ABORTED = "ABORTED",
+    EXECUTING = "EXECUTING",
+    //SUCCESS = "SUCCESS",
+    //FAILURE = "FAILURE",
+} 
+
 export class WorkflowStatus {
 	
 	id?: string;

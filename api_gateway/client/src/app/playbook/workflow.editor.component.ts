@@ -41,7 +41,7 @@ import { Global } from '../models/global';
 import { Argument } from '../models/playbook/argument';
 import { User } from '../models/user';
 import { Role } from '../models/role';
-import { ActionStatus } from '../models/execution/actionStatus';
+import { ActionStatus, ActionStatuses } from '../models/execution/actionStatus';
 import { ConditionalExpression } from '../models/playbook/conditionalExpression';
 import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 import { ConsoleLog } from '../models/execution/consoleLog';
@@ -219,8 +219,9 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		return this.authService.getEventSource(`/api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
 			.then(eventSource => {
-				this.consoleEventSource = eventSource
-                this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
+				this.consoleEventSource = eventSource;
+				this.consoleEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
+				this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
 			});
 	}
 
@@ -258,10 +259,10 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		return this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
 			.then(eventSource => {
 				this.eventSource = eventSource
-				this.eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
-				this.eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
-				this.eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
-				this.eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
+				this.eventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
+
+				Object.values(ActionStatuses)
+					  .forEach(status => this.eventSource.addEventListener(status, (e: any) => this.actionStatusEventHandler(e)));
 			});
 	}
 
@@ -271,7 +272,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
 	actionStatusEventHandler(message: any): void {
-		console.log('a', message);
+		console.log('a', message, JSON.parse(message.data));
 		const actionStatusEvent = plainToClass(ActionStatusEvent, (JSON.parse(message.data) as object));
 
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
@@ -280,25 +281,25 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 			if (matchingNode) {
 				switch (actionStatusEvent.status) {
-					case 'success':
-						matchingNode.addClass('success-highlight');
-						matchingNode.removeClass('failure-highlight');
-						matchingNode.removeClass('executing-highlight');
-						matchingNode.removeClass('awaiting-data-highlight');
-						break;
-					case 'failure':
-						matchingNode.removeClass('success-highlight');
-						matchingNode.addClass('failure-highlight');
-						matchingNode.removeClass('executing-highlight');
-						matchingNode.removeClass('awaiting-data-highlight');
-						break;
-					case 'executing':
+					case ActionStatuses.EXECUTING:
 						matchingNode.removeClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.addClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
 						break;
-					case 'awaiting_data':
+					case ActionStatuses.SUCCESS:
+						matchingNode.addClass('success-highlight');
+						matchingNode.removeClass('failure-highlight');
+						matchingNode.removeClass('executing-highlight');
+						matchingNode.removeClass('awaiting-data-highlight');
+						break;
+					case ActionStatuses.FAILURE:
+						matchingNode.removeClass('success-highlight');
+						matchingNode.addClass('failure-highlight');
+						matchingNode.removeClass('executing-highlight');
+						matchingNode.removeClass('awaiting-data-highlight');
+						break;
+					case ActionStatuses.AWAITING_DATA:
 						matchingNode.removeClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.removeClass('executing-highlight');
@@ -315,16 +316,16 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			matchingActionStatus.status = actionStatusEvent.status;
 
 			switch (message.type) {
-				case 'started':
+				case ActionStatuses.EXECUTING:
 					// shouldn't happen
 					matchingActionStatus.started_at = actionStatusEvent.started_at;
 					break;
-				case 'success':
-				case 'failure':
+				case ActionStatuses.SUCCESS:
+				case ActionStatuses.FAILURE:
 					matchingActionStatus.completed_at = actionStatusEvent.completed_at;
 					matchingActionStatus.result = actionStatusEvent.result;
 					break;
-				case 'awaiting_data':
+				case ActionStatuses.AWAITING_DATA:
 					// don't think anything needs to happen here
 					break;
 				default:
@@ -341,6 +342,18 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 		// Induce change detection by slicing array
 		this.actionStatuses = this.actionStatuses.slice();
+	}
+
+	statusEventErrorHandler(e: any) {
+		if (this.eventSource && this.eventSource.close) 
+			this.eventSource.close();
+		if (this.consoleEventSource && this.consoleEventSource.close)
+			this.consoleEventSource.close();
+
+		const options = {backdrop: undefined, closeButton: false, buttons: { ok: { label: 'Reload Page' }}}
+		this.utils
+			.alert('The server stopped responding. Reload the page to try again.', options)
+			.then(() => location.reload(true))
 	}
 
 	/**
