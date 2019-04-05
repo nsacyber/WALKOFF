@@ -34,7 +34,7 @@ class HelloWorld(AppBase):
         # This sends a log message to the frontend
         await self.console_logger.info(message)
 
-        return {"message": message}
+        return message
 
     async def repeat_back_to_me(self, call):
         return f"REPEATING: {call}"

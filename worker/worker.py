@@ -27,6 +27,7 @@ class Worker:
         self.in_process = {}
         self.redis = redis
         self.session = session
+        self.token = None
 
     @staticmethod
     async def get_workflow(redis: aioredis.Redis):
@@ -35,9 +36,9 @@ class Worker:
         """
         while True:
             logger.info("Waiting for workflows...")
-            workflow = await redis.brpoplpush(sourcekey=config["REDIS"]["workflow_q"],
-                                              destkey=config["REDIS"]["workflows_in_process"],
-                                              timeout=config.getint("WORKER", "timeout"))
+            workflow = await redis.brpoplpush(sourcekey=config.REDIS_WORKFLOW_QUEUE,
+                                              destkey=config.REDIS_WORKFLOWS_IN_PROCESS,
+                                              timeout=config.get_int("WORKER_TIMEOUT", 30))
 
             if workflow is None:  # We've timed out with no work. Guess we'll die now...
                 sys.exit(1)
@@ -46,7 +47,7 @@ class Worker:
 
     @staticmethod
     async def run():
-        async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis,\
+        async with connect_to_redis_pool(config.REDIS_URI) as redis,\
                 aiohttp.ClientSession(json_serialize=message_dumps) as session:
             async for workflow in Worker.get_workflow(redis):
                 # Setup worker launch the event loop
@@ -63,7 +64,7 @@ class Worker:
                     logger.info(f"Completed execution of workflow: {workflow.name}")
 
                 # Clean up workflow in process queue
-                await redis.lrem(config["REDIS"]["workflows_in_process"], 0, workflow_dumps(workflow))
+                await redis.lrem(config.REDIS_WORKFLOWS_IN_PROCESS, 0, workflow_dumps(workflow))
         await Worker.shutdown()
 
     @staticmethod
@@ -104,9 +105,6 @@ class Worker:
         queue = deque([self.start_action])
         tasks = set()
 
-        await self.send_message(WorkflowStatusMessage.execution_started(self.workflow.execution_id, self.workflow.id_,
-                                                                        self.workflow.name))
-
         while queue:
             node = queue.pop()
             parents = {n.id_: n for n in self.workflow.predecessors(node)} if node is not self.start_action else {}
@@ -137,9 +135,6 @@ class Worker:
                 except:
                     logger.exception(f"Exception while executing Workflow:{self.workflow}")
 
-        await self.send_message(WorkflowStatusMessage.execution_completed(self.workflow.execution_id, self.workflow.id_,
-                                                                          self.workflow.name))
-
     async def evaluate_condition(self, condition, parents, children):
         """
             TODO: This will change when we implement a better UI element for it. For now, if an action is given a user
@@ -152,8 +147,7 @@ class Worker:
         try:
             child_id = condition(parents, children, self.accumulator)
             selected_node = children.pop(child_id)
-            await self.send_message(NodeStatusMessage.success_from_node(condition, self.workflow.execution_id,
-                                                                        selected_node))
+            await self.send_message(NodeStatusMessage.success_from_node(condition, self.workflow.execution_id, selected_node))
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
             # We preemptively schedule all branches of execution so we must cancel all "false" branches here
@@ -164,8 +158,7 @@ class Worker:
 
         except ConditionException as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
-            await self.send_message(NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id,
-                                                                        error=repr(e)))
+            await self.send_message(NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id, error=repr(e)))
 
         except Exception:
             logger.exception("Something happened in Condition evaluation")
@@ -184,12 +177,34 @@ class Worker:
         # TODO: figure out exactly what can be raised by the possible transforms
         except Exception as e:
             logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
-            await self.send_message(NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id,
-                                                                        error=repr(e)))
+            await self.send_message(NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, error=repr(e)))
+
+    async def get_globals(self):
+        url = config.API_GATEWAY_URI.rstrip('/') + '/api'
+
+        # TODO: make this secure
+        if self.token is None:
+            async with self.session.post(url + "/auth", json={"username": config.WALKOFF_USERNAME,
+                                                              "password": config.WALKOFF_PASSWORD}, timeout=5) as resp:
+                resp_json = await resp.json()
+                self.token = resp_json["refresh_token"]
+                logger.debug("Successfully logged into WALKOFF")
+
+        headers = {"Authorization": f"Bearer {self.token}"}
+        async with self.session.post(url + "/auth/refresh", headers=headers, timeout=5) as resp:
+            resp_json = await resp.json()
+            access_token = resp_json["access_token"]
+            logger.debug("Successfully refreshed WALKOFF JWT")
+
+        headers = {"Authorization": f"Bearer {access_token}"}
+        async with self.session.get(url + "/globals", headers=headers, timeout=5) as resp:
+            globals_ = await resp.json(loads=workflow_loads)
+            logger.debug(f"Got globals: {globals_}")
+            return globals_
 
     async def dereference_params(self, action: Action):
-        global_vars = set(await self.redis.hkeys(config["REDIS"]["globals_key"]))
-
+        #TODO: update this to pull from the database
+        global_vars = await self.get_globals()
         for param in action.parameters:
             if param.variant == ParameterVariant.STATIC_VALUE:
                 continue
@@ -262,9 +277,9 @@ class Worker:
 
                     # Remove the action from our local in_process queue as well as the one in redis
                     action = self.in_process.pop(msg.node_id)
-                    await self.redis.lrem(config["REDIS"]["actions_in_process"], 0, workflow_dumps(action))
+                    await self.redis.lrem(config.REDIS_ACTIONS_IN_PROCESS, 0, workflow_dumps(action))
                     await self.send_message(msg)
-
+                    
                 elif msg.status == StatusEnum.FAILURE:
                     self.accumulator[msg.node_id] = msg.error
                     logger.info(f"Worker recieved error \"{msg.error}\" for: {msg.label}-{msg.execution_id}")
@@ -300,12 +315,13 @@ class Worker:
                 patches.append(self.make_patch(message, root, JSONPatchOps.ADD, black_list={"result", "completed_at"}))
 
             elif message.status == StatusEnum.SUCCESS:
-                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
-                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, white_list={"result", "completed_at"}))
+                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, black_list={}))
+                # patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status", "result", "completed_at"}))
 
             elif message.status == StatusEnum.FAILURE:
-                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
-                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, white_list={"error", "completed_at"}))
+                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, black_list={}))
+                # patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
+                # patches.append(self.make_patch(message, root, JSONPatchOps.ADD, white_list={"error", "completed_at"}))
 
         elif isinstance(message, WorkflowStatusMessage):
             root = f"/"
@@ -331,7 +347,7 @@ class Worker:
             raise ValueError(f"Attempting to send improper message type: {type(message)}")
 
         params = {"event": message.status.value}
-        url = f"{config['WORKER']['api_gateway_uri']}/api/internal/workflowstatus/{self.workflow.execution_id}"
+        url = f"{config.API_GATEWAY_URI}/api/internal/workflowstatus/{self.workflow.execution_id}"
         try:
             async with self.session.patch(url, json=patches, params=params, timeout=5) as resp:
                 results = await resp.json()

@@ -54,7 +54,7 @@ class ServiceKwargs:
         self.log_driver = options.get("logging", {}).get("driver")
         self.log_driver_options = options.get("logging", {}).get("options")
         self.mode = ServiceMode(deploy_opts.get("mode", "replicated"), deploy_opts.get("replicas", 1))
-        self.networks = [config["UMPIRE"]["network"]]  # Similar to mounts. I don't see the use case but see the issues
+        self.networks = [config.SWARM_NETWORK]  # Similar to mounts. I don't see the use case but see the issues
 
         resource_opts = deploy_opts.get("resources", {})
         if resource_opts:
@@ -64,10 +64,10 @@ class ServiceKwargs:
             for generic_resource in reservation_opts.get("generic_resources", {}):
                 discrete_resource_spec = generic_resource["discrete_resource_spec"]
                 generic_resources[discrete_resource_spec["kind"]] = discrete_resource_spec["value"]
-            cpu_limit = sfloat(resource_opts.get("limits", {}).get("cpus"))
-            cpu_reservation = sfloat(reservation_opts.get("cpus"))
-            nano_cpu_limit = sint(cpu_limit * 1e9) if cpu_limit is not None else None
-            nano_cpu_reservation = sint(cpu_reservation * 1e9) if cpu_reservation is not None else None
+            cpu_limit = sfloat(resource_opts.get("limits", {}).get("cpus"), 0)
+            cpu_reservation = sfloat(reservation_opts.get("cpus"), 0)
+            nano_cpu_limit = sint(cpu_limit * 1e9, 0) if cpu_limit is not None else None
+            nano_cpu_reservation = sint(cpu_reservation * 1e9, 0) if cpu_reservation is not None else None
             self.resources = Resources(cpu_limit=nano_cpu_limit,
                                        mem_limit=parse_bytes(resource_opts.get("limits", {}).get("memory", '')),
                                        cpu_reservation=nano_cpu_reservation,
@@ -81,7 +81,7 @@ class ServiceKwargs:
             window = timeparse(restart_opts.get("restart_opts", "0s"))
             self.restart_policy = RestartPolicy(condition=restart_opts.get("condition", ),
                                                 delay=delay,
-                                                max_attempts=sint(restart_opts.get("max_attempts", 0)),
+                                                max_attempts=sint(restart_opts.get("max_attempts", 0), 0),
                                                 window=window)
 
         self.secrets = secrets
@@ -146,14 +146,15 @@ def normalize_name(name, delimiter=''):
 
 
 def get_project(path):
-    project = get_compose_project(path, environment=load_docker_env(), project_name=config["UMPIRE"]["app_prefix"])
+    project = get_compose_project(path, environment=load_docker_env(), project_name=config.APP_PREFIX)
     project.path = path  # we'll add this in to refresh the project later
     return project
 
 
 def load_docker_env():
+    # TODO: remove this since it is likely no longer needed
     environment = os.environ
-    environment.update({key: val for key, val in config["DOCKER_ENV"].items()})
+    # environment.update({key: val for key, val in config["DOCKER_ENV"].items()})
     return Environment(environment)
 
 

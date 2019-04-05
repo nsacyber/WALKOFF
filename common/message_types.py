@@ -52,22 +52,6 @@ class MessageJSONEncoder(json.JSONEncoder):
 
         elif isinstance(o, JSONPatch):
             if o.op in JSONPatchOps:
-                # ret = {"op": o.op, "path": o.path}
-                #
-                # if o.op in {JSONPatchOps.TEST, JSONPatchOps.ADD, JSONPatchOps.REPLACE}:
-                #     if o.value is not None:
-                #         ret["value"] = o.value
-                #     else:
-                #         raise ValueError(f"Value must be provided for JSONPatch Op: {o.op}")
-                #
-                # if o.op in {JSONPatchOps.MOVE, JSONPatchOps.COPY}:
-                #     if o.from_ is not None:
-                #         ret["from"] = o.from_
-                #     else:
-                #         raise ValueError(f"From must be provided for JSONPatch Op: {o.op}")
-                #
-                # return ret
-                # elif isinstance(o, JSONPatch):
                 return {k: getattr(o, k, None) for k in o.__slots__ if getattr(o, k, None) is not None}
             else:
                 raise ValueError("Improper JSON Patch operation")

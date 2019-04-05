@@ -15,10 +15,11 @@ from common.helpers import connect_to_redis_pool
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
-ACTION_RESULT_CH = os.getenv("ACTION_RESULT_CH", "action-results")
-ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
+REDIS_ACTION_RESULTS = os.getenv("ACTION_RESULT_CH", "action-results")
+REDIS_ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
 API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "http://api_gateway:8080")
 APP_NAME = os.getenv("APP_NAME")
+
 
 
 class HTTPStream:
@@ -73,7 +74,7 @@ class AppBase:
             start = time.time()
             while action is None:
                 src_key = self.action_queue_keys[i % len(self.action_queue_keys)]
-                action = await self.redis.rpoplpush(src_key, ACTIONS_IN_PROCESS)
+                action = await self.redis.rpoplpush(src_key, REDIS_ACTIONS_IN_PROCESS)
                 i += 1
                 await asyncio.sleep(0)
 
@@ -97,7 +98,7 @@ class AppBase:
                         result = await func()
                     else:
                         result = await func(**{p.name: p.value for p in action.parameters})
-                    action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result)
+                    action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result=result)
                     self.logger.debug(f"Executed {action.label}-{action.id_} with result: {result}")
 
                 else:
@@ -118,7 +119,7 @@ class AppBase:
             await self.redis.lpush(action.execution_id, message_dumps(action_result))
 
         # Remove the action from the in process queue regardless of success
-        await self.redis.lrem(ACTIONS_IN_PROCESS, 0, workflow_dumps(action))
+        await self.redis.lrem(REDIS_ACTIONS_IN_PROCESS, 0, workflow_dumps(action))
 
     @classmethod
     async def run(cls):

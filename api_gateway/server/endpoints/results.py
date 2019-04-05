@@ -117,7 +117,7 @@ def update_workflow_status(execution_id):
 
     # TODO: change these on the db model to be keyed by ID
     if "action_statuses" in old_workflow_status:
-        old_workflow_status["action_statuses"] = {astat['action_id']: astat for astat in
+        old_workflow_status["action_statuses"] = {astat['node_id']: astat for astat in
                                                   old_workflow_status["action_statuses"]}
     else:
         old_workflow_status["action_statuses"] = {}

@@ -1,20 +1,28 @@
 import logging
 import re
-import json
 import asyncio
 from pathlib import Path
 
 import aiohttp
+import yaml
 from compose.cli.command import get_project
 
 
 from common.config import config
-from common.helpers import validate_app_api
 from common.docker_helpers import get_project
 
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("AppRepo")
+
+
+def load_app_api(api_file):
+    #  TODO: Actually validate the api
+    with open(api_file, 'r') as fp:
+        try:
+            return yaml.load(fp)
+        except yaml.YAMLError as exc:
+            logger.exception(exc)
 
 
 class AppRepo(dict):
@@ -32,8 +40,8 @@ class AppRepo(dict):
         apps = await inst.load_apps_and_apis()
         return AppRepo(path, db, **apps)
 
-    async def store_api(self, api, api_name):
-        url = f"{config['WORKER']['api_gateway_uri']}/api/apps/apis"
+    async def store_api(self, api):
+        url = f"{config.API_GATEWAY_URI}/api/apps/apis"
         while True:
             try:
                 async with self.session.post(url, json=api) as resp:
@@ -58,8 +66,7 @@ class AppRepo(dict):
                     if re.fullmatch(r"((\d\.?)+)", version.name):
                         try:
                             # Store the api while we've got it here
-                            api_name = f"{app.name}:{version.name}"
-                            await self.store_api(validate_app_api(version / "api.yaml"), api_name)
+                            await self.store_api(load_app_api(version / "api.yaml"))
 
                             project = get_project(version)
                             if not len(project.services) == 1:
@@ -82,7 +89,7 @@ class AppRepo(dict):
 if __name__ == "__main__":
     async def run():
         db = None  # Set this to whatever sqlalchemy session management type object you have
-        apps = await AppRepo.create(config["UMPIRE"]["apps_path"], db)
+        apps = await AppRepo.create(config.APPS_PATH, db)
 
         if len(apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")

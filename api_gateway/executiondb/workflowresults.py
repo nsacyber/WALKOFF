@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy_utils import UUIDType
+from sqlalchemy_utils import UUIDType, JSONType
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
@@ -134,7 +134,7 @@ class ActionStatus(Execution_Base):
     name = Column(String, nullable=False)
     app_name = Column(String, nullable=False)
     label = Column(String, nullable=False)
-    result = Column(String)
+    result = Column(JSONType)
     arguments = Column(String)  # TODO: refactor this to parameters to match every other node model
     status = Column(String, nullable=False)  # ToDo: revisit this and make this a real enum
     started_at = Column(DateTime, default=datetime.utcnow)
@@ -215,7 +215,7 @@ class ActionStatusSchema(ExecutionBaseSchema):
     name = field_for(ActionStatus, 'name', required=True)
     app_name = field_for(ActionStatus, 'app_name', required=True)
     label = field_for(ActionStatus, 'label', required=True)
-    result = field_for(ActionStatus, 'result')
+    result = fields.Raw()
     status = field_for(ActionStatus, 'status', required=True)
     started_at = field_for(ActionStatus, 'started_at')
     completed_at = field_for(ActionStatus, 'completed_at')

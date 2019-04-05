@@ -2,23 +2,26 @@ import logging
 from contextlib import asynccontextmanager
 
 import aioredis
-import yaml
 
 logger = logging.getLogger("WALKOFF")
 
 
-def sint(value):
+def sint(value, default):
+    if not isinstance(default, int):
+        raise TypeError("Default value must be of integer type")
     try:
         return int(value)
     except (TypeError, ValueError):
-        return value
+        return default
 
 
-def sfloat(value):
+def sfloat(value, default):
+    if not isinstance(default, int):
+        raise TypeError("Default value must be of float type")
     try:
         return float(value)
     except (TypeError, ValueError):
-        return value
+        return default
 
 
 @asynccontextmanager
@@ -32,12 +35,3 @@ async def connect_to_redis_pool(redis_uri) -> aioredis.Redis:
         redis.close()
         await redis.wait_closed()
         logger.info("Redis connection pool closed.")
-
-
-def validate_app_api(api_file):
-    #  TODO: Actually validate the api
-    with open(api_file, 'r') as fp:
-        try:
-            return yaml.load(fp)
-        except yaml.YAMLError as exc:
-            logger.exception(exc)

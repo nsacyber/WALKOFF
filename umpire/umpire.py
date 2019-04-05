@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 from pathlib import Path
 from functools import reduce
 from itertools import compress
@@ -30,11 +31,13 @@ class Umpire:
         self.apps = {}
         self.running_apps = {}
         self.worker = None
+        self.max_workers = 1
 
     @classmethod
     async def init(cls, docker_client, redis, session):
         self = cls(docker_client, redis)
-        self.apps = await AppRepo.create(config["UMPIRE"]["apps_path"], session)
+        await redis.flushall()  # TODO: do a more targeted cleanup of redis
+        self.apps = await AppRepo.create(config.APPS_PATH, session)
         self.running_apps = await self.get_running_apps()
         self.worker = await self.get_service("worker")
         await self.build_app_sdk()
@@ -47,7 +50,7 @@ class Umpire:
 
     @staticmethod
     async def run():
-        async with connect_to_redis_pool(config["REDIS"]["redis_uri"]) as redis, aiohttp.ClientSession() as session, \
+        async with connect_to_redis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session, \
                 connect_to_aiodocker() as docker_client:
             ump = await Umpire.init(docker_client=docker_client, redis=redis, session=session)
             await ump.monitor_queues()
@@ -65,8 +68,8 @@ class Umpire:
         await asyncio.gather(*tasks)
 
     async def get_running_apps(self):
-        services = filter(lambda s: s['Spec']['Name'].count(config["UMPIRE"]["app_prefix"]) > 0,
-                          (await self.docker_client.services.list()))
+        func = lambda s: s['Spec']['Name'].count(config.APP_PREFIX) > 0
+        services = filter(func, (await self.docker_client.services.list()))
         return {s['Spec']['Name']:  {'id': s["ID"], 'version': s['Version']['Index']} for s in services}
 
     async def get_service(self, service_id):
@@ -77,7 +80,7 @@ class Umpire:
             return {}
 
     async def launch_workers(self, replicas=1):
-        project = get_project(project_dir=Path(__file__).parent, project_name=config["UMPIRE"]["app_prefix"])
+        project = get_project(project_dir=Path(__file__).parent, project_name=config.APP_PREFIX)
         worker = [service for service in project.services if service.name == "worker"][0]
 
         # see if the image provided by the docker-compose file can be pulled
@@ -111,10 +114,11 @@ class Umpire:
     async def build_worker(self):
         try:
             logger.info(f"Building worker")
-            repo = f"{config['UMPIRE']['DOCKER_REGISTRY']}/worker"
-            project = get_project(project_dir=Path(__file__).parent, project_name=config["UMPIRE"]["app_prefix"])
+            repo = f"{config.DOCKER_REGISTRY}/worker"
+            project = get_project(project_dir=Path(__file__).parent, project_name=config.APP_PREFIX)
             worker = [service for service in project.services if service.name == "worker"][0]
             build_opts = worker.options.get('build', {})
+            self.max_workers = worker.options.get("deploy", {}).get("replicas", 1)
 
             with docker_context(Path(build_opts["context"]).parent, dirs=["common", "worker"]) as context:
                 log_stream = await self.docker_client.images.build(fileobj=context, tag=worker.image_name, rm=True,
@@ -139,7 +143,7 @@ class Umpire:
         try:
             logger.info(f"Building walkoff_app_sdk")
             sdk_name = "walkoff_app_sdk"
-            repo = f"{config['UMPIRE']['DOCKER_REGISTRY']}/{sdk_name}"
+            repo = f"{config.DOCKER_REGISTRY}/{sdk_name}"
             project = get_project(project_dir=Path(__file__).parent, project_name=sdk_name)
             sdk = [service for service in project.services if service.name == sdk_name][0]
             build_opts = sdk.options.get('build', {})
@@ -166,8 +170,8 @@ class Umpire:
             return
 
     async def launch_app(self, app, version, replicas=1):
-        app_name = f"{config['UMPIRE']['app_prefix']}_{app}"
-        repo = f"{config['UMPIRE']['DOCKER_REGISTRY']}/{app_name}"
+        app_name = f"{config.APP_PREFIX}_{app}"
+        repo = f"{config.DOCKER_REGISTRY}/{app_name}"
         full_tag = f"{repo}:{version}"
         service = self.apps[app][version].services[0]
         image_name = service.image_name
@@ -205,8 +209,8 @@ class Umpire:
         logger.info(f"Launched {app}")
 
     async def update_app(self, app, version, replicas=1):
-        app_name = f"{config['UMPIRE']['app_prefix']}_{app}"
-        repo = f"{config['UMPIRE']['DOCKER_REGISTRY']}/{app_name}"
+        app_name = f"{config.APP_PREFIX}_{app}"
+        repo = f"{config.DOCKER_REGISTRY}/{app_name}"
         full_tag = f"{repo}:{version}"
         service = self.apps[app][version].services[0]
         image_name = service.image_name
@@ -264,8 +268,8 @@ class Umpire:
         return secret_references
 
     async def build_app(self, app, version):
-        app_name = f"{config['UMPIRE']['app_prefix']}_{app}"
-        repo = f"{config['UMPIRE']['DOCKER_REGISTRY']}/{app_name}"
+        app_name = f"{config.APP_PREFIX}_{app}"
+        repo = f"{config.DOCKER_REGISTRY}/{app_name}"
         full_tag = f"{repo}:{version}"
         service = self.apps[app][version].services[0]
         build_opts = service.options.get('build', {})
@@ -320,19 +324,18 @@ class Umpire:
             self.running_apps = await self.get_running_apps()
             logger.info(f"Running apps: {[service for service in self.running_apps.keys()]}")
 
-            num_workflows = await self.redis.llen(config["REDIS"]["workflow_q"])
+            num_workflows = await self.redis.llen(config.REDIS_WORKFLOW_QUEUE)
             logger.info(f"Number of Workflows: {num_workflows}")
 
             services = await self.docker_client.services.list()
             service_replicas = reduce(replicas_getter, services) if len(services) > 0 else {}
 
-            workers_needed = min((num_workflows - service_replicas.get("worker", 0)),
-                                 config.getint("UMPIRE", "max_workers"))
+            workers_needed = min((num_workflows - service_replicas.get("worker", 0)), self.max_workers)
             if workers_needed > 0:
                 await self.launch_workers(workers_needed)
 
             else:
-                if self.worker:
+                if self.worker and (await self.redis.llen(config.REDIS_WORKFLOWS_IN_PROCESS)) < 1:
                     await self.remove_service("worker")
                     self.worker = {}
 
@@ -347,26 +350,33 @@ class Umpire:
                         await self.launch_app(app_name, version, replicas=replicas_needed)
                     logger.info(f"Launched copy of {':'.join([app_name, version])}")
 
-            else:  # There isn't any work so lets kill any running apps and workers
-                mask = [await self.remove_service(app) for app in self.running_apps]
+            else:
+                app_name_regex = re.compile(r"[\"']app_name[\"']: [\"']([^:]*)[^,]*[\"']")
+                actions_in_process = await self.redis.lrange(config.REDIS_ACTIONS_IN_PROCESS, 0, -1)
+                apps_in_process = {f"{config.APP_PREFIX}_{app_name_regex.search(action.decode()).groups()[0]}"
+                                  for action in actions_in_process}
+                apps_to_remove = [app for app in self.running_apps if app not in apps_in_process]
+
+                # There isn't any work so lets kill any running apps and workers
+                mask = [await self.remove_service(app) for app in apps_to_remove]
                 removed_apps = list(compress(self.running_apps, mask))
                 logger.debug(f"Removed apps: {removed_apps}")
 
             # Check to see if any apps are running that we don't have work for and kill them
-            for key in filter(lambda s: any([app.lstrip(config["UMPIRE"]["app_prefix"]) not in s
+            for key in filter(lambda s: any([app.lstrip(config.APP_PREFIX) not in s
                                              for app in self.running_apps]), keys):
                 app, _, __ = key.split(':')
                 await self.remove_service(app)
                 logger.debug(f"Removed app: {app}")
 
             # Reload the app projects and apis every once in a while
-            if count * 5 >= config.getint("UMPIRE", "app_refresh"):
+            if count * 5 >= config.get_int("APP_REFRESH", 60):
                 count = 0
                 logger.info("Refreshing apps.")
                 # TODO: maybe do this a bit more intelligently? Presently it throws uniqueness errors for db
                 await self.apps.load_apps_and_apis()
 
-            await asyncio.sleep(5)
+            await asyncio.sleep(config.get_int("UMPIRE_HEARTBEAT", 1))
             count += 1
 
 
