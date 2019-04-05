@@ -370,7 +370,7 @@ class Umpire:
                 logger.debug(f"Removed app: {app}")
 
             # Reload the app projects and apis every once in a while
-            if count * 5 >= config.get_int("APP_REFRESH", 60):
+            if count * config.get_int("UMPIRE_HEARTBEAT", 1) >= config.get_int("APP_REFRESH", 60):
                 count = 0
                 logger.info("Refreshing apps.")
                 # TODO: maybe do this a bit more intelligently? Presently it throws uniqueness errors for db

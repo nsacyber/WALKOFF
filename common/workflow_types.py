@@ -412,9 +412,9 @@ class DiGraph:
     __slots__ = ("nodes", "edges", "rev_adjacency")
 
     def __init__(self, nodes, edges):
-        self.nodes = set()
+        self.nodes = {}
         self.add_nodes(nodes)
-        self.edges = {node: set() for node in self.nodes}
+        self.edges = {node: set() for node in self.nodes.values()}
         self.rev_adjacency = {}  # all edges inverted for quickly getting parents of a node
         self.add_edges(edges)
 
@@ -463,7 +463,7 @@ class DiGraph:
         self.add_edges({src, dest})
 
     def add_nodes(self, nodes):
-        self.nodes = set(nodes)
+        self.nodes = {node.id_: node for node in nodes}
 
     def add_node(self, node):
         return self.add_nodes([node])

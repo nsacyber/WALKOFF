@@ -4,7 +4,6 @@ import enum
 import logging
 from operator import attrgetter, itemgetter
 from collections import namedtuple, deque
-
 from asteval import Interpreter, make_symbol_table
 
 logger = logging.getLogger("WALKOFF")
@@ -73,7 +72,7 @@ class WorkflowJSONDecoder(json.JSONDecoder):
             return node
 
         elif "description" and "value" in o:
-            return WorkflowVariable(**o)
+            return Variable(**o)
 
         elif "actions" and "branches" in o:
             branches = {Branch(self.nodes[b.source_id], self.nodes[b.destination_id], b.id_) for b in self.branches}
@@ -139,7 +138,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
         elif isinstance(o, ParameterVariant):
             return o.value
 
-        elif isinstance(o, WorkflowVariable):
+        elif isinstance(o, Variable):
             return {"description": o.description, "id_": o.id_, "name": o.name, "value": o.value}
 
         else:
@@ -202,10 +201,12 @@ class Parameter:
         return message
 
 
-class WorkflowVariable:
+class Variable:
+    """
+    A lightweight class representing a WALKOFF WorkflowVariable or Global
+    """
     __slots__ = ("id_", "name", "value", "description")
 
-    # Previously EnvironmentVariable
     def __init__(self, id_, name, value, description=None):
         self.id_ = id_
         self.name = name
@@ -411,9 +412,9 @@ class DiGraph:
     __slots__ = ("nodes", "edges", "rev_adjacency")
 
     def __init__(self, nodes, edges):
-        self.nodes = set()
+        self.nodes = {}
         self.add_nodes(nodes)
-        self.edges = {node: set() for node in self.nodes}
+        self.edges = {node: set() for node in self.nodes.values()}
         self.rev_adjacency = {}  # all edges inverted for quickly getting parents of a node
         self.add_edges(edges)
 
@@ -442,7 +443,7 @@ class DiGraph:
                         self.edges[dest] = {src}
             else:  # it's a different iterable
                 for edge in edges:
-                    if not isinstance(edges, tuple) and not len(edge) == 2:
+                    if not (isinstance(edge, Branch) or (isinstance(edge, tuple) and not len(edge) == 2)):
                         raise TypeError  # it must be an iterable of (src, dest) edges
                     src = edge[0]
                     dest = edge[1]
@@ -462,7 +463,7 @@ class DiGraph:
         self.add_edges({src, dest})
 
     def add_nodes(self, nodes):
-        self.nodes = set(nodes)
+        self.nodes = {node.id_: node for node in nodes}
 
     def add_node(self, node):
         return self.add_nodes([node])

@@ -282,6 +282,7 @@ class Worker:
                     
                 elif msg.status == StatusEnum.FAILURE:
                     self.accumulator[msg.node_id] = msg.error
+                    await self.cancel_subgraph(self.workflow.nodes[msg.node_id])
                     logger.info(f"Worker recieved error \"{msg.error}\" for: {msg.label}-{msg.execution_id}")
                     await self.send_message(msg)
 
