@@ -73,3 +73,7 @@ WALKOFF
                +-- src
                     +-- your_code.{c, cpp, py,..., etc.} 
 ```
+
+## Adding an app to WALKOFF
+
+To "install" an app in WALKOFF, simply place your app with the above structure inside the apps directory. The Umpire will detect and build it on a set interval (default 60 seconds), adding it to the list of available. This process will change and be made more secure/robust as the 1.0 release matures.
