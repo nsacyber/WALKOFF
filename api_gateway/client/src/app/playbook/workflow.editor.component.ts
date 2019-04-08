@@ -41,9 +41,9 @@ import { Global } from '../models/global';
 import { Argument } from '../models/playbook/argument';
 import { User } from '../models/user';
 import { Role } from '../models/role';
-import { ActionStatus, ActionStatuses } from '../models/execution/actionStatus';
+import { NodeStatus, NodeStatuses } from '../models/execution/nodeStatus';
 import { ConditionalExpression } from '../models/playbook/conditionalExpression';
-import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
+import { NodeStatusEvent } from '../models/execution/nodeStatusEvent';
 import { ConsoleLog } from '../models/execution/consoleLog';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook.environment.variable.modal.component';
@@ -99,12 +99,12 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	};
 	selectedEnvironmentVariable: EnvironmentVariable;
 	cyJsonData: string;
-	actionStatuses: ActionStatus[] = [];
+	nodeStatuses: NodeStatus[] = [];
 	consoleLog: ConsoleLog[] = [];
 	executionResultsComponentWidth: number;
 	waitingOnData: boolean = false;
-	actionStatusStartedRelativeTimes: { [key: string]: string } = {};
-	actionStatusCompletedRelativeTimes: { [key: string]: string } = {};
+	nodeStatusStartedRelativeTimes: { [key: string]: string } = {};
+	nodeStatusCompletedRelativeTimes: { [key: string]: string } = {};
 	eventSource: any;
 	consoleEventSource: any;
 	playbookToImport: File;
@@ -113,7 +113,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	actionFilterControl = new FormControl();
 
 	tags: string[] = [];
-	
+
 	// Simple bootstrap modal params
 	modalParams: {
 		title: string,
@@ -176,7 +176,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				($('.action-panel') as any)
 					.addClass('no-transition')
 					.collapse((this.actionFilter) ? 'show' : 'hide')
-					.removeClass('no-transition') 
+					.removeClass('no-transition')
 			}, 0);
 		});
 
@@ -187,7 +187,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	ngAfterViewChecked(): void {
 		// Check if the table size has changed,
-		// if (this.workflowResultsTable && this.workflowResultsTable.recalculate && 
+		// if (this.workflowResultsTable && this.workflowResultsTable.recalculate &&
 		// 	(this.workflowResultsContainer.nativeElement.clientWidth !== this.executionResultsComponentWidth)) {
 		// 	this.executionResultsComponentWidth = this.workflowResultsContainer.nativeElement.clientWidth;
 		// 	this.workflowResultsTable.recalculate();
@@ -234,7 +234,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.consoleLog.push(newConsoleLog);
 		this.consoleLog = this.consoleLog.slice();
 	}
-	
+
 	get consoleContent() {
 		let content = `******************************* Console Output *******************************`;
 		this.consoleLog.forEach(log => {
@@ -253,7 +253,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Sets up the EventStream for receiving stream actions from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getActionStatusSSE(workflowExecutionId: string) {
+	getNodeStatusSSE(workflowExecutionId: string) {
 		if (this.eventSource) this.eventSource.close();
 
 		return this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
@@ -261,8 +261,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				this.eventSource = eventSource
 				this.eventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
 
-				Object.values(ActionStatuses)
-					  .forEach(status => this.eventSource.addEventListener(status, (e: any) => this.actionStatusEventHandler(e)));
+				Object.values(NodeStatuses)
+					  .forEach(status => this.eventSource.addEventListener(status, (e: any) => this.nodeStatusEventHandler(e)));
 			});
 	}
 
@@ -271,35 +271,35 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Will style nodes based on the action status (executing/success/failure).
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
-	actionStatusEventHandler(message: any): void {
+	nodeStatusEventHandler(message: any): void {
 		console.log('a', message, JSON.parse(message.data));
-		const actionStatusEvent = plainToClass(ActionStatusEvent, (JSON.parse(message.data) as object));
+		const nodeStatusEvent = plainToClass(NodeStatusEvent, (JSON.parse(message.data) as object));
 
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
-			const matchingNode = this.cy.elements(`node[_id="${ actionStatusEvent.action_id }"]`);
+			const matchingNode = this.cy.elements(`node[_id="${ nodeStatusEvent.node_id }"]`);
 
 			if (matchingNode) {
-				switch (actionStatusEvent.status) {
-					case ActionStatuses.EXECUTING:
+				switch (nodeStatusEvent.status) {
+					case NodeStatuses.EXECUTING:
 						matchingNode.removeClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.addClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
 						break;
-					case ActionStatuses.SUCCESS:
+					case NodeStatuses.SUCCESS:
 						matchingNode.addClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.removeClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
 						break;
-					case ActionStatuses.FAILURE:
+					case NodeStatuses.FAILURE:
 						matchingNode.removeClass('success-highlight');
 						matchingNode.addClass('failure-highlight');
 						matchingNode.removeClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
 						break;
-					case ActionStatuses.AWAITING_DATA:
+					case NodeStatuses.AWAITING_DATA:
 						matchingNode.removeClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.removeClass('executing-highlight');
@@ -311,21 +311,21 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 
 		// Additionally, add or update the actionstatus in our datatable.
-		const matchingActionStatus = this.actionStatuses.find(as => as.execution_id === actionStatusEvent.execution_id);
-		if (matchingActionStatus) {
-			matchingActionStatus.status = actionStatusEvent.status;
+		const matchingNodeStatus = this.nodeStatuses.find(as => as.execution_id === nodeStatusEvent.execution_id);
+		if (matchingNodeStatus) {
+			matchingNodeStatus.status = nodeStatusEvent.status;
 
 			switch (message.type) {
-				case ActionStatuses.EXECUTING:
+				case NodeStatuses.EXECUTING:
 					// shouldn't happen
-					matchingActionStatus.started_at = actionStatusEvent.started_at;
+					matchingNodeStatus.started_at = nodeStatusEvent.started_at;
 					break;
-				case ActionStatuses.SUCCESS:
-				case ActionStatuses.FAILURE:
-					matchingActionStatus.completed_at = actionStatusEvent.completed_at;
-					matchingActionStatus.result = actionStatusEvent.result;
+				case NodeStatuses.SUCCESS:
+				case NodeStatuses.FAILURE:
+					matchingNodeStatus.completed_at = nodeStatusEvent.completed_at;
+					matchingNodeStatus.result = nodeStatusEvent.result;
 					break;
-				case ActionStatuses.AWAITING_DATA:
+				case NodeStatuses.AWAITING_DATA:
 					// don't think anything needs to happen here
 					break;
 				default:
@@ -333,19 +333,19 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					break;
 			}
 
-			this.recalculateRelativeTimes(matchingActionStatus);
-			this.calculateLocalizedTimes(matchingActionStatus);
+			this.recalculateRelativeTimes(matchingNodeStatus);
+			this.calculateLocalizedTimes(matchingNodeStatus);
 		} else {
-			const newActionStatus = actionStatusEvent.toNewActionStatus();
-			this.calculateLocalizedTimes(newActionStatus);
-			this.actionStatuses.push(newActionStatus);
+			const newNodeStatus = nodeStatusEvent.toNewNodeStatus();
+			this.calculateLocalizedTimes(newNodeStatus);
+			this.nodeStatuses.push(newNodeStatus);
 		}
 		// Induce change detection by slicing array
-		this.actionStatuses = this.actionStatuses.slice();
+		this.nodeStatuses = this.nodeStatuses.slice();
 	}
 
 	statusEventErrorHandler(e: any) {
-		if (this.eventSource && this.eventSource.close) 
+		if (this.eventSource && this.eventSource.close)
 			this.eventSource.close();
 		if (this.consoleEventSource && this.consoleEventSource.close)
 			this.consoleEventSource.close();
@@ -365,7 +365,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		const executionId = UUID.UUID();
 		Promise.all([
-			this.getActionStatusSSE(executionId),
+			this.getNodeStatusSSE(executionId),
 			this.getConsoleSSE(executionId)
 		]).then(() => {
 			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
@@ -762,7 +762,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// Unselect anything selected first (will trigger onUnselect)
 		this.cy.$(':selected').unselect();
 
-		// Clone the loadedWorkflow first, so we don't change the parameters 
+		// Clone the loadedWorkflow first, so we don't change the parameters
 		// in the editor when converting it to the format the backend expects.
 		const workflowToSave: Workflow = classToClass(this.loadedWorkflow, { ignoreDecorators: true });
 
@@ -989,13 +989,13 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		const queryPromises: Array<Promise<any>> = [];
 
-		if (!this.users && 
+		if (!this.users &&
 			(actionApi.parameters.findIndex(p => p.schema.type === 'user') > -1 ||
 			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'user') > -1)) {
 			this.waitingOnData = true;
 			queryPromises.push(this.playbookService.getUsers().then(users => this.users = users));
 		}
-		if (!this.roles && 
+		if (!this.roles &&
 			(actionApi.parameters.findIndex(p => p.schema.type === 'role') > -1 ||
 			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'role') > -1)) {
 			this.waitingOnData = true;
@@ -1272,7 +1272,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	clearExecutionResults() {
 		this.clearExecutionHighlighting();
 		this.consoleLog = [];
-		this.actionStatuses = [];
+		this.nodeStatuses = [];
 	}
 
 	/**
@@ -1444,7 +1444,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
 	 */
 	newWorkflowModal(): void {
-		if (this.loadedWorkflow && 
+		if (this.loadedWorkflow &&
 			!confirm('Are you sure you want to create a new workflow? ' +
 				`Any unsaved changes on "${this.loadedWorkflow.name}" will be lost!`)) {
 			return;
@@ -1723,23 +1723,23 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	/**
 	 * Recalculates the relative times shown for start/end date timestamps (e.g. '5 hours ago').
 	 */
-	recalculateRelativeTimes(specificStatus?: ActionStatus): void {
-		let targetStatuses: ActionStatus[];
+	recalculateRelativeTimes(specificStatus?: NodeStatus): void {
+		let targetStatuses: NodeStatus[];
 		if (specificStatus) {
 			targetStatuses = [specificStatus];
 		} else {
-			targetStatuses = this.actionStatuses;
+			targetStatuses = this.nodeStatuses;
 		}
 		if (!targetStatuses || !targetStatuses.length ) { return; }
 
-		targetStatuses.forEach(actionStatus => {
-			if (actionStatus.started_at) {
-				this.actionStatusStartedRelativeTimes[actionStatus.execution_id] = 
-					this.utils.getRelativeLocalTime(actionStatus.started_at);
+		targetStatuses.forEach(nodeStatus => {
+			if (nodeStatus.started_at) {
+				this.nodeStatusStartedRelativeTimes[nodeStatus.execution_id] =
+					this.utils.getRelativeLocalTime(nodeStatus.started_at);
 			}
-			if (actionStatus.completed_at) {
-				this.actionStatusCompletedRelativeTimes[actionStatus.execution_id] = 
-					this.utils.getRelativeLocalTime(actionStatus.completed_at);
+			if (nodeStatus.completed_at) {
+				this.nodeStatusCompletedRelativeTimes[nodeStatus.execution_id] =
+					this.utils.getRelativeLocalTime(nodeStatus.completed_at);
 			}
 		});
 	}
@@ -1748,11 +1748,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Adds/updates localized time strings to a status object.
 	 * @param status Action Status to mutate
 	 */
-	calculateLocalizedTimes(status: ActionStatus): void {
-		if (status.started_at) { 
+	calculateLocalizedTimes(status: NodeStatus): void {
+		if (status.started_at) {
 			status.localized_started_at = this.utils.getLocalTime(status.started_at);
 		}
-		if (status.completed_at) { 
+		if (status.completed_at) {
 			status.localized_completed_at = this.utils.getLocalTime(status.completed_at);
 		}
 	}
@@ -1786,11 +1786,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					break;
 			}
 
-			if (table && table.recalculate) { 
+			if (table && table.recalculate) {
 				console.log('changing: ' + $e.nextId)
 				this.cdr.detectChanges();
 				if (Array.isArray(table.rows)) table.rows = [...table.rows];
-				table.recalculate(); 
+				table.recalculate();
 			}
 		})
 	}
@@ -1808,7 +1808,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	deleteVariable(selectedVariable: EnvironmentVariable) {
 		this.loadedWorkflow.deleteVariable(selectedVariable);
-		if (this.loadedWorkflow.environment_variables.length == 0) 
+		if (this.loadedWorkflow.environment_variables.length == 0)
 			($('.nav-tabs a[href="#console"], a[href="#errorLog"]') as any).tab('show');
 	}
 

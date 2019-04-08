@@ -156,7 +156,7 @@ def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
         "started_at": None,
         "completed_at": None,
         "user": get_jwt_claims().get('username', None),
-        "action_statuses": []
+        "node_statuses": []
     }
     workflow_status = workflow_status_schema.load(workflow_status_json)
     current_app.running_context.execution_db.session.add(workflow_status)

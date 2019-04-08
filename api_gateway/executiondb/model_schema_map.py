@@ -16,7 +16,7 @@ from api_gateway.executiondb.transform import Transform, TransformSchema
 from api_gateway.executiondb.trigger import Trigger, TriggerSchema
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.executiondb.workflow_variable import WorkflowVariable, WorkflowVariableSchema
-from api_gateway.executiondb.workflowresults import (ActionStatus, ActionStatusSchema, ActionStatusSummarySchema,
+from api_gateway.executiondb.workflowresults import (NodeStatus, NodeStatusSchema, NodeStatusSummarySchema,
                                                      WorkflowStatus, WorkflowStatusSchema, WorkflowStatusSummarySchema)
 
 # This could be done better with a metaclass which registers subclasses
@@ -37,7 +37,7 @@ _schema_lookup = {
     Trigger: TriggerSchema,
     Workflow: WorkflowSchema,
     WorkflowVariable: WorkflowVariableSchema,
-    ActionStatus: ActionStatusSchema,
+    NodeStatus: NodeStatusSchema,
     WorkflowStatus: WorkflowStatusSchema
 }
 

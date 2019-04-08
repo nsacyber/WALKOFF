@@ -2,8 +2,8 @@ import { Type, Exclude } from 'class-transformer';
 
 import { Argument } from '../playbook/argument';
 
-export enum ActionStatuses {
-	//PAUSED = "PAUSED",
+export enum NodeStatuses {
+	  //PAUSED = "PAUSED",
     AWAITING_DATA = "AWAITING_DATA",
     //PENDING = "PENDING",
     //COMPLETED = "COMPLETED",
@@ -11,13 +11,13 @@ export enum ActionStatuses {
     EXECUTING = "EXECUTING",
     SUCCESS = "SUCCESS",
     FAILURE = "FAILURE",
-} 
+}
 
-export class ActionStatus {
+export class NodeStatus {
 
 	execution_id: string;
 
-	action_id: string;
+	node_id: string;
 
 	label: string;
 

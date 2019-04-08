@@ -18,7 +18,7 @@ export class DashboardService {
     dashboardsChange: Observable<any>;
     observer: Subscriber<any>;
 
-    constructor(private http: HttpClient, private utils: UtilitiesService, private executionService: ExecutionService) { 
+    constructor(private http: HttpClient, private utils: UtilitiesService, private executionService: ExecutionService) {
         this.dashboardsChange = new Observable((observer) => {
             this.observer = observer;
             this.getDashboards().then(dashboards => this.observer.next(dashboards));
@@ -78,13 +78,13 @@ export class DashboardService {
         return widget.setMetadata(await this.parseResult(testData))
 
         const options = widget.options;
-        if (options.workflow && options.execution && options.action) {         
+        if (options.workflow && options.execution && options.action) {
             const workflowStatus: WorkflowStatus = (options.execution == "latest") ?
                 await this.executionService.getLatestExecution(options.workflow) :
                 await this.executionService.getWorkflowStatus(options.execution)
 
-            const actionStatus = workflowStatus.action_statuses.find(status => status.action_id == options.action);
-            if (actionStatus) widget.setMetadata(await this.parseResult(actionStatus.result));
+            const nodeStatus = workflowStatus.node_statuses.find(status => status.node_id == options.action);
+            if (nodeStatus) widget.setMetadata(await this.parseResult(nodeStatus.result));
         }
     }
 

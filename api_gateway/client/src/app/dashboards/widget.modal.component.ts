@@ -16,7 +16,7 @@ export class WidgetModalComponent implements OnInit {
 
     workflows: any[] = [];
     executions: any[] = [];
-    actionResults: any[] = [];
+    nodeResults: any[] = [];
 
     constructor(public activeModal: NgbActiveModal, private executionService: ExecutionService, private playbookService: PlaybookService) { }
 
@@ -49,23 +49,23 @@ export class WidgetModalComponent implements OnInit {
                             .map(status => ({ id: status.execution_id, text: status.completed_at_local})))
 
         this.widget.options.execution = 'latest';
-        this.updateActionResults();
+        this.updateNodeResults();
     }
 
-    async updateActionResults() {
+    async updateNodeResults() {
         const workflowId = this.widget.options.workflow;
         const executionId = this.widget.options.execution;
 
         if (executionId == 'latest') {
             const workflow = await this.playbookService.loadWorkflow(workflowId);
-            this.actionResults = workflow.actions.map(action => ({ id: action.id, text: action.name }));
+            this.nodeResults = workflow.actions.map(action => ({ id: action.id, text: action.name }));
         }
         else {
             const workflowStatus = await this.executionService.getWorkflowStatus(executionId);
-            this.actionResults = workflowStatus.action_statuses.map(status => ({ id: status.action_id, text: status.name }));
+            this.nodeResults = workflowStatus.node_statuses.map(status => ({ id: status.node_id, text: status.name }));
         }
 
-        if (this.actionResults.length > 0)
-            this.widget.options.action = this.actionResults[0].id;
+        if (this.nodeResults.length > 0)
+            this.widget.options.action = this.nodeResults[0].id;
     }
 }

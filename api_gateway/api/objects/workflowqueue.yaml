@@ -30,13 +30,13 @@ WorkflowStatusSummary:
     user:
       description: The user that executed the workflow
       type: string
-    action_status:
-      description: The currently executing action
-      $ref: '#/components/schemas/ActionIdentification'
+    node_status:
+      description: The currently executing node
+      $ref: '#/components/schemas/NodeStatusSummary'
 
 WorkflowStatus:
   type: object
-  required: [action_statuses, execution_id, workflow_id, name, status]
+  required: [node_statuses, execution_id, workflow_id, name, status]
   properties:
     execution_id:
       $ref: '#/components/schemas/Uuid'
@@ -66,108 +66,81 @@ WorkflowStatus:
     user:
       description: The user that executed the workflow
       type: string
-    action_statuses:
-      description: The statuses of the workflow actions
+    node_statuses:
+      description: The statuses of the workflow nodes
       type: array
       items:
-        $ref: '#/components/schemas/ActionStatus'
+        $ref: '#/components/schemas/NodeStatus'
 
-ActionStatus:
+NodeStatus:
   type: object
-  description: The status of an action execution
-  required: [action_id, execution_id, label, name, app_name, status, started_at]
+  description: The status of an node execution
+  required: [node_id, execution_id, label, name, app_name, status, started_at]
   properties:
     execution_id:
       $ref: '#/components/schemas/Uuid'
-    action_id:
+    node_id:
       $ref: '#/components/schemas/Uuid'
     label:
-      description: The name of the action
+      description: The name of the node
       type: string
-      example: 'This One action'
+      example: 'This One node'
       readOnly: true
     app_name:
-      description: The name of the app associated with the action
+      description: The name of the app associated with the node
       type: string
       example: ThingGetter
       readOnly: true
     name:
-      description: The name of the action take by the action
+      description: The name of the node take by the node
       type: string
       example: get that thing
       readOnly: true
     status:
-      description: The status of the workflow
+      description: The status of the node
       type: string
-      enum: ['executing', 'awaiting_data', 'success', 'failure', 'aborted']
+      enum: ['EXECUTING', 'SUCCESS', 'FAILURE']
       readOnly: true
     result:
-      description: The result of the action
+      description: The result of the node
       type: object
       readOnly: true
     started_at:
-      description: The timestamp of when the action started
+      description: The timestamp of when the node started
       type: string
       format: date-time
       example: '2017-05-24T00:42:22.934058Z'
       readOnly: true
     completed_at:
-      description: The timestamp of when the action completed
+      description: The timestamp of when the node completed
       type: string
       format: date-time
       example: '2017-05-24T00:43:26.930892Z'
       readOnly: true
 
-ActionIdentification:
+NodeStatusSummary:
   type: object
-  description: The descriptive identification of an action
-  required: [action_id, execution_id, label, name, app_name]
+  description: The descriptive identification of an node
+  required: [node_id, execution_id, label, name, app_name]
   properties:
     execution_id:
       $ref: '#/components/schemas/Uuid'
-    action_id:
+    node_id:
       $ref: '#/components/schemas/Uuid'
     label:
-      description: The name of the action
+      description: The name of the node
       type: string
-      example: 'This One action'
+      example: 'This One node'
       readOnly: true
     app_name:
-      description: The name of the app associated with the action
+      description: The name of the app associated with the node
       type: string
       example: ThingGetter
       readOnly: true
     name:
-      description: The name of the action take by the action
+      description: The name of the node take by the node
       type: string
       example: get that thing
-      readOnly: true
-
-ActionStatusDetails:
-  type: object
-  required: [status, started_at]
-  description: The details of an action execution
-  properties:
-    status:
-      description: The status of the workflow
-      type: string
-      enum: ['executing', 'awaiting_data', 'success', 'failure', 'aborted']
-      readOnly: true
-    result:
-      description: The result of the action
-      type: object
-      readOnly: true
-    started_at:
-      description: The timestamp of when the action started
-      type: string
-      format: date-time
-      example: '2017-05-24T00:42:22.934058Z'
-      readOnly: true
-    completed_at:
-      description: The timestamp of when the action completed
-      type: string
-      format: date-time
-      example: '2017-05-24T00:43:26.930892Z'
       readOnly: true
 
 ExecuteWorkflow:
@@ -179,7 +152,7 @@ ExecuteWorkflow:
     execution_id:
       $ref: '#/components/schemas/Uuid'
     start:
-      description: The ID of the starting action
+      description: The ID of the starting node
       $ref: '#/components/schemas/Uuid'
     parameters:
       type: array

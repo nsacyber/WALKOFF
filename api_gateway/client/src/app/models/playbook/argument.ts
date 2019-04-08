@@ -6,13 +6,13 @@ export enum Variant {
 	ACTION_RESULT = 'ACTION_RESULT',
 	WORKFLOW_VARIABLE = 'WORKFLOW_VARIABLE',
 	GLOBAL = 'GLOBAL'
-} 
+}
 
 export class Argument {
 	@Expose({ name: 'id_'})
 	@Exclude({ toPlainOnly: true})
 	id?: number;
-	// _action_id: number;
+	// _node_id: number;
 	// _condition_id: number;
 	// _transform_id: number;
 
@@ -37,7 +37,7 @@ export class Argument {
 	 * The type of argument in question
 	 */
 	variant: Variant = Variant.STATIC_VALUE;
-	
+
 	/**
 	 * Selection is currently specified in the UI as a string,
 	 * but is split and sent/ingested as an array containing strings and numbers
@@ -63,12 +63,12 @@ export class Argument {
 	errors?: string[] = [];
 
 	/**
-	 * Array of errors returned from the server for this Argument and any of its descendants 
+	 * Array of errors returned from the server for this Argument and any of its descendants
 	 */
 	get all_errors(): string[] {
 		return this.errors;
 	}
-	
+
 	/**
 	 * Returns true if this Argument or any of its descendants contain errors
 	 */

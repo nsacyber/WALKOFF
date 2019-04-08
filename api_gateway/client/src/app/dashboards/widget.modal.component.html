@@ -24,7 +24,7 @@
                 <div class="form-group">
                     <label for="workflow">Execution</label>
                     <div>
-                        <select [(ngModel)]="widget.options.execution" class="custom-select" (change)="updateActionResults()">
+                        <select [(ngModel)]="widget.options.execution" class="custom-select" (change)="updateNodeResults()">
                             <option *ngFor="let x of executions" [value]="x.id">{{x.text}}</option>
                         </select>
                     </div>
@@ -35,7 +35,7 @@
                     <label for="action">Action</label>
                     <div>
                         <select [(ngModel)]="widget.options.action" class="custom-select">
-                            <option *ngFor="let x of actionResults" [value]="x.id">{{x.text}}</option>
+                            <option *ngFor="let x of nodeResults" [value]="x.id">{{x.text}}</option>
                         </select>
                     </div>
                 </div>

@@ -43,9 +43,9 @@ import { Global } from '../models/global';
 import { Argument } from '../models/playbook/argument';
 import { User } from '../models/user';
 import { Role } from '../models/role';
-import { ActionStatus } from '../models/execution/actionStatus';
+import { NodeStatus } from '../models/execution/nodeStatus';
 import { ConditionalExpression } from '../models/playbook/conditionalExpression';
-import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
+import { NodeStatusEvent } from '../models/execution/nodeStatusEvent';
 import { ConsoleLog } from '../models/execution/consoleLog';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook.environment.variable.modal.component';
@@ -102,12 +102,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	};
 	selectedEnvironmentVariable: EnvironmentVariable;
 	cyJsonData: string;
-	actionStatuses: ActionStatus[] = [];
+	nodeStatuses: NodeStatus[] = [];
 	consoleLog: ConsoleLog[] = [];
 	executionResultsComponentWidth: number;
 	waitingOnData: boolean = false;
-	actionStatusStartedRelativeTimes: { [key: string]: string } = {};
-	actionStatusCompletedRelativeTimes: { [key: string]: string } = {};
+	nodeStatusStartedRelativeTimes: { [key: string]: string } = {};
+	nodeStatusCompletedRelativeTimes: { [key: string]: string } = {};
 	eventSource: any;
 	consoleEventSource: any;
 	playbookToImport: File;
@@ -116,7 +116,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	actionFilterControl = new FormControl();
 	filterQuery: FormControl = new FormControl();
 	filteredWorkflows: Workflow[] = [];
-	
+
 	// Simple bootstrap modal params
 	modalParams: {
 		title: string,
@@ -181,7 +181,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				($('.action-panel') as any)
 					.addClass('no-transition')
 					.collapse((this.actionFilter) ? 'show' : 'hide')
-					.removeClass('no-transition') 
+					.removeClass('no-transition')
 			}, 0);
 		});
 
@@ -196,7 +196,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	ngAfterViewChecked(): void {
 		// Check if the table size has changed,
-		// if (this.workflowResultsTable && this.workflowResultsTable.recalculate && 
+		// if (this.workflowResultsTable && this.workflowResultsTable.recalculate &&
 		// 	(this.workflowResultsContainer.nativeElement.clientWidth !== this.executionResultsComponentWidth)) {
 		// 	this.executionResultsComponentWidth = this.workflowResultsContainer.nativeElement.clientWidth;
 		// 	this.workflowResultsTable.recalculate();
@@ -237,7 +237,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.consoleLog.push(newConsoleLog);
 		this.consoleLog = this.consoleLog.slice();
 	}
-	
+
 	get consoleContent() {
 		let content = `******************************* Console Output *******************************`;
 		this.consoleLog.forEach(log => {
@@ -256,16 +256,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Sets up the EventStream for receiving stream actions from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getActionStatusSSE(workflowExecutionId: string) {
+	getNodeStatusSSE(workflowExecutionId: string) {
 		if (this.eventSource) this.eventSource.close();
 
 		return this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
 			.then(eventSource => {
 				this.eventSource = eventSource
-				this.eventSource.addEventListener('executing', (e: any) => this.actionStatusEventHandler(e));
-				this.eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
-				this.eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
-				this.eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
+				this.eventSource.addEventListener('executing', (e: any) => this.nodeStatusEventHandler(e));
+				this.eventSource.addEventListener('success', (e: any) => this.nodeStatusEventHandler(e));
+				this.eventSource.addEventListener('failure', (e: any) => this.nodeStatusEventHandler(e));
+				this.eventSource.addEventListener('awaiting_data', (e: any) => this.nodeStatusEventHandler(e));
 			});
 	}
 
@@ -274,15 +274,15 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Will style nodes based on the action status (executing/success/failure).
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
-	actionStatusEventHandler(message: any): void {
-		const actionStatusEvent = plainToClass(ActionStatusEvent, (JSON.parse(message.data) as object));
+	nodeStatusEventHandler(message: any): void {
+		const nodeStatusEvent = plainToClass(NodeStatusEvent, (JSON.parse(message.data) as object));
 
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
-			const matchingNode = this.cy.elements(`node[_id="${ actionStatusEvent.action_id }"]`);
+			const matchingNode = this.cy.elements(`node[_id="${ nodeStatusEvent.node_id }"]`);
 
 			if (matchingNode) {
-				switch (actionStatusEvent.status) {
+				switch (nodeStatusEvent.status) {
 					case 'success':
 						matchingNode.addClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
@@ -313,19 +313,19 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		}
 
 		// Additionally, add or update the actionstatus in our datatable.
-		const matchingActionStatus = this.actionStatuses.find(as => as.execution_id === actionStatusEvent.execution_id);
-		if (matchingActionStatus) {
-			matchingActionStatus.status = actionStatusEvent.status;
+		const matchingNodeStatus = this.nodeStatuses.find(as => as.execution_id === nodeStatusEvent.execution_id);
+		if (matchingNodeStatus) {
+			matchingNodeStatus.status = nodeStatusEvent.status;
 
 			switch (message.type) {
 				case 'executing':
 					// shouldn't happen
-					matchingActionStatus.started_at = actionStatusEvent.started_at;
+					matchingNodeStatus.started_at = nodeStatusEvent.started_at;
 					break;
 				case 'success':
 				case 'failure':
-					matchingActionStatus.completed_at = actionStatusEvent.completed_at;
-					matchingActionStatus.result = actionStatusEvent.result;
+					matchingNodeStatus.completed_at = nodeStatusEvent.completed_at;
+					matchingNodeStatus.result = nodeStatusEvent.result;
 					break;
 				case 'awaiting_data':
 					// don't think anything needs to happen here
@@ -335,15 +335,15 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					break;
 			}
 
-			this.recalculateRelativeTimes(matchingActionStatus);
-			this.calculateLocalizedTimes(matchingActionStatus);
+			this.recalculateRelativeTimes(matchingNodeStatus);
+			this.calculateLocalizedTimes(matchingNodeStatus);
 		} else {
-			const newActionStatus = actionStatusEvent.toNewActionStatus();
-			this.calculateLocalizedTimes(newActionStatus);
-			this.actionStatuses.push(newActionStatus);
+			const newNodeStatus = nodeStatusEvent.toNewNodeStatus();
+			this.calculateLocalizedTimes(newNodeStatus);
+			this.nodeStatuses.push(newNodeStatus);
 		}
 		// Induce change detection by slicing array
-		this.actionStatuses = this.actionStatuses.slice();
+		this.nodeStatuses = this.nodeStatuses.slice();
 	}
 
 	/**
@@ -355,7 +355,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		const executionId = UUID.UUID();
 		Promise.all([
-			this.getActionStatusSSE(executionId),
+			this.getNodeStatusSSE(executionId),
 			this.getConsoleSSE(executionId)
 		]).then(() => {
 			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
@@ -742,7 +742,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		// Unselect anything selected first (will trigger onUnselect)
 		this.cy.$(':selected').unselect();
 
-		// Clone the loadedWorkflow first, so we don't change the parameters 
+		// Clone the loadedWorkflow first, so we don't change the parameters
 		// in the editor when converting it to the format the backend expects.
 		const workflowToSave: Workflow = classToClass(this.loadedWorkflow, { ignoreDecorators: true });
 
@@ -1001,13 +1001,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		const queryPromises: Array<Promise<any>> = [];
 
-		if (!this.users && 
+		if (!this.users &&
 			(actionApi.parameters.findIndex(p => p.schema.type === 'user') > -1 ||
 			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'user') > -1)) {
 			this.waitingOnData = true;
 			queryPromises.push(this.playbookService.getUsers().then(users => this.users = users));
 		}
-		if (!this.roles && 
+		if (!this.roles &&
 			(actionApi.parameters.findIndex(p => p.schema.type === 'role') > -1 ||
 			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'role') > -1)) {
 			this.waitingOnData = true;
@@ -1283,7 +1283,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	clearExecutionResults() {
 		this.clearExecutionHighlighting();
 		this.consoleLog = [];
-		this.actionStatuses = [];
+		this.nodeStatuses = [];
 	}
 
 	/**
@@ -1562,8 +1562,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		try {
 			await this.playbookService.deleteWorkflow(workflow.id);
-			if (this.loadedWorkflow && workflow.id === this.loadedWorkflow.id) { 
-				this.closeWorkflow(); 
+			if (this.loadedWorkflow && workflow.id === this.loadedWorkflow.id) {
+				this.closeWorkflow();
 			}
 			this.toastrService.success(`Successfully deleted "${workflow.name}".`);
 		}
@@ -1735,23 +1735,23 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	/**
 	 * Recalculates the relative times shown for start/end date timestamps (e.g. '5 hours ago').
 	 */
-	recalculateRelativeTimes(specificStatus?: ActionStatus): void {
-		let targetStatuses: ActionStatus[];
+	recalculateRelativeTimes(specificStatus?: NodeStatus): void {
+		let targetStatuses: NodeStatus[];
 		if (specificStatus) {
 			targetStatuses = [specificStatus];
 		} else {
-			targetStatuses = this.actionStatuses;
+			targetStatuses = this.nodeStatuses;
 		}
 		if (!targetStatuses || !targetStatuses.length ) { return; }
 
-		targetStatuses.forEach(actionStatus => {
-			if (actionStatus.started_at) {
-				this.actionStatusStartedRelativeTimes[actionStatus.execution_id] = 
-					this.utils.getRelativeLocalTime(actionStatus.started_at);
+		targetStatuses.forEach(nodeStatus => {
+			if (nodeStatus.started_at) {
+				this.nodeStatusStartedRelativeTimes[nodeStatus.execution_id] =
+					this.utils.getRelativeLocalTime(nodeStatus.started_at);
 			}
-			if (actionStatus.completed_at) {
-				this.actionStatusCompletedRelativeTimes[actionStatus.execution_id] = 
-					this.utils.getRelativeLocalTime(actionStatus.completed_at);
+			if (nodeStatus.completed_at) {
+				this.nodeStatusCompletedRelativeTimes[nodeStatus.execution_id] =
+					this.utils.getRelativeLocalTime(nodeStatus.completed_at);
 			}
 		});
 	}
@@ -1760,11 +1760,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Adds/updates localized time strings to a status object.
 	 * @param status Action Status to mutate
 	 */
-	calculateLocalizedTimes(status: ActionStatus): void {
-		if (status.started_at) { 
+	calculateLocalizedTimes(status: NodeStatus): void {
+		if (status.started_at) {
 			status.localized_started_at = this.utils.getLocalTime(status.started_at);
 		}
-		if (status.completed_at) { 
+		if (status.completed_at) {
 			status.localized_completed_at = this.utils.getLocalTime(status.completed_at);
 		}
 	}
@@ -1798,11 +1798,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					break;
 			}
 
-			if (table && table.recalculate) { 
+			if (table && table.recalculate) {
 				console.log('changing: ' + $e.nextId)
 				this.cdr.detectChanges();
 				if (Array.isArray(table.rows)) table.rows = [...table.rows];
-				table.recalculate(); 
+				table.recalculate();
 			}
 		})
 	}
@@ -1820,7 +1820,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	deleteVariable(selectedVariable: EnvironmentVariable) {
 		this.loadedWorkflow.deleteVariable(selectedVariable);
-		if (this.loadedWorkflow.environment_variables.length == 0) 
+		if (this.loadedWorkflow.environment_variables.length == 0)
 			($('.nav-tabs a[href="#console"], a[href="#errorLog"]') as any).tab('show');
 	}
 

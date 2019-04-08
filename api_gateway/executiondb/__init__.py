@@ -42,7 +42,7 @@ class ExecutionDatabase(object):
         from api_gateway.executiondb.global_variable import GlobalVariable
         from api_gateway.executiondb.workflow_variable import WorkflowVariable
         from api_gateway.executiondb.workflow import Workflow
-        from api_gateway.executiondb.workflowresults import WorkflowStatus, ActionStatus
+        from api_gateway.executiondb.workflowresults import WorkflowStatus, NodeStatus
 
         ExecutionDatabase.db_type = execution_db_type
 

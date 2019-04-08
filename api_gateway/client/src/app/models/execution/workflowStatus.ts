@@ -1,9 +1,9 @@
 import { Type, Exclude } from 'class-transformer';
 
-import { ActionStatus } from './actionStatus';
+import { NodeStatus } from './nodeStatus';
 
 import * as moment from 'moment';
-import { ActionIdentification } from './actionIdentification';
+import { NodeStatusSummary } from './nodeStatusSummary';
 
 export enum WorkflowStatuses {
 	PAUSED = "PAUSED",
@@ -14,16 +14,16 @@ export enum WorkflowStatuses {
     EXECUTING = "EXECUTING",
     //SUCCESS = "SUCCESS",
     //FAILURE = "FAILURE",
-} 
+}
 
 export class WorkflowStatus {
-	
+
 	id?: string;
 
 	execution_id: string;
 
 	workflow_id: string;
-	
+
 	name: string;
 
 	started_at?: string;
@@ -40,13 +40,13 @@ export class WorkflowStatus {
 	 * Status of the workflow.
 	 * Possible values: queued, running, awaiting_data, paused, completed, aborted
 	 */
-	status: string; 
+	status: string;
 
-	@Type(() => ActionIdentification)
-	action_status?: ActionIdentification;
+	@Type(() => NodeStatusSummary)
+	node_status?: NodeStatusSummary;
 
-	@Type(() => ActionStatus)
-	action_statuses?: ActionStatus[] = [];
+	@Type(() => NodeStatus)
+	node_statuses?: NodeStatus[] = [];
 
 	@Exclude({ toPlainOnly: true })
 	localized_started_at?: string;

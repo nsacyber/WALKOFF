@@ -108,7 +108,7 @@
                             <a id="copy-button" class="ml-1" href="" data-toggle="tooltip" title="Edit Description" (click)="editDescription()">
                                 <i class="fa fa-info-circle"></i>
                             </a>
-                            
+
                     </li>
                 </ol>
             </nav>
@@ -177,7 +177,7 @@
                             (click)="setStartNode(selectedAction.id)">Set Start Action</button>
 
                 </div>
-                
+
                 <div class="form-row">
                     <div class="col-12 col-xl-6">
                         <div class="input-group input-group-sm mb-3" data-toggle="tooltip"
@@ -335,10 +335,10 @@
                     <div id="executionResultsModal">
                         <div #workflowResultsContainer>
                             <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'"
-                                [rows]="actionStatuses" [sortType]="'multi'" [footerHeight]="25" [rowHeight]="undefined"
+                                [rows]="nodeStatuses" [sortType]="'multi'" [footerHeight]="25" [rowHeight]="undefined"
                                 [sorts]="[{prop: 'started_at', dir: 'desc'}]" [limit]="10">
                                 <!-- Column Templates -->
-                                <ngx-datatable-column name="Action IDs" prop="action_id" [flexGrow]="1">
+                                <ngx-datatable-column name="Action IDs" prop="node_id" [flexGrow]="1">
                                 </ngx-datatable-column>
                                 <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1">
                                 </ngx-datatable-column>
@@ -347,14 +347,14 @@
                                 <ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
                                         <span [title]="row.localized_started_at">
-                                            {{actionStatusStartedRelativeTimes[row.execution_id]}}
+                                            {{nodeStatusStartedRelativeTimes[row.execution_id]}}
                                         </span>
                                     </ng-template>
                                 </ngx-datatable-column>
                                 <ngx-datatable-column name="Completed At" prop="completed_at" [flexGrow]="1">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
                                         <span [title]="row.localized_completed_at">
-                                            {{actionStatusCompletedRelativeTimes[row.execution_id]}}
+                                            {{nodeStatusCompletedRelativeTimes[row.execution_id]}}
                                         </span>
                                     </ng-template>
                                 </ngx-datatable-column>
@@ -432,7 +432,7 @@
                             <option [ngValue]="''">-- Create new Playbook --</option>
                             <option *ngFor="let i of playbooks" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
                         </select>
-                        <input type="text" *ngIf="modalParams.selectedPlaybookId === '' || !modalParams.shouldShowExistingPlaybooks" 
+                        <input type="text" *ngIf="modalParams.selectedPlaybookId === '' || !modalParams.shouldShowExistingPlaybooks"
                             [(ngModel)]="modalParams.newPlaybook" class="form-control mt-2" placeholder="Enter a new playbook name">
                     </div> -->
                     <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">

@@ -1,13 +1,13 @@
 import { Type, Expose } from 'class-transformer';
 
 import { Argument } from '../playbook/argument';
-import { ActionStatus } from './actionStatus';
+import { NodeStatus } from './nodeStatus';
 
-export class ActionStatusEvent {
+export class NodeStatusEvent {
 	execution_id: string;
 
 	@Expose({name: 'node_id'})
-	action_id: string;
+	node_id: string;
 
 	label: string;
 
@@ -29,13 +29,13 @@ export class ActionStatusEvent {
 	@Type(() => Argument)
 	arguments: Argument[] = [];
 
-	
 
-	toNewActionStatus(): ActionStatus {
-		const out = new ActionStatus();
+
+	toNewNodeStatus(): NodeStatus {
+		const out = new NodeStatus();
 
 		out.execution_id = this.execution_id;
-		out.action_id = this.action_id;
+		out.node_id = this.node_id;
 		out.name = this.name;
 		out.app_name = this.app_name;
 		out.label = this.label;

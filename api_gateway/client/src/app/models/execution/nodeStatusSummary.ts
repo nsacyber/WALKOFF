@@ -1,6 +1,6 @@
-export class ActionIdentification {
+export class NodeStatusSummary {
 
-	action_id: string;
+	node_id: string;
 
 	execution_id: string;
 
