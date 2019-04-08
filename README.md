@@ -30,7 +30,7 @@ or configuration will be needed.
 git clone -b 1.0.0-alpha.1 https://github.com/nsacyber/WALKOFF.git
 
 # Navigate to where the docker-compose.yml is:
-cd triple-play
+cd WALKOFF
 
 # Walkoff 1.0 makes use of Docker Swarm - initialize one now:
 docker swarm init
@@ -43,3 +43,4 @@ docker-compose logs -f
 
 # UI is viewable at http://localhost:8080
 ```
+
