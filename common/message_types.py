@@ -42,7 +42,7 @@ class MessageJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, NodeStatusMessage):
             return {"name": o.name, "node_id": o.node_id, "label": o.label, "app_name": o.app_name,
-                    "execution_id": o.execution_id, "result": o.result, "error": o.error, "status": o.status,
+                    "execution_id": o.execution_id, "result": o.result, "status": o.status,
                     "started_at": o.started_at, "completed_at": o.completed_at, "combined_id": o.combined_id,
                     "arguments": o.arguments}
 
@@ -138,11 +138,11 @@ class WorkflowStatusMessage(object):
 
 class NodeStatusMessage(object):
     """ Class that formats a NodeStatusMessage message. """
-    __slots__ = ("name", "node_id", "label", "app_name", "execution_id", "arguments", "combined_id", "result", "error",
+    __slots__ = ("name", "node_id", "label", "app_name", "execution_id", "arguments", "combined_id", "result",
                  "status", "started_at", "completed_at")
 
     def __init__(self, name, node_id, label, app_name, execution_id, combined_id=None, arguments=None, result=None,
-                 error=None, status=None, started_at=None, completed_at=None):
+                 status=None, started_at=None, completed_at=None):
         self.name = name
         self.node_id = node_id
         self.label = label
@@ -151,14 +151,13 @@ class NodeStatusMessage(object):
         self.combined_id = combined_id if combined_id is not None else ':'.join((node_id, execution_id))
         self.result = result
         self.arguments = arguments
-        self.error = error
         self.status = status
         self.started_at = started_at
         self.completed_at = completed_at
 
     @classmethod
-    def from_node(cls, node, execution_id, result=None, error=None, status=None, started_at=None, completed_at=None):
-        return cls(node.name, node.id_, node.label, node.app_name, execution_id, result=result, error=error,
+    def from_node(cls, node, execution_id, result=None, status=None, started_at=None, completed_at=None):
+        return cls(node.name, node.id_, node.label, node.app_name, execution_id, result=result,
                    status=status, started_at=started_at, completed_at=completed_at)
 
     @classmethod
@@ -177,7 +176,6 @@ class NodeStatusMessage(object):
                                            status=StatusEnum.SUCCESS)
 
     @classmethod
-    def failure_from_node(cls, node, execution_id, error=None):
+    def failure_from_node(cls, node, execution_id):
         completed_at = datetime.datetime.now()
-        return NodeStatusMessage.from_node(node, execution_id, error=error, completed_at=completed_at,
-                                           status=StatusEnum.FAILURE)
+        return NodeStatusMessage.from_node(node, execution_id, completed_at=completed_at, status=StatusEnum.FAILURE)

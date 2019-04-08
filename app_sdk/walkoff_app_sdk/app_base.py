@@ -104,10 +104,10 @@ class AppBase:
                 else:
                     self.logger.error(f"App {self.__class__.__name__}.{action.name} is not callable")
                     action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
-                                                                        error="Action not callable")
+                                                                        result="Action not callable")
 
             except Exception as e:
-                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, error=repr(e))
+                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
                 self.logger.exception(f"Failed to execute {action.label}-{action.id_}")
 
             await self.redis.lpush(action.execution_id, message_dumps(action_result))
@@ -115,7 +115,7 @@ class AppBase:
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
             action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
-                                                                error="Action does not exist")
+                                                                result="Action does not exist")
             await self.redis.lpush(action.execution_id, message_dumps(action_result))
 
         # Remove the action from the in process queue regardless of success

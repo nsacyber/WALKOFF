@@ -42,7 +42,7 @@ class MessageJSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, NodeStatusMessage):
             return {"name": o.name, "node_id": o.node_id, "label": o.label, "app_name": o.app_name,
-                    "execution_id": o.execution_id, "result": o.result, "error": o.error, "status": o.status,
+                    "execution_id": o.execution_id, "result": o.result, "status": o.status,
                     "started_at": o.started_at, "completed_at": o.completed_at, "combined_id": o.combined_id,
                     "arguments": o.arguments}
 
