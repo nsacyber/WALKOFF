@@ -3,7 +3,7 @@
      Contributor to describe changes -->
      
      
-## [1.0.0-beta.1]
+## [1.0.0-alpha.1]
 
 This update includes a near-complete rewrite of the workflow execution logic, and a considerable refactor of the
 server in preparation for a future move to an asynchronous framework. The following changes are not exhaustive.
