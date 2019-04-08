@@ -118,9 +118,6 @@ class AppBase:
                                                                 result="Action does not exist")
             await self.redis.lpush(action.execution_id, message_dumps(action_result))
 
-        # Remove the action from the in process queue regardless of success
-        await self.redis.lrem(REDIS_ACTIONS_IN_PROCESS, 0, workflow_dumps(action))
-
     @classmethod
     async def run(cls):
         """ Connect to Redis and HTTP session, await actions """

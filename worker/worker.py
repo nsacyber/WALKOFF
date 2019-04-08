@@ -271,18 +271,15 @@ class Worker:
             if msg.execution_id == self.workflow.execution_id and msg.node_id in self.in_process:
                 if msg.status == StatusEnum.EXECUTING:
                     logger.info(f"App started execution of: {msg.label}-{msg.execution_id}")
+                    continue  # We know another message is coming and have nothing else to do
 
                 elif msg.status == StatusEnum.SUCCESS:
                     self.accumulator[msg.node_id] = msg.result
                     logger.info(f"Worker received result for: {msg.label}-{msg.execution_id}")
-
-                    # Remove the action from our local in_process queue as well as the one in redis
-                    action = self.in_process.pop(msg.node_id)
-                    await self.redis.lrem(config.REDIS_ACTIONS_IN_PROCESS, 0, workflow_dumps(action))
-
+                    
                 elif msg.status == StatusEnum.FAILURE:
                     self.accumulator[msg.node_id] = msg.result
-                    await self.cancel_subgraph(self.workflow.nodes[msg.node_id])
+                    await self.cancel_subgraph(self.workflow.nodes[msg.node_id])  # kill the children!
                     logger.info(f"Worker recieved error \"{msg.result}\" for: {msg.label}-{msg.execution_id}")
 
                 else:
@@ -293,6 +290,12 @@ class Worker:
 
             else:
                 logger.error(f"Message received for unknown execution: {msg}")
+
+            # Keep our redis queues clean
+            await self.redis.lrem(read_messages_queue, 0, message_dumps(msg))
+            node = self.in_process.pop(msg.node_id, None)
+            await self.redis.lrem(config.REDIS_ACTIONS_IN_PROCESS, 0, workflow_dumps(node))
+
 
         # Clean up our redis mess
         await self.redis.delete(read_messages_queue)

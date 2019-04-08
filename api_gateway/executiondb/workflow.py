@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from sqlalchemy import Column, String, Boolean, event
 from sqlalchemy.orm import relationship
@@ -79,12 +80,9 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def validate(self):
         """Validates the object"""
-        node_ids = [action.id_ for action in self.actions] + \
-                   [conditions.id_ for conditions in self.conditions] + \
-                   [transforms.id_ for transforms in self.transforms]
-
-        work_var_ids = [workflow_var.id_ for workflow_var in self.workflow_variables]
-        global_ids = current_app.running_context.execution_db.session.query(GlobalVariable.id_).all()
+        node_ids = {node.id_ for node in self.actions + self.conditions + self.transforms}
+        work_var_ids = {workflow_var.id_ for workflow_var in self.workflow_variables}
+        global_ids = set(current_app.running_context.execution_db.session.query(GlobalVariable.id_).all())
 
         errors = []
         if not self.start and self.actions:
@@ -101,7 +99,7 @@ class Workflow(ExecutionElement, Execution_Base):
                 if p.variant != ParameterVariant.STATIC_VALUE.name:
                     if not validate_uuid4(p.value):
                         errors.append(f"Value is a reference but {p.value} is not a valid uuid4")
-                    elif p.value not in node_ids and p.value not in work_var_ids and p.value not in global_ids:
+                    elif uuid.UUID(p.value) not in node_ids.union(work_var_ids, global_ids):
                         errors.append(f"Parameter {p.name} refers to {p.value} not found in {p.variant}.")
                 else:
                     api = current_app.running_context.execution_db.session.query(ParameterApi).filter(
