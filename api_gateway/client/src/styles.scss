@@ -1,0 +1,61 @@
+/* You can add global styles to this file, and also import other style files */
+
+// Import global CSS packages
+@import 'variables';
+@import '~font-awesome/scss/font-awesome';
+@import '~bootstrap/scss/bootstrap';
+
+@import "~codemirror/lib/codemirror.css";
+@import "~codemirror/theme/darcula.css";
+
+@import '@swimlane/ngx-datatable/release/index.css';
+@import '@swimlane/ngx-datatable/release/themes/material.css';
+@import '@swimlane/ngx-datatable/release/assets/icons.css';
+@import 'select2/dist/css/select2.min.css';
+@import 'ngx-toastr/toastr.css';
+
+/* Hack along for modal animations in ng-bootstrap */
+@keyframes modal-b-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.5;
+    }
+}
+
+@keyframes modal-fade {
+    from {
+        top: -100px;
+        opacity: 0;
+    }
+    to {
+        top: 0;
+        opacity: 1;
+    }
+}
+
+.modal-backdrop {
+    opacity: 0.5;
+    animation: ease-in-out .25s modal-b-fade;
+    transition: all .25s ease-in-out;
+}
+
+.modal {
+    top: -100px;
+    animation: ease-in-out .25s modal-fade;
+    transition: all .25s ease-in-out;
+
+    &.show {
+        top: 0;
+    }
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: theme-color('primary')
+}
+
+.bootbox-body {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}

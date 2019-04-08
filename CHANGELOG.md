@@ -1,6 +1,35 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
+     
+     
+## [1.0.0-beta.1]
+
+This update includes a near-complete rewrite of the workflow execution logic, and a considerable refactor of the
+server in preparation for a future move to an asynchronous framework. The following changes are not exhaustive.
+
+### Added
+
+* "Umpire" added, which handles building and replication of Worker and App containers.
+
+### Changed
+
+* Docker Compose is required. Python 3.7 is required if running components locally (primarily for development).
+* Execution logic completely rewritten to support containerized architecture from the ground up.
+* Apps now live in their own containers, separate from workers. 
+* Apps should now be (internally) stateless
+* Kubernetes support has been removed in favor of using Docker Swarm API.
+* Playbooks removed, Workflows can now be grouped by tags instead.
+* unittest has been replaced with pytest
+* Redis is now the primary communication channel between components (removing ZMQ and Kafka).
+* SQLite database should no longer be used if running locally for development.
+* Workflow Execution page has been overhauled aesthetically.
+
+### Removed
+
+* Triggers have been temporarily removed, but are targeted for a near-future 1.1 release.
+
+
 
 ## [0.9.4]
 ###### 2018-12-11

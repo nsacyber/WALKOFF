@@ -1,0 +1,39 @@
+<h1 class="settingsHeader">
+	Role Settings</h1>
+
+<div class="row">
+	<div class="col-6">
+		<button (click)="addRole()" class="btn btn-outline-primary">
+			<i class="fa fa-plus"></i> Add Role</button>
+	</div>
+	<div class="col-6">
+		<div class="form-group d-flex justify-content-end">
+				<div class="col-8 px-0">
+					<input class="form-control" placeholder="Filter Roles..." [formControl]="filterQuery" />
+				</div>
+			</div>
+	</div>
+</div>
+
+<ngx-datatable #roleTable class='material expandable' [columnMode]="'flex'" [rows]="displayRoles" [headerHeight]="50" [footerHeight]="50"
+ [rowHeight]="undefined" [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="10">
+	<!-- Column Templates -->
+	<ngx-datatable-column name="Role Name" prop="name" [flexGrow]="1"></ngx-datatable-column>
+	<ngx-datatable-column name="Permissions" [sortable]="false" [flexGrow]="5">
+		<ng-template let-row="row" ngx-datatable-cell-template>
+			<div *ngFor="let resource of row.resources">
+				{{resource.name}}: {{resource.permissions.join(', ')}}
+			</div>
+		</ng-template>
+	</ngx-datatable-column>
+	<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
+		<ng-template let-row="row" ngx-datatable-cell-template>
+			<button (click)="editRole(row)" class="btn btn-primary mx-1" title="Edit Role" [disabled]="row.name === 'admin'">
+				<i class="fa fa-edit"></i>
+			</button>
+			<button (click)="deleteRole(row)" class="btn btn-danger mx-1" title="Delete Role" [disabled]="row.name === 'admin'">
+				<i class="fa fa-times"></i>
+			</button>
+		</ng-template>
+	</ngx-datatable-column>
+</ngx-datatable>

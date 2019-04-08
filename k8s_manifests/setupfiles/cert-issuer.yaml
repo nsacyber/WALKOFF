@@ -1,7 +1,0 @@
-apiVersion: certmanager.k8s.io/v1alpha1
-kind: Issuer
-metadata:
-  name: walkoff-ca-issuer
-spec:
-  ca:
-    secretName: walkoff-ca-key-pair

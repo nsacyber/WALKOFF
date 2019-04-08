@@ -1,0 +1,73 @@
+/configuration:
+  get:
+    tags:
+      - Configuration
+    summary: Reads the configuration
+    operationId: api_gateway.server.endpoints.configuration.read_config_values
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
+      401:
+        description: Unauthorized access
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  put:
+    tags:
+      - Configuration
+    summary: Updates the configuration
+    operationId: api_gateway.server.endpoints.configuration.update_configuration
+    requestBody:
+      required: true
+      description: The configuration object
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized access
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      515:
+        description: Could not write configuration to file
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  patch:
+    tags:
+      - Configuration
+    summary: Updates the configuration
+    operationId: api_gateway.server.endpoints.configuration.patch_configuration
+    requestBody:
+      description: The configuration object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized access
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      515:
+        description: Could not write configuration to file
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

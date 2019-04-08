@@ -1,0 +1,35 @@
+Flask >= 0.10.0
+Flask_SQLAlchemy >= 2.1
+flask_jwt_extended >= 3.4.0
+sqlalchemy >= 1.1.0
+sqlalchemy-utils >= 0.32.0
+APscheduler >= 3.0.0
+gevent >= 1.2
+gunicorn
+connexion >= 2.0
+pyyaml >= 3.0
+passlib >= 1.7.0
+blinker >= 1.4
+enum34
+futures; python_version < "3"
+semver
+jsonschema == 2.6.0
+six >= 1.10.0
+marshmallow >= 3.0.0rc2
+marshmallow-sqlalchemy >= 0.13.0
+pynacl
+alembic
+healthcheck
+psycopg2-binary
+click
+pyopenssl
+gitpython
+dill
+redis >= 3.0
+fluent-logger
+werkzeug
+requests
+swagger_spec_validator
+flask-swagger-ui
+jsonpatch
+asteval

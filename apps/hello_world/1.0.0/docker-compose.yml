@@ -1,0 +1,19 @@
+version: '3.4'
+services:
+  hello_world:
+    build:
+      context: .
+      dockerfile: Dockerfile
+#    image: walkoff_registry:5000/walkoff_app_HelloWorld-v1-0
+    env_file:
+      - env.txt
+    deploy:
+      mode: replicated
+      replicas: 10
+    secrets:
+      - secret1
+secrets:
+  secret1:
+    file: ./secret_data
+    labels:
+      foo: bar

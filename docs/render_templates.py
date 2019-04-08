@@ -7,13 +7,15 @@ automodule_directive = '''
    :members:
 '''
 
+
 def generate_module_autodocs(module_prefix):
     module_path = path.join('..',  module_prefix.replace('.', sep))
     modules = [automodule_directive.format(module_name=module_prefix)]
     submodules = [automodule_directive.format(module_name='{}.{}'.format(module_prefix, module_name))
-                              for _, module_name, _ in iter_modules([module_path])]
+                  for _, module_name, _ in iter_modules([module_path])]
     modules.extend(submodules)
     return '\n\n'.join(modules)
+
 
 if __name__ == '__main__':
     import sys
