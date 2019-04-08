@@ -1,22 +1,21 @@
 import asyncio
 import logging
-import re
+import signal
 from pathlib import Path
-from functools import reduce
 from itertools import compress
+    
 
 import aiodocker
 import aiohttp
 import aioredis
 from aiodocker.exceptions import DockerError
-from docker.types.services import SecretReference
 from compose.cli.command import get_project
 
 
 from common.config import config
 from common.helpers import connect_to_redis_pool
-from common.docker_helpers import ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, get_secret, \
-    create_secret, update_service, connect_to_aiodocker
+from common.docker_helpers import ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, \
+    load_secrets, update_service, connect_to_aiodocker, get_service, get_replicas, remove_service
 from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -30,8 +29,9 @@ class Umpire:
         self.docker_client: aiodocker.Docker = docker_client
         self.apps = {}
         self.running_apps = {}
-        self.worker = None
+        self.worker = {}
         self.max_workers = 1
+        self.service_replicas = {}
 
     @classmethod
     async def init(cls, docker_client, redis, session):
@@ -39,7 +39,9 @@ class Umpire:
         await redis.flushall()  # TODO: do a more targeted cleanup of redis
         self.apps = await AppRepo.create(config.APPS_PATH, session)
         self.running_apps = await self.get_running_apps()
-        self.worker = await self.get_service("worker")
+        self.worker = await get_service(self.docker_client, "worker")
+        services = await self.docker_client.services.list()
+        self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
         await self.build_app_sdk()
         await self.build_worker()
 
@@ -53,31 +55,34 @@ class Umpire:
         async with connect_to_redis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session, \
                 connect_to_aiodocker() as docker_client:
             ump = await Umpire.init(docker_client=docker_client, redis=redis, session=session)
-            await ump.monitor_queues()
-        await Umpire.shutdown()
 
-    @staticmethod
-    async def shutdown():
+            # Attach our signal handler to cleanly close services we've created
+            loop = asyncio.get_running_loop()
+            for signame in {'SIGINT', 'SIGTERM'}:
+                loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
+
+            await ump.monitor_queues()
+        await ump.shutdown()
+
+    async def shutdown(self):
+        logger.info("Shutting down Umpire...")
+        services = [*(await self.get_running_apps()).keys(), "worker"]
+        mask = [await remove_service(self.docker_client, s) for s in services]
+        removed_apps = list(compress(self.running_apps, mask))
+        logger.debug(f"Removed apps: {removed_apps}")
+        
         # Clean up any unfinished tasks (shouldn't really be any though)
         tasks = [t for t in asyncio.all_tasks() if t is not
                  asyncio.current_task()]
-
         [task.cancel() for task in tasks]
-
-        logger.info('Canceling outstanding tasks')
-        await asyncio.gather(*tasks)
+        logger.info("Canceling outstanding tasks")
+        await asyncio.gather(*tasks, return_exceptions=True)
+        logger.info("Successfully shutdown Umpire")
 
     async def get_running_apps(self):
         func = lambda s: s['Spec']['Name'].count(config.APP_PREFIX) > 0
         services = filter(func, (await self.docker_client.services.list()))
         return {s['Spec']['Name']:  {'id': s["ID"], 'version': s['Version']['Index']} for s in services}
-
-    async def get_service(self, service_id):
-        try:
-            s = await self.docker_client.services.inspect(service_id)
-            return {'id': s["ID"], 'version': s['Version']['Index']}
-        except DockerError:
-            return {}
 
     async def launch_workers(self, replicas=1):
         project = get_project(project_dir=Path(__file__).parent, project_name=config.APP_PREFIX)
@@ -91,21 +96,21 @@ class Umpire:
             await self.build_worker()
 
         try:
-            secrets = await self.load_secrets(project=project)
+            secrets = await load_secrets(self.docker_client, project=project)
             mode = {"replicated": {'Replicas': replicas}}
             service_kwargs = ServiceKwargs.configure(image=worker.image_name, service=worker, secrets=secrets,
                                                      mode=mode)
             await self.docker_client.services.create(name=worker.name, **service_kwargs)
-            self.worker = await self.get_service(worker.name)
+            self.worker = await get_service(self.docker_client, worker.name)
 
         except DockerError:
             try:
-                self.worker = await self.get_service("worker")
+                self.worker = await get_service(self.docker_client, "worker")
                 if self.worker == {}:
                     raise DockerError
                 await update_service(self.docker_client, service_id=self.worker["id"], version=self.worker["version"],
                                      image=worker.image_name, mode={"replicated": {"Replicas": replicas}})
-                self.worker = await self.get_service(self.worker["id"])
+                self.worker = await get_service(self.docker_client, self.worker["id"])
                 return
             except DockerError:
                 logger.exception(f"Service {worker.name} failed to update")
@@ -184,11 +189,11 @@ class Umpire:
 
         logger.debug(f"Launching {app}...")
 
-        # # see if the image provided by the docker-compose file can be pulled
-        # try:
-        #     image = await self.docker_client.images.pull(image_name)
-        # except DockerError:
-        #     logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
+        # see if the image provided by the docker-compose file can be pulled
+        try:
+            image = await self.docker_client.images.pull(image_name)
+        except DockerError:
+            logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
 
         # if we didn't find the image, try to build it
         if image is None:
@@ -196,11 +201,11 @@ class Umpire:
             image_name = full_tag
 
         try:
-            secrets = await self.load_secrets(project=self.apps[app][version])
+            secrets = await load_secrets(self.docker_client, project=self.apps[app][version])
             mode = {"replicated": {'Replicas': replicas}}
             service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode)
             await self.docker_client.services.create(name=app_name, **service_kwargs)
-            self.running_apps[app_name] = await self.get_service(app_name)
+            self.running_apps[app_name] = await get_service(self.docker_client, app_name)
 
         except DockerError:
             logger.exception(f"Service {app_name} failed to launch")
@@ -236,36 +241,16 @@ class Umpire:
 
         try:
             mode = {"replicated": {'Replicas': replicas}}
-            self.running_apps[app_name] = await self.get_service(app_name)
+            self.running_apps[app_name] = await get_service(self.docker_client, app_name)
             await update_service(self.docker_client, service_id=self.running_apps[app_name]["id"],
                                  version=self.running_apps[app_name]["version"], image=image_name, mode=mode)
-            self.running_apps[app_name] = await self.get_service(app_name)
+            self.running_apps[app_name] = await get_service(self.docker_client, app_name)
 
         except DockerError:
             logger.exception(f"Service {app_name} failed to update")
             return
 
         logger.info(f"Updated {app}")
-
-    async def load_secrets(self, project):
-        service = project.services[0]
-        secret_references = []
-        for service_secret in service.secrets:
-            secret = service_secret["secret"]
-            filename = service_secret.get("file", secret.source)
-
-            # Compose doesn't parse external secrets so we'll assume there is one and build if it doesn't exist
-            try:
-                secret_id = await get_secret(self.docker_client, secret.source)
-
-            except (AttributeError, DockerError):
-                with open(filename, 'rb') as fp:
-                    data = fp.read()
-                secret_id = await create_secret(self.docker_client, name=secret.source, data=data)
-
-            secret_references.append(SecretReference(secret_id=secret_id["ID"], secret_name=secret.source,
-                                                     uid=secret.uid, gid=secret.gid, mode=secret.mode))
-        return secret_references
 
     async def build_app(self, app, version):
         app_name = f"{config.APP_PREFIX}_{app}"
@@ -301,73 +286,49 @@ class Umpire:
             logger.exception(f"Error during {app}:{version} push")
             return
 
-    async def remove_service(self, service):
-        try:
-            return await self.docker_client.services.delete(service)
-        except DockerError:
-            logger.exception(f"Could not delete {service}.")
-            return False
+    async def scale_worker(self):
+        queued_workflows = await self.redis.llen(config.REDIS_WORKFLOW_QUEUE)
+        logger.info(f"Queued Workflows: {queued_workflows}")
+
+        curr_workers = self.service_replicas.get("worker", {"running": 0, "desired": 0})["desired"]
+        workers_needed = min((queued_workflows - curr_workers), self.max_workers)
+
+        if workers_needed > curr_workers > 0:
+            await self.launch_workers(workers_needed)
+        elif workers_needed > curr_workers == 0:  # scale to 0 and restart
+            await self.launch_workers(0)
+            await self.launch_workers(workers_needed)
+
+    async def scale_app(self):
+        self.running_apps = await self.get_running_apps()
+        logger.info(f"Running apps: {[service for service in self.running_apps.keys()]}")
+
+        action_queues = set(await self.redis.keys(pattern="*:*:[1-5]", encoding="utf-8"))
+        if len(action_queues) > 0:
+            for key in action_queues:
+                workload = await self.redis.llen(key)
+                app_name, version, _ = key.split(':')  # should yield [app_name, version, priority]
+                service_name = f"{config.APP_PREFIX}_{app_name}"
+                curr_replicas = self.service_replicas.get(service_name, {"running": 0, "desired": 0})["desired"]
+                max_replicas = self.apps[app_name][version].services[0].options["deploy"]["replicas"]
+                replicas_needed = min((workload - curr_replicas), max_replicas)
+
+                if replicas_needed > curr_replicas > 0:
+                    await self.update_app(app_name, version, replicas_needed)
+                elif replicas_needed > curr_replicas == 0:  # scale to 0 and restart
+                    await self.update_app(app_name, version, 0)
+                    await self.update_app(app_name, version, replicas_needed)
+
+                logger.info(f"Launched copy of {':'.join([app_name, version])}")
 
     async def monitor_queues(self):
-        def replicas_getter(d, service):
-            if "ID" in d:
-                d = {d["Spec"]["Name"]: d["Spec"]["Mode"]["Replicated"]["Replicas"]}
-            d[service["Spec"]["Name"]] = service["Spec"]["Mode"]["Replicated"]["Replicas"]
-            return d
-
         count = 0
         while True:
-            # Find all redis keys matching our "{AppName}:{AppVersion}:{Priority}" pattern
-            keys = set(await self.redis.keys(pattern="*:*:[1-5]", encoding="utf-8"))
-            logger.info(f"Redis keys: {keys}")
-
-            self.running_apps = await self.get_running_apps()
-            logger.info(f"Running apps: {[service for service in self.running_apps.keys()]}")
-
-            num_workflows = await self.redis.llen(config.REDIS_WORKFLOW_QUEUE)
-            logger.info(f"Number of Workflows: {num_workflows}")
-
             services = await self.docker_client.services.list()
-            service_replicas = reduce(replicas_getter, services) if len(services) > 0 else {}
+            self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
 
-            workers_needed = min((num_workflows - service_replicas.get("worker", 0)), self.max_workers)
-            if workers_needed > 0:
-                await self.launch_workers(workers_needed)
-
-            else:
-                if self.worker and (await self.redis.llen(config.REDIS_WORKFLOWS_IN_PROCESS)) < 1:
-                    await self.remove_service("worker")
-                    self.worker = {}
-
-            if len(keys) > 0:  # we have some work for the apps, let's spin some up
-                for key in keys:
-                    workload = await self.redis.llen(key)
-                    app_name, version, _ = key.split(':')  # should yield [app_name, version, priority]
-                    curr_replicas = service_replicas.get(app_name, 0)
-                    max_replicas = self.apps[app_name][version].services[0].options["deploy"]["replicas"]
-                    replicas_needed = min((workload - curr_replicas), max_replicas)
-                    if curr_replicas == 0:
-                        await self.launch_app(app_name, version, replicas=replicas_needed)
-                    logger.info(f"Launched copy of {':'.join([app_name, version])}")
-
-            else:
-                app_name_regex = re.compile(r"[\"']app_name[\"']: [\"']([^:]*)[^,]*[\"']")
-                actions_in_process = await self.redis.lrange(config.REDIS_ACTIONS_IN_PROCESS, 0, -1)
-                apps_in_process = {f"{config.APP_PREFIX}_{app_name_regex.search(action.decode()).groups()[0]}"
-                                  for action in actions_in_process}
-                apps_to_remove = [app for app in self.running_apps if app not in apps_in_process]
-
-                # There isn't any work so lets kill any running apps and workers
-                mask = [await self.remove_service(app) for app in apps_to_remove]
-                removed_apps = list(compress(self.running_apps, mask))
-                logger.debug(f"Removed apps: {removed_apps}")
-
-            # Check to see if any apps are running that we don't have work for and kill them
-            for key in filter(lambda s: any([app.lstrip(config.APP_PREFIX) not in s
-                                             for app in self.running_apps]), keys):
-                app, _, __ = key.split(':')
-                await self.remove_service(app)
-                logger.debug(f"Removed app: {app}")
+            await self.scale_worker()
+            await self.scale_app()
 
             # Reload the app projects and apis every once in a while
             if count * config.get_int("UMPIRE_HEARTBEAT", 1) >= config.get_int("APP_REFRESH", 60):
@@ -381,4 +342,7 @@ class Umpire:
 
 
 if __name__ == "__main__":
-    asyncio.run(Umpire.run())
+    try:
+        asyncio.run(Umpire.run())
+    except asyncio.CancelledError:
+        pass

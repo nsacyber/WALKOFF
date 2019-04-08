@@ -66,7 +66,8 @@ class AppRepo(dict):
                     if re.fullmatch(r"((\d\.?)+)", version.name):
                         try:
                             # Store the api while we've got it here
-                            await self.store_api(load_app_api(version / "api.yaml"))
+                            app_api_path = {fname for fname in {"api.yaml", "api.yml"} if (version / fname).exists()}
+                            await self.store_api(load_app_api(version / app_api_path.pop()))
 
                             project = get_project(version)
                             if not len(project.services) == 1:

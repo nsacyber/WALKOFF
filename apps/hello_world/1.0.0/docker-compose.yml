@@ -10,6 +10,9 @@ services:
     deploy:
       mode: replicated
       replicas: 10
+      restart_policy:
+        condition: none
+    restart: "no"
     secrets:
       - secret1
 secrets:

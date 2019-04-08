@@ -123,6 +123,10 @@ def update_workflow_status(execution_id):
         old_workflow_status["node_statuses"] = {}
 
     patch = jsonpatch.JsonPatch.from_string(json.dumps(data))
+
+    logger.debug(f"Patch: {patch}")
+    logger.debug(f"Old Workflow Status: {old_workflow_status}")
+
     new_workflow_status = patch.apply(old_workflow_status)
 
     new_workflow_status["node_statuses"] = list(new_workflow_status["node_statuses"].values())
@@ -171,7 +175,7 @@ def workflow_stream():
                 logger.info(f"Sending workflow_status SSE for {execution_id}: {event}")
                 yield event
         except GeneratorExit:
-            workflow_stream_subs.pop(events)
+            workflow_stream_subs.pop(events, None)
             logger.info(f"workflow_status unsubscription for {execution_id}")
 
     return Response(workflow_results_generator(), mimetype="test/event-stream")
@@ -195,7 +199,7 @@ def action_stream():
                 logger.info(f"Sending action SSE for {execution_id}: {event}")
                 yield event
         except GeneratorExit:
-            action_stream_subs.pop(execution_id)
+            action_stream_subs.pop(execution_id, None)
             logger.info(f"action unsubscription for {execution_id}")
 
     return Response(action_results_generator(), mimetype="text/event-stream")

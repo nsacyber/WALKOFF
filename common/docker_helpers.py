@@ -11,9 +11,10 @@ from contextlib import contextmanager, asynccontextmanager
 
 import aiodocker
 from aiodocker.utils import clean_map
+from aiodocker.exceptions import DockerError
 import docker
 from docker.models.services import _get_create_service_kwargs
-from docker.types.services import ServiceMode, Resources, EndpointSpec, RestartPolicy
+from docker.types.services import ServiceMode, Resources, EndpointSpec, RestartPolicy, SecretReference
 
 from compose.cli.command import get_project as get_compose_project
 from compose.utils import timeparse, parse_bytes
@@ -140,6 +141,14 @@ async def get_secret(client: aiodocker.Docker, secret_id):
     return await resp.json()
 
 
+async def get_nodes(client: aiodocker.Docker):
+    resp = await client._query("nodes")
+    return await resp.json()
+
+async def get_tasks(client: aiodocker.Docker, params):
+    resp = await client._query("tasks" + '?' + params)
+    return await resp.json()
+
 def normalize_name(name, delimiter=''):
     """ Super arbitrary naming convention for docker images/services... """
     return re.sub(r'[^-_a-z0-9]', delimiter, name.lower())
@@ -157,6 +166,54 @@ def load_docker_env():
     # environment.update({key: val for key, val in config["DOCKER_ENV"].items()})
     return Environment(environment)
 
+
+async def get_service(docker_client, service_id):
+    try:
+        s = await docker_client.services.inspect(service_id)
+        return {'id': s["ID"], 'version': s['Version']['Index']}
+    except DockerError:
+        return {}
+
+
+async def remove_service(docker_client, service):
+    try:
+        return await docker_client.services.delete(service)
+    except DockerError:
+        logger.error(f"Could not delete {service}.")
+        return False
+
+
+async def get_replicas(docker_client, service):
+    """
+    Gets the running and desired replica counts for the given service ID
+    :param service: The docker id of the service
+    :return: a dictionary giving the number of "running" and "desired" replicas
+    """
+    tasks = await docker_client.tasks.list(filters={"service": [service]})
+    desired = sum([t["DesiredState"] == "running" for t in tasks])
+    running = sum([t["Status"]["State"] == "running" for t in tasks])
+    return {"running": running, "desired": desired}
+
+
+async def load_secrets(docker_client, project):
+    service = project.services[0]
+    secret_references = []
+    for service_secret in service.secrets:
+        secret = service_secret["secret"]
+        filename = service_secret.get("file", secret.source)
+
+        # Compose doesn't parse external secrets so we'll assume there is one and build if it doesn't exist
+        try:
+            secret_id = await get_secret(docker_client, secret.source)
+
+        except (AttributeError, DockerError):
+            with open(filename, 'rb') as fp:
+                data = fp.read()
+            secret_id = await create_secret(docker_client, name=secret.source, data=data)
+
+        secret_references.append(SecretReference(secret_id=secret_id["ID"], secret_name=secret.source,
+                                                 uid=secret.uid, gid=secret.gid, mode=secret.mode))
+    return secret_references
 
 def connect_to_docker():
     client = docker.from_env(environment=load_docker_env())

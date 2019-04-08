@@ -56,12 +56,14 @@ class Worker:
 
                 try:
                     await worker.execute_workflow()
-
                 except Exception:
                     logger.exception(f"Failed execution of workflow: {workflow.name}")
-
                 else:
                     logger.info(f"Completed execution of workflow: {workflow.name}")
+                finally:
+                    await worker.send_message(WorkflowStatusMessage.execution_completed(worker.workflow.execution_id,
+                                                                                        worker.workflow.id_,
+                                                                                        worker.workflow.name))
 
                 # Clean up workflow in process queue
                 await redis.lrem(config.REDIS_WORKFLOWS_IN_PROCESS, 0, workflow_dumps(workflow))
@@ -252,7 +254,7 @@ class Worker:
             raise NotImplementedError
 
         # TODO: decide if we want pending action messages and uncomment this line
-        # await self.send_message(ActionStatus.pending_from_node(node, workflow.execution_id))
+        # await self.send_message(NodeStatus.pending_from_node(node, workflow.execution_id))
         logger.info(f"Scheduled {node}")
 
     async def get_action_results(self):
@@ -269,33 +271,36 @@ class Worker:
             if msg.execution_id == self.workflow.execution_id and msg.node_id in self.in_process:
                 if msg.status == StatusEnum.EXECUTING:
                     logger.info(f"App started execution of: {msg.label}-{msg.execution_id}")
-                    await self.send_message(msg)
+                    continue  # We know another message is coming and have nothing else to do
 
                 elif msg.status == StatusEnum.SUCCESS:
                     self.accumulator[msg.node_id] = msg.result
                     logger.info(f"Worker received result for: {msg.label}-{msg.execution_id}")
-
-                    # Remove the action from our local in_process queue as well as the one in redis
-                    action = self.in_process.pop(msg.node_id)
-                    await self.redis.lrem(config.REDIS_ACTIONS_IN_PROCESS, 0, workflow_dumps(action))
-                    await self.send_message(msg)
                     
                 elif msg.status == StatusEnum.FAILURE:
-                    self.accumulator[msg.node_id] = msg.error
-                    await self.cancel_subgraph(self.workflow.nodes[msg.node_id])
-                    logger.info(f"Worker recieved error \"{msg.error}\" for: {msg.label}-{msg.execution_id}")
-                    await self.send_message(msg)
+                    self.accumulator[msg.node_id] = msg.result
+                    await self.cancel_subgraph(self.workflow.nodes[msg.node_id])  # kill the children!
+                    logger.info(f"Worker recieved error \"{msg.result}\" for: {msg.label}-{msg.execution_id}")
 
                 else:
                     logger.error(f"Unknown message status received: {msg}")
+                    msg = None
+
+                await self.send_message(msg)
 
             else:
                 logger.error(f"Message received for unknown execution: {msg}")
 
+            # Keep our redis queues clean
+            await self.redis.lrem(read_messages_queue, 0, message_dumps(msg))
+            node = self.in_process.pop(msg.node_id, None)
+            await self.redis.lrem(config.REDIS_ACTIONS_IN_PROCESS, 0, workflow_dumps(node))
+
+
         # Clean up our redis mess
         await self.redis.delete(read_messages_queue)
 
-    def make_patch(self, message, root, op, white_list=None, black_list=None):
+    def make_patch(self, message, root, op, value_only=False, white_list=None, black_list=None):
         if white_list is None and black_list is None:
             raise ValueError("Either white_list or black_list must be provided")
 
@@ -304,14 +309,22 @@ class Worker:
 
         # convert blacklist to whitelist and grab those attrs from the message
         white_list = set(message.__slots__).difference(black_list) if black_list is not None else white_list
-        values = {k: getattr(message, k) for k in message.__slots__ if k in white_list}
+
+        if value_only and len(white_list) != 1:
+            raise ValueError("value_only can only be set if a single key is in white_list")
+
+        if value_only:
+            (key,) = white_list
+            values = getattr(message, key)
+        else:
+            values = {k: getattr(message, k) for k in message.__slots__ if k in white_list}
 
         return JSONPatch(op, path=root, value=values)
 
     def get_patches(self, message):
         patches = []
         if isinstance(message, NodeStatusMessage):
-            root = f"/action_statuses/{message.node_id}"
+            root = f"/node_statuses/{message.node_id}"
             if message.status == StatusEnum.EXECUTING:
                 patches.append(self.make_patch(message, root, JSONPatchOps.ADD, black_list={"result", "completed_at"}))
 
@@ -325,23 +338,25 @@ class Worker:
                 # patches.append(self.make_patch(message, root, JSONPatchOps.ADD, white_list={"error", "completed_at"}))
 
         elif isinstance(message, WorkflowStatusMessage):
-            root = f"/"
             if message.status == StatusEnum.EXECUTING:
-                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
-                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, black_list={"status", "completed_at"}))
+                for key in vars(message):
+                    patches.append(self.make_patch(message, f"/{key}", JSONPatchOps.REPLACE, value_only=True,
+                                                   white_list={f"{key}"}))
 
-            elif message.status == StatusEnum.COMPLETED:
-                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
-                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, white_list={"completed_at"}))
-
-            elif message.status == StatusEnum.ABORTED:
-                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, white_list={"status"}))
-                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, white_list={"completed_at"}))
+            elif message.status == StatusEnum.COMPLETED or message.status == StatusEnum.ABORTED:
+                patches.append(self.make_patch(message, f"/status", JSONPatchOps.REPLACE, value_only=True,
+                                               white_list={"status"}))
+                patches.append(self.make_patch(message, f"/completed_at", JSONPatchOps.REPLACE, value_only=True,
+                                               white_list={"completed_at"}))
 
         return patches
 
-    async def send_message(self, message: Union[NodeStatusMessage, WorkflowStatusMessage]):
+    async def send_message(self, message: Union[NodeStatusMessage, WorkflowStatusMessage, None]):
         """ Forms and sends a JSONPatch message to the api_gateway to update the status of an action or workflow """
+
+        if message is None:
+            return None
+
         patches = self.get_patches(message)
 
         if len(patches) < 1:
