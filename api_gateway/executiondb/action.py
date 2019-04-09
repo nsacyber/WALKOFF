@@ -19,16 +19,18 @@ logger = logging.getLogger(__name__)
 class ActionApi(ExecutionElement, Execution_Base):
     __tablename__ = 'action_api'
     name = Column(String(), nullable=False)
+    location = Column(String(), nullable=False)
     description = Column(String())
     returns = relationship("ReturnApi", uselist=False, cascade="all, delete-orphan", passive_deletes=True)
     parameters = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
     app_api_id = Column(UUIDType(binary=False), ForeignKey('app_api.id_', ondelete='CASCADE'))
     action_id = Column(UUIDType(binary=False), ForeignKey('action.id_', ondelete='CASCADE'))
 
-    def __init__(self, name, id_=None, errors=None, description=None, returns=None, parameters=None):
+    def __init__(self, name, location, id_=None, errors=None, description=None, returns=None, parameters=None):
         ExecutionElement.__init__(self, id_, errors)
 
         self.name = name
+        self.location = location
         self.description = description if description else ""
         self.returns = returns
         self.parameters = parameters if parameters else []
@@ -38,6 +40,7 @@ class ActionApiSchema(ExecutionElementBaseSchema):
     """Schema for actions
     """
     name = field_for(ActionApi, 'name', required=True)
+    location = field_for(ActionApi, 'location', required=True)
     description = field_for(ActionApi, 'description')
     returns = fields.Nested(ReturnApiSchema())
     parameters = fields.Nested(ParameterApiSchema, many=True)

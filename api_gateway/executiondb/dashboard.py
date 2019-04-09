@@ -1,9 +1,9 @@
 import logging
 from uuid import uuid4
 
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey, JSON
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy_utils import UUIDType, JSONType
+from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
@@ -38,7 +38,7 @@ class Widget(Execution_Base):
     y = Column(Integer, nullable=False)
     cols = Column(Integer, nullable=False)
     rows = Column(Integer, nullable=False)
-    options = Column(JSONType)
+    options = Column(JSON)
 
     def __init__(self, id_=None, name=None, type_=None, x=None, y=None, cols=None, rows=None, options=None):
         self.id_ = validate_uuid4(id_)
@@ -60,7 +60,7 @@ class WidgetSchema(ExecutionBaseSchema):
     y = field_for(Widget, 'y', required=True)
     cols = field_for(Widget, 'cols', required=True)
     rows = field_for(Widget, 'rows', required=True)
-    options = fields.Raw()
+    options = field_for(Widget, 'options')
 
     class Meta:
         model = Widget

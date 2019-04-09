@@ -1,8 +1,8 @@
 import logging
 
-from sqlalchemy import Column, String, ForeignKey, orm, event
+from sqlalchemy import Column, String, JSON, ForeignKey, orm, event
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import UUIDType, JSONType
+from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
@@ -20,7 +20,7 @@ class Transform(ExecutionElement, Execution_Base):
 
     name = Column(String(255), nullable=False)
     transform = Column(String(80), nullable=False)
-    parameter = Column(JSONType)
+    parameter = Column(JSON, nullable=False)
     # parameter = relationship('Parameter', cascade='all, delete, delete-orphan', passive_deletes=True)
     position = relationship('Position', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
 
@@ -66,7 +66,7 @@ class TransformSchema(ExecutionElementBaseSchema):
 
     name = field_for(Transform, 'name', required=True)
     transform = field_for(Transform, 'transform', required=True)
-    parameter = fields.Raw()
+    parameter = field_for(Transform, 'parameter', required=True)
     # parameter = fields.Nested(ParameterSchema())
     position = fields.Nested(PositionSchema())
 

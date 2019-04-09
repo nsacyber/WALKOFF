@@ -2,6 +2,7 @@ AppApi:
   type: object
   description: Api used for an app
   required: [name]
+  additionalProperties: false
   properties:
     name:
       type: string
@@ -39,6 +40,7 @@ AppApi:
 ApiContact:
   type: object
   description: Contact information for the owners of this API
+  additionalProperties: false
   properties:
     name:
       type: string
@@ -56,6 +58,7 @@ ApiLicense:
   type: object
   description: License information for this API
   required: [name]
+  additionalProperties: false
   properties:
     name:
       type: string
@@ -69,6 +72,7 @@ ActionApi:
   type: object
   description: The api of an app's action
   required: [name]
+  additionalProperties: false
   properties:
     name:
       type: string
@@ -96,6 +100,7 @@ ParameterApi:
   type: object
   description: A parameter using for actions
   required: [name, schema]
+  additionalProperties: false
   properties:
     name:
       type: string
@@ -117,6 +122,7 @@ ParameterApi:
 ReturnApi:
   type: object
   description: A specification of what an action returns
+  additionalProperties: false
   properties:
     description:
       type: string
@@ -130,6 +136,7 @@ ExternalDoc:
   type: object
   description: information about external documentation
   required: [url]
+  additionalProperties: false
   properties:
     description:
       type: string
@@ -143,6 +150,7 @@ ApiTag:
   type: object
   description: A tag for a class of actions/conditions/transforms in this app
   required: [name]
+  additionalProperties: false
   properties:
     name:
       type: string
@@ -159,6 +167,7 @@ ParameterSchema:
   type: object
   description: Fields used to validate parameter against a JSON schema (Draft 4)
   required: [type]
+  additionalProperties: false
   properties:
     type:
       type: string
