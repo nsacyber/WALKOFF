@@ -105,7 +105,7 @@ async def create_secret(client, name, data):
     body = {"Data": data, "Name": name}
     headers = {"Content-Type": "application/json"}
     resp = await client._query("secrets/create", "POST", data=json.dumps(body), headers=headers)
-    return resp
+    return await resp.json()
 
 
 async def update_service(client, service_id, version, *, image=None, rollback=None, mode=None):
@@ -209,10 +209,11 @@ async def load_secrets(docker_client, project):
         except (AttributeError, DockerError):
             with open(filename, 'rb') as fp:
                 data = fp.read()
-            secret_id = await create_secret(docker_client, name=secret.source, data=data)
+            secret_id = (await create_secret(docker_client, name=secret.source, data=data)).get("ID")
 
-        secret_references.append(SecretReference(secret_id=secret_id["ID"], secret_name=secret.source,
-                                                 uid=secret.uid, gid=secret.gid, mode=secret.mode))
+        if secret_id is not None:
+            secret_references.append(SecretReference(secret_id=secret_id, secret_name=secret.source,
+                                                     uid=secret.uid, gid=secret.gid, mode=secret.mode))
     return secret_references
 
 def connect_to_docker():
