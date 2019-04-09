@@ -1,8 +1,8 @@
 import logging
 
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
-from sqlalchemy import Column, ForeignKey, String
-from sqlalchemy_utils import UUIDType, JSONType
+from sqlalchemy import Column, ForeignKey, String, JSON
+from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 from marshmallow_sqlalchemy import field_for
 
@@ -17,8 +17,8 @@ class ReturnApi(ExecutionElement, Execution_Base):
     __tablename__ = 'return_api'
     action_api_id = Column(UUIDType(binary=False), ForeignKey('action_api.id_', ondelete='CASCADE'))
     description = Column(String())
-    example = Column(JSONType)
-    schema = Column(JSONType)
+    example = Column(JSON)
+    schema = Column(JSON)
 
     def __init__(self, id_=None, errors=None, description=None, example=None, schema=None):
         ExecutionElement.__init__(self, id_, errors)
@@ -29,8 +29,8 @@ class ReturnApi(ExecutionElement, Execution_Base):
 
 class ReturnApiSchema(ExecutionElementBaseSchema):
     description = field_for(ReturnApi, 'description')
-    example = fields.Raw()
-    schema = fields.Raw()
+    example = field_for(ReturnApi, 'example')
+    schema = field_for(ReturnApi, 'schema')
 
     class Meta:
         model = ReturnApi

@@ -1,8 +1,8 @@
 import logging
 
-from sqlalchemy import Column, String, ForeignKey, UniqueConstraint, Boolean, event
+from sqlalchemy import Column, String, ForeignKey, JSON, UniqueConstraint, Boolean, event
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy_utils import UUIDType, JSONType
+from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
@@ -20,9 +20,9 @@ class AppApi(ExecutionElement, Execution_Base):
     app_version = Column(String(), nullable=False)
     walkoff_version = Column(String(), nullable=False)
     description = Column(String())
-    contact = Column(JSONType)
-    license_ = Column(JSONType)
-    external_docs = Column(JSONType)
+    contact = Column(JSON)
+    license_ = Column(JSON)
+    external_docs = Column(JSON)
     actions = relationship('ActionApi', backref='app_api', cascade="all, delete-orphan", passive_deletes=True)
     # __table_args__ = (UniqueConstraint("playbook_id", "name", name="_playbook_workflow"),)
 
@@ -41,6 +41,7 @@ class AppApi(ExecutionElement, Execution_Base):
 
     def validate(self):
         """Validates the object"""
+        pass
 
 
 class AppApiSchema(ExecutionElementBaseSchema):
@@ -48,9 +49,9 @@ class AppApiSchema(ExecutionElementBaseSchema):
     app_version = field_for(AppApi, 'app_version', required=True)
     walkoff_version = field_for(AppApi, 'walkoff_version', required=True)
     description = field_for(AppApi, 'description')
-    contact = fields.Raw()
-    license_ = fields.Raw()
-    external_docs = fields.Raw()
+    contact = field_for(AppApi, 'contact')
+    license_ = field_for(AppApi, 'license_')
+    external_docs = field_for(AppApi, 'external_docs')
     actions = fields.Nested(ActionApiSchema, many=True)
 
     class Meta:
