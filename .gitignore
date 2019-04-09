@@ -47,3 +47,4 @@ __pycache__/
 *.db
 *.ini
 api_gateway/api/composed_api.yaml
+data/registry/
