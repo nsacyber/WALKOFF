@@ -3,6 +3,8 @@ import json
 import uuid
 import logging
 from collections import OrderedDict
+from datetime import datetime
+
 
 from flask import request, current_app, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_claims
@@ -147,13 +149,12 @@ def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
         execution_id = str(uuid.uuid4())
     if not workflow:
         workflow = workflow_schema.dump(workflow_getter(workflow_id))
-    logger.info(f"here be a workflow: {workflow}")
     workflow_status_json = {  # ToDo: Probably load this directly into db model?
         "execution_id": execution_id,
         "workflow_id": workflow_id,
         "name": workflow["name"],
         "status": StatusEnum.PENDING.name,
-        "started_at": None,
+        "started_at": str(datetime.now()),
         "completed_at": None,
         "user": get_jwt_claims().get('username', None),
         "node_statuses": []

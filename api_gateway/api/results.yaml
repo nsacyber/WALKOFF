@@ -69,7 +69,7 @@
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Uuid'
+              $ref: '#/components/schemas/WorkflowStatus'
       400:
         description: Invalid input error.
         content:

@@ -32,7 +32,6 @@ class Branch(ExecutionElement, Execution_Base):
         ExecutionElement.__init__(self, id_, errors)
         self.source_id = source_id
         self.destination_id = destination_id
-
         self.validate()
 
     @orm.reconstructor
@@ -41,6 +40,7 @@ class Branch(ExecutionElement, Execution_Base):
         pass
 
     def validate(self):
+        self.errors = []
         pass
 
 

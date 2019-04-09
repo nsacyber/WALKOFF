@@ -54,6 +54,11 @@ class Worker:
                 worker = Worker(workflow, redis=redis, session=session)
                 logger.info(f"Starting execution of workflow: {workflow.name}")
 
+                message = WorkflowStatusMessage.execution_started(worker.workflow.execution_id,
+                                                                                  worker.workflow.id_,
+                                                                                  worker.workflow.name)
+                await worker.send_message(message)
+
                 try:
                     await worker.execute_workflow()
                 except Exception:
@@ -276,7 +281,7 @@ class Worker:
                 elif msg.status == StatusEnum.SUCCESS:
                     self.accumulator[msg.node_id] = msg.result
                     logger.info(f"Worker received result for: {msg.label}-{msg.execution_id}")
-                    
+
                 elif msg.status == StatusEnum.FAILURE:
                     self.accumulator[msg.node_id] = msg.result
                     await self.cancel_subgraph(self.workflow.nodes[msg.node_id])  # kill the children!
@@ -339,7 +344,7 @@ class Worker:
 
         elif isinstance(message, WorkflowStatusMessage):
             if message.status == StatusEnum.EXECUTING:
-                for key in vars(message):
+                for key in [attr for attr in message.__slots__ if getattr(message, attr)]:
                     patches.append(self.make_patch(message, f"/{key}", JSONPatchOps.REPLACE, value_only=True,
                                                    white_list={f"{key}"}))
 
