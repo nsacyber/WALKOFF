@@ -83,17 +83,18 @@ class Workflow(ExecutionElement, Execution_Base):
         node_ids = {node.id_ for node in self.actions + self.conditions + self.transforms}
         work_var_ids = {workflow_var.id_ for workflow_var in self.workflow_variables}
         global_ids = set(current_app.running_context.execution_db.session.query(GlobalVariable.id_).all())
-
         errors = []
         if not self.start and self.actions:
             errors.append("Workflows must have a starting action.")
         elif self.actions and self.start not in node_ids:
             errors.append(f"Workflow start ID {self.start} not found in nodes")
         for branch in self.branches:
+            # Todo: Should these just be removed?
             if branch.source_id not in node_ids:
                 errors.append(f"Branch source ID {branch.source_id} not found in nodes")
             if branch.destination_id not in node_ids:
                 errors.append(f"Branch destination ID {branch.destination_id} not found in nodes")
+
         for action in self.actions:
             action_api = current_app.running_context.execution_db.session.query(ActionApi).filter(
                 ActionApi.location == f"{action.app_name}.{action.name}"

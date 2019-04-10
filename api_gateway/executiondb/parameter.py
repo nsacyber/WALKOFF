@@ -115,32 +115,6 @@ class Parameter(Execution_Base, ExecutionElement):
 
     def validate(self):
         pass
-        # if self.variant != ParameterVariant.STATIC_VALUE.name:
-        #     # Parameter is a reference, verify the uuid is valid
-        #     if not validate_uuid4(self.value):
-        #         message = f"Value is a reference but {self.value} is not a valid uuid4"
-        #         logger.error(message)
-        #         self.errors = [message]
-        #     # ToDo: verify that the uuid exists in the workflow.
-        #     # Doing this with SQLAlchemy results in circular imports.
-        # else:
-        #     # Parameter is a value, verify that the value is valid under the schema given in App Api, if applicable
-        #     api = current_app.running_context.execution_db.session.query(ParameterApi).filter(
-        #         ParameterApi.location == self.api_location
-        #     ).first()
-        #     try:
-        #         Draft4Validator(api.schema).validate(self.value)
-        #     except JSONSchemaValidationError as e:
-        #         message = f"Parameter {self.name} has value {self.value} that is not valid under schema {api.schema}."
-        #         logger.error(message)
-        #         self.errors = [message]
-
-    # def __eq__(self, other):
-    #     return self.name == other.name and self.value == other.value and self.reference == other.reference \
-    #            and self.variant == other.variant
-    #
-    # def __hash__(self):
-    #     return hash(self.id_)
 
 
 @event.listens_for(Parameter, 'before_update')
@@ -161,21 +135,3 @@ class ParameterSchema(ExecutionElementBaseSchema):
     class Meta:
         model = Parameter
         unknown = EXCLUDE
-
-    # @validates_schema
-    # def validate_argument(self, data):
-    #     has_value = 'value' in data
-    #     has_reference = 'reference' in data and bool(data['reference'])
-    #     if (not has_value and not has_reference) or (has_value and has_reference):
-    #         raise ValidationError('Parameters must have either a value or a reference.', ['value'])
-    #
-    # @post_load
-    # def make_instance(self, data):
-    #     instance = self.instance or self.get_instance(data)
-    #     if instance is not None:
-    #         for key, value in data.items():
-    #             setattr(instance, key, value)
-    #         return instance
-    #     return self.opts.model(**data)
-
-

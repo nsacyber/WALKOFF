@@ -130,6 +130,7 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+    security: []
 
   delete:  # ToDo: Delete this when testing is finished
     tags:
@@ -153,6 +154,7 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+    security: []
 
 #/apps/apis/{app_name}/{field_name}:
 #  get:

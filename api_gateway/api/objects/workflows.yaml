@@ -2,7 +2,7 @@ Workflow:
   type: object
   required: [name]
   description: A workflow object
-  additionalProperties: false #ToDo: verify if this is needed
+  additionalProperties: false
   properties:
     id_:
       $ref: '#/components/schemas/Uuid'
@@ -88,7 +88,7 @@ WorkflowMetaData:
 
 Action:
   type: object
-  required: [id_, app_name, app_version, label, name]
+  required: [id_, app_name, app_version, label, name, position]
   description: Encapsulation of executing an action in an app.
   additionalProperties: false
   properties:
@@ -111,6 +111,7 @@ Action:
       description: User-specified label for the action
       type: string
       example: action1
+      minLength: 1
     errors:
       $ref: '#/components/schemas/ExecutionElementErrors'
     parameters:
