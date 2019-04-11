@@ -41,10 +41,10 @@ class WorkflowJSONDecoder(json.JSONDecoder):
         self.branches = set()
 
     def object_hook(self, o):
-        if "x" and "y" in o:
+        if "x" in o and "y" in o:
             return Point(**o)
 
-        elif "parameters" and "priority" in o:
+        elif "parameters" in o and "priority" in o:
             node = Action(**o)
             self.nodes[node.id_] = node
             return node
@@ -53,7 +53,7 @@ class WorkflowJSONDecoder(json.JSONDecoder):
             o["variant"] = ParameterVariant[o["variant"]]
             return Parameter(**o)
 
-        elif "source_id" and "destination_id" in o:
+        elif "source_id" in o and "destination_id" in o:
             self.branches.add(Branch(source_id=o["source_id"], destination_id=o["destination_id"], id_=o["id_"]))
 
         elif "conditional" in o:
@@ -71,10 +71,10 @@ class WorkflowJSONDecoder(json.JSONDecoder):
             self.nodes[node.id_] = node
             return node
 
-        elif "description" and "value" in o:
+        elif "description" in o and "value" in o:
             return Variable(**o)
 
-        elif "actions" and "branches" in o:
+        elif "actions" in o and "branches" in o:
             branches = {Branch(self.nodes[b.source_id], self.nodes[b.destination_id], b.id_) for b in self.branches}
             workflow_variables = {var.id_: var for var in o["workflow_variables"]}
             start = self.nodes[o["start"]]

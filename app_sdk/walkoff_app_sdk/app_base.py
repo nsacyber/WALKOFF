@@ -73,9 +73,13 @@ class AppBase:
             i = 0
             start = time.time()
             while action is None:
-                src_key = self.action_queue_keys[i % len(self.action_queue_keys)]
+                src_key = self.action_queue_keys[i]
                 action = await self.redis.rpoplpush(src_key, REDIS_ACTIONS_IN_PROCESS)
+
                 i += 1
+                if not i % len(self.action_queue_keys):
+                    i = 0
+
                 await asyncio.sleep(0)
 
                 if time.time() - start > 30:  # We've timed out with no work. Guess we'll die now...

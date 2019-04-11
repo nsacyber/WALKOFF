@@ -25,11 +25,11 @@ class MessageJSONDecoder(json.JSONDecoder):
         json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
 
     def object_hook(self, o):
-        if "result" and "app_name" in o:
+        if "result" in o and "app_name" in o:
             o["status"] = StatusEnum[o["status"]]
             return NodeStatusMessage(**o)
 
-        elif "workflow_id" and "execution_id" in o:
+        elif "workflow_id" in o and "execution_id" in o:
             o["status"] = StatusEnum[o["status"]]
             return WorkflowStatusMessage(**o)
 
