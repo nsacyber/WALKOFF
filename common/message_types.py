@@ -176,6 +176,7 @@ class NodeStatusMessage(object):
                                            status=StatusEnum.SUCCESS)
 
     @classmethod
-    def failure_from_node(cls, node, execution_id):
+    def failure_from_node(cls, node, execution_id, result):
         completed_at = datetime.datetime.now()
-        return NodeStatusMessage.from_node(node, execution_id, completed_at=completed_at, status=StatusEnum.FAILURE)
+        return NodeStatusMessage.from_node(node, execution_id, result=result, completed_at=completed_at,
+                                           status=StatusEnum.FAILURE)
