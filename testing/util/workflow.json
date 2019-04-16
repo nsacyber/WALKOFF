@@ -1,0 +1,200 @@
+{
+  "id_": "e8c7840a-bd3e-4cfd-b9be-e07269b10c89",
+  "execution_id": "bd8c031a-b87e-4530-bf19-e0a08414f46f",
+  "name": "ConditionTest",
+  "start": "239d47a9-323e-a920-d1ae-d9bfa75cbeb0",
+  "actions": [
+    {
+      "name": "hello_world",
+      "app_name": "HelloWorld-v1.0",
+      "id_": "239d47a9-323e-a920-d1ae-d9bfa75cbeb0",
+      "label": "hello_world",
+      "app_version": "v1.0",
+      "priority": 1,
+      "position": {
+        "id_": "be18b23d-e591-46ac-a699-d7614dd151b6",
+        "x": 430,
+        "y": 110
+      }
+    },
+    {
+      "name": "pause",
+      "app_name": "HelloWorld-v1.0",
+      "parameters": [
+        {
+          "id_": "eef8ece2-23d1-4edf-8455-507dd074a408",
+          "name": "seconds",
+          "value": 3,
+          "variant": "STATIC_VALUE"
+        }
+      ],
+      "id_": "55876340-50b1-d9a4-7f22-150a6f4be4c6",
+      "app_version": "v1.0",
+      "label": "pause",
+      "priority": 1,
+      "position": {
+        "id_": "16e38316-7a95-4f9e-af09-5492b221a5fd",
+        "x": 400,
+        "y": 190
+      }
+    },
+    {
+      "name": "pause",
+      "app_name": "HelloWorld-v1.0",
+      "parameters": [
+        { 
+          "id_": "cb91613a-5ff8-473e-943d-626421a05402",
+          "name": "seconds",
+          "value": 5,
+          "variant": "STATIC_VALUE"
+        }
+      ],
+      "id_": "adb4da32-5cd9-4470-a027-00e7d7a2d73b",
+      "app_version": "v1.0",
+      "label": "pause2",
+      "priority": 1,
+      "position": {
+        "id_": "3959f787-e19d-4a39-bc6c-02aced340e68",
+        "x": 460,
+        "y": 150
+      }
+    },
+    {
+      "name": "repeat_back_to_me",
+      "app_name": "HelloWorld-v1.0",
+      "parameters": [
+        {
+          "id_": "65b9ba49-5ae6-4e49-b179-cdd303df504f",
+          "name": "call",
+          "value": "Left Side",
+          "variant": "STATIC_VALUE"
+        }
+      ],
+      "id_": "4f67c98f-5cd0-7cba-7724-b8441ce0928e",
+      "app_version": "v1.0",
+      "label": "repeat_back_to_me",
+      "priority": 1,
+      "position": {
+        "id_": "96911fdb-ce1a-4423-aa42-e2a69c8edde3",
+        "x": 350,
+        "y": 250
+      }
+    },
+    {
+      "name": "repeat_back_to_me",
+      "app_name": "HelloWorld-v1.0",
+      "parameters": [
+        {
+          "id_": "b5469941-2656-4ee7-8d53-07833d84e951",
+          "name": "call",
+          "value": "Right Side",
+          "variant": "STATIC_VALUE"
+        }
+      ],
+      "id_": "5b560c49-3ede-67a0-95b6-62146de93d4f",
+      "app_version": "v1.0",
+      "label": "repeat_back_to_me_2",
+      "priority": 1,
+      "position": {
+        "id_": "925269e0-a658-4eaa-830a-5dbb8e21839a",
+        "x": 480,
+        "y": 270
+      }
+    },
+    {
+      "name": "echo_array",
+      "app_name": "HelloWorld-v1.0",
+      "parameters": [
+        {
+          "id_": "928d1b13-2575-4451-af83-0515eb8082b9",
+          "name": "data",
+          "value": [1, 2, 3, 4, 5],
+          "variant": "STATIC_VALUE"
+        }
+      ],
+      "id_": "4ae0a2d8-30a6-4638-9fbc-eb0b1d2171a1",
+      "app_version": "v1.0",
+      "label": "echo_array",
+      "priority": 1,
+      "position": {
+        "id_": "2d74a4b2-0161-42a4-bc83-a2119a05c70b",
+        "x": 480,
+        "y": 290
+      }
+    },
+    {
+      "name": "echo_json",
+      "app_name": "HelloWorld-v1.0",
+      "parameters": [
+        {
+          "id_": "b2fba3e8-ce36-4164-b22c-5dfc00c116c5",
+          "name": "data",
+          "value": {"foo": "bar", "spam": "eggs"},
+          "variant": "STATIC_VALUE"
+        }
+      ],
+      "id_": "5cd36869-2719-4996-88b5-9060ac61bc36",
+      "app_version": "v1.0",
+      "label": "echo_json",
+      "priority": 1,
+      "position": {
+        "id_": "0e8883fc-083c-4097-8e94-a95b84f08002",
+        "x": 480,
+        "y": 320
+      }
+    }
+  ],
+  "conditions": [
+  {
+      "name": "Condition",
+      "app_name": "Builtin",
+      "conditional": "if pause.result > pause2.result: selected_node = repeat_back_to_me\nelse: selected_node=repeat_back_to_me_2",
+      "id_": "023fa9b6-9ee9-49b9-8adc-931a35ebf2cc",
+      "label": "Choose Repeater",
+      "position": {
+        "id_": "3b701cc5-7154-48f7-85f2-7ded05336750",
+        "x": 430,
+        "y": 230
+      }
+    }
+  ],
+  "transforms": [
+  {
+      "name": "Transform",
+      "app_name": "Builtin",
+      "transform": "get_value_at_key",
+      "parameter": "spam",
+      "id_": "53a68b00-979f-46c3-ab9c-cc08108ce97c",
+      "label": "SpamGetter",
+      "position": {
+        "id_": "6d89fbcb-2d2b-4a00-9124-80d797c21212",
+        "x": 480,
+        "y": 350
+      }
+    },
+  {
+    "name": "Transform",
+    "app_name": "Builtin",
+    "transform": "get_value_at_index",
+    "parameter": 2,
+    "id_": "3e9e6d9f-736e-437a-a5b0-138783c67fbb",
+    "label": "Index_2_Getter",
+    "position": {
+      "id_": "3f9572eb-11d9-451f-b98a-d260179b795b",
+      "x": 480,
+      "y": 340
+    }
+   }
+  ],
+  "triggers": [],
+  "workflow_variables": [
+    {
+      "description": "Arg for the final repeat back to me",
+      "id_": "a5677375-a763-9445-2193-b6c54453dbde",
+      "name": "repeat_back",
+      "value": "Repeating back default!"
+    }
+  ],
+  "is_valid": true,
+  "errors": []
+}

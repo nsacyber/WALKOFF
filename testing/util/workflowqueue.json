@@ -1,0 +1,33 @@
+{
+    "workflow_id": "<string>",
+    "execution_id": "<string>",
+    "start": "<string>",
+    "parameters": [
+        {
+            "name": "<string>12",
+            "variant": "<string>",
+            "id_": "<string>",
+            "value": "schema type not provided"
+        },
+        {
+            "name": "<string>123",
+            "variant": "<string>",
+            "id_": "<string>",
+            "value": "schema type not provided"
+        }
+    ],
+    "workflow_variables": [
+        {
+            "value": "<string>",
+            "id_": "<string>",
+            "name": "<string>dsd",
+            "description": "<string>"
+        },
+        {
+            "value": "<string>",
+            "id_": "<string>",
+            "name": "<string>",
+            "description": "<string>"
+        }
+    ]
+}
