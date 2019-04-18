@@ -204,9 +204,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 					break;
 				case WorkflowStatuses.EXECUTING:
 					if (!matchingWorkflowStatus.started_at) {
-						matchingWorkflowStatus.started_at = workflowStatusEvent.timestamp;
+						matchingWorkflowStatus.started_at = workflowStatusEvent.started_at;
 						this.workflowStatusStartedRelativeTimes[matchingWorkflowStatus.execution_id] =
-							this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
+							this.utils.getRelativeLocalTime(workflowStatusEvent.started_at);
 					}
 					matchingWorkflowStatus.user = workflowStatusEvent.user;
 					matchingWorkflowStatus.node_status = workflowStatusEvent.node_status;
@@ -220,16 +220,16 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 				case WorkflowStatuses.COMPLETED:
 					// Add a delay to ensure completed status is updated in quick executing workflows
 					setTimeout(() => {
-						matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
+						matchingWorkflowStatus.completed_at = workflowStatusEvent.completed_at;
 						this.workflowStatusCompletedRelativeTimes[matchingWorkflowStatus.execution_id] =
-							this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
+							this.utils.getRelativeLocalTime(workflowStatusEvent.completed_at);
 						delete matchingWorkflowStatus.node_status;
 					}, 250);
 					break;
 				case WorkflowStatuses.ABORTED:
-					matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
+					matchingWorkflowStatus.completed_at = workflowStatusEvent.completed_at;
 					this.workflowStatusCompletedRelativeTimes[matchingWorkflowStatus.execution_id] =
-						this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
+						this.utils.getRelativeLocalTime(workflowStatusEvent.completed_at);
 					break;
 				default:
 					this.toastrService.warning(`Unknown Workflow Status SSE Type: ${message.type}.`);

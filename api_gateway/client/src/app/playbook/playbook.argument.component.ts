@@ -24,6 +24,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 	@Input() id: number;
 	@Input() argument: Argument;
 	@Input() parameterApi: ParameterApi;
+	@Input() selectedAction: Action;
 	@Input() loadedWorkflow: Workflow;
 	@Input() users: User[];
 	@Input() roles: Role[];
@@ -316,7 +317,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 
 	// TODO: maybe somehow recursively find actions that may occur before. Right now it just returns all of them.
 	getPreviousActions(): Action[] {
-		return this.loadedWorkflow.actions;
+		return this.loadedWorkflow.getPreviousActions(this.selectedAction);
 	}
 
 	/**

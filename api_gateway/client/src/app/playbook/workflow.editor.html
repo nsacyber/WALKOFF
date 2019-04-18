@@ -224,7 +224,7 @@
                     <h5>Arguments</h5>
                     <playbook-argument-component
                         *ngFor="let parameterApi of selectedActionApi.parameters; let id = index"
-                        [loadedWorkflow]="loadedWorkflow"
+                        [selectedAction]="selectedAction" [loadedWorkflow]="loadedWorkflow"
                         [argument]="getOrInitializeSelectedActionArgument(parameterApi)" [globals]="globals"
                         [parameterApi]="parameterApi" [id]="id" [users]="users" [roles]="roles"
                         (createVariable)="onCreateVariable($event)"></playbook-argument-component>
@@ -317,9 +317,8 @@
     </div>
 
     <div class="mb-3">
-        <ngb-tabset *ngIf="loadedWorkflow?.id || loadedWorkflow?.environment_variables?.length > 0"
-            destoryOnHide="false" (tabChange)="recalculateConsoleTable($event)">
-            <ngb-tab *ngIf="loadedWorkflow?.id && !loadedWorkflow?.has_errors" title="Console" id="console-tab">
+        <ngb-tabset destoryOnHide="false" (tabChange)="recalculateConsoleTable($event)">
+            <ngb-tab title="Console" id="console-tab">
                 <ng-template ngbTabContent>
                     <ngx-codemirror #consoleArea [(ngModel)]="consoleContent" [options]="{
                         lineNumbers: true,

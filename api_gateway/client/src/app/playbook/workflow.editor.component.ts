@@ -575,6 +575,14 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// Undo/Redo extension
 		this.ur = this.cy.undoRedo({});
 
+		this.ur.action('add-walkoff-node', (args) => {
+			args.addedNode = this.insertNode(args);
+			return args;
+		}, (args) => {
+			this.cy.elements(`[_id="${ args.addedNode.data._id }"]`).remove();
+			return args;
+		})
+
 		// Panzoom extension
 		this.cy.panzoom({});
 
@@ -773,6 +781,9 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		// Go through our workflow and update some parameters
 		workflowToSave.actions.forEach(action => {
+			// Set action name if empty
+			if (!action.name) action.name = workflowToSave.getNextActionName(action.action_name);
+
 			// Set the new cytoscape positions on our loadedworkflow
 			action.position = cyData.find(cyAction => cyAction.data._id === action.id).position;
 
@@ -812,6 +823,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					if (params.workflowId) {
 						this.playbookService.loadWorkflow(params.workflowId)
 							.then(workflow => this.loadWorkflow(workflow))
+							.catch(e => this.router.navigateByUrl(`/workflows`))
 					}
 					else {
 						let workflowToCreate: Workflow = this.playbookService.workflowToCreate;
@@ -1125,7 +1137,13 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			y: e.mouseEvent.layerY,
 		});
 
-		this.insertNode(appName, actionApi.app_version, actionApi.name, dropPosition, true);
+		this.ur.do('add-walkoff-node', {
+			appName: appName,
+			appVersion: actionApi.app_version,
+			actionName: actionApi.name,
+			location: dropPosition,
+			shouldUseRenderedPosition: true
+		})
 	}
 
 	/**
@@ -1140,7 +1158,14 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const extent = this.cy.extent();
 
 		const centerGraphPosition = plainToClass(GraphPosition, { x: this.avg(extent.x1, extent.x2), y: this.avg(extent.y1, extent.y2) });
-		this.insertNode(actionApi.app_name, actionApi.app_version, actionApi.name, centerGraphPosition, false);
+
+		this.ur.do('add-walkoff-node', {
+			appName: actionApi.app_name,
+			appVersion: actionApi.app_version,
+			actionName: actionApi.name,
+			location: centerGraphPosition,
+			shouldUseRenderedPosition: false
+		})
 	}
 
 	/**
@@ -1159,9 +1184,9 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param location Graph Position, where to create the node
 	 * @param shouldUseRenderedPosition Whether or not to use rendered or "real" graph position
 	 */
-	insertNode(appName: string, appVersion: string, actionName: string, location: GraphPosition, shouldUseRenderedPosition: boolean): void {
+	insertNode({appName, appVersion, actionName, location, shouldUseRenderedPosition, firstTime, addedNode}) {
 		// Grab a new ID for both the ID of the node and the ID of the action in the workflow
-		const newActionUuid = UUID.UUID();
+		const newActionUuid = (firstTime) ? UUID.UUID() : addedNode.data._id;
 
 		const args: Argument[] = [];
 		const parameters = this._getAction(appName, appVersion, actionName).parameters;
@@ -1174,10 +1199,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 
 		let actionToBeAdded: Action;
-		let numExistingActions = 0;
-		this.loadedWorkflow.actions.forEach(a => a.action_name === actionName ? numExistingActions++ : null);
-		// Set our name to be something like "action 2" if "action" already exists
-		const uniqueActionName = numExistingActions ? `${actionName} ${numExistingActions + 1}` : actionName;
+		const uniqueActionName = this.loadedWorkflow.getNextActionName(actionName);
 
 		if (appName && actionName) { actionToBeAdded = new Action(); }
 		actionToBeAdded.id = newActionUuid;
@@ -1208,7 +1230,10 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			nodeToBeAdded.renderedPosition = location;
 		} else { nodeToBeAdded.position = location; }
 
-		this.ur.do('add', nodeToBeAdded);
+		//this.ur.do('add', nodeToBeAdded);
+		this.cy.add(nodeToBeAdded);
+
+		return nodeToBeAdded;
 	}
 
 	// TODO: update this to properly "cut" actions from the loadedWorkflow.
@@ -1594,7 +1619,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	/**
 	 * Gets a list of actions previous to the currently selected action. (Currently just grabs a list of all actions.)
 	 */
-	getPreviousActions(): Action[] {
+	getPreviousActions(action: Action): Action[] {
 		return this.loadedWorkflow.actions;
 	}
 

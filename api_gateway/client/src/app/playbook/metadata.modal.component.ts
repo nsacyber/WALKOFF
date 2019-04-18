@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ViewChild } from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Workflow } from '../models/playbook/workflow';
+import { NgForm } from '@angular/forms';
 
 @Component({
     selector: 'metadata-modal-component',
@@ -10,7 +11,11 @@ import { Workflow } from '../models/playbook/workflow';
 export class MetadataModalComponent {
     @Input() workflow: Workflow = new Workflow();
     @Input() currentTags: string[] = ['UI', 'Automation', 'Bro'];
+
+    @ViewChild('myForm')
+    myForm: NgForm;
     existing: boolean = false;
+    submitted: boolean = false;
 
     tagSelectOptions = {
         multiple: true,
@@ -23,5 +28,10 @@ export class MetadataModalComponent {
 
     tagsChanged($event: any): void {
 		this.workflow.tags = $event.value;
-	}
+    }
+    
+    submit() {
+        this.submitted = true;
+        if (this.myForm.valid) this.activeModal.close(this.workflow);
+    }
 }

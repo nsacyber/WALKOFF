@@ -117,4 +117,16 @@ export class Workflow extends ExecutionElement {
 			.filter(arg => arg.value == deletedVariable.id)
 			.forEach(arg => arg.value = '');
 	}
+
+	getNextActionName(actionName: string) : string {
+		let numActions = this.actions.filter(a => a.action_name === actionName && a.name).length;
+		return numActions ? `${actionName} ${ ++numActions }` : actionName;
+	}
+
+	getPreviousActions(action: Action) : Action[] {
+		return this.branches
+			.filter(b => b.destination_id == action.id)
+			.map(b => this.actions.find(a => a.id == b.source_id))
+			.reduce((previous, action) => $.unique(previous.concat([action], this.getPreviousActions(action))), []);
+	}
 }
