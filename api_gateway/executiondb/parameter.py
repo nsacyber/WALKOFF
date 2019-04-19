@@ -86,7 +86,7 @@ class ParameterApiSchema(ExecutionElementBaseSchema):
             raise MarshmallowValidationError(message)
 
 
-class Parameter(Execution_Base, ExecutionElement):
+class Parameter(ExecutionElement, Execution_Base):
     __tablename__ = 'parameter'
     action_id = Column(UUIDType(binary=False), ForeignKey('action.id_', ondelete='CASCADE'))
     transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id_', ondelete='CASCADE'))
@@ -102,7 +102,7 @@ class Parameter(Execution_Base, ExecutionElement):
             value (any, optional): The value of the Parameter. Defaults to None. Value or reference must be included.
             variant (str): string corresponding to a ParameterVariant. Denotes static value, action output, global, etc.
         """
-        ExecutionElement.__init__(self, id_, errors)
+        ExecutionElement.__init__(self, id_, [])
         self.name = name
         self.variant = variant
         self.value = value
@@ -114,6 +114,7 @@ class Parameter(Execution_Base, ExecutionElement):
         pass
 
     def validate(self):
+        self.errors = []
         pass
 
 
@@ -135,3 +136,4 @@ class ParameterSchema(ExecutionElementBaseSchema):
     class Meta:
         model = Parameter
         unknown = EXCLUDE
+        dump_only = ('errors',)

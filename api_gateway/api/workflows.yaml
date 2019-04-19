@@ -42,6 +42,9 @@
         application/json:
           schema:
             $ref: '#/components/schemas/Workflow'
+#        multipart/form-data:
+#          schema:
+#            $ref: '#/components/schemas/Workflow'
     responses:
       201:
         description: Workflow created.
