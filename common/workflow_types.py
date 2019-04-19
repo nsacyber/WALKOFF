@@ -434,8 +434,8 @@ class DiGraph:
                     if src in self.edges:
                         self.edges[src].add(dest)
                     else:  # This edge introduces new nodes so lets add them
-                        self.nodes.add(src)
-                        self.nodes.add(dest)
+                        self.nodes[src.id_] = src
+                        self.nodes[dest.id_] = dest
                         self.edges[src] = {dest}
                     if dest in self.rev_adjacency:
                         self.edges[dest].add(src)
