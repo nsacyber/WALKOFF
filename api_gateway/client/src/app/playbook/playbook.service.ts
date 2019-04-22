@@ -111,6 +111,16 @@ emitChange(data: any) {
 	}
 
 	/**
+	 * Exports a playbook as an Observable (component handles the actual 'save').
+	 * @param workflowId: ID of playbook to export
+	 */
+	exportWorkflow(workflowId: string): Promise<Blob> {
+		return this.http.get(`/api/workflows/${workflowId}?mode=export`, { responseType: 'blob' })
+			.toPromise()
+			.catch(this.utils.handleResponseError);
+	}
+
+	/**
 	 * Imports a playbook from a supplied file.
 	 * @param fileToImport File to be imported
 	 */
@@ -123,6 +133,21 @@ emitChange(data: any) {
 		return this.http.post('/api/playbooks', formData, { headers })
 			.map(res => plainToClass(Playbook, res))
 			.catch(error => Observable.throw(error));
+	}
+
+	/**
+	 * Imports a playbook from a supplied file.
+	 * @param fileToImport File to be imported
+	 */
+	async importWorkflow(fileToImport: File): Promise<Workflow> {
+		const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
+		const body = await this.utils.readUploadedFileAsText(fileToImport);
+		
+		return this.http.post('/api/workflows', body, { headers })
+			.toPromise()
+			.then((data) => this.emitChange(data))
+			.then((data) => plainToClass(Workflow, data))
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**

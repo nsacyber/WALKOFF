@@ -52,6 +52,7 @@ import { WidgetModalComponent } from './dashboards/widget.modal.component';
 import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 import { WorkflowEditorComponent } from './playbook/workflow.editor.component';
 import { MetadataModalComponent } from './playbook/metadata.modal.component';
+import { ImportModalComponent } from './playbook/import.modal.component';
 
 @NgModule({
 	imports: [
@@ -100,6 +101,7 @@ import { MetadataModalComponent } from './playbook/metadata.modal.component';
 		MessagesModalComponent,
 		PlaybookEnvironmentVariableModalComponent,
 		MetadataModalComponent,
+		ImportModalComponent,
 		ExecutionVariableModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
@@ -138,6 +140,7 @@ import { MetadataModalComponent } from './playbook/metadata.modal.component';
 		MessagesModalComponent,
 		ExecutionVariableModalComponent,
 		PlaybookEnvironmentVariableModalComponent,
+		ImportModalComponent,
 		MetadataModalComponent,
 		WidgetModalComponent
 	],

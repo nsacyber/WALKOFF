@@ -54,6 +54,7 @@ import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
 import { ActivatedRoute } from '@angular/router';
 import { Variable } from '../models/variable';
 import { MetadataModalComponent } from './metadata.modal.component';
+import { ImportModalComponent } from './import.modal.component';
 
 @Component({
 	selector: 'playbook-component',
@@ -954,6 +955,21 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	}
 
 	/**
+	 * Downloads a playbook as a JSON representation.
+	 * @param event JS Event fired from button
+	 * @param playbook Playbook to export (id, name pair)
+	 */
+	async exportWorkflow(workflow: Workflow) {
+		try {
+			const blob = await this.playbookService.exportWorkflow(workflow.id);
+			saveAs(blob, `${workflow.name}.json`);
+		}
+		catch(e) {
+			this.toastrService.error(`Error exporting workflow "${workflow.name}": ${e.message}`);
+		}
+	}
+
+	/**
 	 * Sets our playbook to import based on a file input change.
 	 * @param event JS Event for the playbook file input
 	 */
@@ -1822,6 +1838,17 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.loadedWorkflow.deleteVariable(selectedVariable);
 		if (this.loadedWorkflow.environment_variables.length == 0)
 			($('.nav-tabs a[href="#console"], a[href="#errorLog"]') as any).tab('show');
+	}
+
+	importWorkflow() {
+		const modalRef = this.modalService.open(ImportModalComponent);
+		modalRef.result.then(importFile => {
+			this.playbookService.importWorkflow(importFile).then(workflow => {
+				this.toastrService.success(`Successfuly imported workflow "${workflow.name}".`);
+			}).catch(e => {
+				this.toastrService.error(`Error importing workflow "${importFile.name}": ${e.message}`)
+			})
+		}).catch(() => null)
 	}
 
 	editVariableModal(selectedVariable: EnvironmentVariable) {
