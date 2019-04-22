@@ -14,6 +14,10 @@ export class WorkflowStatusEvent {
 
 	timestamp: string;
 
+	started_at: string;
+
+	completed_at: string;
+
 	status: string;
 
 	@Type(() => NodeStatusSummary)

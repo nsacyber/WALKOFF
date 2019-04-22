@@ -1,3 +1,2 @@
 aiohttp
-aioredis
 pyyaml

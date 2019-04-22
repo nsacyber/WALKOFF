@@ -13,6 +13,7 @@ import { PlaybookService } from '../playbook/playbook.service';
 export class WidgetModalComponent implements OnInit {
 
     @Input() widget: DashboardWidget;
+    typeLabel: string = 'Widget';
 
     workflows: any[] = [];
     executions: any[] = [];
@@ -28,17 +29,15 @@ export class WidgetModalComponent implements OnInit {
     }
 
     async updateWorkflows() {
-        const playbooks = await this.executionService.getPlaybooks();
-        const workflows = [];
-        playbooks.forEach(playbook => {
-            playbook.workflows.forEach(workflow => {
-                workflows.push({
-                    id: workflow.id,
-                    text: `${playbook.name} - ${workflow.name}`,
-                });
+        const workflows = await this.executionService.getWorkflows();
+        const workflowOptions = [];
+        workflows.forEach(workflow => {
+            workflowOptions.push({
+                id: workflow.id,
+                text: workflow.name,
             });
         });
-        this.workflows = workflows;
+        this.workflows = workflowOptions;
     }
 
     async updateExecutions() {

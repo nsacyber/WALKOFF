@@ -20,12 +20,22 @@ export class ManageDashboardsComponent implements OnInit {
 
     dashboard: Dashboard = new Dashboard();
     existingDashboard = false;
+    submitted = false;
 
     gridRows = 16;
     gridColumns = 8;
     gridColSize = 75;
     gridGutterSize = 10;
     gridDefaultCols = 3;
+
+    widgets = [
+        {name: 'text', label: 'Text Widget'},
+        {name: 'table', label: 'Table Widget'},
+        {name: 'bar', label: 'Bar Graph'},
+        {name: 'line', label: 'Line Graph'},
+        {name: 'pie', label: 'Pie Graph'},
+        {name: 'kibana', label: 'Kibana Embed'},
+    ];
 
     constructor(
         private dashboardService: DashboardService, 
@@ -123,14 +133,15 @@ export class ManageDashboardsComponent implements OnInit {
         }
 
         const modalRef = this.modalService.open(WidgetModalComponent);
-		modalRef.componentInstance.widget = widget;
+        modalRef.componentInstance.widget = widget;
+        modalRef.componentInstance.typeLabel = this.widgets.find(w => w.name == type).label;
 		modalRef.result.then(addedWidget => {
 			this.dashboard.widgets.push(addedWidget);
 		}).catch(() => null)
     }
     
     save() {
-        if (!this.dashboard.name) return this.toastrService.error('Enter a name for the dashboard');
+        if (!this.dashboard.name) return this.submitted = true;
 
         (this.existingDashboard) ? this.dashboardService.updateDashboard(this.dashboard) : this.dashboardService.newDashboard(this.dashboard);
         this.toastrService.success(`"${ this.dashboard.name }" Saved`);

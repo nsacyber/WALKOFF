@@ -18,4 +18,4 @@ COPY ./api_gateway /app/api_gateway
 WORKDIR /app
 
 
-CMD gunicorn --reload -t 999999999 -k gevent -b $IP:$PORT api_gateway.walkoff:app
+CMD gunicorn -k gevent -b $IP:$PORT api_gateway.walkoff:app

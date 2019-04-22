@@ -11,16 +11,16 @@ import aiohttp
 from common.message_types import NodeStatusMessage, message_dumps
 from common.workflow_types import workflow_loads, workflow_dumps, Action
 from common.async_logger import AsyncLogger, AsyncHandler
-from common.helpers import connect_to_redis_pool
+from common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
-REDIS_ACTION_RESULTS = os.getenv("ACTION_RESULT_CH", "action-results")
-REDIS_ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
+REDIS_ACTION_RESULTS = os.getenv("REDIS_ACTION_RESULTS", "action-results")
+REDIS_ACTION_RESULTS_GROUP = os.getenv("REDIS_ACTION_RESULTS_GROUP", "actions-in-process")
 API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "http://api_gateway:8080")
 APP_NAME = os.getenv("APP_NAME")
-
-
+APP_TIMEOUT = os.getenv("APP_TIMEOUT", 30)
+CONTAINER_ID = os.getenv("HOSTNAME")
 
 class HTTPStream:
     """ Thin wrapper around an HTTP stream that plugs into the async logger """
@@ -55,8 +55,14 @@ class AppBase:
                           "docker-compose service name."))
             sys.exit(1)
 
-        # Creates redis keys of format "{AppName}_{Version}-{Priority}"
-        self.action_queue_keys = tuple(f"{APP_NAME}:{self.__version__}:{i}" for i in range(5, 0, -1))
+        if CONTAINER_ID is None:
+            logger.error(("CONTAINER_ID not not available. Please ensure 'HOSTNAME' environment variable is set to "
+                          "match the docker container id. This should be handled automatically by docker but in this "
+                          "case something must have gone wrong..."))
+            sys.exit(1)
+
+        # Creates redis keys of format "{AppName}:{Version}:{Priority}"
+        self.action_queue_keys = [f"{APP_NAME}:{self.__version__}:{i}" for i in range(5, 0, -1)]
         self.redis: aioredis.Redis = redis
         self.logger = logger if logger is not None else logging.getLogger("AppBaseLogger")
         self.console_logger = console_logger if console_logger is not None else logging.getLogger("ConsoleBaseLogger")
@@ -65,28 +71,35 @@ class AppBase:
     async def get_actions(self):
         """ Continuously monitors the action queues and asynchronously executes actions """
         self.logger.debug("Waiting for actions...")
+
+        app_group = f"{APP_NAME}-group"
+
         while True:
-            # Currently brpoplpush does not accept a list of keys like brpop does. To achieve the same functionality
-            # we iteratively call the non-blocking rpoplpush on each of the app queues in priority order and grab the
-            # first result we can
-            action = None
-            i = 0
-            start = time.time()
-            while action is None:
-                src_key = self.action_queue_keys[i]
-                action = await self.redis.rpoplpush(src_key, REDIS_ACTIONS_IN_PROCESS)
+            #TODO: Delete this test code
+            redis_keys = [key.decode() for key in await self.redis.keys('*')]
+            for key in self.action_queue_keys:
+                if key not in redis_keys:
+                    await self.redis.xgroup_create(key, app_group, mkstream=True)
 
-                i += 1
-                if not i % len(self.action_queue_keys):
-                    i = 0
+            message = await self.redis.xread_group(app_group, CONTAINER_ID, streams=self.action_queue_keys,
+                                                   latest_ids=['>' for _ in self.action_queue_keys],
+                                                   timeout=APP_TIMEOUT * 1000, count=1)
 
-                await asyncio.sleep(0)
+            if len(message) < 1:  # We've timed out with no work. Guess we'll die now...
+                sys.exit(1)
 
-                if time.time() - start > 30:  # We've timed out with no work. Guess we'll die now...
-                    sys.exit(1)
+            execution_id_action, stream, id_ = deref_stream_message(message)
+            execution_id, action = execution_id_action
 
+            # Remove the workflow from the stream
+            await xdel(self.redis, stream=stream, id_=id_)
+
+            # Actually execute the action
             action = workflow_loads(action)
-            asyncio.create_task(self.execute_action(action))
+            await self.execute_action(action)
+
+            # Clean up workflow-queue
+            await self.redis.xack(stream=stream, group_name=app_group, id=id_)
 
     async def execute_action(self, action: Action):
         """ Execute an action, and push its result to Redis. """
@@ -94,7 +107,11 @@ class AppBase:
         self.console_logger.handlers[0].stream.set_execution_id(f"{action.execution_id}:console")
         if hasattr(self, action.name):
             start_action_msg = NodeStatusMessage.executing_from_node(action, action.execution_id)
-            await self.redis.lpush(action.execution_id, message_dumps(start_action_msg))
+            redis_keys = [key.decode() for key in await self.redis.keys('*')]
+            if action.execution_id not in redis_keys:
+                await self.redis.xgroup_create(action.execution_id, REDIS_ACTION_RESULTS_GROUP, mkstream=True)
+
+            await self.redis.xadd(action.execution_id, {action.execution_id: message_dumps(start_action_msg)})
             try:
                 func = getattr(self, action.name, None)
                 if callable(func):
@@ -114,13 +131,13 @@ class AppBase:
                 action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
                 self.logger.exception(f"Failed to execute {action.label}-{action.id_}")
 
-            await self.redis.lpush(action.execution_id, message_dumps(action_result))
+            await self.redis.xadd(action.execution_id, {action.execution_id: message_dumps(action_result)})
 
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
             action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
                                                                 result="Action does not exist")
-            await self.redis.lpush(action.execution_id, message_dumps(action_result))
+            await self.redis.xadd(action.execution_id, {action.execution_id: message_dumps(action_result)})
 
     @classmethod
     async def run(cls):
@@ -137,6 +154,7 @@ class AppBase:
             console_logger.addHandler(handler)
 
             app = cls(redis=redis, logger=logger, console_logger=console_logger)
+
 
             await app.get_actions()
 

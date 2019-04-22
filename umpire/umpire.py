@@ -13,7 +13,7 @@ from compose.cli.command import get_project
 
 
 from common.config import config
-from common.helpers import connect_to_redis_pool
+from common.redis_helpers import connect_to_redis_pool, xlen
 from common.docker_helpers import ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, \
     load_secrets, update_service, connect_to_aiodocker, get_service, get_replicas, remove_service
 from umpire.app_repo import AppRepo
@@ -42,6 +42,8 @@ class Umpire:
         self.worker = await get_service(self.docker_client, "worker")
         services = await self.docker_client.services.list()
         self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
+        await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
+        await self.redis.xgroup_create(config.REDIS_ACTION_RESULTS, config.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
         await self.build_app_sdk()
         await self.build_worker()
 
@@ -66,6 +68,8 @@ class Umpire:
 
     async def shutdown(self):
         logger.info("Shutting down Umpire...")
+        await self.redis.xgroup_destroy(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP)
+        await self.redis.xgroup_destroy(config.REDIS_ACTION_RESULTS, config.REDIS_ACTION_RESULTS_GROUP)
         services = [*(await self.get_running_apps()).keys(), "worker"]
         mask = [await remove_service(self.docker_client, s) for s in services]
         removed_apps = list(compress(self.running_apps, mask))
@@ -287,45 +291,65 @@ class Umpire:
             return
 
     async def scale_worker(self):
-        queued_workflows = await self.redis.llen(config.REDIS_WORKFLOW_QUEUE)
+        queued_workflows = await xlen(self.redis, config.REDIS_WORKFLOW_QUEUE)
+        pending_workflows = (await self.redis.xpending(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP))[0]
+
         logger.info(f"Queued Workflows: {queued_workflows}")
+        logger.info(f"Pending Workflows: {pending_workflows}")
 
-        curr_workers = self.service_replicas.get("worker", {"running": 0, "desired": 0})["desired"]
-        workers_needed = min((queued_workflows - curr_workers), self.max_workers)
+        current_workers = self.service_replicas.get("worker", {"running": 0, "desired": 0})["desired"]
+        workers_needed = min(((queued_workflows + pending_workflows) - current_workers), self.max_workers)
+        logger.info(f"Running Workers: {current_workers}")
 
-        if workers_needed > curr_workers > 0:
+        if workers_needed > current_workers > 0:
             await self.launch_workers(workers_needed)
-        elif workers_needed > curr_workers == 0:  # scale to 0 and restart
+        elif workers_needed > current_workers == 0:  # scale to 0 and restart
             await self.launch_workers(0)
             await self.launch_workers(workers_needed)
 
     async def scale_app(self):
         self.running_apps = await self.get_running_apps()
-        logger.info(f"Running apps: {[service for service in self.running_apps.keys()]}")
+        logger.info(f"Running apps: {[{s: self.service_replicas.get(s)['running']} for s in self.running_apps.keys()]}")
 
         action_queues = set(await self.redis.keys(pattern="*:*:[1-5]", encoding="utf-8"))
+        app_groups = {f"{q.split(':')[0]}-group": {"current": 0, "pending": 0} for q in action_queues}
+
         if len(action_queues) > 0:
             for key in action_queues:
-                workload = await self.redis.llen(key)
                 app_name, version, _ = key.split(':')  # should yield [app_name, version, priority]
+                app_group = f"{app_name}-group"
+                pending_work = (await self.redis.xpending(key, app_group))[0]
+                current_work = await xlen(self.redis, key)
+                total_work = pending_work + current_work
+
+                app_groups[app_group]["pending"] += pending_work
+                app_groups[app_group]["current"] += current_work
+
                 service_name = f"{config.APP_PREFIX}_{app_name}"
                 curr_replicas = self.service_replicas.get(service_name, {"running": 0, "desired": 0})["desired"]
                 max_replicas = self.apps[app_name][version].services[0].options["deploy"]["replicas"]
-                replicas_needed = min((workload - curr_replicas), max_replicas)
+                replicas_needed = min((total_work - curr_replicas), max_replicas)
 
                 if replicas_needed > curr_replicas > 0:
                     await self.update_app(app_name, version, replicas_needed)
                 elif replicas_needed > curr_replicas == 0:  # scale to 0 and restart
                     await self.update_app(app_name, version, 0)
                     await self.update_app(app_name, version, replicas_needed)
+                else:
+                    continue
 
-                logger.info(f"Launched copy of {':'.join([app_name, version])}")
+                logger.info(f"Launched {':'.join([app_name, version])}")
+
+            for app_group, workload in app_groups.items():
+                logger.debug(f"Current tasks for {app_group}: {workload['current']}")
+                logger.debug(f"Pending tasks for {app_group}: {workload['pending']}")
 
     async def monitor_queues(self):
         count = 0
         while True:
             services = await self.docker_client.services.list()
-            self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
+            self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in
+                                     services}
 
             await self.scale_worker()
             await self.scale_app()

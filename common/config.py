@@ -48,7 +48,8 @@ class Config:
     REDIS_ACTIONS_IN_PROCESS = os.environ.get("REDIS_ACTIONS_IN_PROCESS", "actions-in-process")
     REDIS_WORKFLOW_QUEUE = os.environ.get("REDIS_WORKFLOW_Q", "workflow-queue")
     REDIS_WORKFLOWS_IN_PROCESS = os.environ.get("REDIS_WORKFLOWS_IN_PROCESS", "workflows-in-process")
-
+    REDIS_WORKFLOW_GROUP = os.environ.get("REDIS_WORKFLOW_GROUP", "workflow-group")
+    REDIS_ACTION_RESULTS_GROUP = os.environ.get("REDIS_ACTION_RESULTS_GROUP", "action-results-group")
     # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
     # See: https://docs.docker.com/compose/reference/envvars/ for more information.
     # DOCKER_HOST = os.environ.get("DOCKER_HOST", "tcp://ip_of_docker_swarm_manager:2376")
