@@ -1,10 +1,22 @@
 <div id="main" class="playbookMain">
+    <!-- <h1 *ngIf="false" class="d-flex mt-2 mb-4">
+        <span class="mr-3">Workflows</span>
+        <div class="d-flex align-items-center">
+            <button (click)="createWorkflow()" class="btn btn-outline-primary mr-2">Create New</button>
+            <button (click)="importWorkflow()" class="btn btn-outline-primary">Import Workflow</button>
+        </div>
+        <div *ngIf="workflows.length > 0" class="col-4 my-1 my-lg-none ml-auto pr-0">
+                <input class="form-control" [formControl]="filterQuery" placeholder="Filter Workflows..." />
+            </div>
+    </h1> -->
     <div class="d-flex align-items-center">
         <nav aria-label="breadcrumb">
             <ol id="playbookBreadcrumbs" class="breadcrumb">
                 <li class="breadcrumb-item">Workflows</li>
-                <li class="breadcrumb-item"><a routerLink="" (click)="createWorkflow()">Create New...</a></li>
-                <!-- <li class="breadcrumb-item active" aria-current="page">My Workflow <a href="#" class="font-weight-normal small">(Workflows)</a></li> -->
+                <li class="breadcrumb-item d-flex align-items-center">
+                    <a routerLink="" (click)="createWorkflow()">Create New</a>
+                    <button (click)="importWorkflow()" class="ml-3 btn btn-sm btn-outline-primary">Import Workflow</button>
+                </li>
             </ol>
         </nav>
         <div *ngIf="workflows.length > 0" class="col-4 my-1 my-lg-none ml-auto pr-0">
@@ -23,6 +35,7 @@
                     <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
                         <button class="dropdown-item" (click)="editDescription(w)">Edit Description...</button>
                         <button class="dropdown-item" (click)="duplicateWorkflow(w)">Duplicate</button>
+                        <button class="dropdown-item" (click)="exportWorkflow(w)">Export</button>
                         <button class="dropdown-item" (click)="deleteWorkflow(w)">Delete</button>
                     </div>
                 </div>

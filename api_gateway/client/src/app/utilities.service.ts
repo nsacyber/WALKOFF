@@ -126,4 +126,20 @@ export class UtilitiesService {
 			bootbox.prompt(Object.assign({}, defaults, options));
 		})
 	}
+
+	readUploadedFileAsText(inputFile: File): Promise<string> {
+		const temporaryFileReader = new FileReader();
+	  
+		return new Promise((resolve, reject) => {
+		  temporaryFileReader.onerror = () => {
+			temporaryFileReader.abort();
+			reject(new DOMException("Problem parsing input file."));
+		  };
+	  
+		  temporaryFileReader.onload = () => {
+			resolve(temporaryFileReader.result as string);
+		  };
+		  temporaryFileReader.readAsText(inputFile);
+		});
+	}
 }

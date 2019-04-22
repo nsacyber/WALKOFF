@@ -10,7 +10,7 @@ import { NgForm } from '@angular/forms';
 })
 export class MetadataModalComponent {
     @Input() workflow: Workflow = new Workflow();
-    @Input() currentTags: string[] = ['UI', 'Automation', 'Bro'];
+    @Input() currentTags: string[] = [];
 
     @ViewChild('myForm')
     myForm: NgForm;
