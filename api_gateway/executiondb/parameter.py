@@ -59,9 +59,6 @@ class ParameterApiSchema(ExecutionElementBaseSchema):
     @validates_schema
     def validate_parameter_api(self, data):
         stage = ""
-        if not data.get('required', False) and not data.get('placeholder'):
-            raise MarshmallowValidationError(f"Parameter {data['name']} is not required but has no default value.")
-
         try:
             if "schema" in data:
                 stage = "schema"
@@ -86,7 +83,7 @@ class ParameterApiSchema(ExecutionElementBaseSchema):
             raise MarshmallowValidationError(message)
 
 
-class Parameter(ExecutionElement, Execution_Base):
+class Parameter(Execution_Base, ExecutionElement):
     __tablename__ = 'parameter'
     action_id = Column(UUIDType(binary=False), ForeignKey('action.id_', ondelete='CASCADE'))
     transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id_', ondelete='CASCADE'))
@@ -102,7 +99,7 @@ class Parameter(ExecutionElement, Execution_Base):
             value (any, optional): The value of the Parameter. Defaults to None. Value or reference must be included.
             variant (str): string corresponding to a ParameterVariant. Denotes static value, action output, global, etc.
         """
-        ExecutionElement.__init__(self, id_, [])
+        ExecutionElement.__init__(self, id_, errors)
         self.name = name
         self.variant = variant
         self.value = value
@@ -114,7 +111,6 @@ class Parameter(ExecutionElement, Execution_Base):
         pass
 
     def validate(self):
-        self.errors = []
         pass
 
 
@@ -136,4 +132,3 @@ class ParameterSchema(ExecutionElementBaseSchema):
     class Meta:
         model = Parameter
         unknown = EXCLUDE
-        dump_only = ('errors',)
