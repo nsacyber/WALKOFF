@@ -59,9 +59,6 @@ class ParameterApiSchema(ExecutionElementBaseSchema):
     @validates_schema
     def validate_parameter_api(self, data):
         stage = ""
-        if not data.get('required', False) and not data.get('placeholder'):
-            raise MarshmallowValidationError(f"Parameter {data['name']} is not required but has no default value.")
-
         try:
             if "schema" in data:
                 stage = "schema"

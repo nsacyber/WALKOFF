@@ -112,15 +112,6 @@ class Workflow(ExecutionElement, Execution_Base):
 
                 if not api:
                     errors.append(f"Parameter {wf.name} found in workflow but not in {action.app_name} API specification.")
-                if not wf and api.required:
-                    if api.placeholder:
-                        wf = api.generate_parameter_from_default()
-                        action.parameters.append(wf)
-                    else:
-                        errors.append(f"Parameter {api.name} is missing but is required by {action.app_name} API and has no placeholder.")
-
-                if not wf.value and api.placeholder:
-                    wf.value = api.placeholder
 
                 if wf.variant != ParameterVariant.STATIC_VALUE.name:
                     if not validate_uuid4(wf.value):
