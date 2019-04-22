@@ -112,6 +112,9 @@ Action:
       type: string
       example: action1
       minLength: 1
+    is_valid:
+      description: are the parameters of this action valid?
+      type: boolean
     errors:
       $ref: '#/components/schemas/ExecutionElementErrors'
     parameters:

@@ -17,6 +17,7 @@ jsonschema == 2.6.0
 six >= 1.10.0
 marshmallow >= 3.0.0rc2
 marshmallow-sqlalchemy >= 0.13.0
+marshmallow-enum >= 1.4.1
 pynacl
 alembic
 healthcheck

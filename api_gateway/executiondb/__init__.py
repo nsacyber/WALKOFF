@@ -1,6 +1,11 @@
-import enum
 # from alembic import command
 # from alembic.config import Config
+
+from uuid import uuid4
+from sqlalchemy import Column, String, Boolean, Enum, DateTime, JSON
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from marshmallow_sqlalchemy import ModelSchema
+
 from sqlalchemy import create_engine, event, MetaData
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
@@ -11,8 +16,9 @@ from sqlalchemy_utils import database_exists, create_database
 
 import api_gateway.config
 from api_gateway.helpers import format_db_path
+from common.message_types import StatusEnum
 
-Execution_Base = declarative_base()
+Base = declarative_base()
 naming_convention = {
     "ix": 'ix_%(column_0_label)s',
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -20,7 +26,7 @@ naming_convention = {
     "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
     "pk": "pk_%(table_name)s"
 }
-Execution_Base.metadata = MetaData(naming_convention=naming_convention)
+Base.metadata = MetaData(naming_convention=naming_convention)
 
 
 class ExecutionDatabase(object):
@@ -29,6 +35,7 @@ class ExecutionDatabase(object):
     db_type = ""
 
     def __init__(self, execution_db_type, execution_db_path, execution_db_host="localhost"):
+        print(execution_db_type, execution_db_path, execution_db_host)
         # All of these imports are necessary
         from api_gateway.executiondb.returns import ReturnApi
         from api_gateway.executiondb.parameter import Parameter, ParameterApi
@@ -36,9 +43,8 @@ class ExecutionDatabase(object):
         from api_gateway.executiondb.appapi import AppApi
         from api_gateway.executiondb.branch import Branch
         from api_gateway.executiondb.condition import Condition
-        from api_gateway.executiondb.position import Position
         from api_gateway.executiondb.transform import Transform
-        from api_gateway.executiondb.trigger import Trigger
+        # from api_gateway.executiondb.trigger import Trigger
         from api_gateway.executiondb.global_variable import GlobalVariable
         from api_gateway.executiondb.workflow_variable import WorkflowVariable
         from api_gateway.executiondb.workflow import Workflow
@@ -67,8 +73,8 @@ class ExecutionDatabase(object):
         session.configure(bind=self.engine)
         self.session = scoped_session(session)
 
-        Execution_Base.metadata.bind = self.engine
-        Execution_Base.metadata.create_all(self.engine)
+        Base.metadata.bind = self.engine
+        Base.metadata.create_all(self.engine)
 
         # alembic_cfg = Config(api_gateway.config.Config.ALEMBIC_CONFIG, ini_section="execution",
         #                      attributes={'configure_logger': False})
@@ -88,10 +94,139 @@ class ExecutionDatabase(object):
 
 
 @event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_type):
+def set_sqlite_pragma(dbapi_connection, connection_type):  # noqa
     """Necessary for enforcing foreign key constraints in sqlite database
     """
     if 'sqlite' in ExecutionDatabase.db_type:
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
+
+
+class BaseSchema(ModelSchema):
+    """
+    Base schema, attaches ExecutionDatabase session to model on load.
+    """
+    def load(self, data, session=None, instance=None, *args, **kwargs):
+        session = ExecutionDatabase.instance.session
+        # ToDo: Automatically find and use instance if 'id' (or key) is passed
+        return super(BaseSchema, self).load(data, session=session, instance=instance, *args, **kwargs)
+
+
+class IDMixin(object):
+    """
+    Base model that provides for a uuid primary key
+    """
+    id_ = Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False, default=uuid4)
+
+    # def __init__(self, id_=None):
+    #     # ToDo: do better validation
+    #     if id_:
+    #         self.id_ = id_
+
+    # def __repr__(self):
+    #     from .model_schema_map import dump_element
+    #
+    #     representation = dump_element(self)
+    #     out = '<{0} at {1} : '.format(self.__class__.__name__, hex(id(self)))
+    #     first = True
+    #     for key, value in representation.items():
+    #         if self.__is_list_of_dicts_with_uids(value):
+    #             out += ', {0}={1}'.format(key, [list_value['id_'] for list_value in value])
+    #         else:
+    #             out += ', {0}={1}'.format(key, value)
+    #
+    #         if first:
+    #             out = out.replace(" ,", "")
+    #             first = False
+    #
+    #     out += '>'
+    #     return out
+
+    # @staticmethod
+    # def __is_list_of_dicts_with_uids(value):
+    #     return (isinstance(value, list)
+    #             and all(isinstance(list_value, dict) and 'id_' in list_value for list_value in value))
+
+
+class VariableMixin(IDMixin):
+    """
+    Base model for variables (Parameters, Workflow Variables, Global Variables)
+    """
+    name = Column(String(80), nullable=False)
+    value = Column(JSON)
+
+    def __init__(self, name, value=None, **kwargs):
+        super(IDMixin, self).__init__(**kwargs)
+        self.name = name
+        self.value = value
+
+
+# class VariableMixinSchema(BaseSchema):
+#     """
+#     Base schema for variables
+#     """
+#     name = field_for(VariableMixin, 'name', required=True)
+#     value = field_for(VariableMixin, 'value')
+#     description = field_for(VariableMixin, 'description')
+
+
+class ValidatableMixin(IDMixin):
+    """
+    Base model for validatables (elements that can contain errors)
+    """
+    errors = Column(ARRAY(String))
+    is_valid = Column(Boolean, default=True)
+
+    def __init__(self, errors=None, is_valid=True, **kwargs):
+        super(IDMixin, self).__init__(**kwargs)
+        self.errors = errors if errors else []
+        self.is_valid = is_valid
+
+    def validate(self):
+        raise NotImplementedError("Validatable must implement self.validate().")
+
+    # @property
+    # children = []
+
+    # def _is_valid(self):
+    #     if self.errors:
+    #         return False
+    #     for child in self.children:
+    #         child = getattr(self, child, None)
+    #         if isinstance(child, list):
+    #             for instance in (instance for instance in child if instance is not None):
+    #                 if not instance._is_valid:
+    #                     return False
+    #         elif child is not None:
+    #             if not child._is_valid:
+    #                 return False
+    #     return True
+
+
+# class ValidatableMixinSchema(BaseSchema):
+#     """
+#     Base schema for validatables
+#     """
+#     errors = field_for(ValidatableMixin, 'errors')
+#     is_valid = field_for(ValidatableMixin, 'is_valid')
+
+
+class StatusMixin(object):
+    name = Column(String(80), nullable=False)
+    status = Column(Enum(StatusEnum), nullable=False)
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+
+    def __init__(self, name, status, started_at=None, completed_at=True):
+        self.name = name
+        self.status = status
+        self.started_at = started_at
+        self.completed_at = completed_at
+
+
+# class StatusMixinSchema(BaseSchema):
+#     name = field_for(StatusMixin, 'name')
+#     status = field_for(StatusMixin, 'status', required=True)
+#     started_at = field_for(StatusMixin, 'started_at')
+#     completed_at = field_for(StatusMixin, 'completed_at')

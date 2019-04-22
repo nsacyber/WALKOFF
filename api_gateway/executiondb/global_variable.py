@@ -1,19 +1,18 @@
 import logging
-from uuid import uuid4, UUID
+from uuid import UUID
 
-from sqlalchemy import Column, String, JSON
-from sqlalchemy_utils import UUIDType
-from marshmallow import fields, EXCLUDE
+from sqlalchemy import Column, String
+from marshmallow import EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
-from api_gateway.executiondb.schemas import ExecutionBaseSchema
-from api_gateway.executiondb import Execution_Base
+from api_gateway.executiondb import Base, VariableMixin, BaseSchema
+
 
 logger = logging.getLogger(__name__)
 
 
 # TODO: add in an is_encrypted bool for globals
-class GlobalVariable(Execution_Base):
+class GlobalVariable(VariableMixin, Base):
     """SQLAlchemy ORM class for Global, which are variables that can be dynamically loaded into workflow
        execution
 
@@ -25,28 +24,11 @@ class GlobalVariable(Execution_Base):
 
     """
     __tablename__ = 'global_variable'
-    id_ = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
-    name = Column(String(80))
-    value = Column(JSON, nullable=False)
-    description = Column(String(255))
+    description = Column(String(255), default="")
 
-    def __init__(self, name, value, id_=None, description=None):
-        if id_:
-            if not isinstance(id_, UUID):
-                self.id_ = UUID(id_)
-            else:
-                self.id_ = id_
-        self.name = name
-        self.value = value
-        self.description = description if description else ""
-
-
-class GlobalVariableSchema(ExecutionBaseSchema):
+class GlobalVariableSchema(BaseSchema):
     """Schema for global variables
     """
-    name = field_for(GlobalVariable, 'name', required=True)
-    value = field_for(GlobalVariable, 'value', required=True)
-    description = field_for(GlobalVariable, 'description')
 
     class Meta:
         model = GlobalVariable

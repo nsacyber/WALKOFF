@@ -10,14 +10,13 @@ from api_gateway.executiondb.dashboard import (Dashboard, DashboardSchema,
 from api_gateway.executiondb.global_variable import GlobalVariable, GlobalVariableSchema
 from api_gateway.executiondb.parameter import (Parameter, ParameterSchema,
                                                ParameterApi, ParameterApiSchema)
-from api_gateway.executiondb.position import Position, PositionSchema
 from api_gateway.executiondb.returns import ReturnApi, ReturnApiSchema
 from api_gateway.executiondb.transform import Transform, TransformSchema
-from api_gateway.executiondb.trigger import Trigger, TriggerSchema
+# from api_gateway.executiondb.trigger import Trigger, TriggerSchema
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.executiondb.workflow_variable import WorkflowVariable, WorkflowVariableSchema
-from api_gateway.executiondb.workflowresults import (NodeStatus, NodeStatusSchema, NodeStatusSummarySchema,
-                                                     WorkflowStatus, WorkflowStatusSchema, WorkflowStatusSummarySchema)
+from api_gateway.executiondb.workflowresults import (NodeStatus, NodeStatusSchema,
+                                                     WorkflowStatus, WorkflowStatusSchema)
 
 # This could be done better with a metaclass which registers subclasses
 _schema_lookup = {
@@ -31,10 +30,9 @@ _schema_lookup = {
     GlobalVariable: GlobalVariableSchema,
     Parameter: ParameterSchema,
     ParameterApi: ParameterApiSchema,
-    Position: PositionSchema,
     ReturnApi: ReturnApiSchema,
     Transform: TransformSchema,
-    Trigger: TriggerSchema,
+    # Trigger: TriggerSchema,
     Workflow: WorkflowSchema,
     WorkflowVariable: WorkflowVariableSchema,
     NodeStatus: NodeStatusSchema,

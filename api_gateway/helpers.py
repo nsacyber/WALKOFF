@@ -292,7 +292,7 @@ def validate_uuid4(id_, stringify=False):
     try:
         uuid_ = id_
         if not isinstance(uuid_, UUID):
-            uuid_ = UUID(uuid_, version=4)
+            uuid_ = UUID(str(uuid_), version=4)
         return uuid_ if not stringify else id_
     except (ValueError, TypeError):
         return None

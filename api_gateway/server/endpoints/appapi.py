@@ -61,12 +61,12 @@ def read_all_app_names():
 # @jwt_required
 # @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['create']))
 def create_app_api():
-    data = request.data
-    if request.files and 'file' in request.files:
-        data = request.files['file'].read().decode('utf-8')
-
-    data = json.loads(data)
+    data = request.get_json()
     app_name = data['name']
+
+    if request.files and 'file' in request.files:
+        data = json.loads(request.files['file'].read().decode('utf-8'))
+
     add_locations(data)
     try:
         # ToDo: make a proper common type for this when the other components need it

@@ -57,7 +57,6 @@ ApiContact:
 ApiLicense:
   type: object
   description: License information for this API
-  required: [name]
   additionalProperties: false
   properties:
     name:
@@ -135,7 +134,6 @@ ReturnApi:
 ExternalDoc:
   type: object
   description: information about external documentation
-  required: [url]
   additionalProperties: false
   properties:
     description:

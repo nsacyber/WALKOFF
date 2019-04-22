@@ -1,18 +1,17 @@
 import logging
-from uuid import uuid4, UUID
+from uuid import UUID
 
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy_utils import UUIDType
 from marshmallow import EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
-from api_gateway.executiondb.schemas import ExecutionBaseSchema
-from api_gateway.executiondb import Execution_Base
+from api_gateway.executiondb import Base, VariableMixin, BaseSchema
 
 logger = logging.getLogger(__name__)
 
 
-class WorkflowVariable(Execution_Base):
+class WorkflowVariable(VariableMixin, Base):
     """SQLAlchemy ORM class for WorkflowVariable, which are variables that can be dynamically loaded into workflow
        execution
 
@@ -25,29 +24,20 @@ class WorkflowVariable(Execution_Base):
 
     """
     __tablename__ = 'workflow_variable'
-    id_ = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
+    description = Column(String(255), default="")
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
-    name = Column(String(80), nullable=False)
-    value = Column(String(80), nullable=False)
-    description = Column(String(255))
-
-    def __init__(self, name, value, id_=None, description=None):
-        if id_:
-            if not isinstance(id_, UUID):
-                self.id_ = UUID(id_)
-            else:
-                self.id_ = id_
-        self.name = name
-        self.value = value
-        self.description = description if description else ""
 
 
-class WorkflowVariableSchema(ExecutionBaseSchema):
+class WorkflowVariableSchema(BaseSchema):
     """Schema for workflow variables
     """
-    name = field_for(WorkflowVariable, 'name', required=True)
-    value = field_for(WorkflowVariable, 'value', required=True)
-    description = field_for(WorkflowVariable, 'description')
+    # # From IDMixin
+    # id_ = field_for(WorkflowVariable, 'id_', required=True)
+    #
+    # # From VariableMixin
+    # name = field_for(WorkflowVariable, 'name', required=True)
+    # value = field_for(WorkflowVariable, 'value', required=True)
+    # description = field_for(WorkflowVariable, 'description')
 
     class Meta:
         model = WorkflowVariable

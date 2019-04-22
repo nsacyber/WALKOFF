@@ -15,7 +15,7 @@ from marshmallow import ValidationError
 
 from common.message_types import StatusEnum
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
-from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusSchema, WorkflowStatusSummarySchema
+from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusSchema
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
     paginate
@@ -77,7 +77,6 @@ def workflow_getter(workflow_id):
 
 workflow_schema = WorkflowSchema()
 workflow_status_schema = WorkflowStatusSchema()
-workflow_status_summary_schema = WorkflowStatusSummarySchema()
 
 with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
 
@@ -96,7 +95,7 @@ completed_statuses = (StatusEnum.ABORTED, StatusEnum.COMPLETED)
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
-@paginate(workflow_status_summary_schema)
+@paginate(workflow_status_schema)  # ToDo: make this summary
 def get_all_workflow_status():
     r = current_app.running_context.execution_db.session.query(WorkflowStatus).order_by(WorkflowStatus.name).all()
     return r, HTTPStatus.OK
