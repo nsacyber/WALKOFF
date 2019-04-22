@@ -22,39 +22,9 @@ from api_gateway.server.decorators import with_resource_factory, validate_resour
 from api_gateway.server.problem import dne_problem, invalid_input_problem, improper_json_problem
 from api_gateway.server.endpoints.results import push_to_workflow_stream_queue
 from http import HTTPStatus
+from api_gateway.config import Config
 
 logger = logging.getLogger(__name__)
-
-
-def abort_workflow(execution_id, user=None):
-    """Abort a workflow
-    Args:
-        execution_id (UUID): The execution id of the workflow.
-        user (str, Optional): The username of the user who requested that this workflow be aborted. Defaults
-            to None.
-    Returns:
-        (bool): True if successfully aborted workflow, False otherwise
-    """
-    logger.info(f"User {user} aborting workflow {execution_id}")
-    workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
-        execution_id=execution_id).first()
-
-    if workflow_status:
-        if workflow_status.status in [StatusEnum.PENDING, StatusEnum.PAUSED,
-                                      StatusEnum.AWAITING_DATA]:
-            workflow = current_app.running_context.execution_db.session.query(Workflow).filter_by(
-                id=workflow_status.workflow_id).first()
-            if workflow is not None:
-                data = {}
-                if user:
-                    data['user'] = user
-        elif workflow_status.status == StatusEnum.EXECUTING:
-            print("I guess Im here")
-            # self.zmq_workflow_comm.abort_workflow(execution_id)
-        return True
-    else:
-        logger.warning(f"Cannot resume workflow {execution_id}. Invalid key, or workflow already shutdown.")
-    return False
 
 
 def does_workflow_exist(workflow_id):
@@ -166,8 +136,9 @@ def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
     # Assign the execution id to the workflow so the worker
     workflow["execution_id"] = execution_id
     # ToDo: self.__box.encrypt(message))
-    current_app.running_context.cache.lpush("workflow-queue", json.dumps(workflow))
-
+    # current_app.running_context.cache.lpush("workflow-queue", json.dumps(workflow))
+    current_app.running_context.cache.cache.xadd(Config.common_config.REDIS_WORKFLOW_QUEUE,
+                                                 {execution_id: json.dumps(workflow)})
     gevent.spawn(push_to_workflow_stream_queue, workflow_status_json, "PENDING")
     current_app.logger.info(f"Created Workflow Status {workflow['name']} ({execution_id})")
 
@@ -185,14 +156,14 @@ def control_workflow():
     def __func():
         status = data['status']
 
-        if status == 'pause':
-            current_app.running_context.executor.pause_workflow(execution_id,
-                                                                user=get_jwt_claims().get('username', None))
-        elif status == 'resume':
-            current_app.running_context.executor.resume_workflow(execution_id,
-                                                                 user=get_jwt_claims().get('username', None))
-        elif status == 'abort':
-            abort_workflow(execution_id, user=get_jwt_claims().get('username', None))
+        # if status == 'pause':
+        #     current_app.running_context.executor.pause_workflow(execution_id,
+        #                                                         user=get_jwt_claims().get('username', None))
+        # elif status == 'resume':
+        #     current_app.running_context.executor.resume_workflow(execution_id,
+        #                                                          user=get_jwt_claims().get('username', None))
+        # elif status == 'abort':
+        #     execution_id, user=get_jwt_claims().get('username', None)
 
         return None, HTTPStatus.NO_CONTENT
 

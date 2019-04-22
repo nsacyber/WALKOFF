@@ -147,10 +147,6 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     tags = field_for(Workflow, 'tags')
     description = field_for(Workflow, 'description')
 
-    # TODO: determine if this is needed
-    # exclude = ("is_valid",)
-    # is_valid = field_for(Workflow, 'is_valid')
-
     class Meta:
         model = Workflow
         unknown = EXCLUDE
