@@ -272,8 +272,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
 	nodeStatusEventHandler(message: any): void {
-		console.log('a', message, JSON.parse(message.data));
 		const nodeStatusEvent = plainToClass(NodeStatusEvent, (JSON.parse(message.data) as object));
+		console.log('action', nodeStatusEvent);
 
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
@@ -370,7 +370,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		]).then(() => {
 			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
 				.then((workflowStatus: WorkflowStatus) => {
-					this.toastrService.success(`Starting execution of ${this.loadedWorkflow.name}.`)
+					this.toastrService.success(`Starting <b>${this.loadedWorkflow.name}</b>`)
 				})
 				.catch(e => this.toastrService.error(`Error starting execution of ${this.loadedWorkflow.name}: ${e.message}`));
 		})
@@ -800,13 +800,13 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			this.playbookService.saveWorkflow(workflowToSave).then(savedWorkflow => {
 				this.loadedWorkflow = savedWorkflow;
 				this.setupGraph();
-				this.toastrService.success(`Successfully saved workflow ${ savedWorkflow.name }.`);
+				this.toastrService.success(`Saved <b>${ savedWorkflow.name }</b>`);
 			}).catch(e => this.toastrService.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
 		} else {
 			this.playbookService.newWorkflow(workflowToSave).then(savedWorkflow => {
 				//this.loadedWorkflow = savedWorkflow;
 				//this.setupGraph()
-				this.toastrService.success(`Successfully saved workflow ${ savedWorkflow.name }.`);
+				this.toastrService.success(`Saved <b>${ savedWorkflow.name }</b>`);
 				this.router.navigateByUrl(`/workflows/${ savedWorkflow.id }`);
 			}).catch(e => this.toastrService.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
 		}

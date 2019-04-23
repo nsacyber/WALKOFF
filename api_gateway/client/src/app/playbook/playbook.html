@@ -53,7 +53,7 @@
                     <div class="d-flex justify-content-around">
                         <button class="btn btn-outline-primary mr-1" (click)="routeToWorkflow(w)"><i
                                 class="fa fa-sitemap"></i> Workflow Editor</button>
-                        <button class="btn btn-outline-primary" [disabled]="!w.is_valid"><i
+                        <button class="btn btn-outline-primary" (click)="executeWorkflow(w)" [disabled]="!w.is_valid"><i
                                 class="fa fa-play-circle"></i> Execute Workflow</button>
                     </div>
                 </div>

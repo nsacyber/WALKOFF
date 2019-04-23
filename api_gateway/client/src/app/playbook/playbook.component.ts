@@ -43,18 +43,19 @@ import { Global } from '../models/global';
 import { Argument } from '../models/playbook/argument';
 import { User } from '../models/user';
 import { Role } from '../models/role';
-import { NodeStatus } from '../models/execution/nodeStatus';
+import { NodeStatus,  } from '../models/execution/nodeStatus';
+import { WorkflowStatus, WorkflowStatuses } from '../models/execution/workflowStatus';
 import { ConditionalExpression } from '../models/playbook/conditionalExpression';
 import { NodeStatusEvent } from '../models/execution/nodeStatusEvent';
 import { ConsoleLog } from '../models/execution/consoleLog';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook.environment.variable.modal.component';
-import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
 import { ActivatedRoute } from '@angular/router';
 import { Variable } from '../models/variable';
 import { MetadataModalComponent } from './metadata.modal.component';
 import { ImportModalComponent } from './import.modal.component';
+import { WorkflowStatusEvent } from '../models/execution/workflowStatusEvent';
 
 @Component({
 	selector: 'playbook-component',
@@ -257,114 +258,61 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Sets up the EventStream for receiving stream actions from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getNodeStatusSSE(workflowExecutionId: string) {
+	getWorkflowStatusSSE(executionId: string) {
 		if (this.eventSource) this.eventSource.close();
 
-		return this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
+		return this.authService.getEventSource(`/api/streams/workflowqueue/workflow_status`)
 			.then(eventSource => {
-				this.eventSource = eventSource
-				this.eventSource.addEventListener('executing', (e: any) => this.nodeStatusEventHandler(e));
-				this.eventSource.addEventListener('success', (e: any) => this.nodeStatusEventHandler(e));
-				this.eventSource.addEventListener('failure', (e: any) => this.nodeStatusEventHandler(e));
-				this.eventSource.addEventListener('awaiting_data', (e: any) => this.nodeStatusEventHandler(e));
-			});
+				this.eventSource = eventSource;
+				this.eventSource.onerror = (e: any) => this.eventSource.close();
+				Object.values(WorkflowStatuses)
+					  .forEach(status => this.eventSource.addEventListener(status, (e: any) => this.workflowStatusEventHandler(e, executionId)));
+			})
 	}
 
 	/**
-	 * For an incoming action, will try to find the matching action in the graph (if applicable).
-	 * Will style nodes based on the action status (executing/success/failure).
-	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
+	 * Handles an EventSource message for Workflow Status.
+	 * Updates existing workflow statuses for status updates or adds new ones to the list for display.
+	 * @param message EventSource message for workflow status
 	 */
-	nodeStatusEventHandler(message: any): void {
-		const nodeStatusEvent = plainToClass(NodeStatusEvent, (JSON.parse(message.data) as object));
+	workflowStatusEventHandler(message: any, executionId: string): void {
+		const workflowStatusEvent = plainToClass(WorkflowStatusEvent, (JSON.parse(message.data) as object));
 
-		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
-		if (this.cy) {
-			const matchingNode = this.cy.elements(`node[_id="${ nodeStatusEvent.node_id }"]`);
+		if (executionId != workflowStatusEvent.execution_id) return;
 
-			if (matchingNode) {
-				switch (nodeStatusEvent.status) {
-					case 'success':
-						matchingNode.addClass('success-highlight');
-						matchingNode.removeClass('failure-highlight');
-						matchingNode.removeClass('executing-highlight');
-						matchingNode.removeClass('awaiting-data-highlight');
-						break;
-					case 'failure':
-						matchingNode.removeClass('success-highlight');
-						matchingNode.addClass('failure-highlight');
-						matchingNode.removeClass('executing-highlight');
-						matchingNode.removeClass('awaiting-data-highlight');
-						break;
-					case 'executing':
-						matchingNode.removeClass('success-highlight');
-						matchingNode.removeClass('failure-highlight');
-						matchingNode.addClass('executing-highlight');
-						matchingNode.removeClass('awaiting-data-highlight');
-						break;
-					case 'awaiting_data':
-						matchingNode.removeClass('success-highlight');
-						matchingNode.removeClass('failure-highlight');
-						matchingNode.removeClass('executing-highlight');
-						matchingNode.addClass('awaiting-data-highlight');
-					default:
-						break;
-				}
-			}
+		switch (workflowStatusEvent.status) {
+			case WorkflowStatuses.PENDING:
+			case WorkflowStatuses.EXECUTING:
+			case WorkflowStatuses.PAUSED:
+			case WorkflowStatuses.AWAITING_DATA:
+				break;
+			case WorkflowStatuses.COMPLETED:
+				this.eventSource.close();
+				this.toastrService.success(`<b>${workflowStatusEvent.name}</b> completed`);
+				break;
+			case WorkflowStatuses.ABORTED:
+				this.eventSource.close();
+				this.toastrService.warning(`<b>${workflowStatusEvent.name}</b> aborted`)
+				break;
+			default:
+				this.toastrService.warning(`Unknown Workflow Status SSE Type: ${message.type}.`);
+				break;
 		}
-
-		// Additionally, add or update the actionstatus in our datatable.
-		const matchingNodeStatus = this.nodeStatuses.find(as => as.execution_id === nodeStatusEvent.execution_id);
-		if (matchingNodeStatus) {
-			matchingNodeStatus.status = nodeStatusEvent.status;
-
-			switch (message.type) {
-				case 'executing':
-					// shouldn't happen
-					matchingNodeStatus.started_at = nodeStatusEvent.started_at;
-					break;
-				case 'success':
-				case 'failure':
-					matchingNodeStatus.completed_at = nodeStatusEvent.completed_at;
-					matchingNodeStatus.result = nodeStatusEvent.result;
-					break;
-				case 'awaiting_data':
-					// don't think anything needs to happen here
-					break;
-				default:
-					this.toastrService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
-					break;
-			}
-
-			this.recalculateRelativeTimes(matchingNodeStatus);
-			this.calculateLocalizedTimes(matchingNodeStatus);
-		} else {
-			const newNodeStatus = nodeStatusEvent.toNewNodeStatus();
-			this.calculateLocalizedTimes(newNodeStatus);
-			this.nodeStatuses.push(newNodeStatus);
-		}
-		// Induce change detection by slicing array
-		this.nodeStatuses = this.nodeStatuses.slice();
 	}
 
 	/**
 	 * Executes the loaded workflow as it exists on the server. Will not currently execute the workflow as it stands.
 	 */
-	executeWorkflow(): void {
-		if (!this.loadedWorkflow) { return; }
-		this.clearExecutionHighlighting();
-
-		const executionId = UUID.UUID();
-		Promise.all([
-			this.getNodeStatusSSE(executionId),
-			this.getConsoleSSE(executionId)
-		]).then(() => {
-			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
-				.then((workflowStatus: WorkflowStatus) => {
-					this.toastrService.success(`Starting execution of ${this.loadedWorkflow.name}.`)
-				})
-				.catch(e => this.toastrService.error(`Error starting execution of ${this.loadedWorkflow.name}: ${e.message}`));
-		})
+	async executeWorkflow(workflow: Workflow): Promise<void> {
+		try {
+			const executionId = UUID.UUID();
+			await this.getWorkflowStatusSSE(executionId);
+			await this.playbookService.addWorkflowToQueue(workflow.id, executionId);
+			this.toastrService.success(`Starting <b>${workflow.name}</b>`)
+		}
+		catch(e) {
+			this.toastrService.error(`Error starting <b>${workflow.name}</b>: ${e.message}`)
+		}
 	}
 
 	/**

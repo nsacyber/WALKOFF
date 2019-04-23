@@ -73,7 +73,7 @@ import { ImportModalComponent } from './playbook/import.modal.component';
 		DateTimePickerModule,
 		DndModule.forRoot(),
 	    BrowserAnimationsModule,
-		ToastrModule.forRoot({ positionClass: 'toast-bottom-right' }),
+		ToastrModule.forRoot({ positionClass: 'toast-bottom-right', enableHtml: true, onActivateTick: true }),
 		GridsterModule,
 		ChartsModule,
 		CodemirrorModule

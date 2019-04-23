@@ -178,7 +178,6 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 			.then(eventSource => {
 				this.workflowStatusEventSource = eventSource;
 				this.workflowStatusEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
-
 				Object.values(WorkflowStatuses)
 					  .forEach(status => this.workflowStatusEventSource.addEventListener(status, (e: any) => this.workflowStatusEventHandler(e)));
 			});
@@ -190,8 +189,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param message EventSource message for workflow status
 	 */
 	workflowStatusEventHandler(message: any): void {
-		console.log('w', message, JSON.parse(message.data));
 		const workflowStatusEvent = plainToClass(WorkflowStatusEvent, (JSON.parse(message.data) as object));
+		console.log(workflowStatusEvent);
 
 		const matchingWorkflowStatus = this.workflowStatuses.find(ws => ws.execution_id === workflowStatusEvent.execution_id);
 
@@ -274,8 +273,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param message EventSource message for action status
 	 */
 	nodeStatusEventHandler(message: any): void {
-		console.log('a', message, JSON.parse(message.data));
 		const nodeStatusEvent = plainToClass(NodeStatusEvent, (JSON.parse(message.data) as object));
+		console.log(nodeStatusEvent);
 
 		// if we have a matching workflow status, update the current app/action info.
 		const matchingWorkflowStatus = this.workflowStatuses
@@ -386,7 +385,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	executeSelectedWorkflow(environmentVariables: EnvironmentVariable[] = []): void {
 		this.executionService.addWorkflowToQueue(this.selectedWorkflow.id, null, environmentVariables)
 			.then((workflowStatus: WorkflowStatus) => {
-				this.toastrService.success(`Successfully started execution of "${this.selectedWorkflow.name}"`);
+				this.toastrService.success(`Starting <b>${this.selectedWorkflow.name}</b>`);
 			})
 			.catch(e => this.toastrService.error(`Error executing workflow: ${e.message}`));
 	}
