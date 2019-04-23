@@ -13,9 +13,10 @@ from compose.cli.command import get_project
 
 
 from common.config import config
-from common.redis_helpers import connect_to_redis_pool, xlen
-from common.docker_helpers import ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, \
-    load_secrets, update_service, connect_to_aiodocker, get_service, get_replicas, remove_service
+from common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
+from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, get_containers,
+                                   load_secrets, update_service, connect_to_aiodocker, get_service, get_replicas,
+                                   remove_service)
 from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -43,7 +44,6 @@ class Umpire:
         services = await self.docker_client.services.list()
         self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
         await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
-        await self.redis.xgroup_create(config.REDIS_ACTION_RESULTS, config.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
         await self.build_app_sdk()
         await self.build_worker()
 
@@ -68,8 +68,16 @@ class Umpire:
 
     async def shutdown(self):
         logger.info("Shutting down Umpire...")
+
+        # Clean up redis streams
+        action_queues = set(await self.redis.keys(pattern="*:*", encoding="utf-8")).union({config.REDIS_WORKFLOW_QUEUE})
         await self.redis.xgroup_destroy(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP)
-        await self.redis.xgroup_destroy(config.REDIS_ACTION_RESULTS, config.REDIS_ACTION_RESULTS_GROUP)
+        [await self.redis.xgroup_destroy(q, config.REDIS_ACTION_RESULTS_GROUP) for q in action_queues]
+        mask = [await self.redis.delete(q) for q in action_queues]
+        removed_qs = list(compress(action_queues, mask))
+        logger.debug(f"Removed redis streams: {removed_qs}")
+
+        # Clean up docker services
         services = [*(await self.get_running_apps()).keys(), "worker"]
         mask = [await remove_service(self.docker_client, s) for s in services]
         removed_apps = list(compress(self.running_apps, mask))
@@ -291,8 +299,9 @@ class Umpire:
             return
 
     async def scale_worker(self):
-        queued_workflows = await xlen(self.redis, config.REDIS_WORKFLOW_QUEUE)
+        total_workflows = await xlen(self.redis, config.REDIS_WORKFLOW_QUEUE)
         pending_workflows = (await self.redis.xpending(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP))[0]
+        queued_workflows = total_workflows - pending_workflows
 
         logger.info(f"Queued Workflows: {queued_workflows}")
         logger.info(f"Pending Workflows: {pending_workflows}")
@@ -311,16 +320,16 @@ class Umpire:
         self.running_apps = await self.get_running_apps()
         logger.info(f"Running apps: {[{s: self.service_replicas.get(s)['running']} for s in self.running_apps.keys()]}")
 
-        action_queues = set(await self.redis.keys(pattern="*:*:[1-5]", encoding="utf-8"))
-        app_groups = {f"{q.split(':')[0]}-group": {"current": 0, "pending": 0} for q in action_queues}
+        action_queues = set(await self.redis.keys(pattern="*:*", encoding="utf-8"))
+        app_groups = {f"{q}-group": {"current": 0, "pending": 0} for q in action_queues}
 
         if len(action_queues) > 0:
             for key in action_queues:
-                app_name, version, _ = key.split(':')  # should yield [app_name, version, priority]
-                app_group = f"{app_name}-group"
+                app_name, version = key.split(':')
+                app_group = f"{key}-group"
                 pending_work = (await self.redis.xpending(key, app_group))[0]
-                current_work = await xlen(self.redis, key)
-                total_work = pending_work + current_work
+                total_work = await xlen(self.redis, key)
+                current_work = total_work - pending_work
 
                 app_groups[app_group]["pending"] += pending_work
                 app_groups[app_group]["current"] += current_work
@@ -341,8 +350,46 @@ class Umpire:
                 logger.info(f"Launched {':'.join([app_name, version])}")
 
             for app_group, workload in app_groups.items():
-                logger.debug(f"Current tasks for {app_group}: {workload['current']}")
-                logger.debug(f"Pending tasks for {app_group}: {workload['pending']}")
+                logger.info(f"Current tasks for {app_group}: {workload['current']}")
+                logger.info(f"Pending tasks for {app_group}: {workload['pending']}")
+
+    async def check_pending_actions(self):
+        self.running_apps = await self.get_running_apps()
+        action_queues = set(await self.redis.keys(pattern="*:*", encoding="utf-8"))
+
+        if len(action_queues) > 0:
+            for key in action_queues:
+                service_name = f"{config.APP_PREFIX}_{key.split(':')[0]}"
+                app_group = f"{key}-group"
+                pending = (await self.redis.xpending(key, app_group))
+                if pending[0] > 0:
+                    containers = await get_containers(self.docker_client, service_name, short_ids=True)
+                    consumers = [consumer[0].decode() for consumer in pending[-1]]
+                    mask = [consumer in containers for consumer in consumers]
+
+                    if sum(mask) < len(consumers):
+                        dead_consumers = compress(consumers, (not _ for _ in mask))
+                        for consumer in dead_consumers:
+                            dead_pending = await self.redis.xpending(key, app_group, "-", "+", 1, consumer=consumer)
+
+                            # Umpire claims the message in the name of the UMPIRE!
+                            msg = await self.redis.xclaim(key, app_group, "UMPIRE", 1000,
+                                                          dead_pending[0][0].decode())
+
+                            # Dereference the stuff we need. This may change as redis solidifies their plan
+                            execution_id, action = msg[0][-1].popitem()
+                            id_ = msg[0][0]
+
+                            # Put message back in stream
+                            await self.redis.xadd(key, {execution_id: action})
+
+                            # Clean up workflow-queue
+                            await self.redis.xack(stream=key, group_name=app_group, id=id_)
+                            await xdel(self.redis, stream=key, id_=id_)
+
+
+
+
 
     async def monitor_queues(self):
         count = 0
@@ -353,6 +400,7 @@ class Umpire:
 
             await self.scale_worker()
             await self.scale_app()
+            await self.check_pending_actions()
 
             # Reload the app projects and apis every once in a while
             if count * config.get_int("UMPIRE_HEARTBEAT", 1) >= config.get_int("APP_REFRESH", 60):

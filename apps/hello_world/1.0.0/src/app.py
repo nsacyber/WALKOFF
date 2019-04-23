@@ -1,6 +1,7 @@
 import socket
 import asyncio
 import time
+import random
 
 from walkoff_app_sdk.app_base import AppBase
 
@@ -11,6 +12,7 @@ class HelloWorld(AppBase):
     Inherit from the AppBase class to have Redis, logging, and console logging set up behind the scenes.
     """
     __version__ = "1.0.0"
+    app_name = "hello_world"
 
     def __init__(self, redis, logger, console_logger=None):
         """
@@ -46,6 +48,9 @@ class HelloWorld(AppBase):
         time.sleep(seconds)
         return seconds
 
+    async def random_number(self):
+        return random.random()
+
     async def echo_array(self, data):
         self.logger.info(f"Echoing array: {data}")
         await self.console_logger.info(f"Echoing array: {data}")
@@ -58,4 +63,4 @@ class HelloWorld(AppBase):
 
 
 if __name__ == "__main__":
-    asyncio.run(HelloWorld.run())
+    asyncio.run(HelloWorld.run(), debug=True)

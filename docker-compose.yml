@@ -27,7 +27,6 @@ services:
 
       # Redis options
       - REDIS_URI=redis://redis:6379
-      - REDIS_ACTION_RESULTS=action-results
       - REDIS_ACTIONS_IN_PROCESS=actions-in-process
       - REDIS_WORKFLOW_QUEUE=workflow-queue
       - REDIS_WORKFLOWS_IN_PROCESS=workflows-in-process

@@ -11,6 +11,7 @@ import aioredis
 from common.message_types import message_dumps, message_loads, NodeStatusMessage, WorkflowStatusMessage, StatusEnum, \
     JSONPatch, JSONPatchOps
 from common.config import config
+from common.helpers import get_walkoff_auth_header
 from common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
 from common.workflow_types import Node, Action, Condition, Transform, Trigger, ParameterVariant, Workflow, \
     workflow_dumps, workflow_loads, ConditionException
@@ -55,13 +56,13 @@ class Worker:
 
             execution_id_workflow, stream, id_ = deref_stream_message(message)
             execution_id, workflow = execution_id_workflow
-            await xdel(redis, stream=stream, id_=id_)  # Remove the workflow from the stream
 
             try:
                 yield workflow_loads(workflow)
 
             finally:  # Clean up workflow-queue
                 await redis.xack(stream=stream, group_name=config.REDIS_WORKFLOW_GROUP, id=id_)
+                await xdel(redis, stream=stream, id_=id_)
 
     @staticmethod
     async def run():
@@ -200,26 +201,12 @@ class Worker:
         # TODO: figure out exactly what can be raised by the possible transforms
         except Exception as e:
             logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
-            await self.send_message(NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, error=repr(e)))
+            await self.send_message(NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id,
+                                                                        error=repr(e)))
 
     async def get_globals(self):
         url = config.API_GATEWAY_URI.rstrip('/') + '/api'
-
-        # TODO: make this secure
-        if self.token is None:
-            async with self.session.post(url + "/auth", json={"username": config.WALKOFF_USERNAME,
-                                                              "password": config.WALKOFF_PASSWORD}, timeout=.5) as resp:
-                resp_json = await resp.json()
-                self.token = resp_json["refresh_token"]
-                logger.debug("Successfully logged into WALKOFF")
-
-        headers = {"Authorization": f"Bearer {self.token}"}
-        async with self.session.post(url + "/auth/refresh", headers=headers, timeout=.5) as resp:
-            resp_json = await resp.json()
-            access_token = resp_json["access_token"]
-            logger.debug("Successfully refreshed WALKOFF JWT")
-
-        headers = {"Authorization": f"Bearer {access_token}"}
+        headers, self.token = await get_walkoff_auth_header(self.session, self.token)
         async with self.session.get(url + "/globals", headers=headers, timeout=.5) as resp:
             globals_ = await resp.json(loads=workflow_loads)
             logger.debug(f"Got globals: {globals_}")
@@ -259,18 +246,17 @@ class Worker:
             await asyncio.sleep(0)
 
         if isinstance(node, Action):
-            app_queue = f"{node.app_name}:{node.priority}"
-            app_group = f"{node.app_name.split(':')[0]}-group"
+            app_group = f"{node.app_name}-group"
             redis_keys = await self.redis.keys('*')
-            if app_queue not in redis_keys:
+            if node.app_name not in redis_keys:
                 try:
-                    await self.redis.xgroup_create(app_queue, app_group, mkstream=True)
+                    await self.redis.xgroup_create(node.app_name, app_group, mkstream=True)
                 except:
                     pass
 
             await self.dereference_params(node)
             await self.send_message(NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
-            await self.redis.xadd(app_queue, {node.execution_id: workflow_dumps(node)})
+            await self.redis.xadd(node.app_name, {node.execution_id: workflow_dumps(node)})
 
         elif isinstance(node, Condition):
             await self.send_message(NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
@@ -292,8 +278,17 @@ class Worker:
     async def get_action_results(self):
         """ Continuously monitors the results queue until all scheduled actions have been completed """
         while len(self.in_process) > 0:
-            msg = await self.redis.xread_group(config.REDIS_ACTION_RESULTS_GROUP, CONTAINER_ID, timeout=None,
+            try:
+                msg = await self.redis.xread_group(config.REDIS_ACTION_RESULTS_GROUP, CONTAINER_ID, timeout=None,
                                                streams=[self.workflow.execution_id], count=1, latest_ids=['>'])
+            except aioredis.errors.ReplyError:
+                logger.debug(f"Stream {self.workflow.execution_id} doesn't exist. Attempting to create it...")
+                await self.redis.xgroup_create(self.workflow.execution_id, config.REDIS_ACTION_RESULTS_GROUP,
+                                               mkstream=True)
+                logger.debug(f"Created stream {self.workflow.execution_id}.")
+                continue
+
+
             if len(msg) < 1:
                 continue
 
@@ -306,7 +301,6 @@ class Worker:
             if node_message.execution_id == self.workflow.execution_id and node_message.node_id in self.in_process:
                 if node_message.status == StatusEnum.EXECUTING:
                     logger.info(f"App started execution of: {node_message.label}-{node_message.execution_id}")
-                    continue  # We know another message is coming and have nothing else to do
 
                 elif node_message.status == StatusEnum.SUCCESS:
                     self.accumulator[node_message.node_id] = node_message.result
@@ -327,10 +321,14 @@ class Worker:
                 logger.error(f"Message received for unknown execution: {node_message}")
 
             # Clean up the redis stream and our in process queue
-            self.in_process.pop(node_message.node_id, None)
-            await xdel(self.redis, stream=stream, id_=id_)
+            if node_message.status != StatusEnum.EXECUTING:
+                self.in_process.pop(node_message.node_id, None)
             await self.redis.xack(stream=stream, group_name=config.REDIS_ACTION_RESULTS_GROUP, id=id_)
+            await xdel(self.redis, stream=stream, id_=id_)
 
+        # Remove the finished results stream and group
+        await self.redis.xgroup_destroy(self.workflow.execution_id, config.REDIS_ACTION_RESULTS_GROUP)
+        await self.redis.delete(self.workflow.execution_id)
 
     def make_patch(self, message, root, op, value_only=False, white_list=None, black_list=None):
         if white_list is None and black_list is None:

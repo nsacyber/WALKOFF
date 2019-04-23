@@ -44,7 +44,6 @@ class Config:
 
     # Redis options
     REDIS_URI = os.environ.get("REDIS_URI", "redis://redis:6379")
-    REDIS_ACTION_RESULTS = os.environ.get("REDIS_ACTION_RESULTS", "action-results")
     REDIS_ACTIONS_IN_PROCESS = os.environ.get("REDIS_ACTIONS_IN_PROCESS", "actions-in-process")
     REDIS_WORKFLOW_QUEUE = os.environ.get("REDIS_WORKFLOW_Q", "workflow-queue")
     REDIS_WORKFLOWS_IN_PROCESS = os.environ.get("REDIS_WORKFLOWS_IN_PROCESS", "workflows-in-process")

@@ -15,10 +15,8 @@ from common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
-REDIS_ACTION_RESULTS = os.getenv("REDIS_ACTION_RESULTS", "action-results")
 REDIS_ACTION_RESULTS_GROUP = os.getenv("REDIS_ACTION_RESULTS_GROUP", "actions-in-process")
 API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "http://api_gateway:8080")
-APP_NAME = os.getenv("APP_NAME")
 APP_TIMEOUT = os.getenv("APP_TIMEOUT", 30)
 CONTAINER_ID = os.getenv("HOSTNAME")
 
@@ -49,10 +47,13 @@ class HTTPStream:
 
 class AppBase:
     """ The base class for Python-based Walkoff applications, handles Redis and logging configurations. """
+    __version__ = None
+    app_name = None
+
     def __init__(self, redis=None, logger=None, console_logger=None):
-        if APP_NAME is None:
-            logger.error(("APP_NAME not set. Please ensure 'APP_NAME' environment variable is set to match the "
-                          "docker-compose service name."))
+        if self.app_name is None or self.__version__ is None:
+            logger.error(("App name or version not set. Please ensure self.app_name is set to match the "
+                          "docker-compose service name and self.__version__ is set to match the api.yaml."))
             sys.exit(1)
 
         if CONTAINER_ID is None:
@@ -62,28 +63,31 @@ class AppBase:
             sys.exit(1)
 
         # Creates redis keys of format "{AppName}:{Version}:{Priority}"
-        self.action_queue_keys = [f"{APP_NAME}:{self.__version__}:{i}" for i in range(5, 0, -1)]
         self.redis: aioredis.Redis = redis
         self.logger = logger if logger is not None else logging.getLogger("AppBaseLogger")
         self.console_logger = console_logger if console_logger is not None else logging.getLogger("ConsoleBaseLogger")
         self.current_execution_id = None
 
     async def get_actions(self):
-        """ Continuously monitors the action queues and asynchronously executes actions """
+        """ Continuously monitors the action queue and asynchronously executes actions """
         self.logger.debug("Waiting for actions...")
-
-        app_group = f"{APP_NAME}-group"
+        app_queue = f"{self.app_name}:{self.__version__}"
+        app_group = f"{app_queue}-group"
 
         while True:
-            #TODO: Delete this test code
-            redis_keys = [key.decode() for key in await self.redis.keys('*')]
-            for key in self.action_queue_keys:
-                if key not in redis_keys:
-                    await self.redis.xgroup_create(key, app_group, mkstream=True)
+            try:
+                # See if we have any pending messages first
+                message = await self.redis.xread_group(app_group, CONTAINER_ID, streams=[app_queue], latest_ids=['0'],
+                                                       timeout=APP_TIMEOUT * 1000, count=1)
 
-            message = await self.redis.xread_group(app_group, CONTAINER_ID, streams=self.action_queue_keys,
-                                                   latest_ids=['>' for _ in self.action_queue_keys],
-                                                   timeout=APP_TIMEOUT * 1000, count=1)
+                if len(message) < 1:  # We don't have any pending so lets get a new one
+                    message = await self.redis.xread_group(app_group, CONTAINER_ID, streams=[app_queue],
+                                                           latest_ids=['>'], timeout=APP_TIMEOUT * 1000, count=1)
+            except aioredis.errors.ReplyError:
+                self.logger.debug(f"Stream {app_queue} doesn't exist. Attempting to create it...")
+                await self.redis.xgroup_create(app_queue, app_group, mkstream=True)
+                self.logger.debug(f"Created stream {app_queue}.")
+                continue
 
             if len(message) < 1:  # We've timed out with no work. Guess we'll die now...
                 sys.exit(1)
@@ -91,15 +95,14 @@ class AppBase:
             execution_id_action, stream, id_ = deref_stream_message(message)
             execution_id, action = execution_id_action
 
-            # Remove the workflow from the stream
-            await xdel(self.redis, stream=stream, id_=id_)
-
             # Actually execute the action
             action = workflow_loads(action)
             await self.execute_action(action)
 
             # Clean up workflow-queue
             await self.redis.xack(stream=stream, group_name=app_group, id=id_)
+            await xdel(self.redis, stream=stream, id_=id_)
+
 
     async def execute_action(self, action: Action):
         """ Execute an action, and push its result to Redis. """

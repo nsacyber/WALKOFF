@@ -10,11 +10,11 @@ from compose.cli.command import get_project
 
 from common.config import config
 from common.docker_helpers import get_project
-
+from common.helpers import get_walkoff_auth_header
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("AppRepo")
-
+logger.setLevel(logging.DEBUG)
 
 def load_app_api(api_file):
     #  TODO: Actually validate the api
@@ -32,6 +32,7 @@ class AppRepo(dict):
     def __init__(self, path, session, **apps):
         self.path = Path(path)
         self.session = session
+        self.token = None
         super().__init__(**apps)
 
     @classmethod
@@ -44,13 +45,23 @@ class AppRepo(dict):
         url = f"{config.API_GATEWAY_URI}/api/apps/apis"
         while True:
             try:
-                async with self.session.post(url, json=api) as resp:
-                    results = await resp.json()
-                    logger.debug(f"API-Gateway app-api create response: {results}")
-                    return results
-            except aiohttp.ClientConnectionError:
-                pass
-                # logger.error(f"Could not send app api to {url}: {e!r}")
+                headers, self.token = await get_walkoff_auth_header(self.session, self.token)
+                # Do an explicit check to see if we have previously stored the api and update it if so.
+                async with self.session.get(url + f"/{api['name']}", headers=headers) as resp:
+                    api_exists = resp.status == 200
+
+                if api_exists:
+                    async with self.session.put(url + f"/{api['name']}", json=api, headers=headers) as resp:
+                        results = await resp.json()
+                        logger.debug(f"API-Gateway app-api update response: {results}")
+                        return results
+                else:
+                    async with self.session.post(url, json=api, headers=headers) as resp:
+                        results = await resp.json()
+                        logger.debug(f"API-Gateway app-api create response: {results}")
+                        return results
+            except aiohttp.ClientConnectionError as e:
+                logger.error(f"Could not send app api to {url}: {e!r}")
 
     async def load_apps_and_apis(self):
         if not getattr(self, "path", False) and getattr(self, "db", False):
