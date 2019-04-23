@@ -115,14 +115,16 @@ def read_workflow(workflow_id):
 @with_workflow('update', 'workflow_id')
 def update_workflow(workflow_id):
     data = request.get_json()
-    errors = workflow_schema.load(data, instance=workflow_id).errors
-    if errors:
-        return invalid_input_problem("workflow", "update", data["name"], errors)
+
     try:
+        workflow_schema.load(data, instance=workflow_id)
         current_app.running_context.execution_db.session.commit()
         current_app.logger.info(f"Updated workflow {workflow_id.name} ({workflow_id.id_})")
         return workflow_schema.dump(workflow_id), HTTPStatus.OK
-    except IntegrityError:
+    except ValidationError as e:
+        current_app.running_context.execution_db.session.rollback()
+        return improper_json_problem('workflow', 'update', workflow_id.id_, e.messages)
+    except IntegrityError:  # ToDo: Make sure this fires on duplicate
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem('workflow', 'update', workflow_id.id_)
 

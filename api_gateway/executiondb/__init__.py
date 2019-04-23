@@ -170,31 +170,29 @@ class ValidatableMixin(IDMixin):
     """
     errors = Column(ARRAY(String))
     is_valid = Column(Boolean, default=True)
+    children = []
 
-    def __init__(self, errors=None, is_valid=True, **kwargs):
+    def __init__(self, errors=None, **kwargs):
         super(IDMixin, self).__init__(**kwargs)
         self.errors = errors if errors else []
-        self.is_valid = is_valid
+        self.is_valid = self._is_valid()
 
     def validate(self):
         raise NotImplementedError("Validatable must implement self.validate().")
 
-    # @property
-    # children = []
-
-    # def _is_valid(self):
-    #     if self.errors:
-    #         return False
-    #     for child in self.children:
-    #         child = getattr(self, child, None)
-    #         if isinstance(child, list):
-    #             for instance in (instance for instance in child if instance is not None):
-    #                 if not instance._is_valid:
-    #                     return False
-    #         elif child is not None:
-    #             if not child._is_valid:
-    #                 return False
-    #     return True
+    def _is_valid(self):
+        if self.errors:
+            return False
+        for child in self.children:
+            child = getattr(self, child, None)
+            if isinstance(child, list):
+                for actual_child in child:
+                    if not actual_child._is_valid():
+                        return False
+            elif child is not None:
+                if not child._is_valid():
+                    return False
+        return True
 
 
 class StatusMixin(object):

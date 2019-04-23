@@ -51,6 +51,10 @@ class Action(ValidatableMixin, Base):
 
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
 
+    # def __init__(self, **kwargs):
+    #     super(Action, self).__init__(**kwargs)
+    #     self.validate()
+
 
 class ActionSchema(BaseSchema):
     """

@@ -20,17 +20,11 @@ class ParameterApi(IDMixin, Base):
     name = Column(String(), nullable=False)
     location = Column(String(), nullable=False)
     description = Column(String(), default="")
-    example = Column(JSON, default="")
     required = Column(Boolean(), default=False)
     placeholder = Column(JSON, default="")
     schema = Column(JSON, default={})
 
     action_api_id = Column(UUIDType(binary=False), ForeignKey('action_api.id_', ondelete='CASCADE'))
-
-    def generate_parameter_from_default(self):
-        return Parameter(name=self.name,
-                         variant=ParameterVariant.STATIC_VALUE,
-                         value=self.placeholder)
 
 
 class ParameterApiSchema(BaseSchema):

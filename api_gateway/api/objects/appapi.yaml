@@ -103,13 +103,10 @@ ParameterApi:
   properties:
     name:
       type: string
-    example:
-      description: Example of the parameter
     description:
       type: string
       description: Description of the parameter
     placeholder:
-      type: string
       description: Brief description of the field to be used to prompt a user
     required:
       type: boolean

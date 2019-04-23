@@ -36,7 +36,7 @@ actions:
         required: true
         schema:
           type: number
-        example: 1
+        placeholder: 1
     returns:
       schema:
         type: number
