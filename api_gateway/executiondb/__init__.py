@@ -1,6 +1,8 @@
 # from alembic import command
 # from alembic.config import Config
 
+from datetime import datetime
+
 from uuid import uuid4
 from sqlalchemy import Column, String, Boolean, Enum, DateTime, JSON
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
@@ -162,15 +164,6 @@ class VariableMixin(IDMixin):
         self.value = value
 
 
-# class VariableMixinSchema(BaseSchema):
-#     """
-#     Base schema for variables
-#     """
-#     name = field_for(VariableMixin, 'name', required=True)
-#     value = field_for(VariableMixin, 'value')
-#     description = field_for(VariableMixin, 'description')
-
-
 class ValidatableMixin(IDMixin):
     """
     Base model for validatables (elements that can contain errors)
@@ -204,29 +197,8 @@ class ValidatableMixin(IDMixin):
     #     return True
 
 
-# class ValidatableMixinSchema(BaseSchema):
-#     """
-#     Base schema for validatables
-#     """
-#     errors = field_for(ValidatableMixin, 'errors')
-#     is_valid = field_for(ValidatableMixin, 'is_valid')
-
-
 class StatusMixin(object):
     name = Column(String(80), nullable=False)
     status = Column(Enum(StatusEnum), nullable=False)
-    started_at = Column(DateTime)
-    completed_at = Column(DateTime)
-
-    def __init__(self, name, status, started_at=None, completed_at=True):
-        self.name = name
-        self.status = status
-        self.started_at = started_at
-        self.completed_at = completed_at
-
-
-# class StatusMixinSchema(BaseSchema):
-#     name = field_for(StatusMixin, 'name')
-#     status = field_for(StatusMixin, 'status', required=True)
-#     started_at = field_for(StatusMixin, 'started_at')
-#     completed_at = field_for(StatusMixin, 'completed_at')
+    started_at = Column(String, default="")
+    completed_at = Column(String, default="")

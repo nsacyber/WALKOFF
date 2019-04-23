@@ -65,8 +65,7 @@ class NodeStatusSchema(BaseSchema):
     Schema for NodeStatusMessage
     """
 
-    variant = EnumField(StatusEnum)
-
+    status = EnumField(StatusEnum)
     class Meta:
         model = NodeStatus
         unknown = EXCLUDE
@@ -77,7 +76,7 @@ class WorkflowStatusSchema(BaseSchema):
     Schema for WorkflowStatusMessage
     """
 
-    variant = EnumField(StatusEnum)
+    status = EnumField(StatusEnum)
     node_statuses = fields.Nested(NodeStatusSchema, many=True)
 
     class Meta:

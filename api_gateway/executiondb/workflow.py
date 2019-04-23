@@ -20,6 +20,7 @@ from api_gateway.executiondb.branch import BranchSchema
 from api_gateway.executiondb.workflow_variable import WorkflowVariableSchema
 from api_gateway.executiondb import Base, ValidatableMixin, BaseSchema
 from api_gateway.executiondb.action import Action, ActionSchema, ActionApi
+from api_gateway.executiondb.trigger import TriggerSchema
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +37,7 @@ class Workflow(ValidatableMixin, Base):
     conditions = relationship("Condition", cascade="all, delete-orphan", passive_deletes=True)
     transforms = relationship("Transform", cascade="all, delete-orphan", passive_deletes=True)
     workflow_variables = relationship("WorkflowVariable", cascade="all, delete-orphan", passive_deletes=True)
-
-    # triggers = relationship("Trigger", cascade="all, delete-orphan", passive_deletes=True)
+    triggers = relationship("Trigger", cascade="all, delete-orphan", passive_deletes=True)
 
     def __init__(self, **kwargs):
         super(Workflow, self).__init__(**kwargs)
@@ -105,6 +105,7 @@ class WorkflowSchema(BaseSchema):
     branches = fields.Nested(BranchSchema, many=True)
     conditions = fields.Nested(ConditionSchema, many=True)
     transforms = fields.Nested(TransformSchema, many=True)
+    triggers = fields.Nested(TriggerSchema, many=True)
     workflow_variables = fields.Nested(WorkflowVariableSchema, many=True)
 
     class Meta:

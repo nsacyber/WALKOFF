@@ -112,23 +112,23 @@ class WorkflowJSONEncoder(json.JSONEncoder):
                     "errors": None}
 
         elif isinstance(o, Action):
-            position = {"x": o.position.x, "y": o.position.y, "id_": o.position.id_}
+            position = {"x": o.position.x, "y": o.position.y}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
                     "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
                     "execution_id": o.execution_id}
 
         elif isinstance(o, Condition):
-            position = {"x": o.position.x, "y": o.position.y, "id_": o.position.id_}
+            position = {"x": o.position.x, "y": o.position.y}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
                     "conditional": o.conditional}
 
         elif isinstance(o, Transform):
-            position = {"x": o.position.x, "y": o.position.y, "id_": o.position.id_}
+            position = {"x": o.position.x, "y": o.position.y}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
                     "transform": o.transform, "parameter": o.parameter}
 
         elif isinstance(o, Trigger):
-            position = {"x": o.position.x, "y": o.position.y, "id_": o.position.id_}
+            position = {"x": o.position.x, "y": o.position.y}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
                     "trigger": o.trigger}
 
@@ -145,7 +145,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
             return o
 
 
-Point = namedtuple("Point", ("x", "y", "id_"))
+Point = namedtuple("Point", ("x", "y"))
 Branch = namedtuple("Branch", ("source_id", "destination_id", "id_"))
 ParentSymbol = namedtuple("ParentSymbol", "result")  # used inside conditions to further mask the parent node attrs
 ChildSymbol = namedtuple("ChildSymbol", "id_")  # used inside conditions to further mask the child node attrs
@@ -223,10 +223,11 @@ class Variable:
 
 
 class Node:
-    __slots__ = ("id_", "name", "app_name", "label", "position", "priority", "errors")
+    __slots__ = ("id_", "name", "app_name", "label", "position", "priority", "errors", "is_valid")
 
-    def __init__(self, name, position: Point, label, app_name, id_=None, errors=None):
+    def __init__(self, name, position: Point, label, app_name, id_=None, errors=None, is_valid=True):
         self.id_ = id_ if id_ is not None else str(uuid.uuid4())
+        self.is_valid = is_valid   # ToDo: Is this neccessary?
         self.name = name
         self.app_name = app_name
         self.label = label
@@ -260,8 +261,7 @@ class Action(Node):
     __slots__ = ("parameters", "execution_id", "app_version")
 
     def __init__(self, name, position, app_name, app_version, label, priority, parameters=None, id_=None,
-                 execution_id=None,
-                 errors=None):
+                 execution_id=None, errors=None, is_valid=None):
         super().__init__(name, position, label, app_name, id_, errors)
         self.app_version = app_version
         self.parameters = parameters if parameters is not None else list()

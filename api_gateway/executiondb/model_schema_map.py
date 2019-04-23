@@ -12,7 +12,7 @@ from api_gateway.executiondb.parameter import (Parameter, ParameterSchema,
                                                ParameterApi, ParameterApiSchema)
 from api_gateway.executiondb.returns import ReturnApi, ReturnApiSchema
 from api_gateway.executiondb.transform import Transform, TransformSchema
-# from api_gateway.executiondb.trigger import Trigger, TriggerSchema
+from api_gateway.executiondb.trigger import Trigger, TriggerSchema
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.executiondb.workflow_variable import WorkflowVariable, WorkflowVariableSchema
 from api_gateway.executiondb.workflowresults import (NodeStatus, NodeStatusSchema,
@@ -32,7 +32,7 @@ _schema_lookup = {
     ParameterApi: ParameterApiSchema,
     ReturnApi: ReturnApiSchema,
     Transform: TransformSchema,
-    # Trigger: TriggerSchema,
+    Trigger: TriggerSchema,
     Workflow: WorkflowSchema,
     WorkflowVariable: WorkflowVariableSchema,
     NodeStatus: NodeStatusSchema,

@@ -123,7 +123,7 @@ def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
         "workflow_id": workflow_id,
         "name": workflow["name"],
         "status": StatusEnum.PENDING.name,
-        "started_at": str(datetime.now()),
+        "started_at": str(datetime.now().isoformat()),
         "completed_at": None,
         "user": get_jwt_claims().get('username', None),
         "node_statuses": []
