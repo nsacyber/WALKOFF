@@ -16,8 +16,8 @@ If you would like to view version 0.9.4, see [the master branch](https://github.
 
 ## Requirements
 
-* Docker: https://docs.docker.com/install/
-* Docker Compose (on Linux): https://docs.docker.com/compose/install/
+* Docker 18.06.0+: https://docs.docker.com/install/
+* Docker Compose 3+ (on Linux): https://docs.docker.com/compose/install/
     * Docker Desktop for Mac and Windows are already bundled with Docker Compose.
     
 
@@ -41,8 +41,8 @@ docker swarm init
 # Build and launch the docker-compose (this will take a while):
 docker-compose up -d --build
 
-# View logs and follow:
-docker-compose logs -f
+# Follow logs for services (append service names from the docker-compose.yml to follow specific services):
+docker-compose logs -f api_gateway
 
 # UI is viewable at http://localhost:8080
 ```
