@@ -42,10 +42,11 @@ class AppRepo(dict):
 
     async def store_api(self, api):
         url = f"{config.API_GATEWAY_URI}/api/apps/apis"
+        timeout = 0.25
         while True:
             try:
-                headers, self.token = await get_walkoff_auth_header(self.session, self.token)
                 # Do an explicit check to see if we have previously stored the api and update it if so.
+                headers, self.token = await get_walkoff_auth_header(self.session, self.token)
                 async with self.session.get(url + f"/{api['name']}", headers=headers) as resp:
                     api_exists = resp.status == 200
 
@@ -59,8 +60,10 @@ class AppRepo(dict):
                         results = await resp.json()
                         logger.debug(f"API-Gateway app-api create response: {results}")
                         return results
-            except aiohttp.ClientConnectionError as e:
+            except (asyncio.TimeoutError, aiohttp.ClientConnectionError) as e:
                 logger.error(f"Could not send app api to {url}: {e!r}")
+                timeout *= 2  # Let's sleep so as not to hammer the api_gateway
+                await asyncio.sleep(timeout)
 
     async def load_apps_and_apis(self):
         if not getattr(self, "path", False) and getattr(self, "db", False):

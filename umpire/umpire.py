@@ -387,10 +387,6 @@ class Umpire:
                             await self.redis.xack(stream=key, group_name=app_group, id=id_)
                             await xdel(self.redis, stream=key, id_=id_)
 
-
-
-
-
     async def monitor_queues(self):
         count = 0
         while True:
