@@ -1,62 +1,11 @@
-import json
-from copy import deepcopy
 import logging
-from http import HTTPStatus
 
-import yaml
 from flask.testing import FlaskClient
+import yaml
 
+from testing.api_gateway import test_crd_resource
 
 logger = logging.getLogger(__name__)
-
-
-def strip_known_extra_values(o):
-    """Recursively removes values the backend is known to add"""
-    for key in list(o):
-        if o[key] in (None, {}, []):
-            o.pop(key)
-        elif isinstance(o[key], str):
-            if key == "id_":
-                o.pop("id_")
-            elif key == "errors":
-                o.pop("errors")
-        elif isinstance(o[key], dict):
-            strip_known_extra_values(o[key])
-        elif isinstance(o[key], list):
-            for ele in o[key]:
-                if isinstance(ele, dict):
-                    strip_known_extra_values(ele)
-
-
-def assert_request_equals_response(request, response):
-    """Verify that once known extra values are stripped from the resposne, that it matches what we sent"""
-
-    r = deepcopy(response)
-    strip_known_extra_values(r)
-    assert request == r
-
-
-def create_resource_tester(api_gateway, auth_header, path, inputs, valid=True):
-    """Generic test routine, attempt to create a resource, assert that the relevant artifacts were (or not) created"""
-
-    for app_api_yaml in inputs:
-        app_api = yaml.full_load(app_api_yaml)
-        app_name = app_api.get("name", "")
-        p = api_gateway.post(f"{path}", headers=auth_header, data=json.dumps(app_api))
-        if valid:
-            assert p.status_code == HTTPStatus.CREATED
-            assert_request_equals_response(app_api, p.get_json())
-        else:
-            assert p.status_code == HTTPStatus.BAD_REQUEST
-            # ToDo: assert that the response is a problem - move problems to common
-
-        g = api_gateway.get(f"{path}/{app_name}", headers=auth_header)
-        if valid:
-            assert g.status_code == HTTPStatus.OK
-            assert_request_equals_response(app_api, g.get_json())
-        else:
-            assert g.status_code == HTTPStatus.NOT_FOUND
-            # ToDo: assert that the response is a problem - move problems to common
 
 
 # TOP LEVEL APP API TESTS
@@ -80,7 +29,7 @@ def test_create_api_empty(api_gateway: FlaskClient, auth_header, execdb):
         description: An invalid App API with missing actions
         """
     ]
-    create_resource_tester(api_gateway, auth_header, "/api/apps/apis", inputs, valid=False)
+    test_crd_resource(api_gateway, auth_header, "/api/apps/apis", "name", inputs, yaml.full_load, valid=False)
 
 
 def test_create_api_minimum(api_gateway: FlaskClient, auth_header, execdb):
@@ -96,7 +45,7 @@ def test_create_api_minimum(api_gateway: FlaskClient, auth_header, execdb):
           - name: test_action
         """
     ]
-    create_resource_tester(api_gateway, auth_header, "/api/apps/apis", inputs)
+    test_crd_resource(api_gateway, auth_header, "/api/apps/apis", "name", inputs, yaml.full_load)
 
 
 def test_create_api_invalid_semver(api_gateway: FlaskClient, auth_header, execdb):
@@ -137,7 +86,7 @@ def test_create_api_invalid_semver(api_gateway: FlaskClient, auth_header, execdb
         """
 
     ]
-    create_resource_tester(api_gateway, auth_header, "/api/apps/apis", inputs, valid=False)
+    test_crd_resource(api_gateway, auth_header, "/api/apps/apis", "name", inputs, yaml.full_load)
 
 
 def test_create_api_valid_contact(api_gateway: FlaskClient, auth_header, execdb):
@@ -157,7 +106,7 @@ def test_create_api_valid_contact(api_gateway: FlaskClient, auth_header, execdb)
               - name: test_action
         """
     ]
-    create_resource_tester(api_gateway, auth_header, "/api/apps/apis", inputs)
+    test_crd_resource(api_gateway, auth_header, "/api/apps/apis", "name", inputs, yaml.full_load)
 
 
 def test_create_api_invalid_contact(api_gateway: FlaskClient, auth_header, execdb):
@@ -208,7 +157,7 @@ def test_create_api_invalid_contact(api_gateway: FlaskClient, auth_header, execd
         #       - name: test_action
         # """
     ]
-    create_resource_tester(api_gateway, auth_header, "/api/apps/apis", inputs, valid=False)
+    test_crd_resource(api_gateway, auth_header, "/api/apps/apis", "name", inputs, yaml.full_load, valid=False)
 
 
 def test_create_api_invalid_license(api_gateway: FlaskClient, auth_header, execdb):
@@ -259,7 +208,7 @@ def test_create_api_invalid_license(api_gateway: FlaskClient, auth_header, execd
         #       - name: test_action
         # """
     ]
-    create_resource_tester(api_gateway, auth_header, "/api/apps/apis", inputs, valid=False)
+    test_crd_resource(api_gateway, auth_header, "/api/apps/apis", "name", inputs, yaml.full_load, valid=False)
 
 
 # TOP LEVEL ACTION TESTS
@@ -330,12 +279,48 @@ def test_create_api_valid_parameters(api_gateway: FlaskClient, auth_header, exec
                           type: string
                         id:
                           type: number
+        """,
+        """
+            walkoff_version: 1.0.0
+            app_version: 1.0.0
+            name: test_app4:1.0.0
+            description: A valid App API with object schema in multiple params
+            actions:
+              - name: test_action
+                parameters: 
+                  - name: param1
+                    description: A parameter description
+                    placeholder: A placeholder
+                    required: false
+                    schema: 
+                      type: object
+                      required: [name, id]
+                      properties:
+                        name:
+                          type: string
+                        id:
+                          type: number
+              - name: test_action2
+                parameters: 
+                  - name: param2
+                    description: A parameter description
+                    placeholder: A placeholder
+                    required: false
+                    schema: 
+                      type: object
+                      required: [name, id]
+                      properties:
+                        name:
+                          type: string
+                        id:
+                          type: number
         """
     ]
-    create_resource_tester(api_gateway, auth_header, "/api/apps/apis", inputs)
+    test_crd_resource(api_gateway, auth_header, "/api/apps/apis", "name", inputs, yaml.full_load)
 
 
 def test_create_api_invalid_parameters(api_gateway: FlaskClient, auth_header, execdb):
+    """Assert that invalid parameters are rejected"""
     inputs = [
         """
             walkoff_version: 1.0.0
@@ -394,4 +379,4 @@ def test_create_api_invalid_parameters(api_gateway: FlaskClient, auth_header, ex
                       type: notatype
         """
     ]
-    create_resource_tester(api_gateway, auth_header, "/api/apps/apis", inputs, valid=False)
+    test_crd_resource(api_gateway, auth_header, "/api/apps/apis", "name", inputs, yaml.full_load, valid=False)

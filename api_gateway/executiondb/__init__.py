@@ -37,7 +37,6 @@ class ExecutionDatabase(object):
     db_type = ""
 
     def __init__(self, execution_db_type, execution_db_path, execution_db_host="localhost"):
-        print(execution_db_type, execution_db_path, execution_db_host)
         # All of these imports are necessary
         from api_gateway.executiondb.returns import ReturnApi
         from api_gateway.executiondb.parameter import Parameter, ParameterApi
