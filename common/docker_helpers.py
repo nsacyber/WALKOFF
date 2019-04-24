@@ -195,6 +195,29 @@ async def get_replicas(docker_client, service):
     return {"running": running, "desired": desired}
 
 
+async def get_containers(docker_client, service, short_ids=False):
+    """
+    Gets the running containers the given service ID
+    :param service: The docker id of the service
+    :return: a set of the running containers
+    """
+    def get_container_id(task_spec):
+        return task_spec["Status"]["ContainerStatus"]["ContainerID"]
+
+    def get_state(task_spec):
+        return task_spec["Status"]["State"]
+
+    def has_container(task_spec):
+        return task_spec["Status"].get("ContainerStatus") is not None
+
+    tasks = await docker_client.tasks.list(filters={"service": [service]})
+
+    if short_ids:
+        return set(get_container_id(t)[:12] for t in tasks if get_state(t) == "running" and has_container(t))
+    return set(get_container_id(t) for t in tasks if get_state(t) == "running" and has_container(t))
+
+
+
 async def load_secrets(docker_client, project):
     service = project.services[0]
     secret_references = []

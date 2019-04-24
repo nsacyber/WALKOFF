@@ -16,6 +16,11 @@ actions:
       schema:
         type: string
       example: HELLO WORLD FROM host.name
+  - name: random_number
+    description: Returns a random float between 0.0 and 1.0
+    returns:
+      schema:
+        type: number
   - name: repeat_back_to_me
     description: Repeats the call parameter
     parameters:
