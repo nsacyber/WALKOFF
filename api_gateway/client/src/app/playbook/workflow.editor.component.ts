@@ -278,6 +278,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
 			const matchingNode = this.cy.elements(`node[_id="${ nodeStatusEvent.node_id }"]`);
+			const incomingEdges = matchingNode.incomers('edge');
+			
 
 			if (matchingNode) {
 				switch (nodeStatusEvent.status) {
@@ -286,12 +288,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.addClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
+						incomingEdges.addClass('executing-highlight');	
 						break;
 					case NodeStatuses.SUCCESS:
 						matchingNode.addClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.removeClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
+						incomingEdges.addClass('success-highlight');
+						incomingEdges.removeClass('executing-highlight');
 						break;
 					case NodeStatuses.FAILURE:
 						matchingNode.removeClass('success-highlight');
@@ -525,6 +530,26 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					css: {
 						'target-arrow-shape': 'triangle',
 						'curve-style': 'bezier',
+					},
+				},
+				{
+					selector: 'edge.executing-highlight',
+					css: {
+						'width': '4px',
+						'target-arrow-color': '#ffef47',
+						'line-color': '#ffef47',
+						'transition-property': 'width',
+						'transition-duration': '0.15s',
+					},
+				},
+				{
+					selector: 'edge.success-highlight',
+					css: {
+						'width': '4px',
+						'target-arrow-color': '#399645',
+						'line-color': '#399645',
+						'transition-property': 'line-color, width',
+						'transition-duration': '0.15s',
 					},
 				},
 				{

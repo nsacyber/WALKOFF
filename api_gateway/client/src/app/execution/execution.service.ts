@@ -34,11 +34,11 @@ export class ExecutionService {
 	/**
 	 * For a given executing workflow, asyncronously perform some action to change its status.
 	 * Only returns success
-	 * @param workflowId Workflow ID to act upon
+	 * @param executionId Execution ID to act upon
 	 * @param action Action to take (e.g. abort, resume, pause)
 	 */
-	performWorkflowStatusAction(workflowId: string, action: string): Promise<void> {
-		return this.http.patch('api/workflowqueue', { execution_id: workflowId, status: action })
+	performWorkflowStatusAction(executionId: string, action: string): Promise<void> {
+		return this.http.patch(`api/workflowqueue/${ executionId }`, { status: action })
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
