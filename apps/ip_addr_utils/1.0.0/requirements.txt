@@ -1,0 +1,4 @@
+pywinrm
+pypsrp
+chardet
+ipaddress

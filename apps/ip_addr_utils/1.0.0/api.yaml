@@ -1,0 +1,191 @@
+walkoff_version: 1.0.0
+app_version: 1.0.0
+name: ip_addr_utils:1.0.0
+description: An IP address app that will allow users to specify ip addresses and will format them correctly
+contact:
+  name: Walkoff Team
+  url: https://github.com/nsacyber/walkoff
+  email: walkoff@nsa.gov
+license:
+  name: Creative Commons
+  url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
+actions:
+  - name: set_timestamp
+    description: Sets the timestamp fro which scipt outputs will be filed under
+    returns:
+      schema:
+        type: string
+      example: Hopefully this works.
+  - name: cidr_to_array
+    description: Converts ip address from CIDR notation to individual IP's for easier integration with other apps.
+    parameters:
+      - name: ip_range
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: string
+    returns:
+      schema:
+        type: array
+
+
+
+
+
+#  - name: exec_local_command
+#    description: Execute PowerShell command locally, using either Windows PowerShell or cross-platform PowerShell Core if it is installed.
+#    parameters:
+#      - name: platform
+#        description: Whether to execute using Windows PowerShell or PowerShell Core
+#        required: true
+#        schema:
+#          type: string
+#          enum: ["PowerShell.exe (Windows)", "PowerShell Core (Cross-Platform)"]
+#      - name: mode
+#        description: Whether to execute the following commands as cmdlets or script files
+#        required: true
+#        schema:
+#          type: string
+#          enum: ["-Command", "-File"]
+#      - name: commands
+#        description: List of commands or scripts to execute
+#        required: true
+#        schema:
+#          type: array
+#      - name: output_filename
+#        description: local path to output results into
+#        required: true
+#        schema:
+#          type: string
+#    returns:
+#      schema:
+#        type: string
+
+
+#      - name: host
+#        description: IP address or hostname of remote host
+#        required: true
+#        schema:
+#          type: string
+#      - name: port
+#        description: WinRM port of remote host
+#        schema:
+#          type: integer
+#          minimum: 1
+#          maximum: 65355
+#    - name: message_encryption
+#      description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+#      type: string
+#      enum: ["auto", "always", "never"]
+#      default: auto
+#      required: true
+#    - name: read_timeout_sec
+#      description: maximum seconds to wait before an HTTP connect/read times out (default 30). This value should be slightly higher than operation_timeout_sec, as the server can block at least that long.
+#      type: integer
+#      minimum: 30
+#    - name: operation_timeout_sec
+#      description: maximum allowed time in seconds for any single wsman HTTP operation (default 20). Note that operation timeouts while receiving output (the only wsman operation that should take any significant time, and where these timeouts are expected) will be silently retried indefinitely.
+#      type: integer
+#      minimum: 20
+#    - name: keytab
+#      description: file path to keytab file
+#      type: string
+#    - name: ca_trust_path
+#      description: Certification Authority trust path
+#      type: string
+#    - name: cert_pem
+#      description: client authentication certificate file path in PEM format
+#      type: string
+#    - name: cert_key_pem
+#      description: client authentication certificate key file path in PEM format
+#      type: string
+#    - name: kerberos_delegation
+#      description: if True, TGT is sent to target server to allow multiple hops
+#      default: false
+#      type: boolean
+#    - name: kerberos_hostname_override
+#      description: the hostname to use for the kerberos exchange (defaults to the hostname in the endpoint URL)
+#      type: string
+#    - name: output_directory
+#      description: path to create subdirectories in
+#      type: string
+#    - name: output_filename
+#      description: filename to create in each subdirectory
+#      type: string
+#    default_return: Success
+#    returns:
+#      Success:
+#        description: List of result outputs
+#        schema:
+#          type: string
+#      ScriptError:
+#        description: The script encountered an error while running.
+#        failure: true
+#        schema:
+#          type: string
+#      FileError:
+#        description: The specified script could not be read, or output file could not be written.
+#        failure: true
+#        schema:
+#          type: string
+
+
+
+#  Execute Script Remotely:
+#    run: app.PowerShell.exec_script_remotely
+#    description: Execute the local script on the list of remote hosts.
+#    parameters:
+#    - name: hosts
+#      schema:
+#        type: array
+#        items:
+#          type: string
+#    - name: script_path
+#      description: path to the script on the local filesystem
+#      required: true
+#      type: string
+#    - name: output_directory
+#      description: directory to store results in, will create subdirectory per host
+#      type: string
+#    - name: output_filename
+#      description: filename to store results in host subdirectories
+#      type: string
+#    - name: tab_separated_values
+#      description: whether to pipe results into a tsv format. PowerShell script being ran must support this.
+#      type: boolean
+#    default_return: Success
+#    returns:
+#      Success:
+#        description: List of result outputs
+#        schema:
+#          type: string
+#      ScriptError:
+#        description: The script encountered an error while running.
+#        failure: true
+#        schema:
+#          type: string
+#      FileError:
+#        description: The specified script could not be read, or output file could not be written.
+#        failure: true
+#        schema:
+#          type: string
+#  Find Missing KBs:
+#    run: app.PowerShell.compare_kbs
+#    description: For each host, find the missing KBs (if any)
+#    parameters:
+#    - name: host_ips
+#      description: A list of IP addresses to query
+#      required: true
+#      type: array
+#      items:
+#        type: string
+#    - name: req_kbs
+#      description: A filename corresponding to a file with a list of comma-separated required KBs
+#      type: string
+#      required: true
+#    default_return: Success
+#    returns:
+#      Success:
+#        description: A dict with the key as the IP address, and the value as a list of missing KBs
+#        schema:
+#          type: object
