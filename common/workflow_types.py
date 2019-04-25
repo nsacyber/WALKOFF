@@ -133,7 +133,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
                     "trigger": o.trigger}
 
         elif isinstance(o, Parameter):
-            return {"name": o.name, "variant": o.variant, "value": o.value, "reference": o.reference, "id_": o.id_}
+            return {"name": o.name, "variant": o.variant, "value": o.value, "id_": o.id_}
 
         elif isinstance(o, ParameterVariant):
             return o.value
@@ -161,14 +161,12 @@ class ParameterVariant(enum.Enum):
 class Parameter:
     __slots__ = ("name", "value", "variant", "reference", "id_", "errors")
 
-    def __init__(self, name, id_=None, value=None, variant=None, reference=None, errors=None):
+    def __init__(self, name, id_=None, value=None, variant=None, errors=None):
         self.id_ = id_
         self.name = name
         self.value = value
-        self.variant: ParameterVariant = variant
-        self.reference = reference
+        self.variant = variant
         self.errors = errors
-        self.validate()
 
     def __str__(self):
         return f"Parameter-{self.name}:{self.value or self.reference}"
@@ -180,25 +178,6 @@ class Parameter:
 
     def __hash__(self):
         return hash(id(self))
-
-    def validate(self):
-        """Validates the param"""
-        message = None
-        reference_variants = {ParameterVariant.ACTION_RESULT, ParameterVariant.GLOBAL,
-                              ParameterVariant.WORKFLOW_VARIABLE}
-        if self.value is None and not self.reference:
-            message = f'Input {self.name} must have either value or reference. Input has neither'
-            logger.error(message)
-
-        elif self.value is not None and self.reference:
-            message = f'Input {self.name} must have either value or reference. Input has both. Using "value"'
-            logger.warning(message)
-            self.reference = None
-
-        elif self.reference and self.variant not in reference_variants:
-            message = 'Reference input must specify the variant.'
-            logger.error(message)
-        return message
 
 
 class Variable:

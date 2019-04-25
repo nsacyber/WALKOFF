@@ -213,29 +213,26 @@ class Worker:
             return globals_
 
     async def dereference_params(self, action: Action):
-        #TODO: update this to pull from the database
         global_vars = await self.get_globals()
         for param in action.parameters:
             if param.variant == ParameterVariant.STATIC_VALUE:
                 continue
 
             elif param.variant == ParameterVariant.ACTION_RESULT:
-                if param.reference in self.accumulator:
-                    param.value = self.accumulator[param.reference]
+                if param.value in self.accumulator:
+                    param.value = self.accumulator[param.value]
 
             elif param.variant == ParameterVariant.WORKFLOW_VARIABLE:
-                if param.reference in self.workflow.workflow_variables:
-                    param.value = self.workflow.workflow_variables[param.reference]
+                if param.value in self.workflow.workflow_variables:
+                    param.value = self.workflow.workflow_variables[param.value]
 
             elif param.variant == ParameterVariant.GLOBAL:
-                if param.reference in global_vars:
-                    param.value = self.accumulator[param.reference]
+                if param.value in global_vars:
+                    param.value = self.accumulator[param.value]
 
             else:
                 logger.error(f"Unable to defeference parameter:{param} for action:{action}")
                 break
-
-            param.reference = None
             param.variant = ParameterVariant.STATIC_VALUE
 
     async def schedule_node(self, node, parents, children):
