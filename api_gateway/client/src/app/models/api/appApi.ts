@@ -18,13 +18,13 @@ export class AppApi {
 
 	description?: string;
 
-	contact?: {
+	contact_info?: {
 		name: string,
 		url: string,
 		email: string
 	};
 
-	license?: {
+	license_info?: {
 		name: string,
 		url: string
 	};
@@ -49,7 +49,7 @@ export class AppApi {
 
 	getFilteredActionApis(searchTerm: string) : ActionApi[] {
 		searchTerm = searchTerm.trim().toLowerCase();
-		return (searchTerm) ? 
+		return (searchTerm) ?
 			this.action_apis.filter(api => api.name.toLowerCase().includes(searchTerm) || this.name.toLowerCase().includes(searchTerm)) :
 			this.action_apis;
 	}

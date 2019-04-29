@@ -2,11 +2,11 @@ walkoff_version: 1.0.0
 app_version: 1.0.0
 name: nmap:1.0.0
 description: A simple app to interact with map
-contact:
+contact_info:
   name: Walkoff Team
   url: https://github.com/nsacyber/walkoff
   email: walkoff@nsa.gov
-license:
+license_info:
   name: Creative Commons
   url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
 actions:

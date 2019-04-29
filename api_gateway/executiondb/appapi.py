@@ -17,8 +17,8 @@ class AppApi(IDMixin, Base):
     app_version = Column(String(), nullable=False)
     walkoff_version = Column(String(), nullable=False)
     description = Column(String(), default="")
-    contact = Column(JSON, default={})
-    license_ = Column(JSON, default={})
+    contact_info = Column(JSON, default={})
+    license_info = Column(JSON, default={})
     external_docs = Column(JSON, default={})
     actions = relationship('ActionApi', backref='app_api', cascade="all, delete-orphan", passive_deletes=True)
 

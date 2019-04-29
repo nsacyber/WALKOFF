@@ -17,9 +17,9 @@ AppApi:
     description:
       type: string
       description: A longer description of the API. Should be different from the title.
-    contact:
+    contact_info:
       $ref: '#/components/schemas/ApiContact'
-    license_:
+    license_info:
       $ref: '#/components/schemas/ApiLicense'
     actions:
       description: Actions associated with this app

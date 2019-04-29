@@ -133,7 +133,7 @@ def test_create_api_invalid_contact(api_gateway: FlaskClient, auth_header, execd
             walkoff_version: 1.0.0
             app_version: 1.0.0
             name: test_app:1.0.0
-            contact: not an object
+            contact_info: not an object
             description: An invalid App API with non-object contact info
             actions:
               - name: test_action
@@ -144,7 +144,7 @@ def test_create_api_invalid_contact(api_gateway: FlaskClient, auth_header, execd
             walkoff_version: 1.0.0
             app_version: 1.0.0
             name: test_app:1.0.0
-            contact: 
+            contact_info: 
               name: good
               bad: not good
             description: An invalid App API with extra field in contact
@@ -157,7 +157,7 @@ def test_create_api_invalid_contact(api_gateway: FlaskClient, auth_header, execd
             walkoff_version: 1.0.0
             app_version: 1.0.0
             name: test_app:1.0.0
-            contact: 
+            contact_info: 
               name: name
               email: not a valid email
             description: An invalid App API with invalid email in contact
@@ -170,7 +170,7 @@ def test_create_api_invalid_contact(api_gateway: FlaskClient, auth_header, execd
         #     walkoff_version: 1.0.0
         #     app_version: 1.0.0
         #     name: test_app:1.0.0
-        #     contact:
+        #     contact_info:
         #       name: name
         #       url: http://not a valid url
         #     description: An invalid App API with invalid URL in contact
