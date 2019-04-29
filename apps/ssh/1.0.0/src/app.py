@@ -33,11 +33,7 @@ class SSH(AppBase):
                 except Exception as e:
                     results[host] = {"stdout": "", "stderr": f"{e}"}
             
-            return results, 'Success'
-
-        except Exception as e:
-            return 'ERROR', e
-
+        return results
 
     async def sftp_copy(self, src_path, dest_path, src_host, src_port, src_username, src_password, dest_host, dest_port, dest_username, dest_password):
         curr_dir = os.getcwd()
@@ -64,7 +60,7 @@ class SSH(AppBase):
                 os.remove(file_path)
         os.rmdir(temp_dir)
 
-        return "Success"
+        return "Successfully Copied File."
 
 
     async def run_shell_script_file(self, local_file_name, hosts, port, username, password):
@@ -80,25 +76,24 @@ class SSH(AppBase):
             try:
                 async with asyncssh.connect(host=host,  port=port, username=username, password=password, known_hosts=None) as conn:
                     script = open(local_file_path, "r").read()
-                    cmd = "eval " + script
+                    cmd = script
                     temp = await conn.run(cmd)
                     output = temp.stdout
                     results[host] = {"stdout": output, "stderr": ""}
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
 
+        return results
+
+
+    async def block_ips(self, ips, host, port, username, password):
+        results = []
+
+        for ip in ips:
+            self.exec_command(["iptables -A INPUT -s {} -j DROP".format(ip)], [host], port, username, password)
+            results.append("Blocking IP {}".format(ip))
+        
         return results, 'Success'
-
-
-    # async def block_ips(self, ips, hosts, port, username, password):
-    #     results = {}
-
-    #     for host in hosts:
-    #         output = ""
-    #         for ip in ips:
-    #             self.exec_command(["iptables -A INPUT -s {} -j DROP".format(ip)], host, port, username, password)
-    #             output = output + ("Blocking IP {}".format(ip))
-    #         return True, 'Success'
 
 
     # async def shutdown(self, hosts, port, username, password):

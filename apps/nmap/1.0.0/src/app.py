@@ -12,14 +12,10 @@ from jinja2 import Environment
 import json
 import sys
 
-import xml.etree.ElementTree as etree
-
 import socket
 import asyncio
 
 from walkoff_app_sdk.app_base import AppBase
-
-import logging
 
 import json
 
@@ -43,28 +39,33 @@ class Nmap(AppBase):
             await loop.run_in_executor(executor, nmap_proc.run)
 
             try:
-                results[target] = nmap_proc.stdout
+                results[target] += nmap_proc.stdout
             except Exception as e:
                 results[target] = e
 
         return results
 
 
-    async def get_hosts_from_scan(self, target, options=''):
-        nmap_proc = NmapProcess(targets=target, options=options)
-        
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(executor, nmap_proc.run)
+    async def get_hosts_from_scan(self, targets, options):
+        results = {}
 
-        nmap_report_obj = NmapParser.parse(nmap_proc.stdout)
+        for target in targets:
+            nmap_proc = NmapProcess(targets=target, options=options)
+            
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(executor, nmap_proc.run)
 
-        hosts = {}
+            nmap_report_obj = NmapParser.parse(nmap_proc.stdout)
 
-        for host in nmap_report_obj.hosts:
-            hosts[host.address] = host.status
+            hosts = {}
 
-        return hosts
+            for host in nmap_report_obj.hosts:
+                hosts[host.address] = host.status
+
+            results[target] = hosts
+
+        return results
 
 
     async def scan_results_as_json(self, nmap_out, is_file=False):
@@ -97,7 +98,7 @@ class Nmap(AppBase):
         ret = json.dumps(ret)
         ret = json.loads(ret)
 
-        return ret, "Success"
+        return ret
 
 
     async def ports_and_hosts_from_json(self, nmap_json, is_file=False):
@@ -107,10 +108,10 @@ class Nmap(AppBase):
                     obj = json.load(j)
             else:
                 obj = json.loads(nmap_json)
-        except IOError:
-            return False, 'FileReadError'
+        except IOError as e:
+            return e, 'FileReadError'
         except (AttributeError, ValueError) as e:
-            return False, 'JSONError'
+            return e, 'JSONError'
 
         r = {"ports": [], "hosts": []}
         for host in obj:
@@ -124,7 +125,7 @@ class Nmap(AppBase):
         r["ports"] = ",".join(r["ports"])
         r["hosts"] = ",".join(r["hosts"])
 
-        return type(nmap_json)
+        return r
 
 
 if __name__ == "__main__":
