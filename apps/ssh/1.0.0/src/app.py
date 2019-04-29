@@ -57,7 +57,7 @@ class SSH(AppBase):
                 async with tunneled_conn.start_sftp_client() as sftp2:
                     results2 = await sftp2.put(temp_dir + "/" + file_name, dest_path)
 
-        # clearning up temp file
+        # cleaning up temp file
         for file in os.listdir(temp_dir):
             file_path = os.path.join(temp_dir, file)
             if os.path.isfile(file_path):
