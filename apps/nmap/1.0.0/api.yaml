@@ -13,21 +13,32 @@ actions:
   - name: run_scan
     description: Runs an nmap scan, returns results as string or filename
     parameters:
-      - name: target
+      - name: targets
         required: true
         schema:
-          type: string
+          type: array
         description: The target(s) to scan, comma separated values, CIDR supported
       - name: options
         required: true
         schema:
           type: string
         description: see nmap manpage -- some options require root
-      - name: output_filename
+    returns:
+      schema:
+        type: string
+      description: xml string on nmap output
+  - name: get_hosts_from_scan
+    description: Gets the list of active hosts on a network from an nmap scan
+    parameters:
+      - name: targets
+        required: true
+        schema:
+          type: array
+        description: The target (or targets in CIDR notation) to scan
+      - name: options
+        required: true
         schema:
           type: string
-        description: if defined, writes xml to the specified file
-        required: true
     returns:
       schema:
         type: string
@@ -45,38 +56,6 @@ actions:
         schema:
           type: boolean
         description: whether the previous parameter is a filename or string
-      - name: output_filename
-        required: true
-        schema:
-          type: string
-        description: if defined, writes json to the specified file
-    returns:
-      schema:
-        type: string
-      description: xml string on nmap output
-  - name: graph_from_results
-    description: transforms nmap port scan, nmap traceroute scan, openvas vulnerability scan into a node-link graph for d3 visualization
-    parameters:
-      - name: port_scan_xml_filename
-        required: true
-        schema:
-          type: string
-        description: xml nmap port scan results (e.g. '-sV' option)
-      - name: traceroute_xml_filename
-        required: true
-        schema:
-          type: string
-        description: xml nmap traceroute results ('--traceroute' option)
-      - name: openvas_json_filename
-        required: true
-        schema:
-          type: string
-        description: json openvas scan results (from OpenVAS app)
-      - name: output_filename
-        required: true
-        schema:
-          type: string
-        description: file to output grapth to
     returns:
       schema:
         type: string
@@ -98,77 +77,3 @@ actions:
     returns:
       schema:
         type: string
-      description: xml string on nmap output
-  - name: scan_results_as_html
-    description: Returns the scan results from 'run scan' as an HTML table
-    parameters:
-      - name: nmap_json
-        required: true
-        schema:
-          type: string
-      - name: is_file
-        required: true
-        description: whether or not first input is a filename or not
-        schema:
-          type: boolean
-        placeholder: false
-    returns:
-      schema:
-        type: string
-      description: xml string on nmap output
-  - name: get_hosts_from_scan
-    description: Gets the list of active hosts on a network from an nmap scan
-    parameters:
-      - name: target
-        required: true
-        schema:
-          type: string
-        description: The target (or targets in CIDR notation) to scan
-      - name: options
-        required: true
-        schema:
-          type: string
-    returns:
-      schema:
-        type: string
-      description: xml string on nmap output
-  - name: run_scan_check_blacklist
-    description: Runs a scan and then parses the output for the hosts on the network. It returns the number of hosts
-                 found that were in the blacklist, or 0 if none.
-    parameters:
-      - name: target
-        required: true
-        schema:
-          type: string
-        description: The target (or targets in CIDR notation) to scan
-      - name: options
-        required: true
-        schema:
-          type: string
-      - name: blacklist
-        required: true
-        schema:
-          type: array
-    returns:
-      schema:
-        type: integer
-  - name: run_scan_check_whitelist
-    description: Runs a scan and then parses the output for the hosts on the network. It returns the number of hosts
-                 found that were in the whitelist, or 0 if none.
-    parameters:
-      - name: target
-        required: true
-        schema:
-          type: string
-        description: The target (or targets in CIDR notation) to scan
-      - name: options
-        schema:
-          type: string
-        required: true
-      - name: whitelist
-        schema:
-          type: array
-        required: true
-    returns:
-      schema:
-        type: integer
