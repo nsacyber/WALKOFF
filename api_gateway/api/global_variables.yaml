@@ -1,18 +1,18 @@
 /globals/{global_id}:
-  parameters:
-    - in: path
-      name: global_id
-      description: ID of the global to be fetched
-      schema:
-        type: string
-        format: uuid
-      required: true
   get:
     tags:
       - GlobalVariables
     summary: Read a global
     description: ''
     operationId: api_gateway.server.endpoints.global_variables.read_global
+    parameters:
+      - in: path
+        name: global_id
+        description: ID of the global to be fetched
+        schema:
+          type: string
+          format: uuid
+        required: true
     responses:
       200:
         description: Success
@@ -28,6 +28,14 @@
     summary: Update a global
     description: ''
     operationId: api_gateway.server.endpoints.global_variables.update_global
+    parameters:
+      - in: path
+        name: global_id
+        description: ID of the global to be fetched
+        schema:
+          type: string
+          format: uuid
+        required: true
     requestBody:
       description: The new global object to be updated
       required: true
@@ -54,6 +62,14 @@
     summary: Remove a global
     description: ''
     operationId: api_gateway.server.endpoints.global_variables.delete_global
+    parameters:
+      - in: path
+        name: global_id
+        description: ID of the global to be fetched
+        schema:
+          type: string
+          format: uuid
+        required: true
     responses:
       204:
         description: Success
@@ -106,6 +122,139 @@
           application/json:
             schema:
               $ref: '#/components/schemas/GlobalVariable'
+      400:
+        description: GlobalVariable already exists
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+# Templates
+
+/globals/templates/{global_template_id}:
+  get:
+    tags:
+      - GlobalVariables
+    summary: Read a global template
+    description: ''
+    operationId: api_gateway.server.endpoints.global_variables.read_global_templates
+    parameters:
+      - in: path
+        name: global_template_id
+        description: ID of the global template to be fetched
+        schema:
+          type: string
+          format: uuid
+        required: true
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalVariableTemplate'
+      404:
+        description: GlobalVariableTemplate does not exist.
+  put:
+    tags:
+      - GlobalVariables
+    summary: Update a global template
+    description: ''
+    operationId: api_gateway.server.endpoints.global_variables.update_global_templates
+    parameters:
+      - in: path
+        name: global_template_id
+        description: ID of the global template to be fetched
+        schema:
+          type: string
+          format: uuid
+        required: true
+    requestBody:
+      description: The new global template to be updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GlobalVariableTemplate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalVariableTemplate'
+      404:
+        description: GlobalVariableTemplate does not exist
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  delete:
+    tags:
+      - GlobalVariables
+    summary: Remove a global
+    description: ''
+    operationId: api_gateway.server.endpoints.global_variables.delete_global_templates
+    parameters:
+      - in: path
+        name: global_template_id
+        description: ID of the global template to be fetched
+        schema:
+          type: string
+          format: uuid
+        required: true
+    responses:
+      204:
+        description: Success
+      404:
+        description: GlobalVariableTemplate does not exist
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+/globals/templates:
+  get:
+    tags:
+      - GlobalVariables
+    summary: Get all global templates
+    description: ''
+    operationId: api_gateway.server.endpoints.global_variables.read_all_global_templates
+    parameters:
+      - name: page
+        in: query
+        description: page of data to get
+        required: false
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: array
+              description: A list of globals
+              items:
+                $ref: '#/components/schemas/GlobalVariableTemplate'
+  post:
+    tags:
+      - GlobalVariables
+    summary: Add a global
+    description: ''
+    operationId: api_gateway.server.endpoints.global_variables.create_global_templates
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GlobalVariableTemplate'
+    responses:
+      201:
+        description: Object created
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalVariableTemplate'
       400:
         description: GlobalVariable already exists
         content:

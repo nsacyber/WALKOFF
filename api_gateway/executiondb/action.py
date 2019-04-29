@@ -22,7 +22,6 @@ class ActionApi(IDMixin, Base):
     parameters = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
 
     app_api_id = Column(UUIDType(binary=False), ForeignKey('app_api.id_', ondelete='CASCADE'))
-    action_id = Column(UUIDType(binary=False), ForeignKey('action.id_', ondelete='CASCADE'))
 
 
 class ActionApiSchema(BaseSchema):
@@ -50,10 +49,6 @@ class Action(ValidatableMixin, Base):
                               passive_deletes=True)
 
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
-
-    # def __init__(self, **kwargs):
-    #     super(Action, self).__init__(**kwargs)
-    #     self.validate()
 
 
 class ActionSchema(BaseSchema):
