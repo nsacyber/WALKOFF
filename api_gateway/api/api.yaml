@@ -6,7 +6,7 @@ info:
     orchestration tools. https://nsacyber.github.io/WALKOFF/
   version: 0.9.1
   title: WALKOFF
-  contact_info:
+  contact:
     email: walkoff@nsa.gov
   license:
     name: Creative-Commons
