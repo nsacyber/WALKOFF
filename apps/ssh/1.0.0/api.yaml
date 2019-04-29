@@ -137,6 +137,69 @@ actions:
     returns:
       schema:
         type: string
+<<<<<<< HEAD
+  - name: block_ips
+    description: runs the specified shell script on the remote server
+    parameters:
+      - name: ips
+        required: true
+        schema:
+          type: array
+        description: local path of the shell script to run
+      - name: host
+        schema:
+          type: string
+        description: host or hostname of the remote server
+        required: true
+      - name: port
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        description: port number
+        required: true
+      - name: username
+        schema:
+          type: string
+        description: username to login with
+        required: true
+      - name: password
+        schema:
+          type: string
+        description: password to login with
+        required: true
+    returns:
+      schema:
+        type: string
+  - name: close_connection
+    description: closes the SSH connection
+    parameters:
+      - name: host
+        schema:
+          type: string
+        description: host or hostname of the remote server
+        required: true
+      - name: port
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        description: port number
+        required: true
+      - name: username
+        schema:
+          type: string
+        description: username to login with
+        required: true
+      - name: password
+        schema:
+          type: string
+        description: password to login with
+        required: true
+    returns:
+      schema:
+        type: boolean
+=======
   # - name: block_ips
   #   description: runs the specified shell script on the remote server
   #   parameters:
@@ -198,3 +261,4 @@ actions:
   #   returns:
   #     schema:
   #       type: boolean
+>>>>>>> 2f5999c7e65fffd5e8e3c9c2f49fc0e7b2f00621

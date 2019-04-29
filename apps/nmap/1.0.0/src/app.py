@@ -39,7 +39,10 @@ class Nmap(AppBase):
             await loop.run_in_executor(executor, nmap_proc.run)
 
             try:
-                results[target] += nmap_proc.stdout
+                if results[target]:
+                    results[target] += nmap_proc.stdout
+                else:
+                    results[target] = nmap_proc.stdout
             except Exception as e:
                 results[target] = e
 
@@ -72,6 +75,10 @@ class Nmap(AppBase):
         xml_str = None
         if is_file:
             try:
+                # moving into files directory to read xml
+                curr_dir = os.getcwd()
+                temp_dir = os.path.join(curr_dir, r'files')
+                os.chdir(temp_dir)
                 with open(nmap_out, 'r') as f:
                     xml_str = f.read().replace("\n", "")
             except IOError as e:
@@ -104,6 +111,10 @@ class Nmap(AppBase):
     async def ports_and_hosts_from_json(self, nmap_json, is_file=False):
         try:
             if is_file:
+                # moving into files directory to read json
+                curr_dir = os.getcwd()
+                temp_dir = os.path.join(curr_dir, r'files')
+                os.chdir(temp_dir)
                 with open(nmap_json) as j:
                     obj = json.load(j)
             else:

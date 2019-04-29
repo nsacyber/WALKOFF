@@ -96,21 +96,18 @@ class SSH(AppBase):
         return results, 'Success'
 
 
-    # async def shutdown(self, hosts, port, username, password):
-    #     """
-    #     Close the SSH connection if there is a SSH connection
-    #     """
-    #     results = {}
-    #     for host in hosts:
-    #         try:
-    #             async with asyncssh.connect(host=host,  port=port, username=username, password=password, known_hosts=None) as conn:
-    #                 conn.close()
-    #                 await conn.wait_closed()
-    #                 results[host] = "SSH Connection Closed"
-    #         except:
-    #             results[host] = "Unable to Close SSH Connection"
+    async def close_connection(self, hosts, port, username, password):
+        results = {}
+        for host in hosts:
+            try:
+                async with asyncssh.connect(host=host,  port=port, username=username, password=password, known_hosts=None) as conn:
+                    conn.close()
+                    await conn.wait_closed()
+                    results[host] = "SSH Connection Closed"
+            except:
+                results[host] = "Unable to Close SSH Connection"
 
-    #     reutrn results
+        reutrn results
 
 
 if __name__ == "__main__":
