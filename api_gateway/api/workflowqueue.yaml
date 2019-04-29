@@ -6,13 +6,12 @@
     description: ''
     operationId: api_gateway.server.endpoints.workflowqueue.get_all_workflow_status
     parameters:
-      - name: limit
+      - name: page
         in: query
+        description: page of data to get
+        required: false
         schema:
           type: integer
-          minimum: 1
-          default: 50
-        required: false
     responses:
       200:
         description: Success

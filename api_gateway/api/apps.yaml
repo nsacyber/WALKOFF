@@ -24,14 +24,13 @@
     summary: Get all app apis
     description: ''
     operationId: api_gateway.server.endpoints.appapi.read_all_app_apis
-#    parameters:
-#      - name: field_name
-#        in: query
-#        description: The name of the field of the api to get for all apps
-#        required: false
-#        schema:
-#          type: string
-#          enum: [info, action_apis, condition_apis, transform_apis, device_apis, tags, external_docs]
+    parameters:
+      - name: page
+        in: query
+        description: page of data to get
+        required: false
+        schema:
+          type: integer
     responses:
       200:
         description: Success
@@ -62,7 +61,7 @@
             schema:
               $ref: '#/components/schemas/AppApi'
 
-/apps/apis/{app_name}:
+/apps/apis/{app}:
   get:
     tags:
       - Apps
@@ -70,9 +69,9 @@
     description: ''
     operationId: api_gateway.server.endpoints.appapi.read_app_api
     parameters:
-      - name: app_name
+      - name: app
         in: path
-        description: The name of the app to get
+        description: Name OR ID of the app to get
         required: true
         schema:
           type: string
@@ -97,9 +96,9 @@
     description: ''
     operationId: api_gateway.server.endpoints.appapi.update_app_api
     parameters:
-      - name: app_name
+      - name: app
         in: path
-        description: The name of the app to get
+        description: Name OR ID of the app to get
         required: true
         schema:
           type: string
@@ -137,9 +136,9 @@
     description: ''
     operationId: api_gateway.server.endpoints.appapi.delete_app_api
     parameters:
-      - name: app_name
+      - name: app
         in: path
-        description: The name of the app to get
+        description: Name OR ID of the app to get
         required: true
         schema:
           type: string
@@ -152,38 +151,3 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-
-#/apps/apis/{app_name}/{field_name}:
-#  get:
-#    tags:
-#      - Apps
-#    summary: Get a field of an app's api
-#    description: ''
-#    operationId: api_gateway.server.endpoints.appapi.read_app_api_field
-#    parameters:
-#      - name: app_name
-#        in: path
-#        description: The name of the app to get
-#        required: true
-#        schema:
-#          type: string
-#      - name: field_name
-#        in: path
-#        description: The name of the field in the app api to get
-#        required: true
-#        schema:
-#          type: string
-#          enum: [info, action_apis, condition_apis, transform_apis, device_apis, tags, externalDocs]
-#    responses:
-#      200:
-#        description: Success
-#        content:
-#          application/json:
-#            schema:
-#              type: object
-#      404:
-#        description: App does not exist
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/Error'

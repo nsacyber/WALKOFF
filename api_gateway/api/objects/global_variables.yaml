@@ -8,10 +8,33 @@ GlobalVariable:
       $ref: '#/components/schemas/Uuid'
     name:
       type: string
-      description: The name of the environment variable
+      description: The name of the global variable
     value:
-      type: string
-      description: The value of the environment variable
+#      oneOf:
+#        - type: "string"
+#        - type: "number"
+#        - type: "object"
+#        - type: "array"
+#        - type: "boolean"
+      description: The value of the global variable
     description:
       type: string
       description: Description of the global variable
+
+GlobalVariableTemplate:
+  type: object
+  required: [name, schema]
+  description: An global variable template object, which is used to optionally validate global variables
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    name:
+      type: string
+      description: The name of the global template
+    schema:
+      type: object
+      description: The schema for the global template
+    description:
+      type: string
+      description: Description of the global template

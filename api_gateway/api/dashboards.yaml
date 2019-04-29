@@ -5,6 +5,13 @@
     summary: Read all dashboards
     description: Retrieves all dashboards currently stored in the database.
     operationId: api_gateway.server.endpoints.dashboards.read_all_dashboards
+    parameters:
+      - name: page
+        in: query
+        description: page of data to get
+        required: false
+        schema:
+          type: integer
     responses:
       200:
         description: Success

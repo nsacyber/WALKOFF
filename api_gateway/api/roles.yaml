@@ -38,19 +38,19 @@
       400:
         description: Object exists.
 /roles/{role_id}:
-  parameters:
-    - name: role_id
-      in: path
-      description: The name that needs to be fetched.
-      required: true
-      schema:
-        type: string
   get:
     tags:
       - Roles
     summary: Read a role
     description: ''
     operationId: api_gateway.server.endpoints.roles.read_role
+    parameters:
+      - name: role_id
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        schema:
+          type: string
     responses:
       200:
         description: Success
@@ -66,6 +66,13 @@
     summary: Update a role
     description: ''
     operationId: api_gateway.server.endpoints.roles.update_role
+    parameters:
+      - name: role_id
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        schema:
+          type: string
     requestBody:
       description: Updated fields for the role object
       required: true
@@ -88,6 +95,13 @@
     summary: Delete a role
     description: ''
     operationId: api_gateway.server.endpoints.roles.delete_role
+    parameters:
+      - name: role_id
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        schema:
+          type: string
     responses:
       204:
         description: Success

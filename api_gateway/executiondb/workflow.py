@@ -67,6 +67,10 @@ class Workflow(ValidatableMixin, Base):
                 ActionApi.location == f"{action.app_name}.{action.name}"
             ).first()
 
+            if not action_api:
+                self.errors.append(f"Action {action.app_name}.{action.name} does not exist")
+                continue
+
             params = {}
             for p in action_api.parameters:
                 params[p.name] = {"api": p}

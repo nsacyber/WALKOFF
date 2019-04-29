@@ -19,7 +19,7 @@ AppApi:
       description: A longer description of the API. Should be different from the title.
     contact:
       $ref: '#/components/schemas/ApiContact'
-    license:
+    license_:
       $ref: '#/components/schemas/ApiLicense'
     actions:
       description: Actions associated with this app

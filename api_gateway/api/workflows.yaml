@@ -5,6 +5,13 @@
     summary: Read all workflows in playbook
     description: ''
     operationId: api_gateway.server.endpoints.workflows.read_all_workflows
+    parameters:
+      - name: page
+        in: query
+        description: page of data to get
+        required: false
+        schema:
+            type: integer
     responses:
       200:
         description: Success
@@ -42,9 +49,6 @@
         application/json:
           schema:
             $ref: '#/components/schemas/Workflow'
-#        multipart/form-data:
-#          schema:
-#            $ref: '#/components/schemas/Workflow'
     responses:
       201:
         description: Workflow created.
