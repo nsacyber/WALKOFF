@@ -16,7 +16,7 @@ actions:
       schema:
         type: string
       example: Hopefully this works.
-  - name: exec_remote_command
+  - name: exec_command_prompt_from_file
     description: Executes the powershell command on the remote device.
     parameters:
       - name: hosts
@@ -24,7 +24,7 @@ actions:
         required: true
         schema:
           type: array
-      - name: commands
+      - name: local_file_name
         description: list of commands to execute
         required: true
         schema:
@@ -56,7 +56,7 @@ actions:
           type: string
           enum: ["auto", "always", "never"]
         required: true
-  - name: exec_remote_script
+  - name: exec_command_prompt
     description: Executes the powershell command on the remote device.
     parameters:
       - name: hosts
@@ -64,7 +64,92 @@ actions:
         required: true
         schema:
           type: array
-      - name: executable
+      - name: commands
+        description: list of commands to execute
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: exec_powershell_script_from_file
+    description: Executes the powershell command on the remote device.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: shell_type
+        description: type of script you want to run
+        required: true
+        schema:
+          type: string
+      - name: local_file_name
+        description: script in the form of array commands
+        required: true
+        schema:
+          type: string
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: exec_powershell_script
+    description: Executes the powershell command on the remote device.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: shell_type
         description: type of script you want to run
         required: true
         schema:

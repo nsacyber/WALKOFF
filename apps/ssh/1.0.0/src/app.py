@@ -22,6 +22,7 @@ class SSH(AppBase):
     async def exec_command(self, args, hosts, port, username, password):
         results = {}
 
+<<<<<<< HEAD
         for host in hosts:
             try:
                 async with asyncssh.connect(host=host,  port=port, username=username, password=password, known_hosts=None) as conn:
@@ -32,6 +33,18 @@ class SSH(AppBase):
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
             
+=======
+        try:
+            for host in hosts:
+                try:
+                    async with asyncssh.connect(host=host,  port=port, username=username, password=password, known_hosts=None) as conn:
+                        for cmd in args:
+                            temp = await conn.run(cmd)
+                            output = temp.stdout
+                            results[host] = {"stdout": output, "stderr": ""}
+                except Exception as e:
+                    results[host] = {"stdout": "", "stderr": f"{e}"}
+>>>>>>> edf917307d590fc31d64ce5c7225f026078a10e1
         return results
 
     async def sftp_copy(self, src_path, dest_path, src_host, src_port, src_username, src_password, dest_host, dest_port, dest_username, dest_password):
@@ -95,5 +108,22 @@ class SSH(AppBase):
         return results, 'Success'
 
 
+<<<<<<< HEAD
+=======
+    async def close_connection(self, hosts, port, username, password):
+        results = {}
+        for host in hosts:
+            try:
+                async with asyncssh.connect(host=host,  port=port, username=username, password=password, known_hosts=None) as conn:
+                    conn.close()
+                    await conn.wait_closed()
+                    results[host] = "SSH Connection Closed"
+            except:
+                results[host] = "Unable to Close SSH Connection"
+
+        return results
+
+
+>>>>>>> edf917307d590fc31d64ce5c7225f026078a10e1
 if __name__ == "__main__":
     asyncio.run(SSH.run())
