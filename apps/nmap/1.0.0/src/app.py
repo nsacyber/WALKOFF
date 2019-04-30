@@ -64,8 +64,32 @@ class Nmap(AppBase):
 
         return results
 
+    async def parse_xml_for_os(self, nmap_out, is_file=False):
+        xml_str = None
+        if is_file:
+            try:
+                # moving into files directory to read xml
+                curr_dir = os.getcwd()
+                temp_dir = os.path.join(curr_dir, r'files')
+                os.chdir(temp_dir)
+                with open(nmap_out, 'r') as f:
+                    xml_str = f.read().replace("\n", "")
+            except IOError as e:
+                return e, 'FileReadError'
+        else:
+            xml_str = nmap_out
 
-    async def scan_results_as_json(self, nmap_out, is_file=False):
+        try:
+            nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
+        except Exception as e:
+            return e, 'XMLError'
+
+        for host in nmap_obj.hosts:
+            if host.is_up():
+                return host.os_match_probabilities()[0].osclasses[0].osfamily
+
+
+    async def xml_to_json(self, nmap_out, is_file=False):
         xml_str = None
         if is_file:
             try:

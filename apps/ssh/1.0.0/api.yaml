@@ -197,3 +197,4 @@ actions:
     returns:
       schema:
         type: boolean
+

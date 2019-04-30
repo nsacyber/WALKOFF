@@ -3,4 +3,3 @@ networkx
 jinja2
 asgiref
 nmap
-python-nmap

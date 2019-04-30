@@ -43,7 +43,24 @@ actions:
       schema:
         type: string
       description: xml string on nmap output
-  - name: scan_results_as_json
+  - name: parse_xml_for_os
+    description: looks into xml nmap for osfamily
+    parameters:
+      - name: nmap_out
+        required: true
+        schema:
+          type: string
+        description: nmap output either as xml filename or string
+      - name: is_file
+        required: true
+        schema:
+          type: boolean
+        description: whether the previous parameter is a filename or string
+    returns:
+      schema:
+        type: string
+      description: os
+  - name: xml_to_json
     description: transforms xml nmap results into json
     parameters:
       - name: nmap_out
