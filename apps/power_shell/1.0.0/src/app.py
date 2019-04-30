@@ -21,12 +21,15 @@ class PowerShell(AppBase):
                             message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
-        :param message_encryption:
-        :param password:
-        :param username:
-        :param hosts: list of hosts to execute on
-        :param commands: list of commands to execute
-        :return: dict of results with hosts as keys and list of outputs for each
+        :param hosts: List of host ips to run command on
+        :param local_file_name: file name to run specified script from
+        :param username: username of the machine you wish to run command on
+        :param password: password for the machine you wish to run command on
+        :param transport: method of transportation
+        :param server_cert_validation: whether or not to verify certificates
+        :param message_encryption: When you should encrypt messages
+
+        :return: dict of results with hosts as keys and list of outputs for each specified hosts
         """
 
         results = {}
@@ -59,12 +62,15 @@ class PowerShell(AppBase):
                             message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
-        :param message_encryption:
-        :param password:
-        :param username:
-        :param hosts: list of hosts to execute on
-        :param commands: list of commands to execute
-        :return: dict of results with hosts as keys and list of outputs for each
+        :param hosts: List of host ips to run command on
+        :param commands: array of commands in which you want to run on every host
+        :param username: username of the machine you wish to run command on
+        :param password: password for the machine you wish to run command on
+        :param transport: method of transportation
+        :param server_cert_validation: whether or not to verify certificates
+        :param message_encryption: When you should encrypt messages
+
+        :return: dict of results with hosts as keys and list of outputs for each specified hosts
         """
 
         results = {}
@@ -91,14 +97,16 @@ class PowerShell(AppBase):
                             message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
-        Outputs each host's file to a subdirectory of output_directory in output_filename
-        :param ca_trust_path:
-        :param message_encryption:
-        :param password:
-        :param username:
-        :param hosts: list of hosts to execute on
-        :param commands: list of commands to execute
-        :return: dict of results with hosts as keys and list of outputs for each
+        :param hosts: List of host ips to run command on
+        :param shell_type: The type of shell you wish to run (i.e. "powershell")
+        :param local_file_name: file name to run specified script from
+        :param username: username of the machine you wish to run command on
+        :param password: password for the machine you wish to run command on
+        :param transport: method of transportation
+        :param server_cert_validation: whether or not to verify certificates
+        :param message_encryption: When you should encrypt messages
+
+        :return: dict of results with hosts as keys and list of outputs for each specified hosts
         """
         results = {}
         curr_dir = os.getcwd()
@@ -137,14 +145,16 @@ class PowerShell(AppBase):
                             message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
-        Outputs each host's file to a subdirectory of output_directory in output_filename
-        :param ca_trust_path:
-        :param message_encryption:
-        :param password:
-        :param username:
-        :param hosts: list of hosts to execute on
-        :param commands: list of commands to execute
-        :return: dict of results with hosts as keys and list of outputs for each
+        :param hosts: List of host ips to run command on
+        :param shell_type: The type of shell you wish to run (i.e. "powershell")
+        :param commands: array of commands in which you want to run on every host
+        :param username: username of the machine you wish to run command on
+        :param password: password for the machine you wish to run command on
+        :param transport: method of transportation
+        :param server_cert_validation: whether or not to verify certificates
+        :param message_encryption: When you should encrypt messages
+
+        :return: dict of results with hosts as keys and list of outputs for each specified hosts
         """
         results = {}
 

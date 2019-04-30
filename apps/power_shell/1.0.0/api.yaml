@@ -17,7 +17,7 @@ actions:
         type: string
       example: Hopefully this works.
   - name: exec_command_prompt_from_file
-    description: Executes the powershell command on the remote device.
+    description: Executes powershell scripts on remote devices (Scripts located in "scripts" directory within app).
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -25,7 +25,7 @@ actions:
         schema:
           type: array
       - name: local_file_name
-        description: list of commands to execute
+        description: filename in which scripts will be located
         required: true
         schema:
           type: string
@@ -51,13 +51,13 @@ actions:
           type: boolean
         required: true
       - name: message_encryption
-        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        description: Will encrypt the WinRM messages if set to True and "transport auth" supports message encryption
         schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
   - name: exec_command_prompt
-    description: Executes the powershell command on the remote device.
+    description: Executes the powershell command on remote devices.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -97,7 +97,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: exec_powershell_script_from_file
-    description: Executes the powershell command on the remote device.
+    description: Executes the powershell script on remote devices based on script file passed in.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -105,12 +105,12 @@ actions:
         schema:
           type: array
       - name: shell_type
-        description: type of script you want to run
+        description: type of shell you want to execute
         required: true
         schema:
           type: string
       - name: local_file_name
-        description: script in the form of array commands
+        description: filename in which scripts will be located
         required: true
         schema:
           type: string
@@ -142,7 +142,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: exec_powershell_script
-    description: Executes the powershell command on the remote device.
+    description: Executes the powershell command/script on remote devices.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -150,7 +150,7 @@ actions:
         schema:
           type: array
       - name: shell_type
-        description: type of script you want to run
+        description: type of shell you want to execute
         required: true
         schema:
           type: string

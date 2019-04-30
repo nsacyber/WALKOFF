@@ -19,11 +19,11 @@ actions:
   - name: cidr_to_array
     description: Converts ip address from CIDR notation to individual IP's for easier integration with other apps.
     parameters:
-      - name: ip_range
+      - name: ip_array
         description: list of hosts to execute on
         required: true
         schema:
-          type: string
+          type: array
     returns:
       schema:
         type: array

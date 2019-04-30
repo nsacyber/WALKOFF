@@ -13,11 +13,6 @@ actions:
   - name: exec_command
     description: Execute command on remote server with SSH client
     parameters:
-      - name: args
-        required: true
-        schema:
-          type: array
-        description: json array of arguments
       - name: hosts
         schema:
           type: array
@@ -30,6 +25,11 @@ actions:
           maximum: 65535
         description: port number
         required: true
+      - name: args
+        required: true
+        schema:
+          type: array
+        description: json array of arguments
       - name: username
         schema:
           type: string

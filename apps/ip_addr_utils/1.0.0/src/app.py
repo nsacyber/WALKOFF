@@ -15,10 +15,11 @@ class IPAddrUtils(AppBase):
         timestamp = '{:%Y-%m-%d_%H-%M-%S}'.format(datetime.utcnow())
         return timestamp
 
-    async def cidr_to_array(self, ip_range):
+    async def cidr_to_array(self, ip_array):
         results = []
-        for ip in ipaddress.IPv4Network(ip_range):
-            results.append(str(ip))
+        for ip_range in ip_array:
+            for ip in ipaddress.IPv4Network(ip_range):
+                results.append(str(ip))
         return results
 
 

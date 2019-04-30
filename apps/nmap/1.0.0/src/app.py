@@ -1,16 +1,8 @@
-from libnmap.parser import NmapParserException
 from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser
-import networkx
-from networkx.readwrite import json_graph
-
+import os
 import concurrent.futures
 
-from jinja2 import Environment
-import json
-import sys
-
-import socket
 import asyncio
 
 from walkoff_app_sdk.app_base import AppBase
@@ -26,8 +18,7 @@ class Nmap(AppBase):
         super().__init__(redis, logger, console_logger)
 
     async def run_scan(self, targets, options):
-        results = {}
-
+        results = []
         for target in targets:
             nmap_proc = NmapProcess(target, options)
 
@@ -36,9 +27,9 @@ class Nmap(AppBase):
             await loop.run_in_executor(executor, nmap_proc.run)
 
             try:
-                results[target] = nmap_proc.stdout
+                results.append(nmap_proc.stdout)
             except Exception as e:
-                results[target] = e
+                results.append(e)
 
         return results
 
@@ -64,20 +55,84 @@ class Nmap(AppBase):
 
         return results
 
-    async def parse_xml_for_os(self, nmap_out, is_file=False):
+    async def parse_xml_for_linux(self, nmap_arr):
         xml_str = None
-        if is_file:
+        output = []
+        for nmap in nmap_arr:
+
+            xml_str = nmap
+
             try:
-                # moving into files directory to read xml
-                curr_dir = os.getcwd()
-                temp_dir = os.path.join(curr_dir, r'files')
-                os.chdir(temp_dir)
-                with open(nmap_out, 'r') as f:
-                    xml_str = f.read().replace("\n", "")
-            except IOError as e:
-                return e, 'FileReadError'
-        else:
-            xml_str = nmap_out
+                nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
+            except Exception as e:
+                return e, 'XMLError'
+
+            for host in nmap_obj.hosts:
+                if host.is_up():
+                    try:
+                        if host.os_match_probabilities()[0].osclasses[0].osfamily == "Linux":
+                            output.append(str(host.address))
+                    except Exception as e:
+                        print("Object is not a Linux machine")
+        return output
+
+    async def parse_xml_for_windows(self, nmap_arr):
+        xml_str = None
+        output = []
+        for nmap in nmap_arr:
+
+            xml_str = nmap
+
+            try:
+                nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
+            except Exception as e:
+                return e, 'XMLError'
+
+            for host in nmap_obj.hosts:
+                if host.is_up():
+                    try:
+                        if host.os_match_probabilities()[0].osclasses[0].osfamily == "Windows":
+                            output.append(str(host.address))
+                    except Exception as e:
+                        print("Object is not a Windows machine")
+        return output
+
+    async def parse_xml_for_linux_from_file(self, nmap_file):
+        output = []
+        try:
+            # moving into files directory to read xml
+            curr_dir = os.getcwd()
+            temp_dir = os.path.join(curr_dir, r'files')
+            os.chdir(temp_dir)
+            with open(nmap_file, 'r') as f:
+                xml_str = f.read().replace("\n", "")
+        except IOError as e:
+            return e, 'FileReadError'
+        try:
+            nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
+        except Exception as e:
+            return e, 'XMLError'
+
+        for host in nmap_obj.hosts:
+            if host.is_up():
+                try:
+                    if host.os_match_probabilities()[0].osclasses[0].osfamily == "Linux":
+                        output.append(str(host.address))
+                except Exception as e:
+                    print("Object is not a Linux machine")
+        return output
+
+    async def parse_xml_for_windows_from_file(self, nmap_file):
+        output = []
+        try:
+            # moving into files directory to read xml
+            curr_dir = os.getcwd()
+            temp_dir = os.path.join(curr_dir, r'files')
+            os.chdir(temp_dir)
+            with open(nmap_file, 'r') as f:
+                xml_str = f.read().replace("\n", "")
+        except IOError as e:
+            return e, 'FileReadError'
 
         try:
             nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
@@ -86,8 +141,12 @@ class Nmap(AppBase):
 
         for host in nmap_obj.hosts:
             if host.is_up():
-                return host.os_match_probabilities()[0].osclasses[0].osfamily
-
+                try:
+                    if host.os_match_probabilities()[0].osclasses[0].osfamily == "Windows":
+                        output.append(str(host.address))
+                except Exception as e:
+                    print("Object is not a Windows machine")
+        return output
 
     async def xml_to_json(self, nmap_out, is_file=False):
         xml_str = None

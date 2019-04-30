@@ -25,7 +25,7 @@ actions:
         description: see nmap manpage -- some options require root
     returns:
       schema:
-        type: string
+        type: array
       description: xml string on nmap output
   - name: get_hosts_from_scan
     description: Gets the list of active hosts on a network from an nmap scan
@@ -43,22 +43,53 @@ actions:
       schema:
         type: string
       description: xml string on nmap output
-  - name: parse_xml_for_os
+  - name: parse_xml_for_linux
+    description: looks into xml nmap for osfamily to match Linux
+    parameters:
+      - name: nmap_arr
+        required: true
+        schema:
+          type: array
+        description: nmap output as xml array
+    returns:
+      schema:
+        type: array
+      description: os
+  - name: parse_xml_for_windows
+    description: looks into xml nmap for osfamily to match Windows
+    parameters:
+      - name: nmap_arr
+        required: true
+        schema:
+          type: array
+        description: nmap output as xml array
+    returns:
+      schema:
+        type: array
+      description: os
+  - name: parse_xml_for_linux_from_file
     description: looks into xml nmap for osfamily
     parameters:
-      - name: nmap_out
+      - name: nmap_file
         required: true
         schema:
           type: string
-        description: nmap output either as xml filename or string
-      - name: is_file
-        required: true
-        schema:
-          type: boolean
-        description: whether the previous parameter is a filename or string
+        description: nmap output as xml filename
     returns:
       schema:
-        type: string
+        type: array
+      description: os
+  - name: parse_xml_for_windows_from_file
+    description: looks into xml nmap for osfamily
+    parameters:
+      - name: nmap_file
+        required: true
+        schema:
+          type: string
+        description: nmap output as xml filename
+    returns:
+      schema:
+        type: array
       description: os
   - name: xml_to_json
     description: transforms xml nmap results into json
