@@ -32,7 +32,6 @@ class SSH(AppBase):
                             results[host] = {"stdout": output, "stderr": ""}
                 except Exception as e:
                     results[host] = {"stdout": "", "stderr": f"{e}"}
-            
         return results
 
     async def sftp_copy(self, src_path, dest_path, src_host, src_port, src_username, src_password, dest_host, dest_port, dest_username, dest_password):
@@ -107,7 +106,7 @@ class SSH(AppBase):
             except:
                 results[host] = "Unable to Close SSH Connection"
 
-        reutrn results
+        return results
 
 
 if __name__ == "__main__":

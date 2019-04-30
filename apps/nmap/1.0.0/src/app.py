@@ -1,8 +1,6 @@
 from libnmap.parser import NmapParserException
 from libnmap.process import NmapProcess
 from libnmap.parser import NmapParser
-
-import nmap
 import networkx
 from networkx.readwrite import json_graph
 
@@ -27,7 +25,6 @@ class Nmap(AppBase):
     def __init__(self, redis, logger, console_logger=None):
         super().__init__(redis, logger, console_logger)
 
-
     async def run_scan(self, targets, options):
         results = {}
 
@@ -39,10 +36,7 @@ class Nmap(AppBase):
             await loop.run_in_executor(executor, nmap_proc.run)
 
             try:
-                if results[target]:
-                    results[target] += nmap_proc.stdout
-                else:
-                    results[target] = nmap_proc.stdout
+                results[target] = nmap_proc.stdout
             except Exception as e:
                 results[target] = e
 
