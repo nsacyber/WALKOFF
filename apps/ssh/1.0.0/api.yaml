@@ -170,31 +170,3 @@ actions:
     returns:
       schema:
         type: string
-  - name: close_connection
-    description: closes the SSH connection
-    parameters:
-      - name: host
-        schema:
-          type: string
-        description: host or hostname of the remote server
-        required: true
-      - name: port
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 65535
-        description: port number
-        required: true
-      - name: username
-        schema:
-          type: string
-        description: username to login with
-        required: true
-      - name: password
-        schema:
-          type: string
-        description: password to login with
-        required: true
-    returns:
-      schema:
-        type: boolean

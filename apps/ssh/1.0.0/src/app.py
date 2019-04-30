@@ -22,16 +22,15 @@ class SSH(AppBase):
     async def exec_command(self, args, hosts, port, username, password):
         results = {}
 
-        try:
-            for host in hosts:
-                try:
-                    async with asyncssh.connect(host=host,  port=port, username=username, password=password, known_hosts=None) as conn:
-                        for cmd in args:
-                            temp = await conn.run(cmd)
-                            output = temp.stdout
-                            results[host] = {"stdout": output, "stderr": ""}
-                except Exception as e:
-                    results[host] = {"stdout": "", "stderr": f"{e}"}
+        for host in hosts:
+            try:
+                async with asyncssh.connect(host=host,  port=port, username=username, password=password, known_hosts=None) as conn:
+                    for cmd in args:
+                        temp = await conn.run(cmd)
+                        output = temp.stdout
+                        results[host] = {"stdout": output, "stderr": ""}
+            except Exception as e:
+                results[host] = {"stdout": "", "stderr": f"{e}"}
             
         return results
 
@@ -94,20 +93,6 @@ class SSH(AppBase):
             results.append("Blocking IP {}".format(ip))
         
         return results, 'Success'
-
-
-    async def close_connection(self, hosts, port, username, password):
-        results = {}
-        for host in hosts:
-            try:
-                async with asyncssh.connect(host=host,  port=port, username=username, password=password, known_hosts=None) as conn:
-                    conn.close()
-                    await conn.wait_closed()
-                    results[host] = "SSH Connection Closed"
-            except:
-                results[host] = "Unable to Close SSH Connection"
-
-        reutrn results
 
 
 if __name__ == "__main__":
