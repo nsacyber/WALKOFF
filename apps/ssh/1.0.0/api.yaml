@@ -13,11 +13,6 @@ actions:
   - name: exec_command
     description: Execute command on remote server with SSH client
     parameters:
-      - name: args
-        required: true
-        schema:
-          type: array
-        description: json array of arguments
       - name: hosts
         schema:
           type: array
@@ -29,17 +24,18 @@ actions:
           minimum: 1
           maximum: 65535
         description: port number
-        required: true
+      - name: args
+        schema:
+          type: array
+        description: json array of arguments
       - name: username
         schema:
           type: string
         description: username to login with
-        required: true
       - name: password
         schema:
           type: string
         description: password to login with
-        required: true
     returns:
       schema:
         type: string
@@ -169,35 +165,3 @@ actions:
     returns:
       schema:
         type: string
-<<<<<<< HEAD
-=======
-  - name: close_connection
-    description: closes the SSH connection
-    parameters:
-      - name: host
-        schema:
-          type: string
-        description: host or hostname of the remote server
-        required: true
-      - name: port
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 65535
-        description: port number
-        required: true
-      - name: username
-        schema:
-          type: string
-        description: username to login with
-        required: true
-      - name: password
-        schema:
-          type: string
-        description: password to login with
-        required: true
-    returns:
-      schema:
-        type: boolean
-
->>>>>>> edf917307d590fc31d64ce5c7225f026078a10e1
