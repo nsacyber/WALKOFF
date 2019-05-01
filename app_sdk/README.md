@@ -74,6 +74,37 @@ WALKOFF
                     +-- your_code.{c, cpp, py,..., etc.} 
 ```
 
+## Testing an app outside of WALKOFF 
+
+Running an app on its own outside of WALKOFF can be useful for debugging, as the app service logs are somewhat buried.
+
+Keep in mind while running your app this way, you will have access to your host's filesystem in a way that is not normally accessible to app containers. 
+
+1. Install the WALKOFF App SDK (assuming you're starting from WALKOFF's directory):
+   ```
+   cd app_sdk
+   pip install -e .
+   ```
+
+2. Run the rest of WALKOFF via docker-compose as described in the main Readme
+   ```
+   cd ..
+   docker-compose up -d --build
+   ```
+3. Export environment variables that the app would normally expect inside its container, but change service names to localhost 
+   ```
+   export REDIS_URI=redis://localhost
+   export REDIS_ACTION_RESULT_CH=action-results
+   export REDIS_ACTION_RESULTS_GROUP=action-results-group
+   export APP_NAME=hello_world
+   export HOSTNAME=$(hostname)
+   export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+   ```
+3. Navigate to and run your app.py. The app will exit after a set period if no work is found, so ensure you run your app just before the workflow.
+   ```
+   python apps/hello_world/1.0.0/src/app.py 
+   ```
+   
 ## Adding an app to WALKOFF
 
 To "install" an app in WALKOFF, simply place your app with the above structure inside the apps directory. The Umpire will detect and build it on a set interval (default 60 seconds), adding it to the list of available. This process will change and be made more secure/robust as the 1.0 release matures.

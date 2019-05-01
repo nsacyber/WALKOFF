@@ -12,7 +12,8 @@ class HelloWorld(AppBase):
     Inherit from the AppBase class to have Redis, logging, and console logging set up behind the scenes.
     """
     __version__ = "1.0.0"
-    app_name = "hello_world"
+    app_name = "hello_world"  # this needs to match "name" in api.yaml
+
 
     def __init__(self, redis, logger, console_logger=None):
         """
