@@ -180,6 +180,10 @@ Condition:
     app_name:
       type: string
       enum: [Builtin]
+    app_version:
+      description: The version of the app to which the action belongs
+      type: string
+      example: 1.0.0
     name:
       type: string
       enum: [Condition]
@@ -187,6 +191,11 @@ Condition:
       description: User-specified label for the condition
       type: string
       example: condition1
+    is_valid:
+      description: are the contents of this condition valid?
+      type: boolean
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
     conditional:
       type: string
       example: "if Pre_Hello_World_Action == 5: return Hello_World_Action"
@@ -206,6 +215,10 @@ Transform:
     app_name:
       type: string
       enum: [Builtin]
+    app_version:
+      description: The version of the app to which the action belongs
+      type: string
+      example: 1.0.0
     name:
       type: string
       enum: [Transform]
@@ -213,6 +226,11 @@ Transform:
       description: The user defined name of the transform
       type: string
       example: split string
+    is_valid:
+      description: are the contents of this transform valid?
+      type: boolean
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
     transform:
       description: The transform to apply to the result of its parent Action
       type: string
@@ -235,6 +253,10 @@ Trigger:
     app_name:
       type: string
       enum: [Builtin]
+    app_version:
+      description: The version of the app to which the action belongs
+      type: string
+      example: 1.0.0
     name:
       type: string
       enum: [Trigger]
@@ -242,6 +264,11 @@ Trigger:
       description: The user defined name of the trigger
       type: string
       example: Wait for Approval
+    is_valid:
+      description: are the contents of this trigger valid?
+      type: boolean
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
     trigger:
       description: The trigger to be evaluated by WALKOFF
       type: string
@@ -275,10 +302,10 @@ WorkflowVariable:
      $ref: '#/components/schemas/Uuid'
    name:
      type: string
-     description: The name of the environment variable
+     description: The name of the workflow variable
    value:
      type: string
-     description: The value of the environment variable
+     description: The value of the workflow variable
    description:
      type: string
      description: Description of the workflow variable

@@ -6,7 +6,7 @@ from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
-from api_gateway.executiondb import Base, IDMixin, BaseSchema, ValidatableMixin
+from api_gateway.executiondb import Base, IDMixin, BaseSchema, NodeMixin
 from api_gateway.executiondb.parameter import Parameter, ParameterSchema, ParameterApiSchema
 from api_gateway.executiondb.returns import ReturnApiSchema
 
@@ -38,18 +38,20 @@ class ActionApiSchema(BaseSchema):
         unknown = EXCLUDE
 
 
-class Action(ValidatableMixin, Base):
+class Action(NodeMixin, Base):
     __tablename__ = 'action'
-    app_name = Column(String(80), nullable=False)
-    app_version = Column(String(80), nullable=False)
-    name = Column(String(80), nullable=False)
-    label = Column(String(80), nullable=False)
     priority = Column(Integer, default=3)
-    position = Column(JSON, default={"x": 0, "y": 0})
     parameters = relationship('Parameter', cascade='all, delete, delete-orphan', foreign_keys=[Parameter.action_id],
                               passive_deletes=True)
 
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
+
+    def __init__(self, **kwargs):
+        super(Action, self).__init__(**kwargs)
+        self.validate()
+
+    def validate(self):
+        self.errors = []
 
 
 class ActionSchema(BaseSchema):

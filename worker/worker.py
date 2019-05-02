@@ -18,7 +18,8 @@ from common.workflow_types import Node, Action, Condition, Transform, Trigger, P
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WORKER")
-logging.getLogger("asyncio").setLevel(logging.DEBUG)
+# logging.getLogger("asyncio").setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 CONTAINER_ID = os.getenv("HOSTNAME")
 
@@ -150,7 +151,7 @@ class Worker:
         # TODO: Figure out a clean way of handling the exceptions here. Cancelling subgraphs throws CancelledErrors.
         # Launch the results accumulation task and wait for all the results to come in
         results_task = asyncio.create_task(self.get_action_results())
-        exceptions = await asyncio.gather(*tasks, results_task, return_exceptions=False)
+        exceptions = await asyncio.gather(*tasks, results_task, return_exceptions=True)
         for e in exceptions:
             if isinstance(e, Exception) and not isinstance(e, asyncio.CancelledError):
                 try:
@@ -170,7 +171,8 @@ class Worker:
         try:
             child_id = condition(parents, children, self.accumulator)
             selected_node = children.pop(child_id)
-            await self.send_message(NodeStatusMessage.success_from_node(condition, self.workflow.execution_id, selected_node))
+            await self.send_message(NodeStatusMessage.success_from_node(condition, self.workflow.execution_id,
+                                                                        selected_node.name))
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
             # We preemptively schedule all branches of execution so we must cancel all "false" branches here
@@ -182,7 +184,7 @@ class Worker:
         except ConditionException as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
             await self.send_message(NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id,
-                                                                        error=repr(e)))
+                                                                        result=repr(e)))
 
         except Exception:
             logger.exception("Something happened in Condition evaluation")
@@ -202,7 +204,7 @@ class Worker:
         except Exception as e:
             logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
             await self.send_message(NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id,
-                                                                        error=repr(e)))
+                                                                        result=repr(e)))
 
     async def get_globals(self):
         url = config.API_GATEWAY_URI.rstrip('/') + '/api'
@@ -389,7 +391,7 @@ class Worker:
         params = {"event": message.status.value}
         url = f"{config.API_GATEWAY_URI}/api/internal/workflowstatus/{self.workflow.execution_id}"
         try:
-            async with self.session.patch(url, json=patches, params=params, timeout=5) as resp:
+            async with self.session.patch(url, json=patches, params=params, timeout=5000) as resp:
                 results = await resp.json()
                 logger.debug(f"API-Gateway status update response: {results}")
                 return results

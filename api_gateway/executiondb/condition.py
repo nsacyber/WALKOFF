@@ -5,17 +5,15 @@ from sqlalchemy_utils import UUIDType
 from marshmallow import EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
-from api_gateway.executiondb import Base, ValidatableMixin, BaseSchema
+from api_gateway.executiondb import Base, NodeMixin, BaseSchema
 
 logger = logging.getLogger(__name__)
 
 
-class Condition(ValidatableMixin, Base):
+class Condition(NodeMixin, Base):
     __tablename__ = 'condition'
 
-    name = Column(String(255), nullable=False)
     conditional = Column(String(512), nullable=False)
-    position = Column(JSON, default={"x": 0, "y": 0})
 
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
 
@@ -26,7 +24,7 @@ class Condition(ValidatableMixin, Base):
     def validate(self):
         """Validates the object"""
         # TODO: Implement validation of conditional against asteval library
-        pass
+        self.errors = []
 
 
 @event.listens_for(Condition, 'before_update')

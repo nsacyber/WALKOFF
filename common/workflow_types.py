@@ -119,18 +119,18 @@ class WorkflowJSONEncoder(json.JSONEncoder):
 
         elif isinstance(o, Condition):
             position = {"x": o.position.x, "y": o.position.y}
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
-                    "conditional": o.conditional}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
+                    "label": o.label, "position": position, "conditional": o.conditional}
 
         elif isinstance(o, Transform):
             position = {"x": o.position.x, "y": o.position.y}
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
-                    "transform": o.transform, "parameter": o.parameter}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
+                    "label": o.label, "position": position, "transform": o.transform, "parameter": o.parameter}
 
         elif isinstance(o, Trigger):
             position = {"x": o.position.x, "y": o.position.y}
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
-                    "trigger": o.trigger}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
+                    "label": o.label, "position": position, "trigger": o.trigger}
 
         elif isinstance(o, Parameter):
             return {"name": o.name, "variant": o.variant, "value": o.value, "id_": o.id_}
@@ -202,13 +202,14 @@ class Variable:
 
 
 class Node:
-    __slots__ = ("id_", "name", "app_name", "label", "position", "priority", "errors", "is_valid")
+    __slots__ = ("id_", "name", "app_name", "app_version", "label", "position", "priority", "errors", "is_valid")
 
-    def __init__(self, name, position: Point, label, app_name, id_=None, errors=None, is_valid=True):
+    def __init__(self, name, position: Point, label, app_name, app_version, id_=None, errors=None, is_valid=True):
         self.id_ = id_ if id_ is not None else str(uuid.uuid4())
         self.is_valid = is_valid   # ToDo: Is this neccessary?
         self.name = name
         self.app_name = app_name
+        self.app_version = app_version
         self.label = label
         self.position = position
         self.errors = errors if errors is not None else []
@@ -237,12 +238,11 @@ class Node:
 
 
 class Action(Node):
-    __slots__ = ("parameters", "execution_id", "app_version")
+    __slots__ = ("parameters", "execution_id")
 
     def __init__(self, name, position, app_name, app_version, label, priority, parameters=None, id_=None,
                  execution_id=None, errors=None, is_valid=None):
-        super().__init__(name, position, label, app_name, id_, errors)
-        self.app_version = app_version
+        super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.parameters = parameters if parameters is not None else list()
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue
@@ -265,8 +265,9 @@ class Action(Node):
 class Condition(Node):
     __slots__ = ("conditional",)
 
-    def __init__(self, name, position: Point, app_name, label, conditional, id_=None, errors=None):
-        super().__init__(name, position, label, app_name, id_, errors)
+    def __init__(self, name, position: Point, app_name, app_version, label, conditional, id_=None, errors=None,
+                 is_valid=None):
+        super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.conditional = conditional
         self.priority = 3  # Conditions have a fixed, mid valued priority
 
@@ -320,8 +321,9 @@ class Condition(Node):
 class Trigger(Node):
     __slots__ = ("trigger",)
 
-    def __init__(self, name, position: Point, app_name, label, trigger, id_=None, errors=None):
-        super().__init__(name, position, label, app_name, id_, errors)
+    def __init__(self, name, position: Point, app_name, app_version, label, trigger, id_=None, errors=None,
+                 is_valid=None):
+        super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.trigger = trigger
 
     def __str__(self):
@@ -342,8 +344,9 @@ class Trigger(Node):
 class Transform(Node):
     __slots__ = ("transform", "parameter")
 
-    def __init__(self, name, position: Point, app_name, label, transform, parameter=None, id_=None, errors=None):
-        super().__init__(name, position, label, app_name, id_, errors)
+    def __init__(self, name, position: Point, app_name, app_version, label, transform, parameter=None, id_=None,
+                 errors=None, is_valid=None):
+        super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.transform = transform.lower()
         self.parameter = parameter
         self.priority = 3  # Transforms have a fixed, mid valued priority

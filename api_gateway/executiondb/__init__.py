@@ -199,3 +199,18 @@ class StatusMixin(object):
     status = Column(Enum(StatusEnum), nullable=False)
     started_at = Column(String, default="")
     completed_at = Column(String, default="")
+
+
+class NodeMixin(ValidatableMixin):
+    """
+    Base model for nodes (elements in a workflow)
+    """
+
+    app_name = Column(String(80), nullable=False)
+    app_version = Column(String(80), nullable=False)
+    name = Column(String(255), nullable=False)
+    label = Column(String(80), nullable=False)
+    position = Column(JSON, default={"x": 0, "y": 0})
+
+    def __init__(self, **kwargs):
+        super(ValidatableMixin, self).__init__(**kwargs)
