@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class ActionApi(IDMixin, Base):
     __tablename__ = 'action_api'
     name = Column(String(), nullable=False)
-    type = Column(String(), nullable=False, default="ACTION")  # ToDo: determine if a separate condition/transform api object is needed
+    node_type = Column(String(), nullable=False, default="ACTION")  # ToDo: determine if a separate condition/transform api object is needed
     location = Column(String(), nullable=False)
     description = Column(String(), default="")
     returns = relationship("ReturnApi", uselist=False, cascade="all, delete-orphan", passive_deletes=True)

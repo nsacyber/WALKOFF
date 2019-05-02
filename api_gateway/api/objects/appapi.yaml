@@ -76,7 +76,7 @@ ActionApi:
     name:
       type: string
       description: Unique name of the action
-    type:
+    node_type:
       default: ACTION
       enum: [ACTION, CONDITION, TRANSFORM, TRIGGER]
       description: The node type this action represents
