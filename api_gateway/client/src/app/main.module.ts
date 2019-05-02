@@ -14,8 +14,11 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { GridsterModule } from 'angular-gridster2';
 import { ChartsModule } from 'ng2-charts';
+
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import 'codemirror/mode/shell/shell';
+import 'codemirror/mode/python/python';
+import 'codemirror/addon/display/placeholder';
 
 // Custom routing module
 import { RoutingModule } from './routing';

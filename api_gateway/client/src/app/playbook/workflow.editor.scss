@@ -177,6 +177,24 @@
 	margin-left: 5px;
 }
 
+.workflowEditorMain .parametersEditor .CodeMirror {
+	color: rgb(73, 80, 87);
+	border: 1px solid #dee2e6;
+	border-radius: 0.25rem;
+	height: 10rem;
+}
+
+.workflowEditorMain .parametersEditor .CodeMirror-empty {
+	color: rgba(73, 80, 87, 0.65)
+}
+
+.workflowEditorMain .parametersEditor .CodeMirror-focused {
+    background-color: #fff;
+    border-color: #8bb8df;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(51, 122, 183, 0.25);
+}
+
 .workflowEditorMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
 	white-space: initial;
 }
