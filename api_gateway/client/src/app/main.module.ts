@@ -16,6 +16,7 @@ import { GridsterModule } from 'angular-gridster2';
 import { ChartsModule } from 'ng2-charts';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import 'codemirror/mode/shell/shell';
+import 'codemirror/mode/python/python';
 
 // Custom routing module
 import { RoutingModule } from './routing';

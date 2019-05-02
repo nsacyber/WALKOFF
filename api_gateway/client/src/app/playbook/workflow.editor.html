@@ -229,6 +229,12 @@
                         [parameterApi]="parameterApi" [id]="id" [users]="users" [roles]="roles"
                         (createVariable)="onCreateVariable($event)"></playbook-argument-component>
                 </div>
+                <div *ngIf="selectedActionApi.node_type == actionTypes.CONDITION" class="form-group mt-3">
+                    <label class="h5" for="name">Conditional
+                        <i class="fa fa-asterisk required" title="This field is required."></i>
+                    </label>
+                    <ngx-codemirror [(ngModel)]="selectedAction.conditional" [options]="{ tabSize: 2, mode: 'python' }"></ngx-codemirror>
+                </div>
                 <div *ngIf="selectedActionApi?.returns?.schema?.type || selectedActionApi?.returns?.example">
                     <div class="form-group mt-3">
                         <label class="h5">
@@ -412,130 +418,5 @@
 
         </ngb-tabset>
     </div>
-
-    <div class="modal fade" id="playbookAndWorkflowActionModal" role="dialog"
-        aria-labelledby="playbookAndWorkflowActionModalTitle" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="playbookAndWorkflowActionModalTitle">{{modalParams.title}}</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <!-- <div *ngIf="modalParams.shouldShowPlaybook" class="form-group">
-                        <h6>{{modalParams.shouldShowExistingPlaybooks ? 'Select a Playbook' : 'Enter a Playbook'}}</h6>
-                        <select *ngIf="modalParams.shouldShowExistingPlaybooks" name="playbookSelect" id="playbookSelect"
-                            [(ngModel)]="modalParams.selectedPlaybookId" class="form-control">
-                            <option [ngValue]="''">-- Create new Playbook --</option>
-                            <option *ngFor="let i of playbooks" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
-                        </select>
-                        <input type="text" *ngIf="modalParams.selectedPlaybookId === '' || !modalParams.shouldShowExistingPlaybooks"
-                            [(ngModel)]="modalParams.newPlaybook" class="form-control mt-2" placeholder="Enter a new playbook name">
-                    </div> -->
-                    <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
-                        <h6>Enter a Workflow Name</h6>
-                        <input type="text" [(ngModel)]="modalParams.newWorkflow" class="form-control"
-                            placeholder="Workflow Name">
-                    </div>
-                    <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
-                        <h6>Enter a Description (Optional)</h6>
-                        <textarea name="description" rows="3" [(ngModel)]="modalParams.newDescription"
-                            class="form-control" placeholder="Description (Optional)"></textarea>
-                    </div>
-                    <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
-                        <h6>Add Tags (Optional)</h6>
-                        <select2 [data]="['apples', 'oranges', 'grapes']" [value]="tags"
-                            [options]="{ multiple: true, tags: true, width: '100%', placeholder: 'Add Tags...' }"
-                            (valueChanged)="changed($event)"></select2>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary"
-                        (click)="modalParams.submit()">{{modalParams.submitText}}</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="workflowsModal" role="dialog" aria-labelledby="workflowModalTitle" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="workflowModalTitle">Playbooks and Workflows</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="importContainer">
-                        <h5>Import Playbook</h5>
-                        <div class="pull-right">
-                            <input #importFile type="file" name="file" id="file" class="importPlaybookInput"
-                                (change)="onImportSelectChange($event)" />
-                            <button [disabled]="!playbookToImport" (click)="importPlaybook()"
-                                class="btn btn-primary btn-sm" title="Import Playbook">
-                                <i class="fa fa-upload"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="panel-group" id="workflowAccordion">
-                        <div class="card card-default">
-                            <div class="card-heading playbook-heading" data-toggle="collapse"
-                                [attr.data-target]="'#loadWorkflowCollapse' + removeWhitespace('Workflows')">
-                                <h5 class="card-title my-auto p-3">
-                                    {{'Workflows'}}
-                                    <div class="pull-right">
-                                        <!-- <button (click)="renamePlaybookModal($event, playbook)" class="btn btn-primary btn-sm mx-1"
-                                            title="Rename Playbook">
-                                            <i class="fa fa-i-cursor"></i>
-                                        </button>
-                                        <button (click)="duplicatePlaybookModal($event, playbook)" class="btn btn-primary btn-sm mx-1"
-                                            title="Duplicate Playbook">
-                                            <i class="fa fa-copy"></i>
-                                        </button>
-                                        <button (click)="exportPlaybook($event, playbook)" class="btn btn-primary btn-sm mx-1"
-                                            title="Export Playbook">
-                                            <i class="fa fa-download"></i>
-                                        </button>
-                                        <button (click)="deletePlaybook($event, playbook)" class="btn btn-danger btn-sm mx-1"
-                                            title="Delete Playbook">
-                                            <i class="fa fa-times"></i>
-                                        </button> -->
-                                    </div>
-                                </h5>
-                            </div>
-                            <div id="loadWorkflowCollapse{{removeWhitespace('Workflows')}}"
-                                class="card-collapse collapse">
-                                <div class="card-body p-3">
-                                    <div *ngFor="let workflow of workflows"
-                                        class="card card-default workflowPanel my-1">
-                                        <div class="card-body my-auto p-2">
-                                            <!-- <a (click)="loadWorkflow(playbook, workflow)">{{workflow.name}}</a> -->
-                                            <a (click)="routeToWorkflow(workflow)">{{workflow.name}}</a>
-                                            <div class="pull-right">
-                                                <!-- <button (click)="renameWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary" title="Rename Workflow">
-                                                    <i class="fa fa-i-cursor"></i>
-                                                </button> -->
-                                                <button (click)="duplicateWorkflowModal(workflow.id)"
-                                                    class="btn btn-primary btn-sm mx-1" title="Duplicate Workflow">
-                                                    <i class="fa fa-copy"></i>
-                                                </button>
-                                                <button (click)="deleteWorkflow(workflow)"
-                                                    class="btn btn-danger btn-sm mx-1" title="Delete Workflow">
-                                                    <i class="fa fa-times"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 </div>

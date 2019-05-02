@@ -1,27 +1,29 @@
-import { Type } from 'class-transformer';
+import { Type, Expose, Exclude } from 'class-transformer';
 
-import { Transform } from './transform';
 import { Argument } from './argument';
 import { ExecutionElement } from './executionElement';
+import { GraphPosition } from './graphPosition';
 
 export class Condition extends ExecutionElement {
-	// _node_id?: number;
-	// _branch_id?: number;
-	app_name: string;
 
-	action_name: string;
+	@Expose({ name: 'label' })
+	name: string = 'Label';
 
-	is_negated: boolean;
+	app_name: string = 'Builtin';
 
+	@Expose({ name: 'name' })
+	action_name: string = 'Condition';
+
+	@Type(() => GraphPosition)
+	position: GraphPosition;
+
+	@Exclude()
 	@Type(() => Argument)
 	arguments: Argument[] = [];
 
-	@Type(() => Transform)
-	transforms: Transform[] = [];
+	conditional: string = '';
 
 	get all_errors(): string[] {
-		return this.errors
-				   .concat(...this.arguments.map(argument => argument.all_errors))
-				   .concat(...this.transforms.map(transform => transform.all_errors))
+		return this.errors.concat(...this.arguments.map(argument => argument.all_errors))
 	}
 }

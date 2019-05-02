@@ -104,8 +104,8 @@
 			<div class="col-6">
 				<div class="pull-right">
 					<button *ngIf="itemId > 0" class="btn btn-primary" (click)="moveUp(itemId)" title="Move Up"><i class="fa fa-arrow-up"></i></button>
-					<button *ngIf="itemId < argument.value.length - 1" class="btn btn-primary" (click)="moveDown(itemId)" title="Move Down"><i class="fa fa-arrow-down"></i></button>
-					<button class="btn btn-danger" (click)="removeItem(itemId)" title="Remove Item"><i class="fa fa-close"></i></button>
+					<button *ngIf="itemId < argument.value.length - 1" class="btn ml-1 btn-primary" (click)="moveDown(itemId)" title="Move Down"><i class="fa fa-arrow-down"></i></button>
+					<button class="btn ml-1 btn-danger" (click)="removeItem(itemId)" title="Remove Item"><i class="fa fa-close"></i></button>
 				</div>
 			</div>
 		</div>

@@ -3,6 +3,13 @@ import { Type, Exclude } from 'class-transformer';
 import { ParameterApi } from './parameterApi';
 import { ReturnApi } from './returnApi';
 
+export enum ActionType {
+	ACTION = 'ACTION',
+	CONDITION = 'CONDITION',
+	TRANSFORM = 'TRANSFORM',
+	TRIGGER = 'TRIGGER'
+}
+
 export class ActionApi {
 	name: string;
 
@@ -32,6 +39,8 @@ export class ActionApi {
 	// tags: Tag[] = [];
 
 	summary: string;
+
+	node_type: ActionType = ActionType.ACTION;
 
 	// external_docs: ExternalDoc[] = [];
 

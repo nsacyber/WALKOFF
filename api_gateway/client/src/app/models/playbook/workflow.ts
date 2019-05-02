@@ -7,6 +7,8 @@ import { ExecutionElement } from './executionElement';
 import { EnvironmentVariable } from './environmentVariable';
 import { ConditionalExpression } from './conditionalExpression';
 import { Argument } from './argument';
+import { Condition } from './condition';
+import { ActionType } from '../api/actionApi';
 
 export class Workflow extends ExecutionElement {
 	// _playbook_id: number;
@@ -43,6 +45,12 @@ export class Workflow extends ExecutionElement {
 	branches?: Branch[] = [];
 
 	/**
+	 * Array of conditions between actions.
+	 */
+	@Type(() => Condition)
+	conditions?: Condition[] = [];
+
+	/**
 	 * Array of environment variables.
 	 */
 	@Type(() => EnvironmentVariable)
@@ -64,6 +72,10 @@ export class Workflow extends ExecutionElement {
 	 */
 	is_valid: boolean;
 
+	get nodes(): any[] {
+		return [].concat(this.actions, this.conditions);
+	}
+
 	/**
 	 * Array of errors returned from the server for this Argument and any of its descendants 
 	 */
@@ -78,14 +90,13 @@ export class Workflow extends ExecutionElement {
 		const getExpressionArguments = (expression: ConditionalExpression) => {
 			expression.conditions.forEach(condition => {
 				allArgs = allArgs.concat(condition.arguments);
-				condition.transforms.forEach(transform => allArgs = allArgs.concat(transform.arguments));
+				//condition.transforms.forEach(transform => allArgs = allArgs.concat(transform.arguments));
 			})
 			expression.child_expressions.forEach(getExpressionArguments);
 		}
 
 		this.actions.forEach(action => {
 			allArgs = allArgs.concat(action.arguments);
-			if (action.trigger) getExpressionArguments(action.trigger);
 		})
 		this.branches.forEach(branch => {
 			if (branch.condition) getExpressionArguments(branch.condition);
@@ -118,8 +129,16 @@ export class Workflow extends ExecutionElement {
 			.forEach(arg => arg.value = '');
 	}
 
-	getNextActionName(actionName: string) : string {
-		let numActions = this.actions.filter(a => a.action_name === actionName && a.name).length;
+	getNextActionName(actionName: string, actionType: ActionType = ActionType.ACTION) : string {
+		let numActions;
+		switch (actionType) {
+			case ActionType.CONDITION:
+				numActions = this.conditions.filter(a => a.action_name === actionName && a.name).length;
+				break;
+			default:
+				numActions = this.actions.filter(a => a.action_name === actionName && a.name).length;
+		}
+
 		return numActions ? `${actionName} ${ ++numActions }` : actionName;
 	}
 

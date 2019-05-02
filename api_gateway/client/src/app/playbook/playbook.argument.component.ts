@@ -215,6 +215,9 @@ export class PlaybookArgumentComponent implements OnChanges {
 	 */
 	addItem(): void {
 		this.clearReference();
+
+		if (!this.argument.value) this.argument.value = [];
+
 		switch (this.selectedType) {
 			case 'string':
 				(this.argument.value as any[]).push('');
@@ -228,6 +231,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 			default:
 				return;
 		}
+		
 		this.arrayTypes.push(this.selectedType);
 	}
 

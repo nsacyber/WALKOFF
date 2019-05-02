@@ -20,9 +20,6 @@ export class Action extends ExecutionElement {
 	@Expose({ name: 'name' })
 	action_name: string;
 
-	// @Type(() => Argument)
-	// global_id?: Argument = new Argument();
-
 	risk?: number;
 
 	@Expose({ name: 'parameters' })
@@ -30,13 +27,10 @@ export class Action extends ExecutionElement {
 	arguments: Argument[] = [];
 
 	// output: string;
-	
-	@Type(() => ConditionalExpression)
-	trigger?: ConditionalExpression;
+
 
 	get all_errors(): string[] {
 		return this.errors
 				   .concat(...(this.arguments) ? this.arguments.map(argument => argument.all_errors) : [])
-				   .concat((this.trigger) ? this.trigger.all_errors : [])
 	}
 }

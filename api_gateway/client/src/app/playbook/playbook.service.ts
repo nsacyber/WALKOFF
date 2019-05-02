@@ -22,6 +22,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import { Subscriber } from 'rxjs';
+import { ActionType } from '../models/api/actionApi';
 
 @Injectable({
 	providedIn: 'root'
@@ -29,21 +30,21 @@ import { Subscriber } from 'rxjs';
 export class PlaybookService {
 
 	workflowsChange: Observable<any>;
-  observer: Subscriber<any>;
+	observer: Subscriber<any>;
 
 	tempStoredWorkflow: Workflow;
 
 	constructor(private http: HttpClient, private utils: UtilitiesService, private executionService: ExecutionService,
-				private globalsService: GlobalsService, private settingsService: SettingsService) {
-					this.workflowsChange = new Observable((observer) => {
-					this.observer = observer;
-					this.getWorkflows().then(workflows => this.observer.next(workflows));
-			})
-}
+		private globalsService: GlobalsService, private settingsService: SettingsService) {
+		this.workflowsChange = new Observable((observer) => {
+			this.observer = observer;
+			this.getWorkflows().then(workflows => this.observer.next(workflows));
+		})
+	}
 
-emitChange(data: any) {
-			if (this.observer) this.getWorkflows().then(workflows => this.observer.next(workflows));
-			return data;
+	emitChange(data: any) {
+		if (this.observer) this.getWorkflows().then(workflows => this.observer.next(workflows));
+		return data;
 	}
 
 	/**
@@ -142,7 +143,7 @@ emitChange(data: any) {
 	async importWorkflow(fileToImport: File): Promise<Workflow> {
 		const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
 		const body = await this.utils.readUploadedFileAsText(fileToImport);
-		
+
 		return this.http.post('/api/workflows', body, { headers })
 			.toPromise()
 			.then((data) => this.emitChange(data))
@@ -247,8 +248,27 @@ emitChange(data: any) {
 	getApis(): Promise<AppApi[]> {
 		return this.http.get('/api/apps/apis')
 			.toPromise()
+			.then((data: any[]) => {
+				return [{
+					id_: '30f06bd4-3703-f8a9-47e0-8853ea916913',
+					name: 'Builtin',
+					description: 'Walkoff built-in functions',
+					app_version: '1.0.0',
+					walkoff_version: '1.0.0',
+					contact_info: {email: "walkoff@nsa.gov", name: "Walkoff Team", url: "https://github.com/nsacyber/walkoff"},
+					license_info: {name: "Creative Commons", url: "https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md"},
+					external_docs: {},
+					actions: [
+						{
+							id_: '7a1c6838-1b14-4ddc-7d84-935fcbc260ca',
+							name: 'Condition',
+							node_type: ActionType.CONDITION,
+						}
+					]
+				}].concat(data);
+			})
 			.then((data: any[]) => plainToClass(AppApi, data))
-			.then((appApis : AppApi[]) => {
+			.then((appApis: AppApi[]) => {
 				appApis.forEach(app => app.action_apis.map(action => {
 					action.app_name = app.name;
 					action.app_version = app.app_version;
