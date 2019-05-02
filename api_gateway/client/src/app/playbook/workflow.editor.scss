@@ -178,13 +178,17 @@
 }
 
 .workflowEditorMain .parametersEditor .CodeMirror {
+	color: rgb(73, 80, 87);
 	border: 1px solid #dee2e6;
 	border-radius: 0.25rem;
 	height: 10rem;
 }
 
+.workflowEditorMain .parametersEditor .CodeMirror-empty {
+	color: rgba(73, 80, 87, 0.65)
+}
+
 .workflowEditorMain .parametersEditor .CodeMirror-focused {
-	color: #495057;
     background-color: #fff;
     border-color: #8bb8df;
     outline: 0;

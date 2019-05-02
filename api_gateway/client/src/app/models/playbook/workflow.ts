@@ -139,7 +139,7 @@ export class Workflow extends ExecutionElement {
 				numActions = this.actions.filter(a => a.action_name === actionName && a.name).length;
 		}
 
-		return numActions ? `${actionName} ${ ++numActions }` : actionName;
+		return numActions ? `${actionName}_${ ++numActions }` : actionName;
 	}
 
 	getPreviousActions(action: Action) : Action[] {

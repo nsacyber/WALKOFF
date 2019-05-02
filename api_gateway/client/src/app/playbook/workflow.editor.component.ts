@@ -139,6 +139,19 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		submit: (() => null) as () => any,
 	};
 
+	conditionalOptions = { 
+		tabSize: 4,
+		indentUnit: 4,
+		mode: 'python', 
+		placeholder: `# Python to set selected_node to an output action
+# For example:
+# 		
+# if input_1.result > input_2.result:
+#     selected_node = output_1
+# else:
+#     selected_node = output_2`
+	}
+
 	constructor(
 		private playbookService: PlaybookService, private authService: AuthService,
 		private toastrService: ToastrService, private activeRoute: ActivatedRoute,

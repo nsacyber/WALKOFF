@@ -233,7 +233,7 @@
                     <label class="h5" for="name">Conditional
                         <i class="fa fa-asterisk required" title="This field is required."></i>
                     </label>
-                    <ngx-codemirror [(ngModel)]="selectedAction.conditional" [options]="{ tabSize: 2, mode: 'python' }"></ngx-codemirror>
+                    <ngx-codemirror [(ngModel)]="selectedAction.conditional" [options]="conditionalOptions"></ngx-codemirror>
                 </div>
                 <div *ngIf="selectedActionApi?.returns?.schema?.type || selectedActionApi?.returns?.example">
                     <div class="form-group mt-3">
@@ -418,5 +418,5 @@
 
         </ngb-tabset>
     </div>
-    
+
 </div>
