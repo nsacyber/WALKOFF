@@ -15,6 +15,7 @@ from common.helpers import get_walkoff_auth_header
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("AppRepo")
 
+
 def load_app_api(api_file):
     #  TODO: Actually validate the api
     with open(api_file, 'r') as fp:

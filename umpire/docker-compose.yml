@@ -22,9 +22,6 @@ services:
 
       # Redis options
       - REDIS_URI=redis://redis:6379
-      - REDIS_ACTIONS_IN_PROCESS=actions-in-process
-      - REDIS_WORKFLOW_QUEUE=workflow-queue
-      - REDIS_WORKFLOWS_IN_PROCESS=workflows-in-process
 
       # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
       # See: https://docs.docker.com/compose/reference/envvars/ for more information.
@@ -62,9 +59,6 @@ services:
 
       # Redis options
       - REDIS_URI=redis://redis:6379
-      - REDIS_ACTIONS_IN_PROCESS=actions-in-process
-      - REDIS_WORKFLOW_QUEUE=workflow-queue
-      - REDIS_WORKFLOWS_IN_PROCESS=workflows-in-process
 
       # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
       # See: https://docs.docker.com/compose/reference/envvars/ for more information.

@@ -29,6 +29,7 @@ def deref_stream_message(message):
     except:
         logger.exception("Stream message formatted incorrectly.")
 
+
 def xlen(redis: aioredis.Redis, key):
     """Returns the number of entries inside a stream."""
     return redis.execute(b'XLEN', key)

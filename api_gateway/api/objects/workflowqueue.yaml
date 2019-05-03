@@ -165,10 +165,8 @@ ExecuteWorkflow:
 
 ControlWorkflow:
   type: object
-  required: [execution_id, status]
+  required: [status]
   properties:
-    execution_id:
-      $ref: '#/components/schemas/Uuid'
     status:
       description: The action to take on the executing workflow
       type: string

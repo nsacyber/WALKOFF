@@ -7,6 +7,7 @@ import base64
 import tarfile
 from io import BytesIO
 from pathlib import Path
+from operator import itemgetter
 from contextlib import contextmanager, asynccontextmanager
 
 import aiodocker

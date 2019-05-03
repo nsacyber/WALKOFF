@@ -2,17 +2,16 @@ from collections import deque
 import asyncio
 import logging
 import sys
-from typing import Union
 import os
+import signal
 
 import aiohttp
 import aioredis
 
-from common.message_types import message_dumps, message_loads, NodeStatusMessage, WorkflowStatusMessage, StatusEnum, \
-    JSONPatch, JSONPatchOps
+from common.message_types import message_dumps, message_loads, NodeStatusMessage, WorkflowStatusMessage, StatusEnum
 from common.config import config
-from common.helpers import get_walkoff_auth_header
-from common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
+from common.helpers import get_walkoff_auth_header, send_status_update
+from common.redis_helpers import connect_to_redis_pool, xdel, deref_stream_message
 from common.workflow_types import Node, Action, Condition, Transform, Trigger, ParameterVariant, Workflow, \
     workflow_dumps, workflow_loads, ConditionException
 
@@ -32,8 +31,9 @@ class Worker:
         self.accumulator = {}
         self.in_process = {}
         self.redis = redis
-        self.action_streams = None
-        self.results_stream = None
+        self.streams = set()
+        self.workflow_tasks = set()
+        self.execution_task = None
         self.session = session
         self.token = None
 
@@ -48,18 +48,23 @@ class Worker:
                 logger.exception("Environment variable 'HOSTNAME' does not exist in worker container.")
                 sys.exit(-1)
 
-            message = await redis.xread_group(config.REDIS_WORKFLOW_GROUP, CONTAINER_ID,
-                                              streams=[config.REDIS_WORKFLOW_QUEUE], latest_ids=['>'],
-                                              timeout=config.get_int("WORKER_TIMEOUT", 30) * 1000, count=1)
+            try:
+                message = await redis.xread_group(config.REDIS_WORKFLOW_GROUP, CONTAINER_ID,
+                                                  streams=[config.REDIS_WORKFLOW_QUEUE], latest_ids=['>'],
+                                                  timeout=config.get_int("WORKER_TIMEOUT", 30) * 1000, count=1)
+            except aioredis.ReplyError:
+                logger.error("Error reading from workflow queue.")
+                sys.exit(-1)
 
             if len(message) < 1:  # We've timed out with no work. Guess we'll die now...
                 sys.exit(1)
 
             execution_id_workflow, stream, id_ = deref_stream_message(message)
             execution_id, workflow = execution_id_workflow
-
             try:
-                yield workflow_loads(workflow)
+                if not (await redis.sismember(config.REDIS_ABORTING_WORKFLOWS, execution_id)):
+                    await redis.sadd(config.REDIS_EXECUTING_WORKFLOWS, execution_id)
+                    yield workflow_loads(workflow)
 
             finally:  # Clean up workflow-queue
                 await redis.xack(stream=stream, group_name=config.REDIS_WORKFLOW_GROUP, id=id_)
@@ -69,40 +74,69 @@ class Worker:
     async def run():
         async with connect_to_redis_pool(config.REDIS_URI) as redis,\
                 aiohttp.ClientSession(json_serialize=message_dumps) as session:
+
+            # Attach our signal handlers to cleanly close services we've created
+            loop = asyncio.get_running_loop()
+            loop.add_signal_handler(signal.SIGINT, lambda: asyncio.ensure_future(Worker.shutdown()))
+            loop.add_signal_handler(signal.SIGTERM, lambda: asyncio.ensure_future(Worker.shutdown()))
+
             async for workflow in Worker.get_workflow(redis):
 
                 # Setup worker and results stream
                 worker = Worker(workflow, redis=redis, session=session)
-                await redis.xgroup_create(workflow.execution_id, config.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
-                logger.info(f"Starting execution of workflow: {workflow.name}")
 
-                await worker.send_message(WorkflowStatusMessage.execution_started(worker.workflow.execution_id,
-                                                                                  worker.workflow.id_,
-                                                                                  worker.workflow.name))
+                # Attach our abort signal handler to a specific instance of the worker
+                loop.add_signal_handler(signal.SIGQUIT, lambda: asyncio.ensure_future(worker.abort()))
+
+                results_stream = f"{workflow.execution_id}:results"
+                await redis.xgroup_create(results_stream, config.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
+                logger.info(f"Starting execution of workflow: {workflow.name}")
+                status = WorkflowStatusMessage.execution_started(worker.workflow.execution_id,  worker.workflow.id_,
+                                                                 worker.workflow.name)
+
+                await send_status_update(session, workflow.execution_id, status)
 
                 try:
-                    await worker.execute_workflow()
+                    worker.execution_task = asyncio.create_task(worker.execute_workflow())
+                    await asyncio.gather(worker.execution_task)
+                except asyncio.CancelledError:
+                    logger.info(f"Aborted execution of workflow: {workflow.name}")
+                    status = WorkflowStatusMessage.execution_aborted(worker.workflow.execution_id,
+                                                                     worker.workflow.id_,
+                                                                     worker.workflow.name)
                 except Exception:
                     logger.exception(f"Failed execution of workflow: {workflow.name}")
+                    status = WorkflowStatusMessage.execution_completed(worker.workflow.execution_id,
+                                                                       worker.workflow.id_,
+                                                                       worker.workflow.name)
                 else:
                     logger.info(f"Completed execution of workflow: {workflow.name}")
+                    status = WorkflowStatusMessage.execution_completed(worker.workflow.execution_id,
+                                                                       worker.workflow.id_,
+                                                                       worker.workflow.name)
                 finally:
-                    await worker.send_message(WorkflowStatusMessage.execution_completed(worker.workflow.execution_id,
-                                                                                        worker.workflow.id_,
-                                                                                        worker.workflow.name))
+                    await send_status_update(session, workflow.execution_id, status)
 
-        await Worker.shutdown()
+            await Worker.shutdown()
 
     @staticmethod
     async def shutdown():
+        logger.info("Shutting down Worker...")
         # Clean up any unfinished tasks (shouldn't really be any though)
         tasks = [t for t in asyncio.all_tasks() if t is not
                  asyncio.current_task()]
-
         [task.cancel() for task in tasks]
-
-        logger.info('Canceling outstanding tasks')
+        logger.info("Canceling outstanding tasks")
         await asyncio.gather(*tasks, return_exceptions=True)
+        logger.info("Successfully shutdown Worker")
+
+    async def abort(self):
+        logger.info("Aborting workflow...")
+        [task.cancel() for task in self.workflow_tasks]
+        self.execution_task.cancel()
+        logger.info("Canceling outstanding tasks...")
+        await asyncio.gather(*self.workflow_tasks, self.execution_task, return_exceptions=True)
+        logger.info("Successfully aborted workflow!")
 
     async def cancel_subgraph(self, node):
         """
@@ -129,7 +163,7 @@ class Worker:
         """
         visited = {self.start_action}
         queue = deque([self.start_action])
-        tasks = set()
+        self.workflow_tasks = set()
         while queue:
             node = queue.pop()
             parents = {n.id_: n for n in self.workflow.predecessors(node)} if node is not self.start_action else {}
@@ -142,16 +176,17 @@ class Worker:
             elif isinstance(node, Trigger):
                 raise NotImplementedError
 
-            tasks.add(asyncio.create_task(self.schedule_node(node, parents, children)))
+            self.workflow_tasks.add(asyncio.create_task(self.schedule_node(node, parents, children)))
 
             for child in sorted(children.values(), reverse=True):
                 if child not in visited:
                     queue.appendleft(child)
                     visited.add(child)
+
         # TODO: Figure out a clean way of handling the exceptions here. Cancelling subgraphs throws CancelledErrors.
         # Launch the results accumulation task and wait for all the results to come in
-        results_task = asyncio.create_task(self.get_action_results())
-        exceptions = await asyncio.gather(*tasks, results_task, return_exceptions=True)
+        self.workflow_tasks.add(asyncio.create_task(self.get_action_results()))
+        exceptions = await asyncio.gather(*self.workflow_tasks, return_exceptions=True)
         for e in exceptions:
             if isinstance(e, Exception) and not isinstance(e, asyncio.CancelledError):
                 try:
@@ -171,8 +206,9 @@ class Worker:
         try:
             child_id = condition(parents, children, self.accumulator)
             selected_node = children.pop(child_id)
-            await self.send_message(NodeStatusMessage.success_from_node(condition, self.workflow.execution_id,
-                                                                        selected_node.name))
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     NodeStatusMessage.success_from_node(condition, self.workflow.execution_id,
+                                                                         selected_node.name))
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
             # We preemptively schedule all branches of execution so we must cancel all "false" branches here
@@ -183,8 +219,9 @@ class Worker:
 
         except ConditionException as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
-            await self.send_message(NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id,
-                                                                        result=repr(e)))
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id,
+                                                                         result=repr(e)))
 
         except Exception:
             logger.exception("Something happened in Condition evaluation")
@@ -194,7 +231,8 @@ class Worker:
         logger.debug(f"Attempting evaluation of: {transform.label}-{self.workflow.execution_id}")
         try:
             result = transform(self.accumulator[parent.id_])  # run transform on parent's result
-            await self.send_message(NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result))
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result))
             logger.info(f"Transform {transform.label}-succeeded with result: {result}")
 
             self.accumulator[transform.id_] = result
@@ -203,13 +241,14 @@ class Worker:
         # TODO: figure out exactly what can be raised by the possible transforms
         except Exception as e:
             logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
-            await self.send_message(NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id,
-                                                                        result=repr(e)))
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id,
+                                                                         result=repr(e)))
 
     async def get_globals(self):
         url = config.API_GATEWAY_URI.rstrip('/') + '/api'
         headers, self.token = await get_walkoff_auth_header(self.session, self.token)
-        async with self.session.get(url + "/globals", headers=headers, timeout=.5) as resp:
+        async with self.session.get(url + "/globals", headers=headers) as resp:
             globals_ = await resp.json(loads=workflow_loads)
             logger.debug(f"Got globals: {globals_}")
             return globals_
@@ -235,6 +274,7 @@ class Worker:
             else:
                 logger.error(f"Unable to defeference parameter:{param} for action:{action}")
                 break
+
             param.variant = ParameterVariant.STATIC_VALUE
 
     async def schedule_node(self, node, parents, children):
@@ -245,50 +285,62 @@ class Worker:
             await asyncio.sleep(0)
 
         if isinstance(node, Action):
-            app_group = f"{node.app_name}-group"
-            redis_keys = await self.redis.keys('*')
-            if node.app_name not in redis_keys:
-                try:
-                    await self.redis.xgroup_create(node.app_name, app_group, mkstream=True)
-                except:
-                    pass
+            stream = f"{node.execution_id}:{node.app_name}"
+            try:
+                # The stream doesn't exist so lets create that and the app group
+                if len(await self.redis.keys(stream)) < 1:
+                    logger.info(f"redis streams: {await self.redis.keys(stream)}")
+                    await self.redis.xgroup_create(stream, node.app_name, mkstream=True)
+
+                # The stream exists but the group does not so lets just make the app group
+                if len(await self.redis.xinfo_groups(stream)) < 1:
+                    await self.redis.xgroup_create(stream, node.app_name)
+
+                # Keep track of these for clean up later
+                self.streams.add(stream)
+
+            except aioredis.ReplyError as e:
+                logger.debug(f"Issue creating redis stream {e!r}")
 
             await self.dereference_params(node)
-            await self.send_message(NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
-            await self.redis.xadd(node.app_name, {node.execution_id: workflow_dumps(node)})
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
+            await self.redis.xadd(stream, {node.execution_id: workflow_dumps(node)})
 
         elif isinstance(node, Condition):
-            await self.send_message(NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
             await self.evaluate_condition(node, parents, children)
 
         elif isinstance(node, Transform):
             if len(parents) > 1:
                 logger.error(f"Error scheduling {node.name}: Transforms cannot have more than 1 incoming connection.")
-            await self.send_message(NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
             await self.execute_transform(node, parents.popitem()[1])
 
         elif isinstance(node, Trigger):
             raise NotImplementedError
 
         # TODO: decide if we want pending action messages and uncomment this line
-        # await self.send_message(NodeStatus.pending_from_node(node, workflow.execution_id))
+        # await send_status_update(self.session, self.workflow.execution_id,
+        # NodeStatus.pending_from_node(node, workflow.execution_id))
         logger.info(f"Scheduled {node}")
 
     async def get_action_results(self):
         """ Continuously monitors the results queue until all scheduled actions have been completed """
+        results_stream = f"{self.workflow.execution_id}:results"
+
         while len(self.in_process) > 0:
             try:
-                msg = await self.redis.xread_group(config.REDIS_ACTION_RESULTS_GROUP, CONTAINER_ID, timeout=None,
-                                               streams=[self.workflow.execution_id], count=1, latest_ids=['>'])
+                with await self.redis as redis:
+                    msg = await redis.xread_group(config.REDIS_ACTION_RESULTS_GROUP, CONTAINER_ID,
+                                                  streams=[results_stream], count=1, latest_ids=['>'])
             except aioredis.errors.ReplyError:
                 logger.debug(f"Stream {self.workflow.execution_id} doesn't exist. Attempting to create it...")
-                await self.redis.xgroup_create(self.workflow.execution_id, config.REDIS_ACTION_RESULTS_GROUP,
+                await self.redis.xgroup_create(results_stream, config.REDIS_ACTION_RESULTS_GROUP,
                                                mkstream=True)
-                logger.debug(f"Created stream {self.workflow.execution_id}.")
-                continue
-
-
-            if len(msg) < 1:
+                logger.debug(f"Created stream {results_stream}.")
                 continue
 
             # Dereference the redis stream message and load the status message
@@ -308,13 +360,14 @@ class Worker:
                 elif node_message.status == StatusEnum.FAILURE:
                     self.accumulator[node_message.node_id] = node_message.result
                     await self.cancel_subgraph(self.workflow.nodes[node_message.node_id])  # kill the children!
-                    logger.info(f"Worker recieved error \"{node_message.result}\" for: {node_message.label}-{node_message.execution_id}")
+                    logger.info(f"Worker recieved error \"{node_message.result}\" for: {node_message.label}-"
+                                f"{node_message.execution_id}")
 
                 else:
                     logger.error(f"Unknown message status received: {node_message}")
                     node_message = None
 
-                await self.send_message(node_message)
+                await send_status_update(self.session, self.workflow.execution_id, node_message)
 
             else:
                 logger.error(f"Message received for unknown execution: {node_message}")
@@ -326,79 +379,11 @@ class Worker:
             await xdel(self.redis, stream=stream, id_=id_)
 
         # Remove the finished results stream and group
-        await self.redis.xgroup_destroy(self.workflow.execution_id, config.REDIS_ACTION_RESULTS_GROUP)
-        await self.redis.delete(self.workflow.execution_id)
-
-    def make_patch(self, message, root, op, value_only=False, white_list=None, black_list=None):
-        if white_list is None and black_list is None:
-            raise ValueError("Either white_list or black_list must be provided")
-
-        if white_list is not None and black_list is not None:
-            raise ValueError("Either white_list or black_list must be provided, not both")
-
-        # convert blacklist to whitelist and grab those attrs from the message
-        white_list = set(message.__slots__).difference(black_list) if black_list is not None else white_list
-
-        if value_only and len(white_list) != 1:
-            raise ValueError("value_only can only be set if a single key is in white_list")
-
-        if value_only:
-            (key,) = white_list
-            values = getattr(message, key)
-        else:
-            values = {k: getattr(message, k) for k in message.__slots__ if k in white_list}
-
-        return JSONPatch(op, path=root, value=values)
-
-    def get_patches(self, message):
-        patches = []
-        if isinstance(message, NodeStatusMessage):
-            root = f"/node_statuses/{message.node_id}"
-            if message.status == StatusEnum.EXECUTING:
-                patches.append(self.make_patch(message, root, JSONPatchOps.ADD, black_list={"result", "completed_at"}))
-
-            elif message.status == StatusEnum.SUCCESS:
-                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, black_list={}))
-
-            elif message.status == StatusEnum.FAILURE:
-                patches.append(self.make_patch(message, root, JSONPatchOps.REPLACE, black_list={}))
-
-        elif isinstance(message, WorkflowStatusMessage):
-            if message.status == StatusEnum.EXECUTING:
-                for key in [attr for attr in message.__slots__ if getattr(message, attr)]:
-                    patches.append(self.make_patch(message, f"/{key}", JSONPatchOps.REPLACE, value_only=True,
-                                                   white_list={f"{key}"}))
-
-            elif message.status == StatusEnum.COMPLETED or message.status == StatusEnum.ABORTED:
-                patches.append(self.make_patch(message, f"/status", JSONPatchOps.REPLACE, value_only=True,
-                                               white_list={"status"}))
-                patches.append(self.make_patch(message, f"/completed_at", JSONPatchOps.REPLACE, value_only=True,
-                                               white_list={"completed_at"}))
-
-        return patches
-
-    async def send_message(self, message: Union[NodeStatusMessage, WorkflowStatusMessage, None]):
-        """ Forms and sends a JSONPatch message to the api_gateway to update the status of an action or workflow """
-
-        if message is None:
-            return None
-
-        patches = self.get_patches(message)
-
-        if len(patches) < 1:
-            raise ValueError(f"Attempting to send improper message type: {type(message)}")
-
-        params = {"event": message.status.value}
-        url = f"{config.API_GATEWAY_URI}/api/internal/workflowstatus/{self.workflow.execution_id}"
-        try:
-            async with self.session.patch(url, json=patches, params=params, timeout=5000) as resp:
-                results = await resp.json()
-                logger.debug(f"API-Gateway status update response: {results}")
-                return results
-        except aiohttp.ClientConnectionError as e:
-            logger.error(f"Could not send status message to {url}: {e!r}")
-        except Exception as e:
-            logger.error(f"Unknown error while sending message to {url}: {e!r}")
+        await self.redis.delete(results_stream)
+        pipe: aioredis.commands.Pipeline = self.redis.pipeline()
+        futs = [pipe.delete(stream) for stream in self.streams]
+        results = await pipe.execute()
+        self.streams = set()
 
 
 if __name__ == "__main__":

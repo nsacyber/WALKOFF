@@ -1,24 +1,25 @@
-import asyncio
 import logging
 import os
 import sys
-import time
 import json
 
 import aioredis
 import aiohttp
 
 from common.message_types import NodeStatusMessage, message_dumps
-from common.workflow_types import workflow_loads, workflow_dumps, Action
+from common.workflow_types import workflow_loads, Action
 from common.async_logger import AsyncLogger, AsyncHandler
+from common.helpers import UUID_GLOB
 from common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
 REDIS_ACTION_RESULTS_GROUP = os.getenv("REDIS_ACTION_RESULTS_GROUP", "actions-in-process")
+REDIS_ABORTING_WORKFLOWS = os.getenv("REDIS_ABORTING_WORKFLOWS", "aborting-workflows")
 API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "http://api_gateway:8080")
 APP_TIMEOUT = os.getenv("APP_TIMEOUT", 30)
 CONTAINER_ID = os.getenv("HOSTNAME")
+
 
 class HTTPStream:
     """ Thin wrapper around an HTTP stream that plugs into the async logger """
@@ -38,8 +39,7 @@ class HTTPStream:
         params = {"workflow_execution_id": self.execution_id}
         url = f"{API_GATEWAY_URI}/api/streams/console/log"
 
-        async with self.session.post(url, data=data, params=params) as resp:
-            print(await resp.json())
+        await self.session.post(url, data=data, params=params)
 
     async def close(self):
         pass
@@ -71,26 +71,32 @@ class AppBase:
     async def get_actions(self):
         """ Continuously monitors the action queue and asynchronously executes actions """
         self.logger.debug("Waiting for actions...")
-        app_queue = f"{self.app_name}:{self.__version__}"
-        app_group = f"{app_queue}-group"
+        app_group = f"{self.app_name}:{self.__version__}"
 
         while True:
+            streams = await self.redis.keys(f"{UUID_GLOB}:{app_group}", encoding='utf-8')
+            aborted = await self.redis.smembers(REDIS_ABORTING_WORKFLOWS, encoding="utf-8")
+            streams = [s for s in streams if s.split(':')[0] not in aborted]
+            num_streams = len(streams)
+
+            if num_streams < 1:
+                sys.exit(-1)  # There's no scheduled work and no reason to live
+
             try:
                 # See if we have any pending messages first
-                message = await self.redis.xread_group(app_group, CONTAINER_ID, streams=[app_queue], latest_ids=['0'],
-                                                       timeout=APP_TIMEOUT * 1000, count=1)
+                message = await self.redis.xread_group(app_group, CONTAINER_ID, streams=streams, count=1,
+                                                       latest_ids=list('0' * num_streams), timeout=None)
 
                 if len(message) < 1:  # We don't have any pending so lets get a new one
-                    message = await self.redis.xread_group(app_group, CONTAINER_ID, streams=[app_queue],
-                                                           latest_ids=['>'], timeout=APP_TIMEOUT * 1000, count=1)
-            except aioredis.errors.ReplyError:
-                self.logger.debug(f"Stream {app_queue} doesn't exist. Attempting to create it...")
-                await self.redis.xgroup_create(app_queue, app_group, mkstream=True)
-                self.logger.debug(f"Created stream {app_queue}.")
-                continue
+                    message = await self.redis.xread_group(app_group, CONTAINER_ID, streams=streams, count=1,
+                                                           latest_ids=list('>' * num_streams), timeout=None)
 
-            if len(message) < 1:  # We've timed out with no work. Guess we'll die now...
-                sys.exit(1)
+                if len(message) < 1:  # We didn't get any messages, start over with new streams
+                    continue
+            except aioredis.errors.ReplyError:
+                continue  # Just keep trying to read messages. This likely gets thrown if a stream doesn't exist
+
+
 
             execution_id_action, stream, id_ = deref_stream_message(message)
             execution_id, action = execution_id_action
@@ -103,18 +109,17 @@ class AppBase:
             await self.redis.xack(stream=stream, group_name=app_group, id=id_)
             await xdel(self.redis, stream=stream, id_=id_)
 
-
     async def execute_action(self, action: Action):
         """ Execute an action, and push its result to Redis. """
         self.logger.debug(f"Attempting execution of: {action.label}-{action.execution_id}")
         self.console_logger.handlers[0].stream.set_execution_id(f"{action.execution_id}:console")
-        if hasattr(self, action.name):
-            start_action_msg = NodeStatusMessage.executing_from_node(action, action.execution_id)
-            redis_keys = [key.decode() for key in await self.redis.keys('*')]
-            if action.execution_id not in redis_keys:
-                await self.redis.xgroup_create(action.execution_id, REDIS_ACTION_RESULTS_GROUP, mkstream=True)
+        results_stream = f"{action.execution_id}:results"
 
-            await self.redis.xadd(action.execution_id, {action.execution_id: message_dumps(start_action_msg)})
+        if hasattr(self, action.name):
+            # Tell everyone we started execution
+            start_action_msg = NodeStatusMessage.executing_from_node(action, action.execution_id)
+            await self.redis.xadd(results_stream, {action.execution_id: message_dumps(start_action_msg)})
+
             try:
                 func = getattr(self, action.name, None)
                 if callable(func):
@@ -134,13 +139,13 @@ class AppBase:
                 action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
                 self.logger.exception(f"Failed to execute {action.label}-{action.id_}")
 
-            await self.redis.xadd(action.execution_id, {action.execution_id: message_dumps(action_result)})
+            await self.redis.xadd(results_stream, {action.execution_id: message_dumps(action_result)})
 
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
             action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
                                                                 result="Action does not exist")
-            await self.redis.xadd(action.execution_id, {action.execution_id: message_dumps(action_result)})
+            await self.redis.xadd(results_stream, {action.execution_id: message_dumps(action_result)})
 
     @classmethod
     async def run(cls):

@@ -52,33 +52,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-  patch:
-    tags:
-      - WorkflowQueue
-    summary: Pause, resume, or abort a workflow
-    description: ''
-    operationId: api_gateway.server.endpoints.workflowqueue.control_workflow
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ControlWorkflow'
-    responses:
-      204:
-        description: Success.
-      404:
-        description: Workflow does not exist.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Error'
-      400:
-        description: Invalid input error.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Error'
 
 /workflowqueue/{execution_id}:
   parameters:
@@ -108,6 +81,34 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+  patch:
+    tags:
+      - WorkflowQueue
+    summary: Pause, resume, or abort a workflow
+    description: ''
+    operationId: api_gateway.server.endpoints.workflowqueue.control_workflow
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ControlWorkflow'
+    responses:
+      204:
+        description: Success.
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      400:
+        description: Invalid input error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
 
 /workflowqueue/cleardb:
   parameters:

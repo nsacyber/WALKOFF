@@ -2,12 +2,11 @@ import logging
 import os
 
 from sqlalchemy.exc import OperationalError
+from redis import Redis
 
-import api_gateway.cache
 import api_gateway.config
 import api_gateway.executiondb
 import api_gateway.scheduler
-from api_gateway.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -33,5 +32,5 @@ class Context(object):
             os._exit(1)
 
         if init_all:
-            self.cache = api_gateway.cache.RedisCacheAdapter(**api_gateway.config.Config.REDIS_OPTIONS)
+            self.cache = Redis(**api_gateway.config.Config.REDIS_OPTIONS)
             self.scheduler = api_gateway.scheduler.Scheduler(app)

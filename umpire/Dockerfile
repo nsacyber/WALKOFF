@@ -9,6 +9,9 @@ WORKDIR /install
 COPY ./umpire/requirements.txt /requirements.txt
 RUN git clone "https://github.com/aio-libs/aioredis.git"
 RUN pip install --prefix="/install" ./aioredis
+RUN pip install --prefix="/install" ./aioredis
+RUN pip install --prefix="/install" --no-deps asteval
+RUN pip install --prefix="/install" six
 RUN pip install --prefix="/install" -r /requirements.txt
 
 

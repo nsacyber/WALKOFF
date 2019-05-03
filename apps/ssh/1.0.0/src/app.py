@@ -1,11 +1,8 @@
 import os
-
 import logging
-import asyncssh
 import asyncio
 
-
-from pathlib import Path
+import asyncssh
 
 from walkoff_app_sdk.app_base import AppBase
 
@@ -18,6 +15,12 @@ class SSH(AppBase):
 
     def __init__(self, redis, logger, console_logger=None):
         super().__init__(redis, logger, console_logger)
+
+    async def exec_local_command(self, command):
+        proc = await asyncio.create_subprocess_shell(command, stdout=asyncio.subprocess.PIPE,
+                                                     stderr=asyncio.subprocess.PIPE)
+        stdout, stderr = await proc.communicate()
+        return {"stdout": str(stdout), "stderr": str(stderr)}
 
     async def exec_command(self, hosts, port=None, args=None, username=None, password=None):
         results = {}

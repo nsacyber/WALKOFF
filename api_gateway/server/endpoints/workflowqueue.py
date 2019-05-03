@@ -49,10 +49,8 @@ workflow_schema = WorkflowSchema()
 workflow_status_schema = WorkflowStatusSchema()
 
 with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
-
 with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
-validate_workflow_is_registered = validate_resource_exists_factory('workflow', does_workflow_exist)
-validate_execution_id_is_registered = validate_resource_exists_factory('workflow', does_execution_id_exist)
+
 
 status_order = OrderedDict(
     [((StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA, StatusEnum.PAUSED),
@@ -132,41 +130,39 @@ def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
     current_app.running_context.execution_db.session.add(workflow_status)
     current_app.running_context.execution_db.session.commit()
 
-    # Assign the execution id to the workflow so the worker
+    # Assign the execution id to the workflow so the worker knows it
     workflow["execution_id"] = execution_id
     # ToDo: self.__box.encrypt(message))
-    # current_app.running_context.cache.lpush("workflow-queue", json.dumps(workflow))
-    current_app.running_context.cache.cache.xadd(Config.common_config.REDIS_WORKFLOW_QUEUE,
-                                                 {execution_id: json.dumps(workflow)})
+    current_app.running_context.cache.sadd(Config.common_config.REDIS_PENDING_WORKFLOWS, execution_id)
+    current_app.running_context.cache.xadd(Config.common_config.REDIS_WORKFLOW_QUEUE,
+                                           {execution_id: json.dumps(workflow)})
     gevent.spawn(push_to_workflow_stream_queue, workflow_status_json, "PENDING")
     current_app.logger.info(f"Created Workflow Status {workflow['name']} ({execution_id})")
 
     return execution_id
 
 
-# ToDo: Ensure workflow abort works
-def control_workflow():
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('workflows', ['execute']))
+@with_workflow_status('control', "execution_id")
+def control_workflow(execution_id):
     data = request.get_json()
-    execution_id = data['execution_id']
+    status = data['status']
 
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('workflows', ['execute']))
-    @validate_execution_id_is_registered('control', execution_id)
-    def __func():
-        status = data['status']
+    workflow = workflow_getter(execution_id.workflow_id)
 
-        # if status == 'pause':
-        #     current_app.running_context.executor.pause_workflow(execution_id,
-        #                                                         user=get_jwt_claims().get('username', None))
-        # elif status == 'resume':
-        #     current_app.running_context.executor.resume_workflow(execution_id,
-        #                                                          user=get_jwt_claims().get('username', None))
-        # elif status == 'abort':
-        #     execution_id, user=get_jwt_claims().get('username', None)
+    # The resource factory returns the WorkflowStatus model but we want the string of the execution ID
+    execution_id = str(execution_id.execution_id)
 
-        return None, HTTPStatus.NO_CONTENT
+    # TODO: add in pause/resume here. Workers need to store and recover state for this
+    if status == 'abort':
+        logger.info(f"User '{get_jwt_claims().get('username', None)}' aborting workflow: {execution_id}")
+        message = {"execution_id": execution_id, "status": status, "workflow": workflow_schema.dumps(workflow)}
+        current_app.running_context.cache.smove(Config.common_config.REDIS_PENDING_WORKFLOWS,
+                                                Config.common_config.REDIS_ABORTING_WORKFLOWS, execution_id)
+        current_app.running_context.cache.xadd(Config.common_config.REDIS_WORKFLOW_CONTROL, message)
 
-    return __func()
+    return None, HTTPStatus.NO_CONTENT
 
 
 # ToDo: make these clear db endpoints for more resources

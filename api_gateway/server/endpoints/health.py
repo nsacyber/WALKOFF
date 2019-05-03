@@ -4,7 +4,7 @@ from api_gateway.extensions import db
 
 
 def check_cache():
-    current_app.running_context.cache.check()
+    current_app.running_context.cache.ping()
     return True, 'Cache ok'
 
 

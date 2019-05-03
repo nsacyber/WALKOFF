@@ -43,6 +43,17 @@ actions:
     returns:
       schema:
         type: string
+  - name: exec_local_command
+    description: Run a local bash command
+    parameters:
+      - name: command
+        required: true
+        schema:
+          type: string
+        description: source path of the file to copy
+    returns:
+      schema:
+        type: string
   - name: sftp_copy
     description: Copy remote file to remote host using sftp
     parameters:

@@ -6,7 +6,7 @@ import gevent
 from gevent.queue import Queue
 
 from flask import Blueprint, Response, current_app, request
-
+from flask_jwt_extended import jwt_required
 from sqlalchemy.exc import IntegrityError
 
 import jsonpatch
@@ -18,10 +18,34 @@ from api_gateway.executiondb.workflowresults import (WorkflowStatus, NodeStatus,
 
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.problem import unique_constraint_problem, invalid_id_problem
-from api_gateway.sse import SseEvent
 
 
 logger = logging.getLogger(__name__)
+
+
+def sse_format(data, event_id, event=None, retry=None):
+    """Get this SSE formatted as needed to send to the client
+    Args:
+        event_id (int): The ID related to this event.
+        retry (int): The time in milliseconds the client should wait to retry to connect to this SSE stream if the
+            connection is broken. Default is 3 seconds (3000 milliseconds)
+    Returns:
+        (str): This SSE formatted to be sent to the client
+    """
+    if isinstance(data, dict):
+        try:
+            data = json.dumps(data)
+        except TypeError:
+            data = str(data)
+
+    formatted = 'id: {}\n'.format(event_id)
+    if event:
+        formatted += 'event: {}\n'.format(event)
+    if retry is not None:
+        formatted += 'retry: {}\n'.format(retry)
+    if data:
+        formatted += 'data: {}\n'.format(data)
+    return formatted + '\n'
 
 
 def workflow_getter(workflow_id):
@@ -52,7 +76,7 @@ action_stream_subs = {}
 def push_to_workflow_stream_queue(workflow_status, event):
     workflow_status.pop("node_statuses", None)
     workflow_status["execution_id"] = str(workflow_status["execution_id"])
-    sse_event_text = SseEvent(event, workflow_status).format(workflow_status["execution_id"])
+    sse_event_text = sse_format(data=workflow_status, event=event, event_id=workflow_status["execution_id"])
     if workflow_status["execution_id"] in workflow_stream_subs:
         workflow_stream_subs[workflow_status["execution_id"]].put(sse_event_text)
     if 'all' in workflow_stream_subs:
@@ -65,10 +89,8 @@ def push_to_action_stream_queue(node_statuses, event):
     for node_status in node_statuses:
         node_status_json = node_status_schema.dump(node_status)
         node_status_json["execution_id"] = str(node_status_json["execution_id"])
-        sse_event = SseEvent(event, node_status_json)
         execution_id = str(node_status_json["execution_id"])
-
-        sse_event_text = sse_event.format(event_id)
+        sse_event_text = sse_format(data=node_status_json, event=event, event_id=event_id)
 
         if execution_id in action_stream_subs:
             action_stream_subs[execution_id].put(sse_event_text)
@@ -108,8 +130,8 @@ def push_to_action_stream_queue(node_statuses, event):
 #         return unique_constraint_problem('workflow_status', 'create', workflow.name)
 
 # TODO: maybe make an internal user for the worker/umpire?
-# @jwt_required
-# @permissions_accepted_for_resources(ResourcePermissions("workflowstatus", ["create"]))
+@jwt_required
+@permissions_accepted_for_resources(ResourcePermissions("workflowstatus", ["create"]))
 @with_workflow_status('update', 'execution_id')
 def update_workflow_status(execution_id):
     old_workflow_status = workflow_status_schema.dump(execution_id)

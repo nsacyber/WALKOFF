@@ -29,7 +29,6 @@ def workflow_getter(workflow_id):
 
 
 with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
-validate_workflow_is_registered = validate_resource_exists_factory('workflow', does_workflow_exist)
 
 ALLOWED_EXTENSIONS = {'json'}
 

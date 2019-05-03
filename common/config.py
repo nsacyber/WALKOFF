@@ -34,21 +34,28 @@ class Config:
     WALKOFF_PASSWORD = os.environ.get("WALKOFF_PASSWORD", '')
 
     # Umpire options
-    APPS_PATH = os.environ.get("APPS_PATH", "./apps")
-    APP_REFRESH = os.environ.get("APP_REFRESH", "60")
-    SWARM_NETWORK = os.environ.get("SWARM_NETWORK", "walkoff_default")
-    APP_PREFIX = os.environ.get("APP_PREFIX", "walkoff_app")
-    STACK_PREFIX = os.environ.get("STACK_PREFIX", "walkoff")
-    DOCKER_REGISTRY = os.environ.get("DOCKER_REGISTRY", "localhost:5000")
-    UMPIRE_HEARTBEAT = os.environ.get("UMPIRE_HEARTBEAT", "1")
+    APPS_PATH = os.getenv("APPS_PATH", "./apps")
+    APP_REFRESH = os.getenv("APP_REFRESH", "60")
+    SWARM_NETWORK = os.getenv("SWARM_NETWORK", "walkoff_default")
+    APP_PREFIX = os.getenv("APP_PREFIX", "walkoff_app")
+    STACK_PREFIX = os.getenv("STACK_PREFIX", "walkoff")
+    DOCKER_REGISTRY = os.getenv("DOCKER_REGISTRY", "localhost:5000")
+    UMPIRE_HEARTBEAT = os.getenv("UMPIRE_HEARTBEAT", "1")
 
     # Redis options
-    REDIS_URI = os.environ.get("REDIS_URI", "redis://redis:6379")
-    REDIS_ACTIONS_IN_PROCESS = os.environ.get("REDIS_ACTIONS_IN_PROCESS", "actions-in-process")
-    REDIS_WORKFLOW_QUEUE = os.environ.get("REDIS_WORKFLOW_Q", "workflow-queue")
-    REDIS_WORKFLOWS_IN_PROCESS = os.environ.get("REDIS_WORKFLOWS_IN_PROCESS", "workflows-in-process")
-    REDIS_WORKFLOW_GROUP = os.environ.get("REDIS_WORKFLOW_GROUP", "workflow-group")
-    REDIS_ACTION_RESULTS_GROUP = os.environ.get("REDIS_ACTION_RESULTS_GROUP", "action-results-group")
+    REDIS_URI = os.getenv("REDIS_URI", "redis://redis:6379")
+    REDIS_EXECUTING_WORKFLOWS = os.getenv("REDIS_EXECUTING_WORKFLOWS", "executing-workflows")
+    REDIS_PENDING_WORKFLOWS = os.getenv("REDIS_PENDING_WORKFLOWS", "pending-workflows")
+    REDIS_ABORTING_WORKFLOWS = os.getenv("REDIS_ABORTING_WORKFLOWS", "aborting-workflows")
+    REDIS_ACTIONS_IN_PROCESS = os.getenv("REDIS_ACTIONS_IN_PROCESS", "actions-in-process")
+    REDIS_WORKFLOW_QUEUE = os.getenv("REDIS_WORKFLOW_Q", "workflow-queue")
+    REDIS_WORKFLOWS_IN_PROCESS = os.getenv("REDIS_WORKFLOWS_IN_PROCESS", "workflows-in-process")
+    REDIS_WORKFLOW_GROUP = os.getenv("REDIS_WORKFLOW_GROUP", "workflow-group")
+    REDIS_ACTION_RESULTS_GROUP = os.getenv("REDIS_ACTION_RESULTS_GROUP", "action-results-group")
+
+    REDIS_WORKFLOW_CONTROL = os.getenv("REDIS_WORKFLOW_CONTROL", "workflow-control")
+    REDIS_WORKFLOW_CONTROL_GROUP = os.getenv("REDIS_WORKFLOW_CONTROL_GROUP", "workflow-control-group")
+
     # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
     # See: https://docs.docker.com/compose/reference/envvars/ for more information.
     # DOCKER_HOST = os.environ.get("DOCKER_HOST", "tcp://ip_of_docker_swarm_manager:2376")
