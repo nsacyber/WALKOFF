@@ -4,7 +4,7 @@ import { FormControl } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { Select2OptionData } from 'ng2-select2';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
-import { Observable, interval } from 'rxjs';
+import { interval } from 'rxjs';
 import 'rxjs/add/operator/debounceTime';
 import { plainToClass } from 'class-transformer';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -24,8 +24,8 @@ import { NodeStatus, NodeStatuses } from '../models/execution/nodeStatus';
 import { ExecutionVariableModalComponent } from './execution.variable.modal.component';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { NodeStatusSummary } from '../models/execution/nodeStatusSummary';
-import { ConsoleLog } from '../models/execution/consoleLog';
 import { Router } from '@angular/router';
+import * as moment from 'moment';
 
 @Component({
 	selector: 'execution-component',
@@ -511,6 +511,18 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		if (propA.app_name.toLowerCase() < propB.app_name.toLowerCase()) { return -1; }
 		if (propA.app_name.toLowerCase() > propB.app_name.toLowerCase()) { return 1; }
+	}
+
+	/**
+	 * Simple comparator function for the datatable sort on a date column.
+	 * @param propA Left side NodeStatusSummary
+	 * @param propB Right side NodeStatusSummary
+	 */
+	dateComparator(propA, propB) {
+		if (!propA && !propB) return 0;
+		if (!propA) return 1; 
+		if (!propB) return -1;
+		return moment(propA).diff(moment(propB));
 	}
 
 	/**

@@ -11,6 +11,8 @@ export class Condition extends ExecutionElement {
 
 	app_name: string = 'Builtin';
 
+	app_version: string;
+
 	@Expose({ name: 'name' })
 	action_name: string = 'Condition';
 

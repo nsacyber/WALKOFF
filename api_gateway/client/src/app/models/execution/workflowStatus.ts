@@ -55,18 +55,22 @@ export class WorkflowStatus {
 	localized_completed_at?: string;
 
 	get completed_at_local() : string {
-		return moment(this.completed_at).format('LL LTS');
+		if (this.completed_at)
+			return moment(this.completed_at).format('LL LTS');
 	}
 
 	get completed_at_relative() : string {
-		return moment(this.completed_at).fromNow();
+		if (this.completed_at)
+			return moment(this.completed_at).toNow()
 	}
 
 	get started_at_local() : string {
-		return moment(this.started_at).format('LL LTS');
+		if (this.started_at)
+			return moment(this.started_at).format('LL LTS');
 	}
 
 	get started_at_relative() : string {
-		return moment(this.started_at).fromNow();
+		if (this.started_at)
+			return moment(this.started_at).toNow();
 	}
 }

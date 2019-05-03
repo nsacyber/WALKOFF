@@ -343,11 +343,11 @@
                                 [rows]="nodeStatuses" [sortType]="'multi'" [footerHeight]="25" [rowHeight]="undefined"
                                 [sorts]="[{prop: 'started_at', dir: 'desc'}]" [limit]="10">
                                 <!-- Column Templates -->
-                                <ngx-datatable-column name="Action IDs" prop="node_id" [flexGrow]="1">
+                                <ngx-datatable-column name="ID" prop="node_id" [flexGrow]="2">
                                 </ngx-datatable-column>
                                 <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1">
                                 </ngx-datatable-column>
-                                <ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="1">
+                                <ngx-datatable-column name="Action Name" prop="name" [flexGrow]="1">
                                 </ngx-datatable-column>
                                 <ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
@@ -364,12 +364,12 @@
                                     </ng-template>
                                 </ngx-datatable-column>
                                 <ngx-datatable-column name="Status" prop="status" [flexGrow]="1"></ngx-datatable-column>
-                                <ngx-datatable-column name="Arguments" [sortable]="false" [flexGrow]="2">
+                                <ngx-datatable-column name="Arguments" [sortable]="false" [flexGrow]="1">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
                                         {{getFriendlyArguments(row.arguments)}}
                                     </ng-template>
                                 </ngx-datatable-column>
-                                <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="4">
+                                <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="3">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
                                         {{getFriendlyJSON(row.result)}}
                                     </ng-template>

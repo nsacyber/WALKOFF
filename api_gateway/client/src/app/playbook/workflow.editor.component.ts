@@ -282,6 +282,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
 			const matchingNode = this.cy.elements(`node[_id="${ nodeStatusEvent.node_id }"]`);
+			const nodeType = matchingNode.data('type');
 			const incomingEdges = matchingNode.incomers('edge');
 			const outgoingEdges = matchingNode.outgoers('edge');
 
@@ -292,16 +293,18 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.addClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
-						//incomingEdges.addClass('executing-highlight');	
+						incomingEdges.addClass('success-highlight');	
 						break;
 					case NodeStatuses.SUCCESS:
 						matchingNode.addClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.removeClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
-						incomingEdges.addClass('success-highlight');
-						incomingEdges.removeClass('executing-highlight');
-						outgoingEdges.addClass('executing-highlight');
+						//incomingEdges.addClass('success-highlight');
+						//incomingEdges.removeClass('executing-highlight');
+						if (nodeType != ActionType.CONDITION) {
+							outgoingEdges.addClass('success-highlight');
+						}
 						break;
 					case NodeStatuses.FAILURE:
 						matchingNode.removeClass('success-highlight');
@@ -321,7 +324,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 
 		// Additionally, add or update the actionstatus in our datatable.
-		const matchingNodeStatus = this.nodeStatuses.find(as => as.execution_id === nodeStatusEvent.execution_id);
+		const matchingNodeStatus = this.nodeStatuses
+									   .find(as => as.execution_id === nodeStatusEvent.execution_id && as.node_id == nodeStatusEvent.node_id);
 		if (matchingNodeStatus) {
 			matchingNodeStatus.status = nodeStatusEvent.status;
 
@@ -513,7 +517,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					css: {
 						'background-color': '#ffef47',
 						'transition-property': 'background-color',
-						'transition-duration': '0.5s',
+						'transition-duration': '0.25s',
 					},
 				},
 				{
@@ -545,21 +549,21 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				{
 					selector: 'edge.executing-highlight',
 					css: {
-						'width': '6px',
+						'width': '5px',
 						'target-arrow-color': '#ffef47',
 						'line-color': '#ffef47',
-						'transition-property': 'width',
-						'transition-duration': '0.15s',
+						'transition-property': 'line-color, width',
+						'transition-duration': '0.25s',
 					},
 				},
 				{
 					selector: 'edge.success-highlight',
 					css: {
-						'width': '6px',
+						'width': '5px',
 						'target-arrow-color': '#399645',
 						'line-color': '#399645',
 						'transition-property': 'line-color, width',
-						'transition-duration': '0.15s',
+						'transition-duration': '0.5s',
 					},
 				},
 				{
@@ -750,7 +754,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			node.data = {
 				id: condition.id,
 				_id: condition.id,
-				label: this.loadedWorkflow.getNextActionName(condition.action_name, ActionType.CONDITION),//condition.name,
+				label: condition.name,
 				isStartNode: condition.id === this.loadedWorkflow.start,
 				hasErrors: condition.has_errors,
 				type: ActionType.CONDITION
@@ -1066,7 +1070,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.cy.elements(`[_id!="${id}"]`).unselect();
 
 		const branch = this.loadedWorkflow.branches.find(b => b.id === id);
-		const sourceAction = this.loadedWorkflow.actions.find(a => a.id === branch.source_id);
+		const sourceAction = this.loadedWorkflow.nodes.find(a => a.id === branch.source_id);
 
 		this.selectedBranchParams = {
 			branch,
@@ -1268,6 +1272,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		condition.id = newActionUuid;
 		condition.name = uniqueActionName;
 		condition.app_name = appName;
+		condition.app_version = appVersion;
 		condition.action_name = actionName;
 		condition.arguments = args;
 		this.loadedWorkflow.conditions.push(condition);
