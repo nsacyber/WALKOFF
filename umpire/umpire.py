@@ -311,12 +311,12 @@ class Umpire:
         executing_workflows = (await self.redis.xpending(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP))[0]
         queued_workflows = total_workflows - executing_workflows
 
-        logger.info(f"Queued Workflows: {queued_workflows}")
-        logger.info(f"Executing Workflows: {executing_workflows}")
+        logger.debug(f"Queued Workflows: {queued_workflows}")
+        logger.debug(f"Executing Workflows: {executing_workflows}")
 
         current_workers = self.service_replicas.get("worker", {"running": 0, "desired": 0})["desired"]
         workers_needed = min(total_workflows, self.max_workers)
-        logger.info(f"Running Workers: {current_workers}")
+        logger.debug(f"Running Workers: {current_workers}")
 
         if workers_needed > current_workers > 0:
             await self.launch_workers(workers_needed)
@@ -366,8 +366,8 @@ class Umpire:
                 logger.info(f"Launched {':'.join([app_name, version])}")
 
             for app_name, workload in workloads.items():
-                logger.info(f"Queued actions for {app_name}: {workload['queued']}")
-                logger.info(f"Executing actions for {app_name}: {workload['executing']}")
+                logger.debug(f"Queued actions for {app_name}: {workload['queued']}")
+                logger.debug(f"Executing actions for {app_name}: {workload['executing']}")
 
     async def check_pending_actions(self):
         self.running_apps = await self.get_running_apps()
