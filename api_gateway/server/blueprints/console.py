@@ -22,10 +22,9 @@ console_stream_lock = RLock()
 def create_console_message():
     workflow_execution_id = request.args.get('workflow_execution_id', 'all')
     message_json = request.get_json()
-
     if workflow_execution_id in console_stream_subs:
         gevent.spawn(console_stream_subs[workflow_execution_id].put, json.dumps(message_json))
-        current_app.logger.info(f"Pushed console log message.")
+        current_app.logger.debug(f"Pushed console log message: {json.dumps(message_json)}")
 
     return jsonify({"execution_id": workflow_execution_id, "message": message_json}), HTTPStatus.ACCEPTED
 
@@ -49,7 +48,8 @@ def console_log_generator(execution_id):
         console_stream_subs[execution_id] = events = console_stream_subs.get(execution_id, Queue())
     try:
         while True:
-            yield events.get().encode()
+            event = events.get().encode()
+            current_app.logger.debug(f"Sending console message for {execution_id}: {event}")
     except GeneratorExit:
         with console_stream_lock:
             console_stream_subs.pop(events)

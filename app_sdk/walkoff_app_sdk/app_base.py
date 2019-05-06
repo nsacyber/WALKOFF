@@ -35,11 +35,11 @@ class HTTPStream:
         pass
 
     async def write(self, message):
-        data = json.dumps({"message": message})
+        data = {"message": message}
         params = {"workflow_execution_id": self.execution_id}
         url = f"{API_GATEWAY_URI}/api/streams/console/log"
 
-        await self.session.post(url, data=data, params=params)
+        await self.session.post(url, json=data, params=params)
 
     async def close(self):
         pass
@@ -112,7 +112,7 @@ class AppBase:
     async def execute_action(self, action: Action):
         """ Execute an action, and push its result to Redis. """
         self.logger.debug(f"Attempting execution of: {action.label}-{action.execution_id}")
-        self.console_logger.handlers[0].stream.set_execution_id(f"{action.execution_id}:console")
+        self.console_logger.handlers[0].stream.set_execution_id(action.execution_id)
         results_stream = f"{action.execution_id}:results"
 
         if hasattr(self, action.name):
