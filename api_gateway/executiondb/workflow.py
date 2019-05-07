@@ -49,7 +49,7 @@ class Workflow(ValidatableMixin, Base):
         """Validates the object"""
         node_ids = {node.id_ for node in self.actions + self.conditions + self.transforms}
         work_var_ids = {workflow_var.id_ for workflow_var in self.workflow_variables}
-        global_ids = set(current_app.running_context.execution_db.session.query(GlobalVariable.id_).all())
+        global_ids = set(id_ for id_, in current_app.running_context.execution_db.session.query(GlobalVariable.id_))
 
         self.errors = []
 
