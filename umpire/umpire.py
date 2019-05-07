@@ -72,6 +72,7 @@ class Umpire:
             for signame in {'SIGINT', 'SIGTERM'}:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
+            logger.info("Umpire ready!")
             await asyncio.gather(asyncio.create_task(ump.monitor_queues()),
                                  asyncio.create_task(ump.workflow_control_listener()))
         await ump.shutdown()
@@ -107,14 +108,16 @@ class Umpire:
         return {s['Spec']['Name']:  {'id': s["ID"], 'version': s['Version']['Index']} for s in services}
 
     async def launch_workers(self, replicas=1):
+        worker_name = "worker"
+        repo = f"{config.DOCKER_REGISTRY}/{worker_name}"
         project = get_project(project_dir=Path(__file__).parent, project_name=config.APP_PREFIX)
         worker = [service for service in project.services if service.name == "worker"][0]
 
         # see if the image provided by the docker-compose file can be pulled
         try:
-            await self.docker_client.images.pull(worker.image_name)
-        except DockerError:
-            logger.debug(f"Could not pull {worker.image_name}. Trying to build local instead.")
+            await self.docker_client.images.pull(repo)
+        except DockerError as e:
+            logger.debug(f"Could not pull {repo}. Trying to build local instead.")
             await self.build_worker()
 
         try:
@@ -141,7 +144,8 @@ class Umpire:
     async def build_worker(self):
         try:
             logger.info(f"Building worker")
-            repo = f"{config.DOCKER_REGISTRY}/worker"
+            worker_name = "worker"
+            repo = f"{config.DOCKER_REGISTRY}/{worker_name}"
             project = get_project(project_dir=Path(__file__).parent, project_name=config.APP_PREFIX)
             worker = [service for service in project.services if service.name == "worker"][0]
             build_opts = worker.options.get('build', {})
@@ -153,6 +157,10 @@ class Umpire:
                                                                    path_dockerfile=build_opts["dockerfile"],
                                                                    encoding="application/x-tar")
             await stream_docker_log(log_stream)
+
+            # Tag the image so it can be pushed to the repo
+            await self.docker_client.images.tag(worker.image_name, repo)
+
         except DockerBuildError:
             logger.exception(f"Error during worker build")
             return
@@ -182,8 +190,8 @@ class Umpire:
                                                                    encoding="application/x-tar")
             await stream_docker_log(log_stream)
 
-            # Give image a locally accessible tag as well for docker-compose up runs
-            await self.docker_client.images.tag(repo, sdk_name)
+            # Tag the image so it can be pushed to the repo
+            await self.docker_client.images.tag(sdk.image_name, repo)
         except DockerBuildError:
             logger.exception(f"Error during walkoff_app_sdk build")
             return
@@ -252,8 +260,8 @@ class Umpire:
 
         # see if the image provided by the docker-compose file can be pulled
         try:
-            image = await self.docker_client.images.pull(image_name)
-        except DockerError:
+            image = await self.docker_client.images.pull(full_tag)
+        except DockerError as e:
             logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
 
         # if we didn't find the image, try to build it
@@ -288,20 +296,20 @@ class Umpire:
         try:
             logger.info(f"Building {app}:{version}")
             with docker_context(build_opts["context"]) as context:
-                log_stream = await self.docker_client.images.build(fileobj=context, tag=full_tag, rm=True, forcerm=True,
+                log_stream = await self.docker_client.images.build(fileobj=context, tag=app_name, rm=True, forcerm=True,
                                                                    path_dockerfile="Dockerfile", stream=True,
                                                                    encoding="application/x-tar")
             await stream_docker_log(log_stream)
 
-            # Give image a locally accessible tag as well for docker-compose up runs
-            await self.docker_client.images.tag(full_tag, app_name, tag=version)
+            # Tag the image so it can be pushed to the repo
+            await self.docker_client.images.tag(app_name, repo, tag=version)
         except DockerBuildError:
             logger.exception(f"Error during {app}:{version} build")
             return
 
         try:
             logger.info(f"Pushing {app}:{version}")
-            log_stream = await self.docker_client.images.push(repo, tag=version, stream=True)
+            log_stream = await self.docker_client.images.push(full_tag, stream=True)
             await stream_docker_log(log_stream)
 
         except DockerBuildError:
