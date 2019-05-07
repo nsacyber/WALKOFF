@@ -21,7 +21,7 @@ from common.message_types import WorkflowStatusMessage
 from common.workflow_types import workflow_loads
 from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, get_containers,
                                    load_secrets, update_service, connect_to_aiodocker, get_service, get_replicas,
-                                   remove_service, create_secret)
+                                   remove_service, create_secret, delete_secret)
 from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -92,7 +92,10 @@ class Umpire:
         mask = [await remove_service(self.docker_client, s) for s in services]
         removed_apps = list(compress(self.running_apps, mask))
         logger.debug(f"Removed apps: {removed_apps}")
-        
+
+        # Clean up docker secrets
+        await delete_secret(self.docker_client, "global_encryption_key")
+
         # Clean up any unfinished tasks (shouldn't really be any though)
         tasks = [t for t in asyncio.all_tasks() if t is not
                  asyncio.current_task()]
@@ -483,7 +486,7 @@ class Umpire:
 
     async def build_key(self):
         key = uuid.uuid4().hex
-        await create_secret(self.docker_client, name="walkoff_encryption_key_1", data=key.encode())
+        await create_secret(self.docker_client, name="global_encryption_key", data=key.encode())
 
 
 if __name__ == "__main__":
