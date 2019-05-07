@@ -3,9 +3,14 @@
 </div>
 <div class="modal-body">
     <form #myForm="ngForm" [class.was-validated]="submitted" novalidate>
+        <div class="form-group" *ngIf="existing">
+            <h6>Workflow ID</h6>
+            <input type="text" readonly class="form-control-plaintext px-2"  [value]="workflow.id">
+        </div>
         <div class="form-group">
             <h6>Enter a Workflow Name</h6>
-            <input name="name" type="text" [(ngModel)]="workflow.name" class="form-control" placeholder="Workflow Name" required>
+            <input name="name" type="text" [(ngModel)]="workflow.name" class="form-control" placeholder="Workflow Name"
+            ngbAutoFocus required>
             <div class="invalid-feedback">
                 Please enter a workflow name.
             </div>

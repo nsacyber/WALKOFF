@@ -1,5 +1,5 @@
 import { UUID } from 'angular2-uuid';
-import { Expose } from 'class-transformer';
+import { Expose, classToClass } from 'class-transformer';
 
 export class Variable {
 
@@ -15,5 +15,8 @@ export class Variable {
     constructor() {
         this.id = UUID.UUID();
     }
-    
+
+    clone() {
+        return classToClass(this, { ignoreDecorators: true });
+    }
 }
