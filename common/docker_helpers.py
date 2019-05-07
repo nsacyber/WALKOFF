@@ -7,7 +7,6 @@ import base64
 import tarfile
 from io import BytesIO
 from pathlib import Path
-from operator import itemgetter
 from contextlib import contextmanager, asynccontextmanager
 
 import aiodocker
@@ -142,13 +141,19 @@ async def get_secret(client: aiodocker.Docker, secret_id):
     return await resp.json()
 
 
+async def delete_secret(client: aiodocker.Docker, secret_id):
+    await client._query(f"secrets/{secret_id}", "DELETE")
+
+
 async def get_nodes(client: aiodocker.Docker):
     resp = await client._query("nodes")
     return await resp.json()
 
+
 async def get_tasks(client: aiodocker.Docker, params):
     resp = await client._query("tasks" + '?' + params)
     return await resp.json()
+
 
 def normalize_name(name, delimiter=''):
     """ Super arbitrary naming convention for docker images/services... """
