@@ -4,7 +4,7 @@
 from datetime import datetime
 
 from uuid import uuid4
-from sqlalchemy import Column, String, Boolean, Enum, DateTime, JSON
+from sqlalchemy import Column, String, Boolean, Enum, JSON
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from marshmallow_sqlalchemy import ModelSchema
 

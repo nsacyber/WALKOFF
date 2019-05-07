@@ -1,13 +1,16 @@
 import logging
 from uuid import UUID
+import docker
+import base64
 
+from Crypto import Random
+from Crypto.Cipher import AES
 from flask import current_app
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 
-from sqlalchemy import Column, String, JSON, ForeignKey
+from sqlalchemy import Column, String, Boolean, JSON, ForeignKey, orm
 from sqlalchemy_utils import UUIDType
-from sqlalchemy.orm import relationship
-from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
+from marshmallow import fields, EXCLUDE, validates_schema, pre_load, ValidationError as MarshmallowValidationError
 
 from api_gateway.executiondb import IDMixin, Base, VariableMixin, BaseSchema
 
@@ -23,7 +26,6 @@ class GlobalVariableTemplate(IDMixin, Base):
     description = Column(String(255), default="")
 
 
-# TODO: add in an is_encrypted bool for globals
 class GlobalVariable(VariableMixin, Base):
     """SQLAlchemy ORM class for Global, which are variables that can be dynamically loaded into workflow
        execution
@@ -38,6 +40,13 @@ class GlobalVariable(VariableMixin, Base):
     __tablename__ = 'global_variable'
     description = Column(String(255), default="")
     schema_id = Column(UUIDType(binary=False), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
+    is_encrypted = Column(Boolean, default=False)
+
+    def get_encrypted_value(self):
+        docker_client = docker.from_env()
+        key = docker_client.secrets.get("global_encryption_key")
+        my_cipher = GlobalCipher(key)
+        return my_cipher.decrypt(self.value)
 
 
 class GlobalVariableTemplateSchema(BaseSchema):
@@ -66,6 +75,14 @@ class GlobalVariableSchema(BaseSchema):
         model = GlobalVariable
         unknown = EXCLUDE
 
+    # @pre_load
+    # def encrypt_value(self, data):
+    #     if data['is_encrypted']:
+    #         docker_client = docker.from_env()
+    #         key = docker_client.secrets.get("global_encryption_key")
+    #         my_cipher = GlobalCipher(key)
+    #         data['value'] = my_cipher.encrypt(data['value'])
+
     @validates_schema
     def validate_global(self, data):
         try:
@@ -77,3 +94,28 @@ class GlobalVariableSchema(BaseSchema):
         except (SchemaError, JSONSchemaValidationError) as e:
             raise MarshmallowValidationError(str(e))
 
+
+class GlobalCipher(object):
+
+    def __init__(self, key):
+        self.key = key
+
+    def encrypt(self, raw):
+        raw = self.pad(raw)
+        iv = Random.new().read(AES.block_size)
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        return base64.b64encode(iv + cipher.encrypt(raw))
+
+    def decrypt(self, enc):
+        enc = base64.b64decode(enc)
+        iv = enc[:AES.block_size]
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        return self.unpad(cipher.decrypt(enc[AES.block_size:])).decode('utf-8')
+
+    @staticmethod
+    def pad(x):
+        return x + (32 - len(x) % 32) * chr(32 - len(x) % 32)
+
+    @staticmethod
+    def unpad(x):
+        return x[:-ord(x[len(x)-1:])]

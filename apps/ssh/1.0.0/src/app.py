@@ -91,15 +91,6 @@ class SSH(AppBase):
 
         return results
 
-    async def block_ips(self, ips, host, port, username, password):
-        results = []
-
-        for ip in ips:
-            self.exec_command(["iptables -A INPUT -s {} -j DROP".format(ip)], [host], port, username, password)
-            results.append("Blocking IP {}".format(ip))
-
-        return results, 'Success'
-
 
 if __name__ == "__main__":
     asyncio.run(SSH.run())

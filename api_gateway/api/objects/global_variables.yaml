@@ -20,6 +20,10 @@ GlobalVariable:
     description:
       type: string
       description: Description of the global variable
+#    is_encrypted:
+#      type: boolean
+#      description: Is this field encrypted
+#      default: false
 
 GlobalVariableTemplate:
   type: object
