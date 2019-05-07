@@ -93,9 +93,6 @@ class Umpire:
         removed_apps = list(compress(self.running_apps, mask))
         logger.debug(f"Removed apps: {removed_apps}")
 
-        # Clean up docker secrets
-        await delete_secret(self.docker_client, "global_encryption_key")
-
         # Clean up any unfinished tasks (shouldn't really be any though)
         tasks = [t for t in asyncio.all_tasks() if t is not
                  asyncio.current_task()]
@@ -486,7 +483,11 @@ class Umpire:
 
     async def build_key(self):
         key = uuid.uuid4().hex
-        await create_secret(self.docker_client, name="global_encryption_key", data=key.encode())
+        try:
+            await delete_secret(self.docker_client, "encryption_key")
+            await create_secret(self.docker_client, name="encryption_key", data=key.encode())
+        except:
+            await create_secret(self.docker_client, name="encryption_key", data=key.encode())
 
 
 if __name__ == "__main__":
