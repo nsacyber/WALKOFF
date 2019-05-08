@@ -1140,6 +1140,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		// Delete the action from the workflow and delete any branches that reference this action
 		this.loadedWorkflow.actions = this.loadedWorkflow.actions.filter(a => a.id !== data._id);
+		this.loadedWorkflow.conditions = this.loadedWorkflow.conditions.filter(a => a.id !== data._id);
 		this.loadedWorkflow.branches = this.loadedWorkflow.branches
 			.filter(ns => !(ns.source_id === data._id || ns.destination_id === data._id));
 	}

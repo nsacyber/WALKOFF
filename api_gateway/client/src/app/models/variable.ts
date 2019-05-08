@@ -1,5 +1,5 @@
 import { UUID } from 'angular2-uuid';
-import { Expose, classToClass } from 'class-transformer';
+import { Expose, classToClass, Exclude } from 'class-transformer';
 
 export class Variable {
 
@@ -11,6 +11,9 @@ export class Variable {
     value: string;
 
     description?: string;
+
+    @Exclude()
+	isHidden: boolean = true;
     
     constructor() {
         this.id = UUID.UUID();
