@@ -26,7 +26,6 @@ from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("UMPIRE")
-# logger.setLevel(logging.DEBUG)
 
 CONTAINER_ID = os.getenv("HOSTNAME", "local_umpire")
 
@@ -62,7 +61,7 @@ class Umpire:
         return self
 
     @staticmethod
-    async def run():
+    async def run(autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps):
         async with connect_to_redis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session, \
                 connect_to_aiodocker() as docker_client:
             ump = await Umpire.init(docker_client=docker_client, redis=redis, session=session)
@@ -73,8 +72,9 @@ class Umpire:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
             logger.info("Umpire ready!")
-            await asyncio.gather(asyncio.create_task(ump.monitor_queues()),
-                                 asyncio.create_task(ump.workflow_control_listener()))
+            await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),
+                                 asyncio.create_task(ump.monitor_queues(autoscale_worker, autoscale_app,
+                                                                        autoheal_worker, autoheal_apps)))
         await ump.shutdown()
 
     async def shutdown(self):
@@ -413,16 +413,19 @@ class Umpire:
                             await self.redis.xack(stream=key, group_name=app_group, id=id_)
                             await xdel(self.redis, stream=key, id_=id_)
 
-    async def monitor_queues(self):
+    async def monitor_queues(self, autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps):
         count = 0
         while True:
             services = await self.docker_client.services.list()
             self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in
                                      services}
 
-            await self.scale_worker()
-            await self.scale_app()
-            await self.check_pending_actions()
+            if autoscale_worker:
+                await self.scale_worker()
+            if autoscale_app:
+                await self.scale_app()
+            if autoheal_apps:
+                await self.check_pending_actions()
 
             # Reload the app projects and apis every once in a while
             if count * config.get_int("UMPIRE_HEARTBEAT", 1) >= config.get_int("APP_REFRESH", 60):
@@ -499,7 +502,24 @@ class Umpire:
 
 
 if __name__ == "__main__":
+    import argparse
+
+    LOG_LEVELS = ("debug", "info", "error", "warn", "fatal", "DEBUG", "INFO", "ERROR", "WARN", "FATAL")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--log-level", dest="log_level", choices=LOG_LEVELS, default="INFO")
+    parser.add_argument("--disable-worker-autoscale", dest="autoscale_worker", action="store_false")
+    parser.add_argument("--disable-app-autoscale", dest="autoscale_app", action="store_false")
+    parser.add_argument("--disable-worker-autoheal", dest="autoheal_worker", action="store_false")
+    parser.add_argument("--disable-app-autoheal", dest="autoheal_app", action="store_false")
+    parser.add_argument("--debug", "-d", dest="debug", action="store_true",
+                        help="Enables debug level logging for the umpire as well as asyncio debug mode.")
+    args = parser.parse_args()
+
+    logger.setLevel(args.log_level.upper())
+
     try:
-        asyncio.run(Umpire.run())
+        asyncio.run(Umpire.run(autoscale_worker=args.autoscale_worker, autoscale_app=args.autoscale_app,
+                               autoheal_worker=args.autoheal_worker, autoheal_apps=args.autoheal_app),
+                    debug=args.debug)
     except asyncio.CancelledError:
         pass
