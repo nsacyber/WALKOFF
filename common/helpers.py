@@ -80,10 +80,7 @@ def get_patches(message):
         if message.status == StatusEnum.EXECUTING:
             patches.append(make_patch(message, root, JSONPatchOps.ADD, black_list={"result", "completed_at"}))
 
-        elif message.status == StatusEnum.SUCCESS:
-            patches.append(make_patch(message, root, JSONPatchOps.REPLACE, black_list={}))
-
-        elif message.status == StatusEnum.FAILURE:
+        else:
             patches.append(make_patch(message, root, JSONPatchOps.REPLACE, black_list={}))
 
     elif isinstance(message, WorkflowStatusMessage):
@@ -119,9 +116,10 @@ async def send_status_update(session, execution_id, message, headers=None):
 
     try:
         async with session.patch(url, data=message_dumps(patches), params=params, headers=headers, timeout=5) as resp:
-            results = await resp.json()
-            logger.debug(f"API-Gateway status update response: {results}")
-            return results
+            if resp.content_type == "application/json":
+                results = await resp.json()
+                logger.debug(f"API-Gateway status update response: {results}")
+                return results
     except aiohttp.ClientConnectionError as e:
         logger.error(f"Could not send status message to {url}: {e!r}")
     except Exception as e:

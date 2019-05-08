@@ -159,6 +159,7 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 		const modalRef = this.modalService.open(MetadataModalComponent);
 		modalRef.componentInstance.workflow = new Workflow();
 		modalRef.componentInstance.currentTags = this.currentTags;
+		modalRef.componentInstance.existingWorkflows = this.workflows;
 		modalRef.result.then(workflow => {
 			this.playbookService.workflowToCreate = workflow;
 			this.router.navigateByUrl(`/workflows/new`);
@@ -171,9 +172,10 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 	async editDescription(workflow: Workflow): Promise<void> {
 		workflow = await this.playbookService.loadWorkflow(workflow.id);
 		const modalRef = this.modalService.open(MetadataModalComponent);
+		modalRef.componentInstance.existing = true;
 		modalRef.componentInstance.workflow = workflow;
 		modalRef.componentInstance.currentTags = this.currentTags;
-		modalRef.componentInstance.existing = true;
+		modalRef.componentInstance.existingWorkflows = this.workflows;
 		modalRef.result.then(w => {
 			this.playbookService.saveWorkflow(w)
 				.then(w => this.toastrService.success(`Updated workflow "${workflow.name}"`))

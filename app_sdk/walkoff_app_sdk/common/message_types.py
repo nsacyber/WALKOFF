@@ -180,3 +180,8 @@ class NodeStatusMessage(object):
         completed_at = datetime.datetime.now()
         return NodeStatusMessage.from_node(node, execution_id, result=result, completed_at=completed_at,
                                            status=StatusEnum.FAILURE)
+    @classmethod
+    def aborted_from_node(cls, node, execution_id):
+        completed_at = datetime.datetime.now()
+        return NodeStatusMessage.from_node(node, execution_id, result=None, completed_at=completed_at,
+                                           status=StatusEnum.ABORTED)

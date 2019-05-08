@@ -1670,9 +1670,10 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	editDescription() {
 		const modalRef = this.modalService.open(MetadataModalComponent);
-		modalRef.componentInstance.workflow = this.loadedWorkflow.clone();
-		modalRef.componentInstance.currentTags = this.currentTags;
 		modalRef.componentInstance.existing = true;
+		modalRef.componentInstance.currentTags = this.currentTags;
+		modalRef.componentInstance.existingWorkflows = this.workflows;
+		modalRef.componentInstance.workflow = this.loadedWorkflow.clone();
 		modalRef.result.then(workflow => this.loadedWorkflow = workflow).catch(() => null)
 		return false;
 	}

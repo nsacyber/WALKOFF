@@ -2,7 +2,7 @@ import { Component, Input, ViewChild } from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Workflow } from '../models/playbook/workflow';
-import { NgForm } from '@angular/forms';
+import { NgForm, NgModel } from '@angular/forms';
 
 @Component({
     selector: 'metadata-modal-component',
@@ -10,12 +10,15 @@ import { NgForm } from '@angular/forms';
 })
 export class MetadataModalComponent {
     @Input() workflow: Workflow = new Workflow();
+    @Input() existingWorkflows: Workflow[] = [];
     @Input() currentTags: string[] = [];
+    @Input() existing: boolean = false;
 
     @ViewChild('myForm')
     myForm: NgForm;
-    existing: boolean = false;
-    submitted: boolean = false;
+
+    @ViewChild('workflowName') 
+    workflowNameModel: NgModel;
 
     tagSelectOptions = {
         multiple: true,
@@ -31,7 +34,12 @@ export class MetadataModalComponent {
     }
     
     submit() {
-        this.submitted = true;
+        if (this.workflow.name && this.existingWorkflows.find(w => {
+            return w.name.toLocaleLowerCase() == this.workflow.name.toLocaleLowerCase() && w.id != this.workflow.id;
+        })) {
+            this.workflowNameModel.control.setErrors({'unique': true});
+        }
+
         if (this.myForm.valid) this.activeModal.close(this.workflow);
     }
 }
