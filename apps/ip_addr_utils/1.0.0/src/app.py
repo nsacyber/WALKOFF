@@ -13,7 +13,7 @@ class IPAddrUtils(AppBase):
         super().__init__(redis, logger, console_logger)
 
     async def set_timestamp(self):
-        timestamp = '{:%Y-%m-%d_%H-%M-%S}'.format(datetime.utcnow())
+        timestamp = '{:%Y-%m-%d_%H-%M-%S}'.format(datetime.datetime.now())
         return timestamp
 
     async def cidr_to_array(self, ip_array):
