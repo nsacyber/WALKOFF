@@ -2,17 +2,22 @@
     <h4 class="modal-title">{{ existing ? 'Edit Workflow' : 'Create Workflow' }}</h4>
 </div>
 <div class="modal-body">
-    <form #myForm="ngForm" [class.was-validated]="submitted" novalidate>
-        <div class="form-group" *ngIf="existing">
+    <form #myForm="ngForm" novalidate>
+        <div class="form-group" *ngIf="existing && workflow.id">
             <h6>Workflow ID</h6>
             <input type="text" readonly class="form-control-plaintext px-2"  [value]="workflow.id">
         </div>
         <div class="form-group">
             <h6>Enter a Workflow Name</h6>
             <input name="name" type="text" [(ngModel)]="workflow.name" class="form-control" placeholder="Workflow Name"
-            ngbAutoFocus required>
+            ngbAutoFocus required #workflowName="ngModel" [class.is-invalid]="workflowName.touched && workflowName.invalid">
             <div class="invalid-feedback">
-                Please enter a workflow name.
+                <span *ngIf="workflowName.hasError('unique')">
+                    Workflow with name already exists.
+                </span>
+                <span *ngIf="workflowName.hasError('required')">
+                    Please enter a unique workflow name.
+                </span>
             </div>
         </div>
         <div class="form-group">
