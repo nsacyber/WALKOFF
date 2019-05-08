@@ -386,5 +386,16 @@ class Worker:
 
 
 if __name__ == "__main__":
+    import argparse
+
+    LOG_LEVELS = ("debug", "info", "error", "warn", "fatal", "DEBUG", "INFO", "ERROR", "WARN", "FATAL")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--log-level", dest="log_level", choices=LOG_LEVELS, default="INFO")
+    parser.add_argument("--debug", "-d", dest="debug", action="store_true",
+                        help="Enables debug level logging for the umpire as well as asyncio debug mode.")
+    args = parser.parse_args()
+
+    logger.setLevel(args.log_level.upper())
+
     # Launch the worker event loop
-    asyncio.run(Worker.run(), debug=False)
+    asyncio.run(Worker.run(), debug=args.debug)
