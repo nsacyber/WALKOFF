@@ -16,7 +16,7 @@ class PowerShell(AppBase):
         super().__init__(redis, logger, console_logger)
 
     async def set_timestamp(self):
-        timestamp = '{:%Y-%m-%d_%H-%M-%S}'.format(datetime.utcnow())
+        timestamp = '{:%Y-%m-%d_%H-%M-%S}'.format(datetime.datetime.now())
         return timestamp
 
     async def exec_command_prompt_from_file(self, hosts, local_file_name, username, password, transport,
