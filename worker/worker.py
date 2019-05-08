@@ -134,8 +134,14 @@ class Worker:
         logger.info("Aborting workflow...")
         [task.cancel() for task in self.workflow_tasks]
         self.execution_task.cancel()
+
+        # Try to cancel any outstanding actions
+        msgs = [NodeStatusMessage.aborted_from_node(action, action.execution_id) for action in self.in_process.values()]
+        message_tasks = [send_status_update(self.session, self.workflow.execution_id, msg) for msg in msgs]
+        await asyncio.gather(*message_tasks, return_exceptions=True)
+
         logger.info("Canceling outstanding tasks...")
-        await asyncio.gather(*self.workflow_tasks, self.execution_task, return_exceptions=True)
+        await asyncio.gather(*self.workflow_tasks, *message_tasks, self.execution_task, return_exceptions=True)
         logger.info("Successfully aborted workflow!")
 
     async def cancel_subgraph(self, node):
