@@ -1,17 +1,17 @@
 import logging
-from uuid import UUID
+from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, String, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy_utils import UUIDType
 from marshmallow import EXCLUDE
-from marshmallow_sqlalchemy import field_for
 
-from api_gateway.executiondb import Base, VariableMixin, BaseSchema
+from api_gateway.executiondb import Base, BaseSchema
 
 logger = logging.getLogger(__name__)
 
 
-class WorkflowVariable(VariableMixin, Base):
+class WorkflowVariable(Base):
     """SQLAlchemy ORM class for WorkflowVariable, which are variables that can be dynamically loaded into workflow
        execution
 
@@ -24,6 +24,15 @@ class WorkflowVariable(VariableMixin, Base):
 
     """
     __tablename__ = 'workflow_variable'
+
+    # Columns common to all DB models
+    id_ = Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False, default=uuid4)
+
+    # Columns common to all Variable models
+    name = Column(String(80), nullable=False)
+    value = Column(JSON)
+
+    # Columns specific to WorkflowVariable model
     description = Column(String(255), default="")
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
 
@@ -31,13 +40,6 @@ class WorkflowVariable(VariableMixin, Base):
 class WorkflowVariableSchema(BaseSchema):
     """Schema for workflow variables
     """
-    # # From IDMixin
-    # id_ = field_for(WorkflowVariable, 'id_', required=True)
-    #
-    # # From VariableMixin
-    # name = field_for(WorkflowVariable, 'name', required=True)
-    # value = field_for(WorkflowVariable, 'value', required=True)
-    # description = field_for(WorkflowVariable, 'description')
 
     class Meta:
         model = WorkflowVariable

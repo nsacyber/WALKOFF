@@ -1,18 +1,25 @@
 import logging
+from uuid import uuid4
 
 import semver
 from sqlalchemy import Column, String, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 
-from api_gateway.executiondb import Base, IDMixin, BaseSchema
+from api_gateway.executiondb import Base, BaseSchema
 from api_gateway.executiondb.action import ActionApiSchema
 
 logger = logging.getLogger(__name__)
 
 
-class AppApi(IDMixin, Base):
+class AppApi(Base):
     __tablename__ = "app_api"
+
+    # Columns common to all DB models
+    id_ = Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False, default=uuid4)
+
+    # Columns specific to AppApi model
     name = Column(String(), nullable=False, unique=True)
     app_version = Column(String(), nullable=False)
     walkoff_version = Column(String(), nullable=False)

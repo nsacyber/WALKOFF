@@ -1,25 +1,29 @@
 import logging
+from uuid import uuid4
 
 from sqlalchemy import Column, String, Integer, ForeignKey, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE
-from marshmallow_sqlalchemy import field_for
 
-from api_gateway.executiondb import Base, IDMixin, BaseSchema
+from api_gateway.executiondb import Base, BaseSchema
 
 logger = logging.getLogger(__name__)
 
 
-class Dashboard(IDMixin, Base):
+class Dashboard(Base):
     __tablename__ = 'dashboard'
+    id_ = Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False, default=uuid4)
 
     name = Column(String(255), nullable=False, unique=True)
     widgets = relationship('Widget', backref=backref('dashboard'), cascade="all, delete-orphan", passive_deletes=True)
 
 
-class Widget(IDMixin, Base):
+class Widget(Base):
     __tablename__ = 'widget'
+    id_ = Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False, default=uuid4)
+
     name = Column(String, nullable=False)
     type_ = Column(String, nullable=False)
     x = Column(Integer, nullable=False)

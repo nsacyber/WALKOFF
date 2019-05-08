@@ -1,18 +1,16 @@
 from datetime import datetime
 
-from sqlalchemy import Column, String, ForeignKey, JSON
+from sqlalchemy import Column, String, ForeignKey, JSON, Enum
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE
 from marshmallow_enum import EnumField
 
 from common.message_types import StatusEnum
-from api_gateway.executiondb import Base, StatusMixin, BaseSchema
-
-from api_gateway.helpers import utc_as_rfc_datetime
+from api_gateway.executiondb import Base, BaseSchema
 
 
-class WorkflowStatus(StatusMixin, Base):
+class WorkflowStatus(Base):
     """ORM for a Status of a Workflow in the database
 
     Attributes:
@@ -26,6 +24,14 @@ class WorkflowStatus(StatusMixin, Base):
         node_statuses (list[NodeStatus]): A list of NodeStatusMessage objects for this WorkflowStatusMessage
     """
     __tablename__ = 'workflow_status'
+
+    # Columns common to Status messages
+    name = Column(String(80), nullable=False)
+    status = Column(Enum(StatusEnum), nullable=False)
+    started_at = Column(String, default="")
+    completed_at = Column(String, default="")
+
+    # Columns specific to WorkflowStatus model
     execution_id = Column(UUIDType(binary=False), primary_key=True)
     workflow_id = Column(UUIDType(binary=False))
     user = Column(String, default="")
@@ -34,7 +40,7 @@ class WorkflowStatus(StatusMixin, Base):
                                  cascade='all, delete-orphan')
 
 
-class NodeStatus(StatusMixin, Base):
+class NodeStatus(Base):
     """ORM for an Node event in the database
 
     Attributes:
@@ -49,6 +55,14 @@ class NodeStatus(StatusMixin, Base):
         workflow_execution_id (UUID): The FK ID of the WorkflowStatusMessage
     """
     __tablename__ = 'node_status'
+
+    # Columns common to Status messages
+    name = Column(String(80), nullable=False)
+    status = Column(Enum(StatusEnum), nullable=False)
+    started_at = Column(String, default="")
+    completed_at = Column(String, default="")
+
+    # Columns specific to NodeStatus model
     combined_id = Column(String, primary_key=True)
     node_id = Column(UUIDType(binary=False), nullable=False)
     app_name = Column(String, nullable=False)
@@ -66,6 +80,7 @@ class NodeStatusSchema(BaseSchema):
     """
 
     status = EnumField(StatusEnum)
+
     class Meta:
         model = NodeStatus
         unknown = EXCLUDE

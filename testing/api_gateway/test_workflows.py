@@ -4,7 +4,7 @@ import logging
 import pytest
 import yaml
 
-from testing.api_gateway import assert_crud_resource
+from testing.api_gateway.helpers import assert_crud_resource
 
 logger = logging.getLogger(__name__)
 workflows_url = "/api/workflows"
@@ -18,7 +18,7 @@ workflows_url = "/api/workflows"
 
 def test_workflow_post_and_get(api_gateway, auth_header, execdb):
     with open("apps/hello_world/1.0.0/api.yaml") as f:
-        r = f.read()
+        r = {"create": f.read()}
     assert_crud_resource(api_gateway, auth_header, "/api/apps/apis", [r], yaml.full_load)
 
     inputs = [

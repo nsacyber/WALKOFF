@@ -1,11 +1,6 @@
 # from alembic import command
 # from alembic.config import Config
 
-from datetime import datetime
-
-from uuid import uuid4
-from sqlalchemy import Column, String, Boolean, Enum, DateTime, JSON
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from marshmallow_sqlalchemy import ModelSchema
 
 from sqlalchemy import create_engine, event, MetaData
@@ -18,7 +13,6 @@ from sqlalchemy_utils import database_exists, create_database
 
 import api_gateway.config
 from api_gateway.helpers import format_db_path
-from common.message_types import StatusEnum
 
 Base = declarative_base()
 naming_convention = {
@@ -112,105 +106,3 @@ class BaseSchema(ModelSchema):
         session = ExecutionDatabase.instance.session
         # ToDo: Automatically find and use instance if 'id' (or key) is passed
         return super(BaseSchema, self).load(data, session=session, instance=instance, *args, **kwargs)
-
-
-class IDMixin(object):
-    """
-    Base model that provides for a uuid primary key
-    """
-    id_ = Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False, default=uuid4)
-
-    # def __init__(self, id_=None):
-    #     # ToDo: do better validation
-    #     if id_:
-    #         self.id_ = id_
-
-    # def __repr__(self):
-    #     from .model_schema_map import dump_element
-    #
-    #     representation = dump_element(self)
-    #     out = '<{0} at {1} : '.format(self.__class__.__name__, hex(id(self)))
-    #     first = True
-    #     for key, value in representation.items():
-    #         if self.__is_list_of_dicts_with_uids(value):
-    #             out += ', {0}={1}'.format(key, [list_value['id_'] for list_value in value])
-    #         else:
-    #             out += ', {0}={1}'.format(key, value)
-    #
-    #         if first:
-    #             out = out.replace(" ,", "")
-    #             first = False
-    #
-    #     out += '>'
-    #     return out
-
-    # @staticmethod
-    # def __is_list_of_dicts_with_uids(value):
-    #     return (isinstance(value, list)
-    #             and all(isinstance(list_value, dict) and 'id_' in list_value for list_value in value))
-
-
-class VariableMixin(IDMixin):
-    """
-    Base model for variables (Parameters, Workflow Variables, Global Variables)
-    """
-    name = Column(String(80), nullable=False)
-    value = Column(JSON)
-
-    def __init__(self, name, value=None, **kwargs):
-        super(IDMixin, self).__init__(**kwargs)
-        self.name = name
-        self.value = value
-
-
-class ValidatableMixin(IDMixin):
-    """
-    Base model for validatables (elements that can contain errors)
-    """
-    errors = Column(ARRAY(String))
-    is_valid = Column(Boolean, default=True)
-    children = []
-
-    def __init__(self, errors=None, **kwargs):
-        super(IDMixin, self).__init__(**kwargs)
-        self.errors = errors if errors else []
-        self.is_valid = self._is_valid()
-
-    def validate(self):
-        raise NotImplementedError("Validatable must implement self.validate().")
-
-    def _is_valid(self):
-        if self.errors:
-            return False
-        for child in self.children:
-            child = getattr(self, child, None)
-            if isinstance(child, list):
-                for actual_child in child:
-                    if not actual_child._is_valid():
-                        return False
-            elif child is not None:
-                if not child._is_valid():
-                    return False
-        return True
-
-
-class StatusMixin(object):
-    name = Column(String(80), nullable=False)
-    status = Column(Enum(StatusEnum), nullable=False)
-    started_at = Column(String, default="")
-    completed_at = Column(String, default="")
-
-
-class NodeMixin(ValidatableMixin):
-    """
-    Base model for nodes (elements in a workflow)
-    """
-
-    app_name = Column(String(80), nullable=False)
-    app_version = Column(String(80), nullable=False)
-    name = Column(String(255), nullable=False)
-    label = Column(String(80), nullable=False)
-    position = Column(JSON, default={"x": 0, "y": 0})
-
-    def __init__(self, **kwargs):
-        super(ValidatableMixin, self).__init__(**kwargs)

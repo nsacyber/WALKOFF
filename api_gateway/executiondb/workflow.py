@@ -1,11 +1,11 @@
 import logging
-import uuid
+from uuid import UUID, uuid4
 
-from sqlalchemy import Column, String, JSON, event
+from sqlalchemy import Column, String, Boolean, JSON, event
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE
-from marshmallow_sqlalchemy import field_for
 from jsonschema import Draft4Validator, ValidationError as JSONSchemaValidationError
 
 from flask import current_app
@@ -18,15 +18,23 @@ from api_gateway.executiondb.condition import ConditionSchema
 from api_gateway.executiondb.transform import TransformSchema
 from api_gateway.executiondb.branch import BranchSchema
 from api_gateway.executiondb.workflow_variable import WorkflowVariableSchema
-from api_gateway.executiondb import Base, ValidatableMixin, BaseSchema
-from api_gateway.executiondb.action import Action, ActionSchema, ActionApi
+from api_gateway.executiondb import Base, BaseSchema
+from api_gateway.executiondb.action import ActionSchema, ActionApi
 from api_gateway.executiondb.trigger import TriggerSchema
 
 logger = logging.getLogger(__name__)
 
 
-class Workflow(ValidatableMixin, Base):
+class Workflow(Base):
     __tablename__ = "workflow"
+
+    # Columns common to all DB models
+    id_ = Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False, default=uuid4)
+
+    # Columns common to validatable Workflow components
+    errors = Column(ARRAY(String))
+    is_valid = Column(Boolean, default=True)
+
     name = Column(String(80), nullable=False, unique=True)
     start = Column(UUIDType(binary=False))
     description = Column(String(), default="")
@@ -48,7 +56,7 @@ class Workflow(ValidatableMixin, Base):
     def validate(self):
         """Validates the object"""
         node_ids = {node.id_ for node in self.actions + self.conditions + self.transforms}
-        work_var_ids = {workflow_var.id_ for workflow_var in self.workflow_variables}
+        wfv_ids = {workflow_var.id_ for workflow_var in self.workflow_variables}
         global_ids = set(current_app.running_context.execution_db.session.query(GlobalVariable.id_).all())
 
         self.errors = []
@@ -96,19 +104,20 @@ class Workflow(ValidatableMixin, Base):
                     except JSONSchemaValidationError as e:
                         message = (f"Parameter {wf.name} value {wf.value} is not valid under given schema "
                                    f"{api.schema}. JSONSchema output: {e}")
-                elif wf.variant != ParameterVariant.STATIC_VALUE:
                     if not validate_uuid4(wf.value):
                         message = (f"Parameter '{wf.name}' is a reference but '{wf.value}' is not a valid "
                                    f"uuid4")
-                    elif wf.variant == ParameterVariant.ACTION_RESULT and uuid.UUID(wf.value) not in node_ids:
+                    elif wf.variant == ParameterVariant.ACTION_RESULT and UUID(wf.value, version=4) not in node_ids:
                         message = (f"Parameter '{wf.name}' refers to action '{wf.value}' "
                                    f"which does not exist in this workflow.")
-                    elif wf.variant == ParameterVariant.WORKFLOW_VARIABLE and uuid.UUID(wf.value) not in work_var_ids:
+                    elif wf.variant == ParameterVariant.WORKFLOW_VARIABLE and UUID(wf.value, version=4) not in wfv_ids:
                         message = (f"Parameter '{wf.name}' refers to workflow variable '{wf.value}' "
                                    f"which does not exist in this workflow.")
-                    elif wf.variant == ParameterVariant.GLOBAL and uuid.UUID(wf.value) not in global_ids:
+                    elif wf.variant == ParameterVariant.GLOBAL and UUID(wf.value, version=4) not in global_ids:
                         message = (f"Parameter '{wf.name}' refers to global variable '{wf.value}' "
                                    f"which does not exist.")
+                elif wf.variant != ParameterVariant.STATIC_VALUE:
+                    pass
 
                 if message is not "":
                     action.errors.append(message)
@@ -116,7 +125,21 @@ class Workflow(ValidatableMixin, Base):
             action.is_valid = not bool(action.errors)
             # current_app.running_context.execution_db.session.add(action)
 
-        self.is_valid = self._is_valid()
+        self.is_valid = self.is_valid_rec()
+
+    def is_valid_rec(self):
+        if self.errors:
+            return False
+        for child in self.children:
+            child = getattr(self, child, None)
+            if isinstance(child, list):
+                for actual_child in child:
+                    if not actual_child.is_valid_rec():
+                        return False
+            elif child is not None:
+                if not child.is_valid_rec():
+                    return False
+        return True
 
 
 @event.listens_for(Workflow, "before_update")

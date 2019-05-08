@@ -166,43 +166,7 @@ ParameterSchema:
   type: object
   description: Fields used to validate parameter against a JSON schema (Draft 4)
   required: [type]
-  additionalProperties: false
   properties:
     type:
       type: string
       enum: [string, boolean, integer, number, object, array]
-    format:
-      type: string
-      enum: [date-time, email, hostname, ipv4, ipv6, uri, uri-reference, uri-template, json-pointer]
-    multipleOf:
-      type: number
-      minimum: 0
-      exclusiveMinimum: true
-    maximum:
-      type: number
-    exclusiveMaximum:
-      type: boolean
-    minimum:
-      type: number
-    exclusiveMinimum:
-      type: boolean
-    maxLength:
-      type: integer
-      minimum: 0
-    minLength:
-      type: integer
-      minimum: 0
-    pattern:
-      type: string
-    maxItems:
-      type: integer
-      minimum: 0
-    minItems:
-      type: integer
-      minimum: 0
-    uniqueItems:
-      type: boolean
-    enum:
-      type: array
-      items: {}
-      minItems: 1

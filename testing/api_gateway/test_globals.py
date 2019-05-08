@@ -3,7 +3,7 @@ import json
 
 from flask.testing import FlaskClient
 
-from testing.api_gateway import assert_crud_resource
+from testing.api_gateway.helpers import assert_crud_resource
 
 logger = logging.getLogger(__name__)
 globals_url = "/api/globals"

@@ -1,9 +1,10 @@
 import logging
 
+import pytest
 from flask.testing import FlaskClient
 import yaml
 
-from testing.api_gateway import assert_crud_resource
+from testing.api_gateway.helpers import assert_crud_resource
 
 logger = logging.getLogger(__name__)
 apps_url = "/api/apps"
@@ -20,20 +21,20 @@ def test_sanity_check(api_gateway: FlaskClient, auth_header, execdb):
     assert p.get_json() == []
 
 
-def test_create_api_empty(api_gateway: FlaskClient, auth_header, execdb):
-    """Assert that an API without actions is rejected"""
-
-    inputs = [
-        {
-            "create": """
-            walkoff_version: 1.0.0
-            app_version: 1.0.0
-            name: test_app:1.0.0
-            description: An invalid App API with missing actions
-            """
-        }
-    ]
-    assert_crud_resource(api_gateway, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
+# def test_create_api_empty(api_gateway: FlaskClient, auth_header, execdb):
+#     """Assert that an API without actions is rejected"""
+#
+#     inputs = [
+#         {
+#             "create": """
+#             walkoff_version: 1.0.0
+#             app_version: 1.0.0
+#             name: test_app:1.0.0
+#             description: An invalid App API with missing actions
+#             """
+#         }
+#     ]
+#     assert_crud_resource(api_gateway, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
 
 
 def test_create_api_minimum(api_gateway: FlaskClient, auth_header, execdb):
@@ -72,7 +73,7 @@ def test_create_api_invalid_semver(api_gateway: FlaskClient, auth_header, execdb
             "create": """
             walkoff_version: 1.0.0
             app_version: "1.0"
-            name: test_app:1.0.0
+            name: test_app2:1.0.0
             description: An invalid App API with bad semantic versioning in app_version
             actions:
               - name: test_action
@@ -82,7 +83,7 @@ def test_create_api_invalid_semver(api_gateway: FlaskClient, auth_header, execdb
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app:1.0
+            name: test_app3:1.0
             description: An invalid App API with bad semantic versioning in name
             actions:
               - name: test_action
@@ -92,14 +93,14 @@ def test_create_api_invalid_semver(api_gateway: FlaskClient, auth_header, execdb
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app:1.0.1
+            name: test_app4:1.0.1
             description: An invalid App API with mismatched semantic versioning in name and app_version
             actions:
               - name: test_action
             """
         }
     ]
-    assert_crud_resource(api_gateway, auth_header, apps_api_url, inputs, yaml.full_load)
+    assert_crud_resource(api_gateway, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
 
 
 def test_create_api_valid_contact(api_gateway: FlaskClient, auth_header, execdb):
@@ -111,7 +112,7 @@ def test_create_api_valid_contact(api_gateway: FlaskClient, auth_header, execdb)
             walkoff_version: 1.0.0
             app_version: 1.0.0
             name: test_app:1.0.0
-            contact:
+            contact_info:
               name: name
               url: example.com
               email: example@example.com
@@ -143,7 +144,7 @@ def test_create_api_invalid_contact(api_gateway: FlaskClient, auth_header, execd
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app:1.0.0
+            name: test_app2:1.0.0
             contact_info: 
               name: good
               bad: not good
@@ -156,7 +157,7 @@ def test_create_api_invalid_contact(api_gateway: FlaskClient, auth_header, execd
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app:1.0.0
+            name: test_app3:1.0.0
             contact_info: 
               name: name
               email: not a valid email
@@ -190,21 +191,8 @@ def test_create_api_invalid_license(api_gateway: FlaskClient, auth_header, execd
             walkoff_version: 1.0.0
             app_version: 1.0.0
             name: test_app:1.0.0
-            license: not an object
+            license_info: not an object
             description: An invalid App API with non-object license info
-            actions:
-              - name: test_action
-            """,
-        },
-        {
-            """
-            walkoff_version: 1.0.0
-            app_version: 1.0.0
-            name: test_app:1.0.0
-            license: 
-              name: good
-              bad: not good
-            description: An invalid App API with extra field in license
             actions:
               - name: test_action
             """,
@@ -213,10 +201,11 @@ def test_create_api_invalid_license(api_gateway: FlaskClient, auth_header, execd
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app:1.0.0
-            license: 
-              url: http://example.com
-            description: An invalid App API with missing license type
+            name: test_app2:1.0.0
+            license_info: 
+              name: good
+              bad: not good
+            description: An invalid App API with extra field in license
             actions:
               - name: test_action
             """,
@@ -226,7 +215,7 @@ def test_create_api_invalid_license(api_gateway: FlaskClient, auth_header, execd
         #     walkoff_version: 1.0.0
         #     app_version: 1.0.0
         #     name: test_app:1.0.0
-        #     license:
+        #     license_info:
         #       name: name
         #       url: http://not a valid url
         #     description: An invalid App API with invalid URL in license
@@ -318,7 +307,7 @@ def test_create_api_valid_parameters(api_gateway: FlaskClient, auth_header, exec
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app4:1.0.0
+            name: test_app5:1.0.0
             description: A valid App API with object schema in multiple params
             actions:
               - name: test_action
@@ -359,7 +348,7 @@ def test_create_api_invalid_parameters(api_gateway: FlaskClient, auth_header, ex
     """Assert that invalid parameters are rejected"""
     inputs = [
         {
-            "common": """
+            "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
             name: test_app:1.0.0
@@ -378,7 +367,7 @@ def test_create_api_invalid_parameters(api_gateway: FlaskClient, auth_header, ex
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app:1.0.0
+            name: test_app2:1.0.0
             description: An invalid App API with missing parameter name
             actions:
               - name: test_action
@@ -393,7 +382,7 @@ def test_create_api_invalid_parameters(api_gateway: FlaskClient, auth_header, ex
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app:1.0.0
+            name: test_app3:1.0.0
             description: A valid App API with minimum parameter info
             actions:
               - name: test_action
@@ -410,7 +399,7 @@ def test_create_api_invalid_parameters(api_gateway: FlaskClient, auth_header, ex
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app:1.0.0
+            name: test_app4:1.0.0
             description: A valid App API with minimum parameter info
             actions:
               - name: test_action

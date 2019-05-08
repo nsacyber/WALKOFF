@@ -88,7 +88,7 @@ WorkflowMetaData:
 
 Action:
   type: object
-  required: [id_, app_name, app_version, label, name, position]
+  required: [app_name, app_version, label, name, position]
   description: Encapsulation of executing an action in an app.
   additionalProperties: false
   properties:
