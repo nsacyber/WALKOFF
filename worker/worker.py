@@ -293,15 +293,16 @@ class Worker:
         logger.info("Node ready to execute!")
 
         if isinstance(node, Action):
-            stream = f"{node.execution_id}:{node.app_name}"
+            group = f"{node.app_name}:{node.app_version}"
+            stream = f"{node.execution_id}:{group}"
             try:
                 # The stream doesn't exist so lets create that and the app group
                 if len(await self.redis.keys(stream)) < 1:
-                    await self.redis.xgroup_create(stream, node.app_name, mkstream=True)
+                    await self.redis.xgroup_create(stream, group, mkstream=True)
 
                 # The stream exists but the group does not so lets just make the app group
                 if len(await self.redis.xinfo_groups(stream)) < 1:
-                    await self.redis.xgroup_create(stream, node.app_name)
+                    await self.redis.xgroup_create(stream, group)
 
                 # Keep track of these for clean up later
                 self.streams.add(stream)

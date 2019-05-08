@@ -58,10 +58,10 @@ class AppApiSchema(BaseSchema):
             except ValueError as e:
                 raise MarshmallowValidationError(f"Error in {key}: {e}")
 
-        # Version in name and app_version must match
-        name = data["name"].split(":")
-        if len(name) != 2:
-            raise MarshmallowValidationError(f"App name must follow the format app_name:1.2.3")
-        else:
-            if name[1] != data["app_version"]:
-                raise MarshmallowValidationError(f"Version in app_name must match version in app_version")
+        # # Version in name and app_version must match
+        # name = data["name"].split(":")
+        # if len(name) != 2:
+        #     raise MarshmallowValidationError(f"App name must follow the format app_name:1.2.3")
+        # else:
+        #     if name[1] != data["app_version"]:
+        #         raise MarshmallowValidationError(f"Version in app_name must match version in app_version")

@@ -1,6 +1,6 @@
 walkoff_version: 1.0.0
 app_version: 1.0.0
-name: ip_addr_utils:1.0.0
+name: ip_addr_utils
 description: An IP address app that will allow users to specify ip addresses and will format them correctly
 contact_info:
   name: Walkoff Team

@@ -1,6 +1,6 @@
 walkoff_version: 1.0.0
 app_version: 1.0.0
-name: power_shell:1.0.0
+name: power_shell
 description: A power shell app that can run commands on a remote host.
 contact_info:
   name: Walkoff Team

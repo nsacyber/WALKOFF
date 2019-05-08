@@ -1,6 +1,6 @@
 walkoff_version: 1.0.0
 app_version: 1.0.0
-name: ssh:1.0.0
+name: ssh
 description: Executes ssh shell commands via SSH
 contact_info:
   name: Walkoff Team
