@@ -37,10 +37,10 @@
                 </ngx-datatable-column>
                 <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
                     <ng-template let-row="row" ngx-datatable-cell-template>
-                        <button (click)="editUser(row)" class="btn btn-primary mx-1" title="Edit User">
+                        <button (click)="editUser(row)" class="btn btn-primary mx-1" ngbTooltip="Edit User">
                             <i class="fa fa-edit"></i>
                         </button>
-                        <button (click)="deleteUser(row)" class="btn btn-danger mx-1" title="Delete User">
+                        <button (click)="deleteUser(row)" class="btn btn-danger mx-1" ngbTooltip="Delete User">
                             <i class="fa fa-times"></i>
                         </button>
                     </ng-template>

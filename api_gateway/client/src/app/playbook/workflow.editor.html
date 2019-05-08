@@ -31,70 +31,70 @@
             </button>
         </div> -->
         <div class="btn-group" role="group">
-            <button id="save-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Save Workflow"
+            <button id="save-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Save Workflow"
                 [disabled]="!loadedWorkflow" (click)="save()">
                 <i class="fa fa-save"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="undo-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Undo"
+            <button id="undo-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Undo"
                 [disabled]="!loadedWorkflow || (ur && ur.isUndoStackEmpty())" (click)="ur.undo()">
                 <i class="fa fa-undo"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="redo-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Redo"
+            <button id="redo-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Redo"
                 [disabled]="!loadedWorkflow || (ur && ur.isRedoStackEmpty())" (click)="ur.redo()">
                 <i class="fa fa-repeat"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="remove-button" type="button" class="btn btn-default" data-toggle="tooltip"
-                title="Delete Selected Nodes" [disabled]="!loadedWorkflow" (click)="removeSelectedNodes()">
+            <button id="remove-button" type="button" class="btn btn-default" placement="bottom-left"
+                ngbTooltip="Delete" [disabled]="!loadedWorkflow" (click)="removeSelectedNodes()">
                 <i class="fa fa-trash-o"></i>
             </button>
         </div>
         <!-- <div class="btn-group" role="group">
-            <button id="cut-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Cut" [disabled]="!loadedWorkflow"
+            <button id="cut-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Cut" [disabled]="!loadedWorkflow"
                 (click)="cut()">
                 <span class="fa fa-cut" style="transform: rotate(-90deg);"></span>
             </button>
         </div> -->
         <div class="btn-group" role="group">
-            <button id="copy-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Copy"
+            <button id="copy-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Copy"
                 [disabled]="!loadedWorkflow" (click)="copy()">
                 <i class="fa fa-copy"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="paste-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Paste"
+            <button id="paste-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Paste"
                 [disabled]="!loadedWorkflow" (click)="paste()">
                 <i class="fa fa-paste"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="execute-button" type="button" class="btn btn-default" data-toggle="tooltip"
-                title="Execute Workflow" [disabled]="!loadedWorkflow || !loadedWorkflow.is_valid"
+            <button id="execute-button" type="button" class="btn btn-default" placement="bottom-left"
+                ngbTooltip="Execute Workflow" [disabled]="!loadedWorkflow || !loadedWorkflow.is_valid"
                 (click)="executeWorkflow()">
                 <i class="fa fa-play-circle"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="clear-execution-highlighting-button" type="button" class="btn btn-default" data-toggle="tooltip"
-                title="Clear Execution Results" [disabled]="!loadedWorkflow || !loadedWorkflow.is_valid"
+            <button id="clear-execution-highlighting-button" type="button" class="btn btn-default" placement="bottom-left"
+                ngbTooltip="Clear Execution Results" [disabled]="!loadedWorkflow || !loadedWorkflow.is_valid"
                 (click)="clearExecutionResults()">
                 <i class="fa fa-eraser"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="copy-button" type="button" class="btn btn-default" data-toggle="tooltip"
-                title="Edit Description" [disabled]="!loadedWorkflow" (click)="editDescription()">
+            <button id="copy-button" type="button" class="btn btn-default" placement="bottom-left"
+                ngbTooltip="Edit Description" [disabled]="!loadedWorkflow" (click)="editDescription()">
                 <i class="fa fa-info-circle"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="variable-button" type="button" class="btn btn-default" data-toggle="tooltip"
-                title="Create Workflow Variables" [disabled]="!loadedWorkflow" (click)="workflowVariablesModal()">
+            <button id="variable-button" type="button" class="btn btn-default" placement="bottom-left"
+                ngbTooltip="Create Variable" [disabled]="!loadedWorkflow" (click)="workflowVariablesModal()">
                 <i class="fa fa-code"></i>
             </button>
         </div>
@@ -105,7 +105,7 @@
                             <span>{{ loadedWorkflow?.name }}</span>
                             <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" class=""
                             id="currentWorkflowText"> (Incomplete)</label>
-                            <a id="copy-button" class="ml-1" href="" data-toggle="tooltip" title="Edit Description" (click)="editDescription()">
+                            <a id="copy-button" class="ml-1" href="" placement="bottom-right" ngbTooltip="Edit Description" (click)="editDescription()">
                                 <i class="fa fa-info-circle"></i>
                             </a>
 
@@ -180,8 +180,7 @@
 
                 <div class="form-row">
                     <div class="col-12 col-xl-6">
-                        <div class="input-group input-group-sm mb-3" data-toggle="tooltip"
-                            [title]="selectedAction.app_name">
+                        <div class="input-group input-group-sm mb-3" placement="bottom" [ngbTooltip]="selectedAction.app_name">
                             <div class="input-group-prepend">
                                 <span class="input-group-text text-white bg-primary">App</span>
                             </div>
@@ -189,8 +188,7 @@
                         </div>
                     </div>
                     <div class="col-12 col-xl-6">
-                        <div class="input-group input-group-sm mb-3" data-toggle="tooltip"
-                            [title]="selectedAction.action_name">
+                        <div class="input-group input-group-sm mb-3" placement="bottom" [ngbTooltip]="selectedAction.action_name">
                             <div class="input-group-prepend">
                                 <span class="input-group-text text-white bg-primary">Action</span>
                             </div>

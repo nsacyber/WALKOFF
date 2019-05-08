@@ -34,9 +34,13 @@ export class MetadataModalComponent {
     }
     
     submit() {
-        if (this.workflow.name && this.existingWorkflows.find(w => {
-            return w.name.toLocaleLowerCase() == this.workflow.name.toLocaleLowerCase() && w.id != this.workflow.id;
-        })) {
+        const compareWorkflow = (w: Workflow) => 
+            w.name.toLocaleLowerCase() == this.workflow.name.toLocaleLowerCase() && w.id != this.workflow.id;
+
+        if (!this.workflow.name) {
+            this.workflowNameModel.control.setErrors({'required': true});
+        }
+        else if (this.existingWorkflows.find(compareWorkflow)) {
             this.workflowNameModel.control.setErrors({'unique': true});
         }
 

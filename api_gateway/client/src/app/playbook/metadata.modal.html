@@ -10,7 +10,7 @@
         <div class="form-group">
             <h6>Enter a Workflow Name</h6>
             <input name="name" type="text" [(ngModel)]="workflow.name" class="form-control" placeholder="Workflow Name"
-            ngbAutoFocus required #workflowName="ngModel" [class.is-invalid]="workflowName.touched && workflowName.invalid">
+            ngbAutoFocus #workflowName="ngModel" [class.is-invalid]="workflowName.touched && workflowName.invalid">
             <div class="invalid-feedback">
                 <span *ngIf="workflowName.hasError('unique')">
                     Workflow with name already exists.

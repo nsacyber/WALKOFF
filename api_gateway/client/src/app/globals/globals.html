@@ -3,8 +3,7 @@
 
     <div class="row align-items-center mb-3">
         <div class="col">
-            <button (click)="addGlobal()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add
-                Variable</button>
+            <button (click)="addGlobal()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add Global</button>
         </div>
         <div class="col-4">
             <!-- <select2 [data]="availableApps" [options]="appSelectConfig" (valueChanged)="appSelectChange($event)"></select2> -->
@@ -23,9 +22,9 @@
             <ng-template let-row="row" ngx-datatable-cell-template>
                 <div class="d-flex align-items-center">
                     <span [class.pt-2]="row.isHidden">{{ row.isHidden ? '********************' : row.value }}</span>
-                    <button (click)="row.isHidden = !row.isHidden" class="btn btn-link mx-1 p-0"
-                        [title]="row.isHidden ? 'Show Value' : 'Hide Value'">
-                        <i class="fa" [class.fa-eye]="row.isHidden" [class.fa-eye-slash]="!row.isHidden"></i>
+                    <button (click)="row.isHidden = !row.isHidden" class="btn btn-link mx-1 p-0">
+                        <i class="fa" [class.fa-eye]="row.isHidden" [class.fa-eye-slash]="!row.isHidden" 
+                            [ngbTooltip]="row.isHidden ? 'Show Value' : 'Hide Value'"></i>
                     </button>
                 </div>
             </ng-template>
@@ -33,9 +32,9 @@
         <ngx-datatable-column name="Description" prop="description" [flexGrow]="3"></ngx-datatable-column>
         <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
             <ng-template let-row="row" ngx-datatable-cell-template>
-                <button (click)="editGlobal(row)" class="btn btn-sm btn-primary mx-1" title="Edit Global"><i
+                <button (click)="editGlobal(row)" class="btn btn-sm btn-primary mx-1" ngbTooltip="Edit Global"><i
                         class="fa fa-edit"></i></button>
-                <button (click)="deleteGlobal(row)" class="btn btn-sm btn-danger mx-1" title="Delete Global"><i
+                <button (click)="deleteGlobal(row)" class="btn btn-sm btn-danger mx-1" ngbTooltip="Delete Global"><i
                         class="fa fa-times"></i></button>
             </ng-template>
         </ngx-datatable-column>
