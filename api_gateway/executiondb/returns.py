@@ -4,7 +4,7 @@ from uuid import uuid4
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, ForeignKey, String, JSON
-from sqlalchemy_utils import UUIDType
+
 from marshmallow import EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 from marshmallow_sqlalchemy import field_for
 
@@ -24,7 +24,7 @@ class ReturnApi(Base):
     description = Column(String(), default="")
     example = Column(JSON, default="")
     schema = Column(JSON, default={})
-    action_api_id = Column(UUIDType(binary=False), ForeignKey('action_api.id_', ondelete='CASCADE'))
+    action_api_id = Column(UUID(as_uuid=True), ForeignKey('action_api.id_', ondelete='CASCADE'))
 
 
 class ReturnApiSchema(BaseSchema):

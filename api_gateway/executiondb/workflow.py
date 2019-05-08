@@ -1,10 +1,10 @@
 import logging
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from sqlalchemy import Column, String, Boolean, JSON, event
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import UUIDType
+
 from marshmallow import fields, EXCLUDE
 from jsonschema import Draft4Validator, ValidationError as JSONSchemaValidationError
 
@@ -12,7 +12,7 @@ from flask import current_app
 
 from common.workflow_types import ParameterVariant
 
-from api_gateway.helpers import validate_uuid4
+from api_gateway.helpers import validate_uuid
 from api_gateway.executiondb.global_variable import GlobalVariable
 from api_gateway.executiondb.condition import ConditionSchema
 from api_gateway.executiondb.transform import TransformSchema
@@ -36,7 +36,7 @@ class Workflow(Base):
     is_valid = Column(Boolean, default=True)
 
     name = Column(String(80), nullable=False, unique=True)
-    start = Column(UUIDType(binary=False))
+    start = Column(UUID(as_uuid=True))
     description = Column(String(), default="")
     tags = Column(JSON, default="")
 
@@ -105,16 +105,17 @@ class Workflow(Base):
                         message = (f"Parameter {wf.name} value {wf.value} is not valid under given schema "
                                    f"{api.schema}. JSONSchema output: {e}")
                 elif wf.variant != ParameterVariant.STATIC_VALUE:
-                    if not validate_uuid4(wf.value):
+                    wf_uuid = validate_uuid(wf.value)
+                    if not wf_uuid:
                         message = (f"Parameter '{wf.name}' is a reference but '{wf.value}' is not a valid "
                                    f"uuid4")
-                    elif wf.variant == ParameterVariant.ACTION_RESULT and UUID(wf.value, version=4) not in node_ids:
+                    elif wf.variant == ParameterVariant.ACTION_RESULT and wf_uuid not in node_ids:
                         message = (f"Parameter '{wf.name}' refers to action '{wf.value}' "
                                    f"which does not exist in this workflow.")
-                    elif wf.variant == ParameterVariant.WORKFLOW_VARIABLE and UUID(wf.value, version=4) not in wfv_ids:
+                    elif wf.variant == ParameterVariant.WORKFLOW_VARIABLE and wf_uuid not in wfv_ids:
                         message = (f"Parameter '{wf.name}' refers to workflow variable '{wf.value}' "
                                    f"which does not exist in this workflow.")
-                    elif wf.variant == ParameterVariant.GLOBAL and UUID(wf.value, version=4) not in global_ids:
+                    elif wf.variant == ParameterVariant.GLOBAL and wf_uuid not in global_ids:
                         message = (f"Parameter '{wf.name}' refers to global variable '{wf.value}' "
                                    f"which does not exist.")
 

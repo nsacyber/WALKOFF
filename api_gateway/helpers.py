@@ -288,11 +288,11 @@ def read_and_indent(filename, indent):
         return [f'{indent}{line}' for line in file_open]
 
 
-def validate_uuid4(id_, stringify=False):
+def validate_uuid(id_, stringify=False):
     try:
         uuid_ = id_
         if not isinstance(uuid_, UUID):
-            uuid_ = UUID(str(uuid_), version=4)
+            uuid_ = UUID(str(uuid_))
         return uuid_ if not stringify else id_
     except (ValueError, TypeError):
         return None

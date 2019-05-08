@@ -251,7 +251,7 @@ class Worker:
         async with self.session.get(url + "/globals", headers=headers) as resp:
             globals_ = await resp.json(loads=workflow_loads)
             logger.debug(f"Got globals: {globals_}")
-            return globals_
+            return {g.id_: g for g in globals_}
 
     async def dereference_params(self, action: Action):
         global_vars = await self.get_globals()
@@ -269,7 +269,7 @@ class Worker:
 
             elif param.variant == ParameterVariant.GLOBAL:
                 if param.value in global_vars:
-                    param.value = self.accumulator[param.value]
+                    param.value = global_vars[param.value].value
 
             else:
                 logger.error(f"Unable to defeference parameter:{param} for action:{action}")
@@ -283,6 +283,8 @@ class Worker:
 
         while not all(parent.id_ in self.accumulator for parent in parents.values()):
             await asyncio.sleep(0)
+
+        logger.info("Node ready to execute!")
 
         if isinstance(node, Action):
             stream = f"{node.execution_id}:{node.app_name}"

@@ -4,7 +4,7 @@ from uuid import uuid4
 from sqlalchemy import Column, String, Integer, ForeignKey, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy_utils import UUIDType
+
 from marshmallow import fields, EXCLUDE
 
 from api_gateway.executiondb import Base, BaseSchema
@@ -32,7 +32,7 @@ class Widget(Base):
     rows = Column(Integer, nullable=False)
     options = Column(JSON, default={})
 
-    dashboard_id = Column(UUIDType(binary=False), ForeignKey('dashboard.id_', ondelete='CASCADE'))
+    dashboard_id = Column(UUID(as_uuid=True), ForeignKey('dashboard.id_', ondelete='CASCADE'))
 
 
 class WidgetSchema(BaseSchema):

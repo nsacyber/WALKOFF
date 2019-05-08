@@ -20,7 +20,7 @@ from api_gateway.server.decorators import with_resource_factory, is_valid_uid, p
 
 
 def app_api_getter(app_api):
-    if helpers.validate_uuid4(app_api):
+    if helpers.validate_uuid(app_api):
         return current_app.running_context.execution_db.session.query(AppApi).filter_by(id_=app_api).first()
     else:
         return current_app.running_context.execution_db.session.query(AppApi).filter_by(name=app_api).first()

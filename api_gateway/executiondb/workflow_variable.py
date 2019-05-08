@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from sqlalchemy import Column, ForeignKey, String, JSON
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy_utils import UUIDType
+
 from marshmallow import EXCLUDE
 
 from api_gateway.executiondb import Base, BaseSchema
@@ -34,7 +34,7 @@ class WorkflowVariable(Base):
 
     # Columns specific to WorkflowVariable model
     description = Column(String(255), default="")
-    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
+    workflow_id = Column(UUID(as_uuid=True), ForeignKey('workflow.id_', ondelete='CASCADE'))
 
 
 class WorkflowVariableSchema(BaseSchema):

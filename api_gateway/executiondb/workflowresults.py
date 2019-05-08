@@ -1,8 +1,9 @@
 from datetime import datetime
 
 from sqlalchemy import Column, String, ForeignKey, JSON, Enum
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy_utils import UUIDType
+
 from marshmallow import fields, EXCLUDE
 from marshmallow_enum import EnumField
 
@@ -32,8 +33,8 @@ class WorkflowStatus(Base):
     completed_at = Column(String, default="")
 
     # Columns specific to WorkflowStatus model
-    execution_id = Column(UUIDType(binary=False), primary_key=True)
-    workflow_id = Column(UUIDType(binary=False))
+    execution_id = Column(UUID(as_uuid=True), primary_key=True)
+    workflow_id = Column(UUID(as_uuid=True))
     user = Column(String, default="")
     # TODO: change these on the db model to be keyed by ID (use an association proxy)
     node_statuses = relationship('NodeStatus', backref=backref("execution_id"), passive_deletes=True,
@@ -64,13 +65,13 @@ class NodeStatus(Base):
 
     # Columns specific to NodeStatus model
     combined_id = Column(String, primary_key=True)
-    node_id = Column(UUIDType(binary=False), nullable=False)
+    node_id = Column(UUID(as_uuid=True), nullable=False)
     app_name = Column(String, nullable=False)
     label = Column(String, nullable=False)
     result = Column(JSON, default=None)
     arguments = Column(String)  # TODO: refactor this to parameters to match every other node model
 
-    workflow_execution_id = Column(UUIDType(binary=False),
+    workflow_execution_id = Column(UUID(as_uuid=True),
                                    ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
 
 

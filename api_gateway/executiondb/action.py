@@ -4,7 +4,7 @@ from uuid import uuid4
 from sqlalchemy import Column, Boolean, ForeignKey, String, Integer, JSON
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import UUIDType
+
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
@@ -30,7 +30,7 @@ class ActionApi(Base):
     returns = relationship("ReturnApi", uselist=False, cascade="all, delete-orphan", passive_deletes=True)
     parameters = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
 
-    app_api_id = Column(UUIDType(binary=False), ForeignKey('app_api.id_', ondelete='CASCADE'))
+    app_api_id = Column(UUID(as_uuid=True), ForeignKey('app_api.id_', ondelete='CASCADE'))
 
 
 class ActionApiSchema(BaseSchema):
@@ -63,7 +63,7 @@ class Action(Base):
     name = Column(String(255), nullable=False)
     label = Column(String(80), nullable=False)
     position = Column(JSON, default={"x": 0, "y": 0})
-    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
+    workflow_id = Column(UUID(as_uuid=True), ForeignKey('workflow.id_', ondelete='CASCADE'))
 
     # Columns specific to Actions
     priority = Column(Integer, default=3)

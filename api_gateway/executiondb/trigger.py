@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from sqlalchemy import Column, String, Boolean, ForeignKey, JSON
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy_utils import UUIDType
+UUID(as_uuid=True)
 from marshmallow import EXCLUDE
 from marshmallow_sqlalchemy import field_for
 
@@ -28,7 +28,7 @@ class Trigger(Base):
     name = Column(String(255), nullable=False)
     label = Column(String(80), nullable=False)
     position = Column(JSON, default={"x": 0, "y": 0})
-    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id_', ondelete='CASCADE'))
+    workflow_id = Column(UUID(as_uuid=True), ForeignKey('workflow.id_', ondelete='CASCADE'))
     children = []
 
     def __init__(self, **kwargs):

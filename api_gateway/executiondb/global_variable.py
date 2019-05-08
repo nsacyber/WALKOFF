@@ -1,5 +1,4 @@
 import logging
-from uuid import UUID
 import docker
 import base64
 from uuid import uuid4
@@ -11,7 +10,6 @@ from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSche
 
 from sqlalchemy import Column, String, Boolean, JSON, ForeignKey, orm
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy_utils import UUIDType
 from marshmallow import fields, EXCLUDE, validates_schema, pre_load, ValidationError as MarshmallowValidationError
 
 from api_gateway.executiondb import Base, BaseSchema
@@ -55,7 +53,7 @@ class GlobalVariable(Base):
 
     # Columns specific to GlobalVariables
     description = Column(String(255), default="")
-    schema_id = Column(UUIDType(binary=False), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
+    schema_id = Column(UUID(as_uuid=True), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
     # is_encrypted = Column(Boolean, default=False)
 
     def get_encrypted_value(self):
