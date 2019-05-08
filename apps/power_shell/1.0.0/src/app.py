@@ -1,8 +1,10 @@
 import datetime
 import asyncio
 import os
+
 from pypsrp.client import Process, SignalCode, WinRS
 from pypsrp.wsman import WSMan
+
 from walkoff_app_sdk.app_base import AppBase
 
 
@@ -17,8 +19,9 @@ class PowerShell(AppBase):
         timestamp = '{:%Y-%m-%d_%H-%M-%S}'.format(datetime.utcnow())
         return timestamp
 
-    async def exec_command_prompt_from_file(self, hosts, local_file_name, username, password, transport, server_cert_validation,
-                            message_encryption):
+    async def exec_command_prompt_from_file(self, hosts, local_file_name, username, password, transport,
+                                            server_cert_validation,
+                                            message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -59,7 +62,7 @@ class PowerShell(AppBase):
         return results
 
     async def exec_command_prompt(self, hosts, commands, username, password, transport, server_cert_validation,
-                            message_encryption):
+                                  message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -93,8 +96,9 @@ class PowerShell(AppBase):
 
         return results
 
-    async def exec_powershell_script_from_file(self, hosts, shell_type, local_file_name, username, password, transport, server_cert_validation,
-                            message_encryption):
+    async def exec_powershell_script_from_file(self, hosts, shell_type, local_file_name, username, password, transport,
+                                               server_cert_validation,
+                                               message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -122,7 +126,6 @@ class PowerShell(AppBase):
             try:
                 wsman = WSMan(host, ssl=server_cert_validation, auth=transport, encryption=message_encryption,
                               username=username, password=password)
-                self.logger.info("EXECUTING2")
 
                 with WinRS(wsman) as shell:
                     # for command in commands:
@@ -135,14 +138,13 @@ class PowerShell(AppBase):
                     results[host] = {"stdout": process.stdout.decode(), "stderr": process.stderr.decode()}
                     process.signal(SignalCode.CTRL_C)
 
-                    self.logger.info("Done executing on {}".format(hosts))
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
 
         return results
 
     async def exec_powershell(self, hosts, shell_type, arguments, username, password, transport, server_cert_validation,
-                            message_encryption):
+                              message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -165,11 +167,10 @@ class PowerShell(AppBase):
             try:
                 wsman = WSMan(host, ssl=server_cert_validation, auth=transport, encryption=message_encryption,
                               username=username, password=password)
-                self.logger.info("EXECUTING2")
 
                 with WinRS(wsman) as shell:
                     for arg in arguments:
-                        process = Process(shell, shell_type, arg)
+                        process = Process(shell, shell_type, [arg])
                         process.begin_invoke()  # start the invocation and return immediately
                         process.poll_invoke()  # update the output stream
                         process.end_invoke()  # finally wait until the process is finished
@@ -186,5 +187,4 @@ class PowerShell(AppBase):
 
 
 if __name__ == "__main__":
-
     asyncio.run(PowerShell.run())

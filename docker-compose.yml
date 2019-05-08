@@ -1,5 +1,15 @@
 version: '3.5'
 services:
+  dockerhost:
+    image: qoomon/docker-host
+    networks:
+      - walkoff_default
+    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+    deploy:
+      resources:
+        limits:
+          memory: 8M
+    restart: on-failure
   umpire:
     image: localhost:5000/umpire:latest
     build:

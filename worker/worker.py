@@ -289,7 +289,6 @@ class Worker:
             try:
                 # The stream doesn't exist so lets create that and the app group
                 if len(await self.redis.keys(stream)) < 1:
-                    logger.info(f"redis streams: {await self.redis.keys(stream)}")
                     await self.redis.xgroup_create(stream, node.app_name, mkstream=True)
 
                 # The stream exists but the group does not so lets just make the app group

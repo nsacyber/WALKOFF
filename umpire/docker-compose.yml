@@ -1,7 +1,7 @@
 version: '3.4'
 services:
   worker:
-    image: localhost:5000/worker
+    image: worker
     build:
       context: ./
       dockerfile: ./worker/Dockerfile
@@ -41,7 +41,7 @@ services:
     build:
       context: ../app_sdk
       dockerfile: ./Dockerfile
-    image: localhost:5000/walkoff_app_sdk
+    image: walkoff_app_sdk
     environment:
       # Worker options
       - WORKER_TIMEOUT=30

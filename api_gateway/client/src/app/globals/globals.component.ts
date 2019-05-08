@@ -57,7 +57,7 @@ export class GlobalsComponent implements OnInit {
 
 		modalRef.result.then(variable => {
 			this.globalsService.addGlobal(variable).then(() => {
-				this.toastrService.success(`Global "${variable.name}" successfully added.`);
+				this.toastrService.success(`Global <b>${variable.name}</b> added.`);
 			})
 		}, () => null)
 	}
@@ -69,11 +69,11 @@ export class GlobalsComponent implements OnInit {
 		const modalRef = this.modalService.open(VariableModalComponent);
 		modalRef.componentInstance.isGlobal = true;
 		modalRef.componentInstance.existing = true;
-		modalRef.componentInstance.variable = classToClass(global);
-
+		modalRef.componentInstance.variable = global.clone();
+		
 		modalRef.result.then(variable => {
 			this.globalsService.editGlobal(variable).then(() => {
-				this.toastrService.success(`Global "${variable.name}" successfully changed.`);
+				this.toastrService.success(`Global <b>${variable.name}</b> updated.`);
 			})
 		}, () => null)
 	}

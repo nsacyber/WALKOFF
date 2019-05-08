@@ -28,6 +28,7 @@
 				<a href="#" (click)="openNodeStatusModal($event, row)">{{row.name}}</a>
 			</ng-template>
 		</ngx-datatable-column>
+		<ngx-datatable-column name="ID" prop="execution_id" [flexGrow]="2"></ngx-datatable-column>
 		<ngx-datatable-column name="User" prop="user" [flexGrow]="1"></ngx-datatable-column>
 		<ngx-datatable-column name="Started At" prop="started_at" [comparator]="dateComparator" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
@@ -54,7 +55,7 @@
 				{{getActionName(row.current_node)}}
 			</ng-template>
 		</ngx-datatable-column>
-		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
+		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				<button *ngIf="row.status.toLowerCase() === 'paused'" (click)="performWorkflowStatusAction(row, workflowStatusActions.resume)" title="Start Scheduled Task"
 				 class="btn btn-primary mx-1">

@@ -4,6 +4,7 @@ import signal
 import os
 from pathlib import Path
 from itertools import compress
+import uuid
 
 
 import aiodocker
@@ -20,7 +21,7 @@ from common.message_types import WorkflowStatusMessage
 from common.workflow_types import workflow_loads
 from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, get_containers,
                                    load_secrets, update_service, connect_to_aiodocker, get_service, get_replicas,
-                                   remove_service)
+                                   remove_service, create_secret, delete_secret)
 from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -53,6 +54,7 @@ class Umpire:
         await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
         await self.build_app_sdk()
         await self.build_worker()
+        await self.build_key()
 
         if len(self.apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
@@ -70,6 +72,7 @@ class Umpire:
             for signame in {'SIGINT', 'SIGTERM'}:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
+            logger.info("Umpire ready!")
             await asyncio.gather(asyncio.create_task(ump.monitor_queues()),
                                  asyncio.create_task(ump.workflow_control_listener()))
         await ump.shutdown()
@@ -90,7 +93,7 @@ class Umpire:
         mask = [await remove_service(self.docker_client, s) for s in services]
         removed_apps = list(compress(self.running_apps, mask))
         logger.debug(f"Removed apps: {removed_apps}")
-        
+
         # Clean up any unfinished tasks (shouldn't really be any though)
         tasks = [t for t in asyncio.all_tasks() if t is not
                  asyncio.current_task()]
@@ -105,14 +108,16 @@ class Umpire:
         return {s['Spec']['Name']:  {'id': s["ID"], 'version': s['Version']['Index']} for s in services}
 
     async def launch_workers(self, replicas=1):
+        worker_name = "worker"
+        repo = f"{config.DOCKER_REGISTRY}/{worker_name}"
         project = get_project(project_dir=Path(__file__).parent, project_name=config.APP_PREFIX)
         worker = [service for service in project.services if service.name == "worker"][0]
 
         # see if the image provided by the docker-compose file can be pulled
         try:
-            await self.docker_client.images.pull(worker.image_name)
-        except DockerError:
-            logger.debug(f"Could not pull {worker.image_name}. Trying to build local instead.")
+            await self.docker_client.images.pull(repo)
+        except DockerError as e:
+            logger.debug(f"Could not pull {repo}. Trying to build local instead.")
             await self.build_worker()
 
         try:
@@ -139,7 +144,8 @@ class Umpire:
     async def build_worker(self):
         try:
             logger.info(f"Building worker")
-            repo = f"{config.DOCKER_REGISTRY}/worker"
+            worker_name = "worker"
+            repo = f"{config.DOCKER_REGISTRY}/{worker_name}"
             project = get_project(project_dir=Path(__file__).parent, project_name=config.APP_PREFIX)
             worker = [service for service in project.services if service.name == "worker"][0]
             build_opts = worker.options.get('build', {})
@@ -151,6 +157,10 @@ class Umpire:
                                                                    path_dockerfile=build_opts["dockerfile"],
                                                                    encoding="application/x-tar")
             await stream_docker_log(log_stream)
+
+            # Tag the image so it can be pushed to the repo
+            await self.docker_client.images.tag(worker.image_name, repo)
+
         except DockerBuildError:
             logger.exception(f"Error during worker build")
             return
@@ -180,8 +190,8 @@ class Umpire:
                                                                    encoding="application/x-tar")
             await stream_docker_log(log_stream)
 
-            # Give image a locally accessible tag as well for docker-compose up runs
-            await self.docker_client.images.tag(repo, sdk_name)
+            # Tag the image so it can be pushed to the repo
+            await self.docker_client.images.tag(sdk.image_name, repo)
         except DockerBuildError:
             logger.exception(f"Error during walkoff_app_sdk build")
             return
@@ -250,8 +260,8 @@ class Umpire:
 
         # see if the image provided by the docker-compose file can be pulled
         try:
-            image = await self.docker_client.images.pull(image_name)
-        except DockerError:
+            image = await self.docker_client.images.pull(full_tag)
+        except DockerError as e:
             logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
 
         # if we didn't find the image, try to build it
@@ -286,20 +296,20 @@ class Umpire:
         try:
             logger.info(f"Building {app}:{version}")
             with docker_context(build_opts["context"]) as context:
-                log_stream = await self.docker_client.images.build(fileobj=context, tag=full_tag, rm=True, forcerm=True,
+                log_stream = await self.docker_client.images.build(fileobj=context, tag=app_name, rm=True, forcerm=True,
                                                                    path_dockerfile="Dockerfile", stream=True,
                                                                    encoding="application/x-tar")
             await stream_docker_log(log_stream)
 
-            # Give image a locally accessible tag as well for docker-compose up runs
-            await self.docker_client.images.tag(full_tag, app_name, tag=version)
+            # Tag the image so it can be pushed to the repo
+            await self.docker_client.images.tag(app_name, repo, tag=version)
         except DockerBuildError:
             logger.exception(f"Error during {app}:{version} build")
             return
 
         try:
             logger.info(f"Pushing {app}:{version}")
-            log_stream = await self.docker_client.images.push(repo, tag=version, stream=True)
+            log_stream = await self.docker_client.images.push(full_tag, stream=True)
             await stream_docker_log(log_stream)
 
         except DockerBuildError:
@@ -478,6 +488,14 @@ class Umpire:
                 await self.redis.delete(f"{execution_id}:results")
             await self.redis.xack(stream=stream, group_name=config.REDIS_WORKFLOW_CONTROL_GROUP, id=id_)
             await xdel(self.redis, stream=stream, id_=id_)
+
+    async def build_key(self):
+        key = uuid.uuid4().hex
+        try:
+            await delete_secret(self.docker_client, "encryption_key")
+            await create_secret(self.docker_client, name="encryption_key", data=key.encode())
+        except:
+            await create_secret(self.docker_client, name="encryption_key", data=key.encode())
 
 
 if __name__ == "__main__":

@@ -207,6 +207,11 @@
                 </div>
 
                 <div class="form-group mt-3">
+                    <label class="h5" for="id">ID</label>
+                    <input type="text" readonly class="form-control-plaintext px-2" [value]="selectedAction.id" name="id" >
+                </div>
+
+                <div class="form-group mt-3">
                     <label class="h5" for="name">Name
                         <i class="fa fa-asterisk required" title="This field is required."></i>
                     </label>
@@ -386,14 +391,16 @@
                     <ngx-datatable #environmentVariableTable class='material expandable' [columnMode]="'flex'"
                         [rows]="getVariables()" [sortType]="'multi'" [footerHeight]="25" [rowHeight]="undefined"
                         [sorts]="[]" [limit]="10">
-                        <ngx-datatable-column name="Namea" prop="name" [sortable]="false" [flexGrow]="1">
+                        <ngx-datatable-column name="Name" prop="name" [sortable]="false" [flexGrow]="2">
                         </ngx-datatable-column>
-                        <ngx-datatable-column name="Default Value" prop="value" [sortable]="false" [flexGrow]="1">
+                        <ngx-datatable-column name="ID" prop="id" [sortable]="false" [flexGrow]="2">
+                        </ngx-datatable-column>
+                        <ngx-datatable-column name="Default Value" prop="value" [sortable]="false" [flexGrow]="2">
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Description" prop="description" [sortable]="false" [flexGrow]="3">
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false"
-                            [flexGrow]="2">
+                            [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <button (click)="editVariableModal(row)" class="btn btn-primary mx-1"
                                     title="Edit Variable"><i class="fa fa-edit"></i></button>

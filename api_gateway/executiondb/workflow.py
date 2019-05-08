@@ -57,7 +57,7 @@ class Workflow(Base):
         """Validates the object"""
         node_ids = {node.id_ for node in self.actions + self.conditions + self.transforms}
         wfv_ids = {workflow_var.id_ for workflow_var in self.workflow_variables}
-        global_ids = set(current_app.running_context.execution_db.session.query(GlobalVariable.id_).all())
+        global_ids = set(id_ for id_, in current_app.running_context.execution_db.session.query(GlobalVariable.id_))
 
         self.errors = []
 
@@ -104,6 +104,7 @@ class Workflow(Base):
                     except JSONSchemaValidationError as e:
                         message = (f"Parameter {wf.name} value {wf.value} is not valid under given schema "
                                    f"{api.schema}. JSONSchema output: {e}")
+                elif wf.variant != ParameterVariant.STATIC_VALUE:
                     if not validate_uuid4(wf.value):
                         message = (f"Parameter '{wf.name}' is a reference but '{wf.value}' is not a valid "
                                    f"uuid4")
@@ -116,8 +117,6 @@ class Workflow(Base):
                     elif wf.variant == ParameterVariant.GLOBAL and UUID(wf.value, version=4) not in global_ids:
                         message = (f"Parameter '{wf.name}' refers to global variable '{wf.value}' "
                                    f"which does not exist.")
-                elif wf.variant != ParameterVariant.STATIC_VALUE:
-                    pass
 
                 if message is not "":
                     action.errors.append(message)

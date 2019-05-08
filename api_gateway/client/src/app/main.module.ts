@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { Select2Module } from 'ng2-select2';
+import { ClipboardModule } from 'ngx-clipboard';
 import { AuthService } from './auth/auth.service';
 import { JwtInterceptor, JwtModule } from '@auth0/angular-jwt';
 import { RefreshTokenInterceptor, jwtTokenGetter } from './refresh-token-interceptor';
@@ -59,27 +60,28 @@ import { ImportModalComponent } from './playbook/import.modal.component';
 
 @NgModule({
 	imports: [
-		BrowserModule,
 		FormsModule,
-		ReactiveFormsModule,
+		BrowserModule,
 		HttpClientModule,
+		ReactiveFormsModule,
 		JwtModule.forRoot({
 			config: {
 				tokenGetter: jwtTokenGetter,
 				blacklistedRoutes: ['/login', '/api/auth', '/api/auth/logout', '/api/auth/refresh']
 			}
 		}),
-		RoutingModule,
 		NgbModule,
-		NgxDatatableModule,
+		RoutingModule,
 		Select2Module,
+		ClipboardModule,
+		NgxDatatableModule,
 		DateTimePickerModule,
 		DndModule.forRoot(),
 	    BrowserAnimationsModule,
 		ToastrModule.forRoot({ positionClass: 'toast-bottom-right', enableHtml: true, onActivateTick: true }),
 		GridsterModule,
 		ChartsModule,
-		CodemirrorModule
+		CodemirrorModule,
 	],
 	declarations: [
 		//Main component
