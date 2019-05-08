@@ -40,7 +40,7 @@ class GlobalVariable(VariableMixin, Base):
     __tablename__ = 'global_variable'
     description = Column(String(255), default="")
     schema_id = Column(UUIDType(binary=False), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
-    is_encrypted = Column(Boolean, default=False)
+    # is_encrypted = Column(Boolean, default=False)
 
     def get_encrypted_value(self):
         docker_client = docker.from_env()
