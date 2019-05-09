@@ -1,5 +1,4 @@
 import logging
-import docker
 import base64
 from uuid import uuid4
 
@@ -8,9 +7,9 @@ from Crypto.Cipher import AES
 from flask import current_app
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 
-from sqlalchemy import Column, String, Boolean, JSON, ForeignKey, orm
+from sqlalchemy import Column, String, JSON, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from marshmallow import fields, EXCLUDE, validates_schema, pre_load, ValidationError as MarshmallowValidationError
+from marshmallow import fields, EXCLUDE, pre_load, validates_schema, ValidationError as MarshmallowValidationError
 
 from api_gateway.executiondb import Base, BaseSchema
 
@@ -54,13 +53,6 @@ class GlobalVariable(Base):
     # Columns specific to GlobalVariables
     description = Column(String(255), default="")
     schema_id = Column(UUID(as_uuid=True), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
-    # is_encrypted = Column(Boolean, default=False)
-
-    def get_encrypted_value(self):
-        docker_client = docker.from_env()
-        key = docker_client.secrets.get("global_encryption_key")
-        my_cipher = GlobalCipher(key)
-        return my_cipher.decrypt(self.value)
 
 
 class GlobalVariableTemplateSchema(BaseSchema):
@@ -89,16 +81,13 @@ class GlobalVariableSchema(BaseSchema):
         model = GlobalVariable
         unknown = EXCLUDE
 
-    # @pre_load
-    # def encrypt_value(self, data):
-    #     if data['is_encrypted']:
-    #         docker_client = docker.from_env()
-    #         key = docker_client.secrets.get("global_encryption_key")
-    #         my_cipher = GlobalCipher(key)
-    #         data['value'] = my_cipher.encrypt(data['value'])
-
     @validates_schema
     def validate_global(self, data):
+        f = open('/run/secrets/encryption_key')
+        key = f.read()
+        my_cipher = GlobalCipher(key)
+        data['value'] = my_cipher.encrypt(data['value']).decode('utf-8')
+
         try:
             if "schema" in data:
                 template = current_app.running_context.execution_db.session.query(GlobalVariableTemplate).filter(

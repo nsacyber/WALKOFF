@@ -35,4 +35,3 @@ flask-swagger-ui
 jsonpatch
 asteval
 pycrypto
-docker

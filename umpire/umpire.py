@@ -21,7 +21,7 @@ from common.message_types import WorkflowStatusMessage
 from common.workflow_types import workflow_loads
 from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, get_containers,
                                    load_secrets, update_service, connect_to_aiodocker, get_service, get_replicas,
-                                   remove_service, create_secret, delete_secret)
+                                   remove_service)
 from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -53,7 +53,6 @@ class Umpire:
         await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
         await self.build_app_sdk()
         await self.build_worker()
-        await self.build_key()
 
         if len(self.apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
@@ -491,14 +490,6 @@ class Umpire:
                 await self.redis.delete(f"{execution_id}:results")
             await self.redis.xack(stream=stream, group_name=config.REDIS_WORKFLOW_CONTROL_GROUP, id=id_)
             await xdel(self.redis, stream=stream, id_=id_)
-
-    async def build_key(self):
-        key = uuid.uuid4().hex
-        try:
-            await delete_secret(self.docker_client, "encryption_key")
-            await create_secret(self.docker_client, name="encryption_key", data=key.encode())
-        except:
-            await create_secret(self.docker_client, name="encryption_key", data=key.encode())
 
 
 if __name__ == "__main__":
