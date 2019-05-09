@@ -52,6 +52,8 @@ services:
        constraints: [node.role==manager]
     depends_on:
      - redis
+    secrets:
+      - encryption_key
 
   registry:
     restart: always
@@ -101,7 +103,8 @@ services:
     - "WALKOFF_DB_PASSWORD=walkoff"
     stop_signal: SIGINT
     stop_grace_period: 30s
-
+    secrets:
+      - encryption_key
 
   redis:
     container_name: redis
@@ -128,6 +131,10 @@ services:
       - walkoff_default
 #    volumes:
 #      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data
+
+secrets:
+  encryption_key:
+    external: true
 
 networks:
   walkoff_default:
