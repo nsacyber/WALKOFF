@@ -16,7 +16,7 @@ console_stream_subs = {}
 console_stream_lock = RLock()
 
 
-@console_page.route('/log', methods=['POST'])
+@console_page.route('/log')
 # @jwt_required
 # @permissions_accepted_for_resources(ResourcePermissions("consolelog", ["create"]))
 def create_console_message():
