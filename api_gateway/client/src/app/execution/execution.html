@@ -57,16 +57,16 @@
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<button *ngIf="row.status.toLowerCase() === 'paused'" (click)="performWorkflowStatusAction(row, workflowStatusActions.resume)" title="Start Scheduled Task"
+				<button *ngIf="row.status.toLowerCase() === 'paused'" (click)="performWorkflowStatusAction(row, workflowStatusActions.resume)" ngbTooltip="Start Scheduled Task"
 				 class="btn btn-primary mx-1">
 					<i class="fa fa-play"></i>
 				</button>
-				<button *ngIf="row.status.toLowerCase() === 'running'" (click)="performWorkflowStatusAction(row, workflowStatusActions.pause)" title="Pause Scheduled Task"
+				<button *ngIf="row.status.toLowerCase() === 'running'" (click)="performWorkflowStatusAction(row, workflowStatusActions.pause)" ngbTooltip="Pause Scheduled Task"
 				 class="btn btn-warning mx-1">
 					<i class="fa fa-pause"></i>
 				</button>
 				<button *ngIf="!(row.status.toLowerCase() === 'completed' || row.status.toLowerCase() === 'aborted')" (click)="performWorkflowStatusAction(row, workflowStatusActions.abort)"
-				 title="Abort Scheduled Task" class="btn btn-danger mx-1">
+				 ngbTooltip="Abort Scheduled Task" class="btn btn-danger mx-1">
 					<i class="fa fa-stop"></i>
 				</button>
 			</ng-template>

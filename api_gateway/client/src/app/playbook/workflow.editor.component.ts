@@ -380,7 +380,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const executionId = UUID.UUID();
 		Promise.all([
 			this.getNodeStatusSSE(executionId),
-			this.getConsoleSSE(executionId)
+			// this.getConsoleSSE(executionId)
 		]).then(() => {
 			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
 				.then((workflowStatus: WorkflowStatus) => {

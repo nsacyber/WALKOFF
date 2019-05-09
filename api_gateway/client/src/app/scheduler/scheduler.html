@@ -8,18 +8,18 @@
 
 		<div class="col">
 			<div class="row">
-				<h4 class="my-auto mr-2">Scheduler Status: <span id="status">{{schedulerStatus}}</span></h4>
+				<h4 class="my-auto mr-2">Scheduler <span id="status" class="text-capitalize">{{schedulerStatus}}</span></h4>
 				
-				<button *ngIf="schedulerStatus && schedulerStatus !== 'running'" (click)="changeSchedulerStatus('start')" class="btn btn-primary"
-					id="startSchedulerBtn" title="Start Scheduler">
+				<button *ngIf="schedulerStatus && schedulerStatus !== 'running'" (click)="changeSchedulerStatus('start')" class="btn btn-primary mx-1"
+					id="startSchedulerBtn" ngbTooltip="Start Scheduler">
 					<i class="fa fa-play"></i>
 				</button>
-				<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('pause')" class="btn btn-warning"
-					id="pauseSchedulerBtn" title="Pause Scheduler">
+				<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('pause')" class="btn btn-warning mx-1"
+					id="pauseSchedulerBtn" ngbTooltip="Pause Scheduler">
 					<i class="fa fa-pause"></i>
 				</button>
 				<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('stop')" class="btn btn-danger"
-					id="stopSchedulerBtn" title="Stop Scheduler">
+					id="stopSchedulerBtn" ngbTooltip="Stop Scheduler">
 					<i class="fa fa-stop"></i>
 				</button>
 			</div>

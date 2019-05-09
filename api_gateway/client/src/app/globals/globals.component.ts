@@ -57,7 +57,7 @@ export class GlobalsComponent implements OnInit {
 
 		modalRef.result.then(variable => {
 			this.globalsService.addGlobal(variable).then(() => {
-				this.toastrService.success(`<b>${variable.name}</b> saved`);
+				this.toastrService.success(`Added <b>${variable.name}</b>`);
 			})
 		}, () => null)
 	}
@@ -73,7 +73,7 @@ export class GlobalsComponent implements OnInit {
 		
 		modalRef.result.then(variable => {
 			this.globalsService.editGlobal(variable).then(() => {
-				this.toastrService.success(`<b>${variable.name}</b> saved`);
+				this.toastrService.success(`Updated <b>${variable.name}</b>`);
 			})
 		}, () => null)
 	}
@@ -87,7 +87,7 @@ export class GlobalsComponent implements OnInit {
 		await this.utils.confirm(`Are you sure you want to delete <b>${ globalToDelete.name }</b>?`);
 		this.globalsService
 			.deleteGlobal(globalToDelete)
-			.then(() => this.toastrService.success(`Global "${ globalToDelete.name }" successfully deleted.`))
-			.catch(e => this.toastrService.error(`Error deleting global: ${ e.message }`));
+			.then(() => this.toastrService.success(`Deleted <b>${ globalToDelete.name }</b>`))
+			.catch(e => this.toastrService.error(`Error deleting <b>${ e.message }</b>`));
 	}
 }
