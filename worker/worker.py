@@ -1,9 +1,10 @@
-from collections import deque
 import asyncio
 import logging
 import sys
 import os
 import signal
+from collections import deque
+from inspect import getcoroutinelocals
 
 import aiohttp
 import aioredis
@@ -153,12 +154,13 @@ class Worker:
         cancelled_tasks = set()
 
         for task in asyncio.all_tasks():
-            for _, arg in task._coro.cr_frame.f_locals.items():  # Where the args of a coro are stored...trust me
-                if isinstance(arg, Node):
-                    if arg in dependents:
-                        self.in_process.pop(arg.id_)
-                        task.cancel()
-                        cancelled_tasks.add(task)
+            if getattr(self, task._coro.__name__, None) == self.schedule_node:  # filter only node scheduling coroutines
+                for _, arg in getcoroutinelocals(task._coro).items():
+                    if isinstance(arg, Node):
+                        if arg in dependents:
+                            self.in_process.pop(arg.id_)
+                            task.cancel()
+                            cancelled_tasks.add(task)
 
         await asyncio.gather(*cancelled_tasks, return_exceptions=True)
 
