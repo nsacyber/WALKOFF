@@ -5,6 +5,7 @@ from marshmallow import ValidationError
 
 from sqlalchemy.exc import IntegrityError, StatementError
 
+from api_gateway import helpers
 from api_gateway.server.decorators import with_resource_factory, paginate
 from api_gateway.executiondb.dashboard import Dashboard, DashboardSchema
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
@@ -12,8 +13,11 @@ from api_gateway.server.problem import unique_constraint_problem, improper_json_
 from http import HTTPStatus
 
 
-def dashboard_getter(dashboard_id):
-    return current_app.running_context.execution_db.session.query(Dashboard).filter_by(id_=dashboard_id).first()
+def dashboard_getter(dashboard):
+    if helpers.validate_uuid(dashboard):
+        return current_app.running_context.execution_db.session.query(Dashboard).filter_by(id_=dashboard).first()
+    else:
+        return current_app.running_context.execution_db.session.query(Dashboard).filter_by(name=dashboard).first()
 
 
 dashboard_schema = DashboardSchema()
@@ -49,16 +53,16 @@ def read_all_dashboards():
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("dashboards", ["update"]))
-@with_dashboard("update", "dashboard_id")
-def update_dashboard(dashboard_id):
+@with_dashboard("update", "dashboard")
+def update_dashboard(dashboard):
     data = request.get_json()
     try:
-        dashboard_schema.load(data, instance=dashboard_id)
+        dashboard_schema.load(data, instance=dashboard)
         # return invalid_input_problem("dashboard", "update", data["name"], errors)  # ToDo: validation
 
         current_app.running_context.execution_db.session.commit()
-        current_app.logger.info(f"Updated dashboard {dashboard_id}")
-        return dashboard_schema.dump(dashboard_id), HTTPStatus.OK
+        current_app.logger.info(f"Updated dashboard {dashboard}")
+        return dashboard_schema.dump(dashboard), HTTPStatus.OK
     except (IntegrityError, StatementError):
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem("dashboard", "update", data["name"])
@@ -66,17 +70,17 @@ def update_dashboard(dashboard_id):
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("dashboards", ["read"]))
-@with_dashboard("read", "dashboard_id")
-def read_dashboard(dashboard_id):
-    dashboard_json = dashboard_schema.dump(dashboard_id)
+@with_dashboard("read", "dashboard")
+def read_dashboard(dashboard):
+    dashboard_json = dashboard_schema.dump(dashboard)
     return jsonify(dashboard_json), HTTPStatus.OK
 
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("dashboards", ["delete"]))
-@with_dashboard("delete", "dashboard_id")
-def delete_dashboard(dashboard_id):
-    current_app.running_context.execution_db.session.delete(dashboard_id)
-    current_app.logger.info(f"Dashboard removed: {dashboard_id.name}")
+@with_dashboard("delete", "dashboard")
+def delete_dashboard(dashboard):
+    current_app.running_context.execution_db.session.delete(dashboard)
+    current_app.logger.info(f"Dashboard removed: {dashboard.name}")
     current_app.running_context.execution_db.session.commit()
     return None, HTTPStatus.NO_CONTENT

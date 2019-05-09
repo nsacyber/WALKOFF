@@ -63,21 +63,20 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-/workflows/{workflow_id}:
-  parameters:
-    - name: workflow_id
-      in: path
-      description: 'The ID that needs to be fetched. '
-      required: true
-      schema:
-        type: string
-        format: uuid
+/workflows/{workflow}:
   get:
     tags:
       - Workflows
     summary: Read a workflow
     description: ''
     operationId: api_gateway.server.endpoints.workflows.read_workflow
+    parameters:
+      - name: workflow
+        in: path
+        description: 'The name or ID of the workflow to get.'
+        required: true
+        schema:
+          type: string
     responses:
       200:
         description: Success
@@ -104,6 +103,13 @@
         application/json:
           schema:
             $ref: '#/components/schemas/Workflow'
+    parameters:
+      - name: workflow
+        in: path
+        description: 'The name or ID of the workflow to get.'
+        required: true
+        schema:
+          type: string
     responses:
       200:
         description: Success
@@ -133,6 +139,13 @@
     summary: Delete a workflow
     description: ''
     operationId: api_gateway.server.endpoints.workflows.delete_workflow
+    parameters:
+      - name: workflow
+        in: path
+        description: 'The name or ID of the workflow to get.'
+        required: true
+        schema:
+          type: string
     responses:
       204:
         description: Success

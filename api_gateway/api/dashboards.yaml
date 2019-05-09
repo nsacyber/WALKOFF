@@ -85,7 +85,7 @@
             schema:
               $ref: '#/components/schemas/Error'
 
-/dashboards/{dashboard_id}:
+/dashboards/{dashboard}:
   get:
     tags:
       - Dashboards
@@ -94,7 +94,7 @@
     operationId: api_gateway.server.endpoints.dashboards.read_dashboard
     parameters:
     - in: path
-      name: dashboard_id
+      name: dashboard
       description: ID of the global to be fetched
       schema:
         type: string
@@ -121,7 +121,7 @@
     operationId: api_gateway.server.endpoints.dashboards.delete_dashboard
     parameters:
     - in: path
-      name: dashboard_id
+      name: dashboard
       description: ID of the global to be fetched
       schema:
         type: string

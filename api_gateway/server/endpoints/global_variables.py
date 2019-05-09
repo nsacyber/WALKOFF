@@ -2,6 +2,7 @@ from flask import current_app, request, jsonify
 from flask_jwt_extended import jwt_required
 from sqlalchemy.exc import IntegrityError, StatementError
 
+from api_gateway import helpers
 from api_gateway.executiondb.global_variable import (GlobalVariable, GlobalVariableSchema,
                                                      GlobalVariableTemplate, GlobalVariableTemplateSchema)
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
@@ -10,17 +11,24 @@ from api_gateway.server.problem import unique_constraint_problem
 from http import HTTPStatus
 
 
-def global_variable_getter(global_id):
-    return current_app.running_context.execution_db.session.query(GlobalVariable).filter_by(id_=global_id).first()
+def global_variable_getter(global_var):
+    if helpers.validate_uuid(global_var):
+        return current_app.running_context.execution_db.session.query(GlobalVariable).filter_by(id_=global_var).first()
+    else:
+        return current_app.running_context.execution_db.session.query(GlobalVariable).filter_by(name=global_var).first()
 
 
-def global_variable_template_getter(global_template_id):
-    return current_app.running_context.execution_db.session.query(GlobalVariableTemplate).filter_by(id_=global_template_id).first()
+def global_variable_template_getter(global_template):
+    if helpers.validate_uuid(global_template):
+        return current_app.running_context.execution_db.session.query(GlobalVariableTemplate).filter_by(
+            id_=global_template).first()
+    else:
+        return current_app.running_context.execution_db.session.query(GlobalVariableTemplate).filter_by(
+            name=global_template).first()
 
 
 with_global_variable = with_resource_factory("global_variable", global_variable_getter)
 global_variable_schema = GlobalVariableSchema()
-
 
 with_global_variable_template = with_resource_factory("global_variable_template", global_variable_template_getter)
 global_variable_template_schema = GlobalVariableTemplateSchema()
@@ -36,18 +44,18 @@ def read_all_globals():
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["read"]))
-@with_global_variable("read", "global_id")
-def read_global(global_id):
-    global_json = global_variable_schema.dump(global_id)
+@with_global_variable("read", "global_var")
+def read_global(global_var):
+    global_json = global_variable_schema.dump(global_var)
     return jsonify(global_json), HTTPStatus.OK
 
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["delete"]))
-@with_global_variable("delete", "global_id")
-def delete_global(global_id):
-    current_app.running_context.execution_db.session.delete(global_id)
-    current_app.logger.info(f"Global_variable removed {global_id.name}")
+@with_global_variable("delete", "global_var")
+def delete_global(global_var):
+    current_app.running_context.execution_db.session.delete(global_var)
+    current_app.logger.info(f"Global_variable removed {global_var.name}")
     current_app.running_context.execution_db.session.commit()
     return None, HTTPStatus.NO_CONTENT
 
@@ -68,13 +76,13 @@ def create_global():
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["update"]))
-@with_global_variable("update", "global_id")
-def update_global(global_id):
+@with_global_variable("update", "global_var")
+def update_global(global_var):
     data = request.get_json()
     try:
-        global_variable_schema.load(data, instance=global_id)
+        global_variable_schema.load(data, instance=global_var)
         current_app.running_context.execution_db.session.commit()
-        return global_variable_schema.dump(global_id), HTTPStatus.OK
+        return global_variable_schema.dump(global_var), HTTPStatus.OK
     except (IntegrityError, StatementError):
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem("global_variable", "update", data["name"])
@@ -86,24 +94,25 @@ def update_global(global_id):
 @permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["read"]))
 @paginate(global_variable_schema)
 def read_all_global_templates():
-    query = current_app.running_context.execution_db.session.query(GlobalVariableTemplate).order_by(GlobalVariableTemplate.name).all()
+    query = current_app.running_context.execution_db.session.query(GlobalVariableTemplate).order_by(
+        GlobalVariableTemplate.name).all()
     return query, HTTPStatus.OK
 
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["read"]))
-@with_global_variable_template("read", "global_template_id")
-def read_global_templates(global_template_id):
-    global_json = global_variable_template_schema.dump(global_template_id)
+@with_global_variable_template("read", "global_template")
+def read_global_templates(global_template):
+    global_json = global_variable_template_schema.dump(global_template)
     return jsonify(global_json), HTTPStatus.OK
 
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["delete"]))
-@with_global_variable_template("delete", "global_template_id")
-def delete_global_templates(global_template_id):
-    current_app.running_context.execution_db.session.delete(global_template_id)
-    current_app.logger.info(f"global_variable_template removed {global_template_id.name}")
+@with_global_variable_template("delete", "global_template")
+def delete_global_templates(global_template):
+    current_app.running_context.execution_db.session.delete(global_template)
+    current_app.logger.info(f"global_variable_template removed {global_template.name}")
     current_app.running_context.execution_db.session.commit()
     return None, HTTPStatus.NO_CONTENT
 
@@ -124,13 +133,13 @@ def create_global_templates():
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["update"]))
-@with_global_variable_template("update", "global_template_id")
-def update_global_templates(global_template_id):
+@with_global_variable_template("update", "global_template")
+def update_global_templates(global_template):
     data = request.get_json()
     try:
-        global_variable_template_schema.load(data, instance=global_template_id)
+        global_variable_template_schema.load(data, instance=global_template)
         current_app.running_context.execution_db.session.commit()
-        return global_variable_template_schema.dump(global_template_id), HTTPStatus.OK
+        return global_variable_template_schema.dump(global_template), HTTPStatus.OK
     except (IntegrityError, StatementError):
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem("global_variable_template", "update", data["name"])

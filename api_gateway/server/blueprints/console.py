@@ -49,22 +49,23 @@ def console_log_generator(execution_id):
     try:
         while True:
             event = events.get().encode()
-            current_app.logger.debug(f"Sending console message for {execution_id}: {event}")
+            current_app.logger.info(f"Sending console message for {execution_id}: {event}")
+            yield event
     except GeneratorExit:
         with console_stream_lock:
             console_stream_subs.pop(events)
+            current_app.logger.info(f"console log unsubscription for {execution_id}")
 
 
 @console_page.route('/log', methods=['GET'])
 # @jwt_required
 def stream_console_events():
-    workflow_execution_id = request.args.get('workflow_execution_id')
-    if workflow_execution_id is None:
-        return Problem(HTTPStatus.BAD_REQUEST, 'Could not connect to log stream',
-                       'workflow_execution_id is a required query param')
-    try:
-        UUID(workflow_execution_id)
-    except ValueError:
-        return invalid_id_problem('workflow status', 'read', workflow_execution_id)
+    execution_id = request.args.get('workflow_execution_id')
+    current_app.logger.debug(f"console log subscription for {execution_id}")
+    if execution_id != 'all':
+        try:
+            UUID(execution_id)
+        except ValueError:
+            return invalid_id_problem('console log', 'read', execution_id)
 
-    return Response(console_log_generator(workflow_execution_id), mimetype="text/event-stream")
+    return Response(console_log_generator(execution_id), mimetype="text/event-stream")
