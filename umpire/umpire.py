@@ -35,7 +35,7 @@ class Umpire:
         self.redis: aioredis.Redis = redis
         self.docker_client: aiodocker.Docker = docker_client
         self.session = session
-        self.apps = {}
+        self.app_repo = None
         self.running_apps = {}
         self.worker = {}
         self.max_workers = 1
@@ -45,7 +45,7 @@ class Umpire:
     async def init(cls, docker_client, redis, session):
         self = cls(docker_client, redis, session)
         await redis.flushall()  # TODO: do a more targeted cleanup of redis
-        self.apps = await AppRepo.create(config.APPS_PATH, session)
+        self.app_repo = await AppRepo.create(config.APPS_PATH, session)
         self.running_apps = await self.get_running_apps()
         self.worker = await get_service(self.docker_client, "worker")
         services = await self.docker_client.services.list()
@@ -54,7 +54,7 @@ class Umpire:
         await self.build_app_sdk()
         await self.build_worker()
 
-        if len(self.apps) < 1:
+        if len(self.app_repo.apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
             exit(1)
         return self
@@ -207,7 +207,7 @@ class Umpire:
         app_name = f"{config.APP_PREFIX}_{app}"
         repo = f"{config.DOCKER_REGISTRY}/{app_name}"
         full_tag = f"{repo}:{version}"
-        service = self.apps[app][version].services[0]
+        service = self.app_repo.apps[app][version].services[0]
         image_name = service.image_name
         image = None
 
@@ -230,7 +230,7 @@ class Umpire:
             image_name = full_tag
 
         try:
-            secrets = await load_secrets(self.docker_client, project=self.apps[app][version])
+            secrets = await load_secrets(self.docker_client, project=self.app_repo.apps[app][version])
             mode = {"replicated": {'Replicas': replicas}}
             service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode)
             await self.docker_client.services.create(name=app_name, **service_kwargs)
@@ -246,7 +246,7 @@ class Umpire:
         app_name = f"{config.APP_PREFIX}_{app}"
         repo = f"{config.DOCKER_REGISTRY}/{app_name}"
         full_tag = f"{repo}:{version}"
-        service = self.apps[app][version].services[0]
+        service = self.app_repo.apps[app][version].services[0]
         image_name = service.image_name
         image = None
 
@@ -285,7 +285,7 @@ class Umpire:
         app_name = f"{config.APP_PREFIX}_{app}"
         repo = f"{config.DOCKER_REGISTRY}/{app_name}"
         full_tag = f"{repo}:{version}"
-        service = self.apps[app][version].services[0]
+        service = self.app_repo.apps[app][version].services[0]
         build_opts = service.options.get('build', {})
 
         if build_opts.get("context", None) is None:
@@ -361,7 +361,7 @@ class Umpire:
 
                 service_name = f"{config.APP_PREFIX}_{app_name}"
                 curr_replicas = self.service_replicas.get(service_name, {"running": 0, "desired": 0})["desired"]
-                max_replicas = self.apps[app_name][version].services[0].options["deploy"]["replicas"]
+                max_replicas = self.app_repo.apps[app_name][version].services[0].options["deploy"]["replicas"]
                 replicas_needed = min(total_work, max_replicas)
 
                 if replicas_needed > curr_replicas > 0:
@@ -431,7 +431,7 @@ class Umpire:
                 count = 0
                 logger.info("Refreshing apps.")
                 # TODO: maybe do this a bit more intelligently? Presently it throws uniqueness errors for db
-                await self.apps.load_apps_and_apis()
+                await self.app_repo.load_apps_and_apis()
 
             await asyncio.sleep(config.get_int("UMPIRE_HEARTBEAT", 1))
             count += 1
