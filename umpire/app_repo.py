@@ -40,6 +40,7 @@ class AppRepo:
         inst = AppRepo(path, db)
         await inst.get_loaded_apis()
         await inst.load_apps_and_apis()
+        await inst.delete_unused_apps_and_apis()
         return inst
 
     async def get_loaded_apis(self):
@@ -91,6 +92,31 @@ class AppRepo:
         except (asyncio.TimeoutError, aiohttp.ClientConnectionError) as e:
             logger.error(f"Could not send app api to {url}: {e!r}")
 
+
+    # TODO: Maybe set an API to inactive instead of deletion
+    # The api for deletion is also in the todo for removal 
+    async def delete_unused_apps_and_apis(self):
+        url = f"{config.API_GATEWAY_URI}/api/apps/apis"
+        appnames = [key for key, value in self.apps.items()]
+
+        # Return as there is nothing to delete (these should always be the same)
+        if len(self.loaded_apis) <= len(appnames):
+            return
+
+        try:
+            headers, self.token = await get_walkoff_auth_header(self.session, self.token)
+            async with self.session.get(url, headers=headers) as resp:
+                if resp.status == 200:
+                    results = await resp.json()
+                    logger.info("Deleting {len(self.loaded_apis-appnames)} apps that no longer exist")
+
+                    # Might want to write some debug code for this, but if the endpoint stays it should be fine.
+                    [await self.session.delete(f"{url}/{app['id_']}", headers=headers) for app in results if not app["name"] in appnames]
+                else:
+                    logger.error(f"Unused apps were not cleaned up. Failed getting API's from {url}.")
+        except (asyncio.TimeoutError, aiohttp.ClientConnectionError) as e:
+            logger.error(f"Could not get app apis from {url}: {e!r}")
+
     async def load_apps_and_apis(self):
         if not getattr(self, "path", False) and getattr(self, "db", False):
             raise AppRepo.RepositoryNotInitialized
@@ -128,3 +154,4 @@ class AppRepo:
                             logger.exception(f"Error during {app.name}:{version.name} load.")
 
                 logger.info(f"Loaded {app.name} versions: {[k for k in self.apps[app.name].keys()]}")
+
