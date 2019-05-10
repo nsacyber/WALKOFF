@@ -112,6 +112,10 @@ ParameterApi:
       description: Description of the parameter
     placeholder:
       description: Brief description of the field to be used to prompt a user
+    parallelizable:
+      type: boolean
+      default: false
+      description: Is this parameter parallelizable
     required:
       type: boolean
       default: false

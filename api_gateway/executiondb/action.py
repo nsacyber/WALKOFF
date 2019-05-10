@@ -28,6 +28,7 @@ class ActionApi(Base):
     location = Column(String(), nullable=False)
     description = Column(String(), default="")
     returns = relationship("ReturnApi", uselist=False, cascade="all, delete-orphan", passive_deletes=True)
+    parallel_parameter = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
     parameters = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
 
     app_api_id = Column(UUID(as_uuid=True), ForeignKey('app_api.id_', ondelete='CASCADE'))
@@ -67,6 +68,8 @@ class Action(Base):
 
     # Columns specific to Actions
     priority = Column(Integer, default=3)
+    parallel_parameter = relationship('Parameter', cascade='all, delete, delete-orphan',
+                                      uselist=False, foreign_keys=[Parameter.parallel_action_id], passive_deletes=True)
     parameters = relationship('Parameter', cascade='all, delete, delete-orphan', foreign_keys=[Parameter.action_id],
                               passive_deletes=True)
 
@@ -101,6 +104,7 @@ class ActionSchema(BaseSchema):
     errors = field_for(Action, "errors", dump_only=True)
     is_valid = field_for(Action, "is_valid", dump_only=True)
     parameters = fields.Nested(ParameterSchema, many=True)
+    parallel_parameter = fields.Nested(ParameterSchema)
 
     class Meta:
         model = Action

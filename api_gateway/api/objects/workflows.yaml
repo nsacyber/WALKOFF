@@ -117,6 +117,9 @@ Action:
       type: boolean
     errors:
       $ref: '#/components/schemas/ExecutionElementErrors'
+    parallel_parameter:
+      description: Alternative parameter to parallelize the action on
+      $ref: '#/components/schemas/Parameter'
     parameters:
       description: The input parameters to the action
       type: array
