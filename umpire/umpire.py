@@ -432,6 +432,7 @@ class Umpire:
                 logger.info("Refreshing apps.")
                 # TODO: maybe do this a bit more intelligently? Presently it throws uniqueness errors for db
                 await self.app_repo.load_apps_and_apis()
+                await self.app_repo.delete_unused_apps_and_apis()
 
             await asyncio.sleep(config.get_int("UMPIRE_HEARTBEAT", 1))
             count += 1
