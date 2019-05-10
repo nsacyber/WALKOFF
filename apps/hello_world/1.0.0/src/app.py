@@ -14,7 +14,6 @@ class HelloWorld(AppBase):
     __version__ = "1.0.0"
     app_name = "hello_world"  # this needs to match "name" in api.yaml
 
-
     def __init__(self, redis, logger, console_logger=None):
         """
         Each app should have this __init__ to set up Redis and logging.
@@ -31,10 +30,10 @@ class HelloWorld(AppBase):
         """
         message = f"Hello World from {socket.gethostname()}!"
 
-        # This logs locally (?)
+        # This logs to the docker logs
         self.logger.info(message)
 
-        # This sends a log message to the frontend
+        # This sends a log message to the frontend workflow editor
         await self.console_logger.info(message)
 
         return message

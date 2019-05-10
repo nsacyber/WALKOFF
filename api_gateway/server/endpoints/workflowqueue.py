@@ -27,15 +27,6 @@ from api_gateway.config import Config
 logger = logging.getLogger(__name__)
 
 
-def does_workflow_exist(workflow_id):
-    return current_app.running_context.execution_db.session.query(exists().where(Workflow.id_ == workflow_id)).scalar()
-
-
-def does_execution_id_exist(execution_id):
-    return current_app.running_context.execution_db.session.query(
-        exists().where(WorkflowStatus.execution_id == execution_id)).scalar()
-
-
 def workflow_status_getter(execution_id):
     return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
         execution_id=execution_id).first()
@@ -93,15 +84,39 @@ def execute_workflow():
 
     workflow = workflow_schema.dump(workflow)
 
+    actions_by_id = {a['id_']: a for a in workflow["actions"]}
+    triggers_by_id = {t['id_']: t for t in workflow["triggers"]}
+
+    # TODO: Add validation to all overrides
+    if "start" in data:
+        if data["start"] in actions_by_id or data["start"] in triggers_by_id:
+            workflow["start"] = data["start"]
+        else:
+            return invalid_input_problem("workflow", "execute", workflow.id_,
+                                         errors=["Start override must be an action or a trigger in this workflow."])
+
     if "workflow_variables" in workflow and "workflow_variables" in data:
         # TODO: change these on the db model to be keyed by ID
         # Get workflow variables keyed by ID
+
         current_wvs = {wv['id_']: wv for wv in workflow["workflow_variables"]}
         new_wvs = {wv['id_']: wv for wv in data["workflow_variables"]}
 
         # Update workflow variables with new values, ignore ids that didn't already exist
         override_wvs = {id_: new_wvs[id_] if id_ in new_wvs else current_wvs[id_] for id_ in current_wvs}
         workflow["workflow_variables"] = list(override_wvs.values())
+
+    if "parameters" in data:
+        start_id = data.get("start", workflow["start"])
+        if start_id in actions_by_id:
+            parameters_by_name = {p["name"]: p for p in actions_by_id[start_id]["parameters"]}
+            for parameter in data["parameters"]:
+                parameters_by_name[parameter["name"]] = parameter
+            actions_by_id[start_id]["parameters"] = list(parameters_by_name.values())
+            workflow["actions"] = list(actions_by_id.values())
+        else:
+            return invalid_input_problem("workflow", "execute", workflow.id_,
+                                         errors=["Cannot override starting parameters for anything but an action."])
 
     try:
         execution_id = execute_workflow_helper(workflow_id, execution_id, workflow)
