@@ -15,14 +15,14 @@ from common.helpers import get_walkoff_auth_header
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("AppRepo")
 
-
 def load_app_api(api_file):
     with open(api_file, 'r') as fp:
         try:
-            return yaml.load(fp)
+            return yaml.load(fp, Loader=yaml.FullLoader)
         except yaml.YAMLError as exc:
-            logger.exception(f"Invalid yaml on app api: {api_file}. {exc}")
-
+            logger.info(f"Invalid yaml on app api: {api_file}. {exc}")
+        except yaml.scanner.ScannerError as exc:
+            logger.info(f"Invalid yaml on app api: {api_file}. {exc}")
 
 class AppRepo:
     class RepositoryNotInitialized(Exception):
@@ -134,7 +134,8 @@ class AppRepo:
                             app_api_path = {fname for fname in {"api.yaml", "api.yml"} if (version / fname).exists()}
                             api = load_app_api(version / app_api_path.pop())
 
-                            if api is None:  # The yaml was invalid and we logged that so lets skip it.
+                            # The yaml was invalid and we logged that so lets skip it.
+                            if api is None:  
                                 continue
 
                             await self.store_api(api)
