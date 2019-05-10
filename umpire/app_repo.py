@@ -15,6 +15,7 @@ from common.helpers import get_walkoff_auth_header
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("AppRepo")
 
+
 def load_app_api(api_file):
     with open(api_file, 'r') as fp:
         try:
@@ -23,6 +24,7 @@ def load_app_api(api_file):
             logger.info(f"Invalid yaml on app api: {api_file}. {exc}")
         except yaml.scanner.ScannerError as exc:
             logger.info(f"Invalid yaml on app api: {api_file}. {exc}")
+
 
 class AppRepo:
     class RepositoryNotInitialized(Exception):
@@ -77,7 +79,7 @@ class AppRepo:
 
                         # it's invalid so toast any old versions from the db
                         await self.session.delete(url + f"/{api['name']}", headers=headers)
-                        logger.error(f"App api {api.get('name')} is invalid. Check api_gateway logs for more info.")
+                        logger.error(f"App api {api.get('name')} is invalid. {results.get('detail')}")
             else:
                 async with self.session.post(url, json=api, headers=headers) as resp:
                     if resp.status == 200:
@@ -92,28 +94,20 @@ class AppRepo:
         except (asyncio.TimeoutError, aiohttp.ClientConnectionError) as e:
             logger.error(f"Could not send app api to {url}: {e!r}")
 
-
     # TODO: Maybe set an API to inactive instead of deletion
-    # The api for deletion is also in the todo for removal 
     async def delete_unused_apps_and_apis(self):
         url = f"{config.API_GATEWAY_URI}/api/apps/apis"
-        appnames = [key for key, value in self.apps.items()]
+        appnames = {key for key, value in self.apps.items()}
+        unused_apis = set(self.loaded_apis.keys()).difference(appnames)
 
         # Return as there is nothing to delete (these should always be the same)
-        if len(self.loaded_apis) <= len(appnames):
+        if len(unused_apis) == 0:
             return
 
         try:
             headers, self.token = await get_walkoff_auth_header(self.session, self.token)
-            async with self.session.get(url, headers=headers) as resp:
-                if resp.status == 200:
-                    results = await resp.json()
-                    logger.info("Deleting {len(self.loaded_apis-appnames)} apps that no longer exist")
+            [await self.session.delete(f"{url}/{api}", headers=headers) for api in unused_apis]
 
-                    # Might want to write some debug code for this, but if the endpoint stays it should be fine.
-                    [await self.session.delete(f"{url}/{app['id_']}", headers=headers) for app in results if not app["name"] in appnames]
-                else:
-                    logger.error(f"Unused apps were not cleaned up. Failed getting API's from {url}.")
         except (asyncio.TimeoutError, aiohttp.ClientConnectionError) as e:
             logger.error(f"Could not get app apis from {url}: {e!r}")
 
@@ -135,7 +129,7 @@ class AppRepo:
                             api = load_app_api(version / app_api_path.pop())
 
                             # The yaml was invalid and we logged that so lets skip it.
-                            if api is None:  
+                            if api is None:
                                 continue
 
                             await self.store_api(api)
@@ -155,4 +149,3 @@ class AppRepo:
                             logger.exception(f"Error during {app.name}:{version.name} load.")
 
                 logger.info(f"Loaded {app.name} versions: {[k for k in self.apps[app.name].keys()]}")
-
