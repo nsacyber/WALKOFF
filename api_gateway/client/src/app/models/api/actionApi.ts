@@ -15,6 +15,8 @@ export class ActionApi {
 
 	description: string;
 
+	parallel_parameter: string[];
+
 	@Type(() => ParameterApi)
 	parameters: ParameterApi[] = [];
 
@@ -45,4 +47,12 @@ export class ActionApi {
 	// external_docs: ExternalDoc[] = [];
 
 	global: boolean;
+
+	get parallelParameters(): ParameterApi[] {
+		return this.parameters.filter(p => p.parallelizable);
+	}
+
+	get canRunInParallel() : boolean {
+		return this.parallelParameters.length > 0;
+	}
 }

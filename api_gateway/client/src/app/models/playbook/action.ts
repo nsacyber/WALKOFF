@@ -22,15 +22,26 @@ export class Action extends ExecutionElement {
 
 	risk?: number;
 
+	parallel_parameter?: Argument;
+
 	@Expose({ name: 'parameters' })
 	@Type(() => Argument)
 	arguments: Argument[] = [];
 
-	// output: string;
-
-
 	get all_errors(): string[] {
 		return this.errors
 				   .concat(...(this.arguments) ? this.arguments.map(argument => argument.all_errors) : [])
+	}
+
+	getArgument(name: string) : Argument {
+		return this.arguments.find(a => a.name == name)
+	}
+
+	get parallel_parameter_name() : string {
+		return (this.parallel_parameter) ? this.parallel_parameter.name : null;
+	}
+
+	set parallel_parameter_name(name: string) {
+		this.parallel_parameter = this.getArgument(name);
 	}
 }

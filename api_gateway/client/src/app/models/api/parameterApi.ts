@@ -5,5 +5,6 @@ export class ParameterApi {
 	description?: string;
 	example?: any;
 	required?: boolean = false;
+	parallelizable?: boolean = false;
 	schema: ParameterSchema;
 }
