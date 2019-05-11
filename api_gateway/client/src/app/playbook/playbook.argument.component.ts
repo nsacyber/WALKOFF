@@ -84,6 +84,8 @@ export class PlaybookArgumentComponent implements OnChanges {
 				this.argument.value = [];
 			} else if (this.parameterSchema.type === 'object') {
 				this.argument.value = {};
+			} else if (this.parameterSchema.type === 'boolean') {
+				this.argument.value = false;
 			}
 		} else if (this.argument.value && this.parameterSchema.type === 'array') {
 			for (const item of (this.argument.value as any[])) {

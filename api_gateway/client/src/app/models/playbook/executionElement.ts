@@ -6,7 +6,7 @@ export class ExecutionElement {
 	@Expose({ name: "id_" })
 	id: string;
 
-	@Exclude()
+	@Exclude({ toPlainOnly: true })
 	errors: string[] = [];
 
 	constructor() {

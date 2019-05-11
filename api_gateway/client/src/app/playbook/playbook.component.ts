@@ -178,7 +178,7 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 		modalRef.componentInstance.existingWorkflows = this.workflows;
 		modalRef.result.then(w => {
 			this.playbookService.saveWorkflow(w)
-				.then(w => this.toastrService.success(`Updated workflow "${workflow.name}"`))
+				.then(w => this.toastrService.success(`Updated <b>${workflow.name}</b>`))
 				.catch(e => this.toastrService.error(`Error loading workflow "${workflow.name}": ${e.message}`));
 		}).catch(() => null)
 	}
@@ -188,7 +188,7 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 
 		try {
 			const duplicateWorkflow: Workflow = await this.playbookService.duplicateWorkflow(workflow.id, name);
-			this.toastrService.success(`Successfully duplicated workflow "${ duplicateWorkflow.name }".`);
+			this.toastrService.success(`Duplicated <b>${ duplicateWorkflow.name }</b>`);
 		}
 		catch(e) {
 			this.toastrService.error(`Error duplicating workflow "${ name }": ${e.message}`);
@@ -205,7 +205,7 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 
 		try {
 			await this.playbookService.deleteWorkflow(workflow.id);
-			this.toastrService.success(`Successfully deleted "${workflow.name}".`);
+			this.toastrService.success(`Deleted <b>${workflow.name}</b>`);
 		}
 		catch(e) {
 			this.toastrService.error(`Error deleting "${workflow.name}": ${e.message}`)
@@ -216,7 +216,7 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 		const modalRef = this.modalService.open(ImportModalComponent);
 		modalRef.result.then(importFile => {
 			this.playbookService.importWorkflow(importFile).then(workflow => {
-				this.toastrService.success(`Successfuly imported workflow "${workflow.name}".`);
+				this.toastrService.success(`Imported <b>${workflow.name}</b>`);
 			}).catch(e => {
 				this.toastrService.error(`Error importing workflow "${importFile.name}": ${e.message}`)
 			})

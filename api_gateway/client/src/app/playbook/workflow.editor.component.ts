@@ -942,7 +942,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			if (typeof (argument.value) === 'string') { argument.value = argument.value.trim(); }
 			// If value and reference are blank, add this argument's ID in the array to the list
 			// Add them in reverse so we don't have problems with the IDs sliding around on the splice
-			if ((argument.value == null || argument.value === '') && argument.reference === '') {
+			if ((argument.value == null || argument.value === '') && !argument.reference) {
 				idsToRemove.unshift(args.indexOf(argument));
 			}
 			// Additionally, remove "value" if reference is specified
@@ -1452,9 +1452,18 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param parameterApi Parameter API used to generate the default argument
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
+		let initialValue = null;
+		if (parameterApi.schema.type === 'array') { 
+			initialValue = [];
+		} else if (parameterApi.schema.type === 'object') {
+			initialValue = {};
+		} else if (parameterApi.schema.type === 'boolean') {
+			initialValue = false;
+		}
+
 		return plainToClass(Argument, {
 			name: parameterApi.name,
-			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
+			value: parameterApi.schema.default != null ? parameterApi.schema.default : initialValue,
 			reference: '',
 			selection: '',
 		});
