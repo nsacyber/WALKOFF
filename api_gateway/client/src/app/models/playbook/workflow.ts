@@ -72,7 +72,7 @@ export class Workflow extends ExecutionElement {
 	 */
 	is_valid: boolean;
 
-	get nodes(): any[] {
+	get nodes(): (Action | Condition)[] {
 		return [].concat(this.actions, this.conditions);
 	}
 
@@ -142,10 +142,10 @@ export class Workflow extends ExecutionElement {
 		return numActions ? `${actionName}_${ ++numActions }` : actionName;
 	}
 
-	getPreviousActions(action: Action) : Action[] {
+	getPreviousActions(action: Action | Condition): (Action | Condition)[] {
 		return this.branches
 			.filter(b => b.destination_id == action.id)
-			.map(b => this.actions.find(a => a.id == b.source_id))
+			.map(b => this.nodes.find(a => a.id == b.source_id))
 			.reduce((previous, action) => $.unique(previous.concat([action], this.getPreviousActions(action))), []);
 	}
 }
