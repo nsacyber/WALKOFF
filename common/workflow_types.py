@@ -44,6 +44,11 @@ class WorkflowJSONDecoder(json.JSONDecoder):
         if "x" in o and "y" in o:
             return Point(**o)
 
+        elif "parallel_parameter" in o and o.get("parallel_parameter") is not None:
+            node = ParallelAction(**o)
+            self.nodes[node.id_] = node
+            return node
+
         elif "parameters" in o and "priority" in o:
             node = Action(**o)
             self.nodes[node.id_] = node
@@ -117,6 +122,12 @@ class WorkflowJSONEncoder(json.JSONEncoder):
                     "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
                     "execution_id": o.execution_id}
 
+        elif isinstance(o, ParallelAction):
+            position = {"x": o.position.x, "y": o.position.y}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
+                    "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
+                    "execution_id": o.execution_id, "parallel_parameter": o.parallel_parameter}
+
         elif isinstance(o, Condition):
             position = {"x": o.position.x, "y": o.position.y}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
@@ -159,7 +170,7 @@ class ParameterVariant(enum.Enum):
 
 
 class Parameter:
-    __slots__ = ("name", "value", "variant", "reference", "id_", "errors")
+    __slots__ = ("name", "value", "variant", "id_", "errors")
 
     def __init__(self, name, id_=None, value=None, variant=None, errors=None):
         self.id_ = id_
@@ -169,7 +180,7 @@ class Parameter:
         self.errors = errors
 
     def __str__(self):
-        return f"Parameter-{self.name}:{self.value or self.reference}"
+        return f"Parameter-{self.name}:{self.value}"
 
     def __eq__(self, other):
         if isinstance(other, Parameter) and self.__slots__ == other.__slots__:
@@ -241,7 +252,7 @@ class Action(Node):
     __slots__ = ("parameters", "execution_id")
 
     def __init__(self, name, position, app_name, app_version, label, priority, parameters=None, id_=None,
-                 execution_id=None, errors=None, is_valid=None):
+                 execution_id=None, errors=None, is_valid=None, **kwargs):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.parameters = parameters if parameters is not None else list()
         self.priority = priority
@@ -316,6 +327,28 @@ class Condition(Node):
 
         return child_id
 
+class ParallelAction(Action):
+    __slots__ = ("parallel_parameter")
+
+    def __init__(self, name, position, app_name, app_version, label, priority, parallel_parameter, parameters=None, id_=None,
+                 execution_id=None, errors=None, is_valid=None):
+        super().__init__(name, position, app_name, app_version, label, priority, parameters, id_,
+                 execution_id, errors, is_valid)
+        self.parallel_parameter = parallel_parameter
+
+    def __str__(self):
+        return f"Parallel Action: {self.label}::{self.id_}"
+
+    def __repr__(self):
+        return f"Parallel Action: {self.label}::{self.id_}"
+
+    # def __eq__(self, other):
+    #     if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
+    #         return attrs_equal(self, other)
+    #     return False
+    #
+    # def __hash__(self):
+    #     return hash(id(self))
 
 # TODO: fully realize and implement triggers
 class Trigger(Node):

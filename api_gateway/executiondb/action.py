@@ -28,7 +28,6 @@ class ActionApi(Base):
     location = Column(String(), nullable=False)
     description = Column(String(), default="")
     returns = relationship("ReturnApi", uselist=False, cascade="all, delete-orphan", passive_deletes=True)
-    parallel_parameter = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
     parameters = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
 
     app_api_id = Column(UUID(as_uuid=True), ForeignKey('app_api.id_', ondelete='CASCADE'))

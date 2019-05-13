@@ -13,8 +13,8 @@ from common.message_types import message_dumps, message_loads, NodeStatusMessage
 from common.config import config
 from common.helpers import get_walkoff_auth_header, send_status_update
 from common.redis_helpers import connect_to_redis_pool, xdel, deref_stream_message
-from common.workflow_types import Node, Action, Condition, Transform, Trigger, ParameterVariant, Workflow, \
-    workflow_dumps, workflow_loads, ConditionException
+from common.workflow_types import (Node, Action, Condition, Transform, Parameter, ParallelAction, Trigger,
+                                   ParameterVariant, Workflow, workflow_dumps, workflow_loads, ConditionException)
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WORKER")
@@ -29,10 +29,13 @@ class Worker:
                  session: aiohttp.ClientSession = None):
         self.workflow = workflow
         self.start_action = start_action if start_action is not None else self.workflow.start
+        self.parallel_accumulator = {}
         self.accumulator = {}
+        self.parallel_in_process = {}
         self.in_process = {}
         self.redis = redis
         self.streams = set()
+        self.parallel_tasks = set()
         self.workflow_tasks = set()
         self.execution_task = None
         self.session = session
@@ -194,7 +197,7 @@ class Worker:
         # TODO: Figure out a clean way of handling the exceptions here. Cancelling subgraphs throws CancelledErrors.
         # Launch the results accumulation task and wait for all the results to come in
         self.workflow_tasks.add(asyncio.create_task(self.get_action_results()))
-        exceptions = await asyncio.gather(*self.workflow_tasks, return_exceptions=True)
+        exceptions = await asyncio.gather(*self.workflow_tasks, return_exceptions=False)
         for e in exceptions:
             if isinstance(e, Exception) and not isinstance(e, asyncio.CancelledError):
                 try:
@@ -233,6 +236,36 @@ class Worker:
 
         except Exception:
             logger.exception("Something happened in Condition evaluation")
+
+    async def execute_parallel_action(self, node: ParallelAction):
+        schedule_tasks = []
+        actions = set()
+        action_to_parallel_map = {}
+        for i, value in enumerate(node.parallel_parameter.value):
+            # params = node.append(array[i])
+            params = []
+            params.extend(node.parameters)
+            params.append(Parameter(node.parallel_parameter.name, value=value,
+                                    variant=ParameterVariant.STATIC_VALUE))
+            # params.append([parameter])
+            act = Action(node.name, node.position, node.app_name, node.app_version, f"{node.name}:shard_{i}",
+                         node.priority, parameters=params, execution_id=node.execution_id)
+            actions.add(act.id_)
+            schedule_tasks.append(asyncio.create_task(self.schedule_node(act, {}, {})))
+            action_to_parallel_map[act.id_] = value
+            self.parallel_in_process[act.id_] = act
+
+        self.in_process.pop(node.id_)
+        exceptions = await asyncio.gather(*schedule_tasks, return_exceptions=False)
+
+        while not actions.intersection(set(self.parallel_accumulator.keys())) == actions:
+            await asyncio.sleep(0)
+
+        self.accumulator[node.id_] = [(action_to_parallel_map[a], self.parallel_accumulator[a])
+                                      for a in actions]
+        await send_status_update(self.session, self.workflow.execution_id,
+                                 NodeStatusMessage.success_from_node(node, self.workflow.execution_id,
+                                                                     self.accumulator[node.id_]))
 
     async def execute_transform(self, transform, parent):
         """ Execute an transform and ship its result """
@@ -292,9 +325,13 @@ class Worker:
         while not all(parent.id_ in self.accumulator for parent in parents.values()):
             await asyncio.sleep(0)
 
-        logger.info("Node ready to execute!")
+        if isinstance(node, ParallelAction):
+            await self.dereference_params(node)
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
+            asyncio.create_task(self.execute_parallel_action(node))
 
-        if isinstance(node, Action):
+        elif isinstance(node, Action):
             group = f"{node.app_name}:{node.app_version}"
             stream = f"{node.execution_id}:{group}"
             try:
@@ -341,7 +378,7 @@ class Worker:
         """ Continuously monitors the results queue until all scheduled actions have been completed """
         results_stream = f"{self.workflow.execution_id}:results"
 
-        while len(self.in_process) > 0:
+        while len(self.in_process) > 0 or len(self.parallel_in_process) > 0:
             try:
                 with await self.redis as redis:
                     msg = await redis.xread_group(config.REDIS_ACTION_RESULTS_GROUP, CONTAINER_ID,
@@ -379,11 +416,32 @@ class Worker:
 
                 await send_status_update(self.session, self.workflow.execution_id, node_message)
 
+            elif node_message.execution_id == self.workflow.execution_id and node_message.node_id in self.parallel_in_process:
+                if node_message.status == StatusEnum.EXECUTING:
+                    logger.debug(f"App started parallel execution of: {node_message.label}-{node_message.execution_id}")
+
+                elif node_message.status == StatusEnum.SUCCESS:
+                    self.parallel_accumulator[node_message.node_id] = node_message.result
+                    logger.debug(f"PARALLEL Worker received result for: {node_message.label}-{node_message.execution_id}")
+
+                elif node_message.status == StatusEnum.FAILURE:
+                    self.parallel_accumulator[node_message.node_id] = node_message.result
+                    logger.debug(f"PARALLELELELELE Worker recieved error \"{node_message.result}\" for: {node_message.label}-"
+                                f"{node_message.execution_id}")
+
+                else:
+                    logger.error(f"Unknown message status received: {node_message}")
+                    node_message = None
+
+                node_message.name = node_message.label
+                await send_status_update(self.session, self.workflow.execution_id, node_message)
             else:
                 logger.error(f"Message received for unknown execution: {node_message}")
 
             # Clean up the redis stream and our in process queue
-            if node_message.status != StatusEnum.EXECUTING:
+            if node_message.status != StatusEnum.EXECUTING and node_message.node_id in self.parallel_in_process:
+                self.parallel_in_process.pop(node_message.node_id, None)
+            elif node_message.status != StatusEnum.EXECUTING:
                 self.in_process.pop(node_message.node_id, None)
             await self.redis.xack(stream=stream, group_name=config.REDIS_ACTION_RESULTS_GROUP, id=id_)
             await xdel(self.redis, stream=stream, id_=id_)

@@ -85,6 +85,11 @@ class Workflow(Base):
 
             for p in action.parameters:
                 params.get(p.name, {})["wf"] = p
+            #TODO make sure validation works
+            parallel_parameter = action.parallel_parameter
+
+            if parallel_parameter is not None:
+                params[parallel_parameter.name]["wf"] = parallel_parameter
 
             for name, pair in params.items():
                 api = pair.get("api")
@@ -94,10 +99,10 @@ class Workflow(Base):
 
                 if not api:
                     message = f"Parameter '{wf.name}' found in workflow but not in '{action.app_name}' API."
-                elif not wf:
-                    if api.required:
-                        message = (f"Parameter '{api.name}' not found in workflow but is required in "
-                                   f"'{action.app_name}' API.")
+                # elif not wf:
+                #     if api.required:
+                #         message = (f"Parameter '{api.name}' not found in workflow but is required in "
+                #                    f"'{action.app_name}' API.")
                 elif wf.variant == ParameterVariant.STATIC_VALUE:
                     try:
                         Draft4Validator(api.schema).validate(wf.value)
