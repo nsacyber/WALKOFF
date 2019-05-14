@@ -22,8 +22,6 @@ export class Action extends ExecutionElement {
 
 	risk?: number;
 
-	parallel_parameter?: Argument;
-
 	@Expose({ name: 'parameters' })
 	@Type(() => Argument)
 	arguments: Argument[] = [];
@@ -37,11 +35,13 @@ export class Action extends ExecutionElement {
 		return this.arguments.find(a => a.name == name)
 	}
 
-	get parallel_parameter_name() : string {
-		return (this.parallel_parameter) ? this.parallel_parameter.name : null;
+	get parallel_parameter() : string {
+		const argument = this.arguments.find(a => a.parallelized == true);
+		return (argument) ? argument.name : null;
 	}
 
-	set parallel_parameter_name(name: string) {
-		this.parallel_parameter = this.getArgument(name);
+	set parallel_parameter(name: string) {
+		this.arguments.forEach(a => a.parallelized = false);
+		this.arguments.find(a => a.name == name).parallelized = true;
 	}
 }

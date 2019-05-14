@@ -245,13 +245,13 @@
                     </ngx-codemirror>
                 </div>
 
-                <div *ngIf="selectedActionApi.canRunInParallel || true" class="form-group mt-3">
+                <div *ngIf="selectedActionApi.canRunInParallel" class="form-group mt-3">
                     <h5>Run In Parallel</h5>
                     <div class="form-group row">
                         <label for="parallel_parameter" class="col-sm-4 col-form-label">Parallelization:</label>
                         <div class="col-sm-8">
                             <select class="form-control" name="parallel_parameter"
-                                [(ngModel)]="selectedAction.parallel_parameter_name">
+                                [(ngModel)]="selectedAction.parallel_parameter">
                                 <option [value]="null">No Parallelization</option>
                                 <option *ngFor="let parameterApi of selectedActionApi.parallelParameters"
                                     [value]="parameterApi.name" [label]="'Parallelize on  ' + parameterApi.name">

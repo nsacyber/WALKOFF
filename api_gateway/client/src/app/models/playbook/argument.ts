@@ -39,6 +39,11 @@ export class Argument {
 	variant: Variant = Variant.STATIC_VALUE;
 
 	/**
+	 * If the worker should run this action in parallel based on this parameter or not
+	 */
+	parallelized: boolean = false;
+
+	/**
 	 * Selection is currently specified in the UI as a string,
 	 * but is split and sent/ingested as an array containing strings and numbers
 	 */
