@@ -35,6 +35,11 @@ export class Action extends ExecutionElement {
 		return this.arguments.find(a => a.name == name)
 	}
 
+	@Expose()
+	get parallelized(): boolean {
+		return (this.parallel_parameter) ? true : false
+	}
+
 	get parallel_parameter() : string {
 		const argument = this.arguments.find(a => a.parallelized == true);
 		return (argument) ? argument.name : null;
