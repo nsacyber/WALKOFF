@@ -1,3 +1,5 @@
 aiohttp
 pyyaml
 asteval
+aiodocker
+pycrypto
