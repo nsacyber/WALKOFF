@@ -44,11 +44,6 @@ class WorkflowJSONDecoder(json.JSONDecoder):
         if "x" in o and "y" in o:
             return Point(**o)
 
-        elif "parallel_parameter" in o and o.get("parallel_parameter") is not None:
-            node = ParallelAction(**o)
-            self.nodes[node.id_] = node
-            return node
-
         elif "parameters" in o and "priority" in o:
             node = Action(**o)
             self.nodes[node.id_] = node
@@ -96,6 +91,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
     """ A custom encoder for encoding Workflow types to JSON strings.
         Note: JSON encoded strings of our custom objects are lossy...for now.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.workflow = {}
@@ -122,11 +118,11 @@ class WorkflowJSONEncoder(json.JSONEncoder):
                     "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
                     "execution_id": o.execution_id}
 
-        elif isinstance(o, ParallelAction):
-            position = {"x": o.position.x, "y": o.position.y}
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
-                    "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
-                    "execution_id": o.execution_id, "parallel_parameter": o.parallel_parameter}
+        # elif isinstance(o, ParallelAction):
+        #     position = {"x": o.position.x, "y": o.position.y}
+        #     return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
+        #             "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
+        #             "execution_id": o.execution_id, "parallel_parameter": o.parallel_parameter}
 
         elif isinstance(o, Condition):
             position = {"x": o.position.x, "y": o.position.y}
@@ -170,11 +166,12 @@ class ParameterVariant(enum.Enum):
 
 
 class Parameter:
-    __slots__ = ("name", "value", "variant", "id_", "errors")
+    __slots__ = ("name", "value", "variant", "id_", "errors", "parallelized")
 
-    def __init__(self, name, id_=None, value=None, variant=None, errors=None):
+    def __init__(self, name, parallelized=False, id_=None, value=None, variant=None, errors=None):
         self.id_ = id_
         self.name = name
+        self.parallelized = parallelized
         self.value = value
         self.variant = variant
         self.errors = errors
@@ -217,7 +214,7 @@ class Node:
 
     def __init__(self, name, position: Point, label, app_name, app_version, id_=None, errors=None, is_valid=True):
         self.id_ = id_ if id_ is not None else str(uuid.uuid4())
-        self.is_valid = is_valid   # ToDo: Is this neccessary?
+        self.is_valid = is_valid  # ToDo: Is this neccessary?
         self.name = name
         self.app_name = app_name
         self.app_version = app_version
@@ -249,12 +246,13 @@ class Node:
 
 
 class Action(Node):
-    __slots__ = ("parameters", "execution_id")
+    __slots__ = ("parameters", "execution_id", "parallelized")
 
-    def __init__(self, name, position, app_name, app_version, label, priority, parameters=None, id_=None,
-                 execution_id=None, errors=None, is_valid=None, **kwargs):
+    def __init__(self, name, position, app_name, app_version, label, priority, parallelized=False, parameters=None,
+                 id_=None, execution_id=None, errors=None, is_valid=None, **kwargs):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.parameters = parameters if parameters is not None else list()
+        self.parallelized = parallelized
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue
 
@@ -327,20 +325,22 @@ class Condition(Node):
 
         return child_id
 
-class ParallelAction(Action):
-    __slots__ = ("parallel_parameter")
 
-    def __init__(self, name, position, app_name, app_version, label, priority, parallel_parameter, parameters=None, id_=None,
-                 execution_id=None, errors=None, is_valid=None):
-        super().__init__(name, position, app_name, app_version, label, priority, parameters, id_,
-                 execution_id, errors, is_valid)
-        self.parallel_parameter = parallel_parameter
-
-    def __str__(self):
-        return f"Parallel Action: {self.label}::{self.id_}"
-
-    def __repr__(self):
-        return f"Parallel Action: {self.label}::{self.id_}"
+# class ParallelAction(Action):
+#     __slots__ = ("parallel_parameter")
+#
+#     def __init__(self, name, position, app_name, app_version, label, priority, parallel_parameter, parameters=None,
+#                  id_=None,
+#                  execution_id=None, errors=None, is_valid=None):
+#         super().__init__(name, position, app_name, app_version, label, priority, parameters, id_,
+#                          execution_id, errors, is_valid)
+#         self.parallel_parameter = parallel_parameter
+#
+#     def __str__(self):
+#         return f"Parallel Action: {self.label}::{self.id_}"
+#
+#     def __repr__(self):
+#         return f"Parallel Action: {self.label}::{self.id_}"
 
     # def __eq__(self, other):
     #     if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
@@ -349,6 +349,7 @@ class ParallelAction(Action):
     #
     # def __hash__(self):
     #     return hash(id(self))
+
 
 # TODO: fully realize and implement triggers
 class Trigger(Node):

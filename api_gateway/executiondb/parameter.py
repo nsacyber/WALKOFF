@@ -63,7 +63,8 @@ class Parameter(Base):
 
     # Columns specific to Parameter model
     action_id = Column(UUID(as_uuid=True), ForeignKey('action.id_', ondelete='CASCADE'))
-    parallel_action_id = Column(UUID(as_uuid=True), ForeignKey('action.id_', ondelete='CASCADE'))
+    parallelized = Column(Boolean(), nullable=False, default=False)
+    # parallel_action_id = Column(UUID(as_uuid=True), ForeignKey('action.id_', ondelete='CASCADE'))
     variant = Column(Enum(ParameterVariant), nullable=False)
 
 

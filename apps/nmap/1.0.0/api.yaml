@@ -14,15 +14,16 @@ actions:
     description: Runs an nmap scan, returns results as string or filename
     parameters:
       - name: targets
+        description: The target(s) to scan, comma separated values, CIDR supported
+        parallelizable: true
         required: true
         schema:
           type: array
-        description: The target(s) to scan, comma separated values, CIDR supported
       - name: options
+        description: see nmap manpage -- some options require root
         required: true
         schema:
           type: string
-        description: see nmap manpage -- some options require root
     returns:
       schema:
         type: array

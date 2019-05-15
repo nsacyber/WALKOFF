@@ -19,7 +19,7 @@ from api_gateway.executiondb.transform import TransformSchema
 from api_gateway.executiondb.branch import BranchSchema
 from api_gateway.executiondb.workflow_variable import WorkflowVariableSchema
 from api_gateway.executiondb import Base, BaseSchema
-from api_gateway.executiondb.action import ActionSchema, ActionApi
+from api_gateway.executiondb.action import ActionSchema, ActionApi, Action
 from api_gateway.executiondb.trigger import TriggerSchema
 
 logger = logging.getLogger(__name__)
@@ -69,7 +69,7 @@ class Workflow(Base):
         self.branches[:] = [branch for branch in self.branches
                             if branch.source_id in node_ids
                             and branch.destination_id in node_ids]
-
+        action: Action
         for action in self.actions:
             action_api = current_app.running_context.execution_db.session.query(ActionApi).filter(
                 ActionApi.location == f"{action.app_name}.{action.name}"
@@ -83,13 +83,18 @@ class Workflow(Base):
             for p in action_api.parameters:
                 params[p.name] = {"api": p}
 
+            count = 0
             for p in action.parameters:
                 params.get(p.name, {})["wf"] = p
-            #TODO make sure validation works
-            parallel_parameter = action.parallel_parameter
+                if p.parallelized:
+                    count += 1
 
-            if parallel_parameter is not None:
-                params[parallel_parameter.name]["wf"] = parallel_parameter
+            if count == 0 and action.parallelized:
+                action.errors.append("No parallelized parameter set.")
+            elif count == 1 and not action.parallelized:
+                action.errors.append("Set action to be parallelized.")
+            elif count > 1:
+                action.errors.append("Too many parallelized parameters")
 
             for name, pair in params.items():
                 api = pair.get("api")
@@ -99,10 +104,10 @@ class Workflow(Base):
 
                 if not api:
                     message = f"Parameter '{wf.name}' found in workflow but not in '{action.app_name}' API."
-                # elif not wf:
-                #     if api.required:
-                #         message = (f"Parameter '{api.name}' not found in workflow but is required in "
-                #                    f"'{action.app_name}' API.")
+                elif not wf:
+                    if api.required:
+                        message = (f"Parameter '{api.name}' not found in workflow but is required in "
+                                   f"'{action.app_name}' API.")
                 elif wf.variant == ParameterVariant.STATIC_VALUE:
                     try:
                         Draft4Validator(api.schema).validate(wf.value)
@@ -123,6 +128,10 @@ class Workflow(Base):
                     elif wf.variant == ParameterVariant.GLOBAL and wf_uuid not in global_ids:
                         message = (f"Parameter '{wf.name}' refers to global variable '{wf.value}' "
                                    f"which does not exist.")
+
+                if wf.parallelized and not api.parallelizable:
+                    action.errors.apppend(f"Parameter {wf.name} is marked parallelized in workflow, but is not "
+                                          f"parallelizable in api")
 
                 if message is not "":
                     action.errors.append(message)

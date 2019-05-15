@@ -13,7 +13,7 @@ from common.message_types import message_dumps, message_loads, NodeStatusMessage
 from common.config import config
 from common.helpers import get_walkoff_auth_header, send_status_update
 from common.redis_helpers import connect_to_redis_pool, xdel, deref_stream_message
-from common.workflow_types import (Node, Action, Condition, Transform, Parameter, ParallelAction, Trigger,
+from common.workflow_types import (Node, Action, Condition, Transform, Parameter, Trigger,
                                    ParameterVariant, Workflow, workflow_dumps, workflow_loads, ConditionException)
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -237,18 +237,22 @@ class Worker:
         except Exception:
             logger.exception("Something happened in Condition evaluation")
 
-    async def execute_parallel_action(self, node: ParallelAction):
+    async def execute_parallel_action(self, node: Action):
         schedule_tasks = []
         actions = set()
         action_to_parallel_map = {}
-        for i, value in enumerate(node.parallel_parameter.value):
+        parallel_parameter = [p for p in node.parameters if p.parallelized]
+        unparallelized = list(set(node.parameters) - set(parallel_parameter))
+
+        for i, value in enumerate(parallel_parameter[0].value):
             # params = node.append(array[i])
             params = []
-            params.extend(node.parameters)
-            params.append(Parameter(node.parallel_parameter.name, value=value,
+            params.extend(unparallelized)
+            params.append(Parameter(parallel_parameter[0].name, value=value,
                                     variant=ParameterVariant.STATIC_VALUE))
             # params.append([parameter])
-            act = Action(node.name, node.position, node.app_name, node.app_version, f"{node.name}:shard_{i}",
+            act = Action(node.name, node.position, node.
+                         app_name, node.app_version, f"{node.name}:shard_{i}",
                          node.priority, parameters=params, execution_id=node.execution_id)
             actions.add(act.id_)
             schedule_tasks.append(asyncio.create_task(self.schedule_node(act, {}, {})))
@@ -256,7 +260,7 @@ class Worker:
             self.parallel_in_process[act.id_] = act
 
         self.in_process.pop(node.id_)
-        exceptions = await asyncio.gather(*schedule_tasks, return_exceptions=False)
+        exceptions = await asyncio.gather(*schedule_tasks, return_exceptions=True)
 
         while not actions.intersection(set(self.parallel_accumulator.keys())) == actions:
             await asyncio.sleep(0)
@@ -324,35 +328,36 @@ class Worker:
 
         while not all(parent.id_ in self.accumulator for parent in parents.values()):
             await asyncio.sleep(0)
+        logger.info("Ready to execute")
+        if isinstance(node, Action):
+            if node.parallelized:
+                await self.dereference_params(node)
+                await send_status_update(self.session, self.workflow.execution_id,
+                                         NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
+                asyncio.create_task(self.execute_parallel_action(node))
 
-        if isinstance(node, ParallelAction):
-            await self.dereference_params(node)
-            await send_status_update(self.session, self.workflow.execution_id,
-                                     NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
-            asyncio.create_task(self.execute_parallel_action(node))
+            else:
+                group = f"{node.app_name}:{node.app_version}"
+                stream = f"{node.execution_id}:{group}"
+                try:
+                    # The stream doesn't exist so lets create that and the app group
+                    if len(await self.redis.keys(stream)) < 1:
+                        await self.redis.xgroup_create(stream, group, mkstream=True)
 
-        elif isinstance(node, Action):
-            group = f"{node.app_name}:{node.app_version}"
-            stream = f"{node.execution_id}:{group}"
-            try:
-                # The stream doesn't exist so lets create that and the app group
-                if len(await self.redis.keys(stream)) < 1:
-                    await self.redis.xgroup_create(stream, group, mkstream=True)
+                    # The stream exists but the group does not so lets just make the app group
+                    if len(await self.redis.xinfo_groups(stream)) < 1:
+                        await self.redis.xgroup_create(stream, group)
 
-                # The stream exists but the group does not so lets just make the app group
-                if len(await self.redis.xinfo_groups(stream)) < 1:
-                    await self.redis.xgroup_create(stream, group)
+                    # Keep track of these for clean up later
+                    self.streams.add(stream)
 
-                # Keep track of these for clean up later
-                self.streams.add(stream)
+                except aioredis.ReplyError as e:
+                    logger.debug(f"Issue creating redis stream {e!r}")
 
-            except aioredis.ReplyError as e:
-                logger.debug(f"Issue creating redis stream {e!r}")
-
-            await self.dereference_params(node)
-            await send_status_update(self.session, self.workflow.execution_id,
-                                     NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
-            await self.redis.xadd(stream, {node.execution_id: workflow_dumps(node)})
+                await self.dereference_params(node)
+                await send_status_update(self.session, self.workflow.execution_id,
+                                         NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
+                await self.redis.xadd(stream, {node.execution_id: workflow_dumps(node)})
 
         elif isinstance(node, Condition):
             await send_status_update(self.session, self.workflow.execution_id,

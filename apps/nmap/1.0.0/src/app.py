@@ -58,9 +58,10 @@ class Nmap(AppBase):
     async def parse_xml_for_linux(self, nmap_arr):
         xml_str = None
         output = []
+
         for nmap in nmap_arr:
 
-            xml_str = nmap
+            xml_str = nmap[1]
 
             try:
                 nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
@@ -81,7 +82,7 @@ class Nmap(AppBase):
         output = []
         for nmap in nmap_arr:
 
-            xml_str = nmap
+            xml_str = nmap[1]
 
             try:
                 nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
