@@ -236,6 +236,19 @@ export class PlaybookService {
 	}
 
 	/**
+	 * For a given executing workflow, asyncronously perform some action to change its status.
+	 * Only returns success
+	 * @param executionId Execution ID to act upon
+	 * @param action Action to take (e.g. abort, resume, pause)
+	 */
+	performWorkflowTrigger(executionId: string, trigger: string, data = {}): Promise<void> {
+		return this.http.patch(`api/workflowqueue/${ executionId }`, { status: 'trigger',  trigger_id: trigger, trigger_data: data})
+			.toPromise()
+			.then(() => null)
+			.catch(this.utils.handleResponseError);
+	}
+
+	/**
 	 * Returns an array of all globals within the DB.
 	 */
 	getGlobals(): Promise<Variable[]> {
@@ -263,6 +276,11 @@ export class PlaybookService {
 							id_: '7a1c6838-1b14-4ddc-7d84-935fcbc260ca',
 							name: 'Condition',
 							node_type: ActionType.CONDITION,
+						},
+						{
+							id_: '21f7c721-448f-da7b-fea9-9b781824e7d3',
+							name: 'Trigger',
+							node_type: ActionType.TRIGGER,
 						}
 					]
 				}].concat(data);

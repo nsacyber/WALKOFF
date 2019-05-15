@@ -53,6 +53,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Variable } from '../models/variable';
 import { MetadataModalComponent } from './metadata.modal.component';
 import { Condition } from '../models/playbook/condition';
+import { Trigger } from '../models/playbook/trigger';
 
 @Component({
 	selector: 'workflow-editor-component',
@@ -443,7 +444,16 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					selector: `node[type="${ ActionType.CONDITION }"]`,
 					css: {
 						'shape': 'diamond',
-						'padding': '30px'
+						'padding': '25px'
+					},
+				},
+				{
+					selector: `node[type="${ ActionType.TRIGGER }"]`,
+					css: {
+						'shape': 'polygon',
+						'shape-polygon-points': '-1, -1, 1, -1, 0, 1',
+						'text-margin-y': '-15px',
+						'padding': '25px'
 					},
 				},
 				{
@@ -713,7 +723,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			return edge;
 		});
 
-		const actions = this.loadedWorkflow.actions.map(action => {
+		const nodes = this.loadedWorkflow.nodes.map(action => {
 			const node: any = { group: 'nodes', position: this.utils.cloneDeep(action.position) };
 			node.data = {
 				id: action.id,
@@ -721,25 +731,12 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				label: action.name,
 				isStartNode: action.id === this.loadedWorkflow.start,
 				hasErrors: action.has_errors,
-				type: ActionType.ACTION
+				type: action.action_type
 			};
 			return node;
 		});
 
-		const conditionals = this.loadedWorkflow.conditions.map(condition => {
-			const node: any = { group: 'nodes', position: this.utils.cloneDeep(condition.position) };
-			node.data = {
-				id: condition.id,
-				_id: condition.id,
-				label: condition.name,
-				isStartNode: condition.id === this.loadedWorkflow.start,
-				hasErrors: condition.has_errors,
-				type: ActionType.CONDITION
-			};
-			return node;
-		});
-
-		this.cy.add([].concat(edges, actions, conditionals));
+		this.cy.add([].concat(nodes, edges));
 
 		this.cy.fit(null, 50);
 
@@ -809,7 +806,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 
 		// Go through our workflow and update some parameters
-		workflowToSave.actions.forEach(action => {
+		workflowToSave.nodes.forEach(action => {
 			// Set action name if empty
 			if (!action.name) action.name = workflowToSave.getNextActionName(action.action_name);
 
@@ -818,22 +815,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 			// Properly sanitize arguments through the tree
 			if (action.arguments) this._sanitizeArgumentsForSave(action, workflowToSave);
-
-			// if (action.trigger) this._sanitizeExpressionAndChildren(action.trigger);
 		});
 
-		workflowToSave.conditions.forEach(condition => {
-			// Set action name if empty
-			if (!condition.name) condition.name = workflowToSave.getNextActionName(condition.action_name, ActionType.CONDITION);
-
-			// Set the new cytoscape positions on our loadedworkflow
-			condition.position = cyData.find(cyAction => cyAction.data._id === condition.id).position;
-
-			// Properly sanitize arguments through the tree
-			if (condition.arguments) this._sanitizeArgumentsForSave(condition, workflowToSave);
-
-			// if (condition.trigger) this._sanitizeExpressionAndChildren(condition.trigger);
-		});
 
 		workflowToSave.branches.forEach(branch => {
 			this._sanitizeExpressionAndChildren(branch.condition);
@@ -1203,11 +1186,14 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 
 		const actionType = this._getAction(appName, appVersion, actionName).node_type;
-		const uniqueActionName = this.loadedWorkflow.getNextActionName(actionName, actionType);
+		const uniqueActionName = this.loadedWorkflow.getNextActionName(actionName);
 
 		switch(actionType) {
 			case ActionType.CONDITION:
-				this.insertConditional(appName, actionName, newActionUuid, uniqueActionName, appVersion, args)
+				this.insertConditional(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
+				break;
+			case ActionType.TRIGGER:
+				this.insertTrigger(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
 				break;
 			default: 
 				this.insertAction(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
@@ -1256,6 +1242,17 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		condition.action_name = actionName;
 		condition.arguments = args;
 		this.loadedWorkflow.conditions.push(condition);
+	}
+
+	private insertTrigger(appName: any, actionName: any, newActionUuid: any, uniqueActionName: string, appVersion: any, args: Argument[]) {
+		const trigger = new Trigger();
+		trigger.id = newActionUuid;
+		trigger.name = uniqueActionName;
+		trigger.app_name = appName;
+		trigger.app_version = appVersion;
+		trigger.action_name = actionName;
+		trigger.arguments = args;
+		this.loadedWorkflow.triggers.push(trigger);
 	}
 
 	// TODO: update this to properly "cut" actions from the loadedWorkflow.
