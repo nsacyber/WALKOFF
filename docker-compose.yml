@@ -11,6 +11,7 @@ services:
           memory: 8M
     restart: on-failure
   umpire:
+#    command: python -m umpire.umpire --log-level=debug --disable-worker-autoscale
     image: localhost:5000/umpire:latest
     build:
      context: ./
@@ -23,7 +24,7 @@ services:
     environment:
       # Worker options
       - WORKER_TIMEOUT=30
-      - API_GATEWAY_URI=http://api_gateway:8080
+      - API_GATEWAY_URI=http://dockerhost:8080
       - WALKOFF_USERNAME=admin
       - WALKOFF_PASSWORD=admin
 
