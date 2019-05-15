@@ -273,7 +273,7 @@ class Worker:
 
             elif param.variant == ParameterVariant.WORKFLOW_VARIABLE:
                 if param.value in self.workflow.workflow_variables:
-                    param.value = self.workflow.workflow_variables[param.value]
+                    param.value = self.workflow.workflow_variables[param.value].value
 
             elif param.variant == ParameterVariant.GLOBAL:
                 if param.value in global_vars:
