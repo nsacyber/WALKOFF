@@ -1,7 +1,7 @@
 import logging
 from uuid import uuid4
 
-from sqlalchemy import Column, Boolean, ForeignKey, String, Integer, JSON
+from sqlalchemy import Column, Boolean, ForeignKey, String, Integer, JSON, event
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship
 
@@ -77,7 +77,7 @@ class Action(Base):
         self.validate()
 
     def validate(self):
-        self.errors = []
+        self.is_valid = self.is_valid_rec()
 
     def is_valid_rec(self):
         if self.errors:
@@ -92,6 +92,11 @@ class Action(Base):
                 if not child.is_valid_rec():
                     return False
         return True
+
+
+# @event.listens_for(Action, "before_update")
+# def validate_before_update(mapper, connection, target):
+#     target.validate()
 
 
 class ActionSchema(BaseSchema):

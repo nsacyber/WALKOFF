@@ -71,7 +71,7 @@ class Workflow(Base):
                             and branch.destination_id in node_ids]
 
         for action in self.actions:
-            action.errors = []
+            errors = []
 
             action_api = current_app.running_context.execution_db.session.query(ActionApi).filter(
                 ActionApi.location == f"{action.app_name}.{action.name}"
@@ -122,10 +122,10 @@ class Workflow(Base):
                                    f"which does not exist.")
 
                 if message is not "":
-                    action.errors.append(message)
+                    errors.append(message)
 
+            action.errors = errors
             action.is_valid = action.is_valid_rec()
-            # current_app.running_context.execution_db.session.add(action)
 
         self.is_valid = self.is_valid_rec()
 
