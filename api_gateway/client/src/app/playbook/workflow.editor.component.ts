@@ -841,6 +841,14 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 			// Properly sanitize arguments through the tree
 			if (action.arguments) this._sanitizeArgumentsForSave(action.arguments);
+<<<<<<< Updated upstream
+=======
+
+			// Refresh parallel_parameter before saving
+			action.parallel_parameter = (action.parallel_parameter) ?
+				action.getArgument(action.parallel_parameter.name) :
+				undefined;
+>>>>>>> Stashed changes
 		});
 
 		workflowToSave.conditions.forEach(condition => {
