@@ -34,7 +34,8 @@ class Worker:
         self.in_process = {}
         self.redis = redis
         self.streams = set()
-        self.workflow_tasks = set()
+        self.scheduling_tasks = set()
+        self.results_getter_task = None
         self.execution_task = None
         self.session = session
         self.token = None
@@ -133,7 +134,8 @@ class Worker:
 
     async def abort(self):
         logger.info("Aborting workflow...")
-        [task.cancel() for task in self.workflow_tasks]
+        [task.cancel() for task in self.scheduling_tasks]
+        self.results_getter_task.cancel()
         self.execution_task.cancel()
 
         # Try to cancel any outstanding actions
@@ -142,7 +144,8 @@ class Worker:
         await asyncio.gather(*message_tasks, return_exceptions=True)
 
         logger.info("Canceling outstanding tasks...")
-        await asyncio.gather(*self.workflow_tasks, *message_tasks, self.execution_task, return_exceptions=True)
+        await asyncio.gather(*self.scheduling_tasks, *message_tasks, self.results_getter_task, self.execution_task,
+                             return_exceptions=True)
         logger.info("Successfully aborted workflow!")
 
     async def cancel_subgraph(self, node):
@@ -153,14 +156,13 @@ class Worker:
         dependents = self.workflow.get_dependents(node)
         cancelled_tasks = set()
 
-        for task in asyncio.all_tasks():
-            if getattr(self, task._coro.__name__, None) == self.schedule_node:  # filter only node scheduling coroutines
-                for _, arg in getcoroutinelocals(task._coro).items():
-                    if isinstance(arg, Node):
-                        if arg in dependents:
-                            self.in_process.pop(arg.id_)
-                            task.cancel()
-                            cancelled_tasks.add(task)
+        for task in self.scheduling_tasks:
+            for _, arg in getcoroutinelocals(task._coro).items():
+                if isinstance(arg, Node):
+                    if arg in dependents:
+                        self.in_process.pop(arg.id_)
+                        task.cancel()
+                        cancelled_tasks.add(task)
 
         await asyncio.gather(*cancelled_tasks, return_exceptions=True)
 
@@ -171,7 +173,7 @@ class Worker:
         """
         visited = {self.start_action}
         queue = deque([self.start_action])
-        self.workflow_tasks = set()
+        self.scheduling_tasks = set()
         while queue:
             node = queue.pop()
             parents = {n.id_: n for n in self.workflow.predecessors(node)} if node is not self.start_action else {}
@@ -184,23 +186,16 @@ class Worker:
             elif isinstance(node, Trigger):
                 raise NotImplementedError
 
-            self.workflow_tasks.add(asyncio.create_task(self.schedule_node(node, parents, children)))
+            self.scheduling_tasks.add(asyncio.create_task(self.schedule_node(node, parents, children)))
 
             for child in sorted(children.values(), reverse=True):
                 if child not in visited:
                     queue.appendleft(child)
                     visited.add(child)
 
-        # TODO: Figure out a clean way of handling the exceptions here. Cancelling subgraphs throws CancelledErrors.
         # Launch the results accumulation task and wait for all the results to come in
-        self.workflow_tasks.add(asyncio.create_task(self.get_action_results()))
-        exceptions = await asyncio.gather(*self.workflow_tasks, return_exceptions=True)
-        for e in exceptions:
-            if isinstance(e, Exception) and not isinstance(e, asyncio.CancelledError):
-                try:
-                    raise e
-                except:
-                    logger.exception(f"Exception while executing Workflow:{self.workflow}")
+        self.results_getter_task = asyncio.create_task(self.get_action_results())
+        await self.results_getter_task
 
     async def evaluate_condition(self, condition, parents, children):
         """
@@ -348,7 +343,7 @@ class Worker:
             execution_id_node_message, stream, id_ = deref_stream_message(msg)
             execution_id, node_message = execution_id_node_message
             node_message = message_loads(node_message)
-            print(node_message.status, node_message.label)
+
             # Ensure that the received NodeStatusMessage is for an action we launched
             if node_message.execution_id == self.workflow.execution_id and node_message.node_id in self.in_process:
                 if node_message.status == StatusEnum.EXECUTING:
