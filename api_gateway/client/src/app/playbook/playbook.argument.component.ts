@@ -59,26 +59,14 @@ export class PlaybookArgumentComponent implements OnChanges {
 	 */
 	ngOnChanges(): void {
 		this.initParameterSchema();
-		this.initGlobalSelect()
 		this.initBranchCounterSelect();
 		this.initTypeSelector();
 		this.initUserSelect();
 		this.initRoleSelect();
 	}
 
-	initGlobalSelect(): void {
-		if (!this.isGlobalArgument) return;
-		this.argument.name = '__global__';
-	}
-
 	initParameterSchema(): void {
-		if (this.isGlobalArgument) return;
-
 		this.parameterSchema = this.parameterApi.schema;
-		if (this.argument.reference == null) { 
-			this.argument.reference = ''; 
-		} 
-
 		if (this.argument.value == null) {
 			if (this.parameterSchema.type === 'array') { 
 				this.argument.value = [];
@@ -101,25 +89,14 @@ export class PlaybookArgumentComponent implements OnChanges {
 	}
 
 	initTypeSelector(): void {
-		this.valueTypes = (this.isGlobalArgument) ? 
-		[
-			{ id: 'global', name: 'Global'},
-			{ id: 'action', name: 'Action Output'},
-		] : [
+		this.valueTypes = [
 			{ id: Variant.STATIC_VALUE, name: 'Static Value'},
 			{ id: Variant.ACTION_RESULT, name: 'Action Output'},
 			{ id: Variant.WORKFLOW_VARIABLE, name: 'Workflow Variable'},
 			{ id: Variant.GLOBAL, name: 'Global'}
-		]
+		];
 
-		this.valueType = Variant.STATIC_VALUE;
-		if (this.isGlobalArgument && !this.argument.reference) this.valueType = Variant.GLOBAL;
-		else if (this.argument.reference) {
-			if (this.loadedWorkflow.actions.find(action => action.id == this.argument.reference)) this.valueType = Variant.ACTION_RESULT;
-			// else if (this.loadedWorkflow.branches.find(branch => branch.id == this.argument.reference)) this.valueType = 'branch';
-			else if (this.loadedWorkflow.environment_variables.find(variable => variable.id == this.argument.reference)) this.valueType = Variant.WORKFLOW_VARIABLE;
-		}
-
+		if (this.argument.variant) this.valueType = this.argument.variant;
 		this.selectedType = this.availableTypes[0];
 	}
 
@@ -186,7 +163,6 @@ export class PlaybookArgumentComponent implements OnChanges {
 	 * @param $event JS Event Fired
 	 */
 	selectChange($event: any): void {
-		this.clearReference();
 		// Convert strings to numbers here
 		if (this.parameterSchema.type === 'array') {
 			const array = $event.value.map((id: string) => +id);
@@ -194,14 +170,6 @@ export class PlaybookArgumentComponent implements OnChanges {
 		} else {
 			this.argument.value = +$event.value;
 		}
-	}
-
-	/**
-	 * Event fired on the select2 change for users/roles. Updates the value based on the event value.
-	 * @param $event JS Event Fired
-	 */
-	clearReference(): void {
-		delete this.argument.reference;
 	}
 
 	/**
@@ -216,8 +184,6 @@ export class PlaybookArgumentComponent implements OnChanges {
 	 * Adds an item to an array if the argument parameter is array.
 	 */
 	addItem(): void {
-		this.clearReference();
-
 		if (!this.argument.value) this.argument.value = [];
 
 		switch (this.selectedType) {
@@ -282,7 +248,6 @@ export class PlaybookArgumentComponent implements OnChanges {
 	 * Adds a new property to an our argument's value object of a given name and type.
 	 */
 	addProperty(): void {
-		this.clearReference();
 		if ((this.argument.value as object).hasOwnProperty(this.propertyName)) { return; }
 		this.propertyName = this.propertyName.trim();
 		switch (this.selectedType) {
@@ -361,10 +326,6 @@ export class PlaybookArgumentComponent implements OnChanges {
 		} else if (schema.items && (schema.items.type === 'user' || schema.items.type === 'role')) { return false; }
 
 		return true;
-	}
-
-	get isGlobalArgument(): boolean {
-		return this.globals && !this.parameterApi;
 	}
 
 	/**

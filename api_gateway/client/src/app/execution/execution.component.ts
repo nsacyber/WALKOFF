@@ -468,11 +468,6 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		const obj: { [key: string]: string } = {};
 		args.forEach(element => {
 			if (element.value) { obj[element.name] = element.value; }
-			if (element.reference) { obj[element.name] = element.reference.toString(); }
-			if (element.selection && Array.isArray(element.selection)) {
-				const selectionString = Array.from(element.selection).join('.');
-				obj[element.name] = `${obj[element.name]} (${selectionString})`;
-			}
 		});
 
 		let out = JSON.stringify(obj, null, 1);

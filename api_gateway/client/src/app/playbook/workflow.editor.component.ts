@@ -38,7 +38,7 @@ import { Action } from '../models/playbook/action';
 import { Branch } from '../models/playbook/branch';
 import { GraphPosition } from '../models/playbook/graphPosition';
 import { Global } from '../models/global';
-import { Argument } from '../models/playbook/argument';
+import { Argument, Variant } from '../models/playbook/argument';
 import { User } from '../models/user';
 import { Role } from '../models/role';
 import { NodeStatus, NodeStatuses } from '../models/execution/nodeStatus';
@@ -53,6 +53,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Variable } from '../models/variable';
 import { MetadataModalComponent } from './metadata.modal.component';
 import { Condition } from '../models/playbook/condition';
+import { Trigger } from '../models/playbook/trigger';
 
 @Component({
 	selector: 'workflow-editor-component',
@@ -115,30 +116,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	actionTypes = ActionType;
 
 	tags: string[] = [];
-
-	// Simple bootstrap modal params
-	modalParams: {
-		title: string,
-		submitText: string,
-		shouldShowPlaybook?: boolean,
-		shouldShowExistingPlaybooks?: boolean,
-		selectedPlaybookId?: string,
-		newPlaybook?: string,
-		shouldShowWorkflow?: boolean,
-		newWorkflow?: string,
-		submit: () => any,
-	} = {
-		title: '',
-		submitText: '',
-		shouldShowPlaybook: false,
-		shouldShowExistingPlaybooks: false,
-		selectedPlaybookId: '',
-		newPlaybook: '',
-		shouldShowWorkflow: false,
-		newWorkflow: '',
-		submit: (() => null) as () => any,
-	};
-
+	
 	conditionalOptions = { 
 		tabSize: 4,
 		indentUnit: 4,
@@ -466,7 +444,16 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					selector: `node[type="${ ActionType.CONDITION }"]`,
 					css: {
 						'shape': 'diamond',
-						'padding': '30px'
+						'padding': '25px'
+					},
+				},
+				{
+					selector: `node[type="${ ActionType.TRIGGER }"]`,
+					css: {
+						'shape': 'polygon',
+						'shape-polygon-points': '-1, -1, 1, -1, 0, 1',
+						'text-margin-y': '-15px',
+						'padding': '25px'
 					},
 				},
 				{
@@ -736,7 +723,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			return edge;
 		});
 
-		const actions = this.loadedWorkflow.actions.map(action => {
+		const nodes = this.loadedWorkflow.nodes.map(action => {
 			const node: any = { group: 'nodes', position: this.utils.cloneDeep(action.position) };
 			node.data = {
 				id: action.id,
@@ -744,25 +731,12 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				label: action.name,
 				isStartNode: action.id === this.loadedWorkflow.start,
 				hasErrors: action.has_errors,
-				type: ActionType.ACTION
+				type: action.action_type
 			};
 			return node;
 		});
 
-		const conditionals = this.loadedWorkflow.conditions.map(condition => {
-			const node: any = { group: 'nodes', position: this.utils.cloneDeep(condition.position) };
-			node.data = {
-				id: condition.id,
-				_id: condition.id,
-				label: condition.name,
-				isStartNode: condition.id === this.loadedWorkflow.start,
-				hasErrors: condition.has_errors,
-				type: ActionType.CONDITION
-			};
-			return node;
-		});
-
-		this.cy.add([].concat(edges, actions, conditionals));
+		this.cy.add([].concat(nodes, edges));
 
 		this.cy.fit(null, 50);
 
@@ -832,7 +806,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 
 		// Go through our workflow and update some parameters
-		workflowToSave.actions.forEach(action => {
+		workflowToSave.nodes.forEach(action => {
 			// Set action name if empty
 			if (!action.name) action.name = workflowToSave.getNextActionName(action.action_name);
 
@@ -840,23 +814,9 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			action.position = cyData.find(cyAction => cyAction.data._id === action.id).position;
 
 			// Properly sanitize arguments through the tree
-			if (action.arguments) this._sanitizeArgumentsForSave(action.arguments);
-
-			// if (action.trigger) this._sanitizeExpressionAndChildren(action.trigger);
+			if (action.arguments) this._sanitizeArgumentsForSave(action, workflowToSave);
 		});
 
-		workflowToSave.conditions.forEach(condition => {
-			// Set action name if empty
-			if (!condition.name) condition.name = workflowToSave.getNextActionName(condition.action_name, ActionType.CONDITION);
-
-			// Set the new cytoscape positions on our loadedworkflow
-			condition.position = cyData.find(cyAction => cyAction.data._id === condition.id).position;
-
-			// Properly sanitize arguments through the tree
-			if (condition.arguments) this._sanitizeArgumentsForSave(condition.arguments);
-
-			// if (condition.trigger) this._sanitizeExpressionAndChildren(condition.trigger);
-		});
 
 		workflowToSave.branches.forEach(branch => {
 			this._sanitizeExpressionAndChildren(branch.condition);
@@ -907,7 +867,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		if (expression.conditions && expression.conditions.length) {
 			expression.conditions.forEach(condition => {
-				this._sanitizeArgumentsForSave(condition.arguments);
+				//this._sanitizeArgumentsForSave(condition.arguments);
 
 				// condition.transforms.forEach(transform => {
 				// 	this._sanitizeArgumentsForSave(transform.arguments);
@@ -918,7 +878,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		if (expression.child_expressions && expression.child_expressions.length) {
 			expression.child_expressions.forEach(childExpr => {
 				childExpr.conditions.forEach(condition => {
-					this._sanitizeArgumentsForSave(condition.arguments);
+					//this._sanitizeArgumentsForSave(condition.arguments);
 
 					// condition.transforms.forEach(transform => {
 					// 	this._sanitizeArgumentsForSave(transform.arguments);
@@ -934,39 +894,41 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
 	 * @param argument The argument to sanitize
 	 */
-	_sanitizeArgumentsForSave(args: Argument[]): void {
+	_sanitizeArgumentsForSave(action: Action | Condition, workflow: Workflow): void {
+		const args = action.arguments;
+
+		console.log('hhhjhh', action.arguments)
+
 		// Filter out any arguments that are blank, essentially
 		const idsToRemove: number[] = [];
 		for (const argument of args) {
 			// First trim any string inputs for sanitation and so we can check against ''
 			if (typeof (argument.value) === 'string') { argument.value = argument.value.trim(); }
+
 			// If value and reference are blank, add this argument's ID in the array to the list
 			// Add them in reverse so we don't have problems with the IDs sliding around on the splice
-			if ((argument.value == null || argument.value === '') && !argument.reference) {
+			if (!argument.value) {
 				idsToRemove.unshift(args.indexOf(argument));
 			}
-			// Additionally, remove "value" if reference is specified
-			if (argument.reference && argument.value !== undefined) {
-				delete argument.value;
-			}
-			// Remove reference if unspecified
-			if (argument.reference === '') { delete argument.reference; }
 
-			// Remove error
-			delete argument.errors;
+			// Make sure reference is valid for this action
+			if (argument.variant == Variant.ACTION_RESULT) {	
+				const validReferences = [].concat(
+					workflow.getPreviousActions(action).map(a => a.id),
+					this.globals.map(g => g.id),
+					workflow.environment_variables.map(v => v.id)
+				)
+				console.log(validReferences)
+				if (!validReferences.includes(argument.value)) {
+					console.log('hi')
+					idsToRemove.unshift(args.indexOf(argument));
+				}
+			}
 		}
 		// Actually splice out all the args
 		for (const id of idsToRemove) {
 			args.splice(id, 1);
 		}
-
-		// Split our string argument selector into what the server expects
-		args.forEach(argument => {
-			if (!argument.reference) {
-				delete argument.selection;
-				return;
-			}
-		});
 	}
 
 	/**
@@ -1224,11 +1186,14 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 
 		const actionType = this._getAction(appName, appVersion, actionName).node_type;
-		const uniqueActionName = this.loadedWorkflow.getNextActionName(actionName, actionType);
+		const uniqueActionName = this.loadedWorkflow.getNextActionName(actionName);
 
 		switch(actionType) {
 			case ActionType.CONDITION:
-				this.insertConditional(appName, actionName, newActionUuid, uniqueActionName, appVersion, args)
+				this.insertConditional(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
+				break;
+			case ActionType.TRIGGER:
+				this.insertTrigger(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
 				break;
 			default: 
 				this.insertAction(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
@@ -1279,6 +1244,17 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.loadedWorkflow.conditions.push(condition);
 	}
 
+	private insertTrigger(appName: any, actionName: any, newActionUuid: any, uniqueActionName: string, appVersion: any, args: Argument[]) {
+		const trigger = new Trigger();
+		trigger.id = newActionUuid;
+		trigger.name = uniqueActionName;
+		trigger.app_name = appName;
+		trigger.app_version = appVersion;
+		trigger.action_name = actionName;
+		trigger.arguments = args;
+		this.loadedWorkflow.triggers.push(trigger);
+	}
+
 	// TODO: update this to properly "cut" actions from the loadedWorkflow.
 	/**
 	 * Cytoscape cut method.
@@ -1306,19 +1282,21 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		newNodes.forEach((n: any) => {
 			// Get a copy of the action we just copied
-			const pastedAction: Action = classToClass(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')), { ignoreDecorators: true });
+			const pastedAction = this.loadedWorkflow.nodes.find(a => a.id === n.data('_id')).clone();
 			const newActionUuid = UUID.UUID();
 
 			pastedAction.id = newActionUuid;
+			pastedAction.name = this.loadedWorkflow.getNextActionName(pastedAction.action_name)
 			pastedAction.arguments.forEach(argument => delete argument.id);
+			this.loadedWorkflow.actions.push(pastedAction);
 
 			n.data({
 				id: newActionUuid,
 				_id: newActionUuid,
+				label: pastedAction.name,
 				isStartNode: false,
 			});
-
-			this.loadedWorkflow.actions.push(pastedAction);
+			n.emit('select');
 		});
 	}
 
@@ -1463,9 +1441,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		return plainToClass(Argument, {
 			name: parameterApi.name,
-			value: parameterApi.schema.default != null ? parameterApi.schema.default : initialValue,
-			reference: '',
-			selection: '',
+			variant: Variant.STATIC_VALUE,
+			value: (parameterApi.schema.default) ? parameterApi.schema.default : initialValue,
 		});
 	}
 
@@ -1532,11 +1509,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const obj: { [key: string]: string } = {};
 		args.forEach(element => {
 			if (element.value) { obj[element.name] = element.value; }
-			if (element.reference) { obj[element.name] = element.reference.toString(); }
-			if (element.selection && element.selection.length) {
-				const selectionString = element.selection;
-				obj[element.name] = `${obj[element.name]} (${selectionString})`;
-			}
 		});
 
 		let out = JSON.stringify(obj, null, 1);

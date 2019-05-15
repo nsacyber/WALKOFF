@@ -66,7 +66,7 @@ class WorkflowJSONDecoder(json.JSONDecoder):
             self.nodes[node.id_] = node
             return node
 
-        elif "trigger" in o:
+        elif "trigger_schema" in o:
             node = Trigger(**o)
             self.nodes[node.id_] = node
             return node
@@ -130,7 +130,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
         elif isinstance(o, Trigger):
             position = {"x": o.position.x, "y": o.position.y}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
-                    "label": o.label, "position": position, "trigger": o.trigger}
+                    "label": o.label, "position": position, "trigger_schema": o.trigger_schema}
 
         elif isinstance(o, Parameter):
             return {"name": o.name, "variant": o.variant, "value": o.value, "id_": o.id_}
@@ -317,14 +317,13 @@ class Condition(Node):
         return child_id
 
 
-# TODO: fully realize and implement triggers
 class Trigger(Node):
-    __slots__ = ("trigger",)
+    __slots__ = ("trigger_schema",)
 
-    def __init__(self, name, position: Point, app_name, app_version, label, trigger, id_=None, errors=None,
+    def __init__(self, name, position: Point, app_name, app_version, label, trigger_schema, id_=None, errors=None,
                  is_valid=None):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
-        self.trigger = trigger
+        self.trigger_schema = trigger_schema
 
     def __str__(self):
         return f"Trigger: {self.label}::{self.id_}"
@@ -339,6 +338,12 @@ class Trigger(Node):
 
     def __hash__(self):
         return hash(id(self))
+
+    def __call__(self, data):
+        """ A trigger simply echos the data it was given """
+        result = data.trigger_data
+        logger.debug(f"Executed {self.name}-{self.id_} with result: {result}")
+        return result
 
 
 class Transform(Node):

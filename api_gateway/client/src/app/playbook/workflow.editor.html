@@ -383,7 +383,7 @@
                 </ng-template>
             </ngb-tab>
 
-            <ngb-tab *ngIf="loadedWorkflow?.environment_variables?.length > 0" title="Environment Variables"
+            <ngb-tab *ngIf="loadedWorkflow?.environment_variables?.length > 0" title="Workflow Variables"
                 id="variable-tab">
                 <ng-template ngbTabContent>
                     <ngx-datatable #environmentVariableTable class='material expandable' [columnMode]="'flex'"

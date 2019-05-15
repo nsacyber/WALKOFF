@@ -1,24 +1,23 @@
 import { Type, Expose, Exclude } from 'class-transformer';
-
 import { Argument } from './argument';
 import { ExecutionElement } from './executionElement';
 import { GraphPosition } from './graphPosition';
 import { ActionType } from '../api/actionApi';
 
-export class Condition extends ExecutionElement {
-	
-	@Exclude()
-    action_type: ActionType = ActionType.CONDITION;
+export class Trigger extends ExecutionElement {
+
+    @Exclude()
+    action_type: ActionType = ActionType.TRIGGER;
 
 	@Expose({ name: 'label' })
 	name: string = 'Label';
 
 	app_name: string = 'Builtin';
 
-	app_version: string;
+    app_version: string;
 
 	@Expose({ name: 'name' })
-	action_name: string = 'Condition';
+	action_name: string = 'Trigger';
 
 	@Type(() => GraphPosition)
 	position: GraphPosition;
@@ -27,7 +26,7 @@ export class Condition extends ExecutionElement {
 	@Type(() => Argument)
 	arguments: Argument[] = [];
 
-	conditional: string = '';
+	trigger_schema: object = {};
 
 	get all_errors(): string[] {
 		return this.errors.concat(...this.arguments.map(argument => argument.all_errors))

@@ -243,7 +243,7 @@ Transform:
 
 Trigger:
   type: object
-  required: [label, trigger]
+  required: [label]
   description: Halts execution of workflow pending an external trigger
   additionalProperties: false
   properties:
@@ -269,10 +269,9 @@ Trigger:
       type: boolean
     errors:
       $ref: '#/components/schemas/ExecutionElementErrors'
-    trigger:
-      description: The trigger to be evaluated by WALKOFF
-      type: string
-      example: approval == True
+    trigger_schema:
+      description: Schema to validate sent data with
+      type: object
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
       $ref: '#/components/schemas/Position'

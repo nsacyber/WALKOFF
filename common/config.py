@@ -52,7 +52,7 @@ class Config:
     REDIS_WORKFLOWS_IN_PROCESS = os.getenv("REDIS_WORKFLOWS_IN_PROCESS", "workflows-in-process")
     REDIS_WORKFLOW_GROUP = os.getenv("REDIS_WORKFLOW_GROUP", "workflow-group")
     REDIS_ACTION_RESULTS_GROUP = os.getenv("REDIS_ACTION_RESULTS_GROUP", "action-results-group")
-
+    REDIS_WORKFLOW_TRIGGERS_GROUP = os.getenv("REDIS_WORKFLOW_TRIGGERS_GROUP", "workflow-triggers-group")
     REDIS_WORKFLOW_CONTROL = os.getenv("REDIS_WORKFLOW_CONTROL", "workflow-control")
     REDIS_WORKFLOW_CONTROL_GROUP = os.getenv("REDIS_WORKFLOW_CONTROL_GROUP", "workflow-control-group")
 

@@ -67,7 +67,7 @@ class AppRepo:
         url = f"{config.API_GATEWAY_URI}/api/apps/apis"
         try:
             headers, self.token = await get_walkoff_auth_header(self.session, self.token)
-            if api.get("name") in self.loaded_apis :
+            if api.get("name") in self.loaded_apis:
                 async with self.session.put(url + f"/{api['name']}", json=api, headers=headers) as resp:
                     if resp.status == 200:
                         results = await resp.json()
@@ -116,6 +116,7 @@ class AppRepo:
             raise AppRepo.RepositoryNotInitialized
 
         self.apps = {}
+        await self.get_loaded_apis()
         for app in self.path.iterdir():
             #  grabs only directories and ignores all __* directories i.e. __pycache__
             if app.is_dir() and not re.fullmatch(r"(__.*)", app.name):

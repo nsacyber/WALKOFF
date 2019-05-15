@@ -18,4 +18,4 @@ FROM base
 COPY --from=builder /install /usr/local
 COPY walkoff_app_sdk/__init__.py /app/walkoff_app_sdk/__init__.py
 COPY walkoff_app_sdk/app_base.py /app/walkoff_app_sdk/app_base.py
-COPY walkoff_app_sdk/common /app/common
+COPY walkoff_app_sdk/common /app/walkoff_app_sdk/common

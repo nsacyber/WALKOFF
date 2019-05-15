@@ -1,7 +1,6 @@
 import logging
 import os
 import sys
-import json
 
 import aioredis
 import aiohttp
@@ -11,8 +10,8 @@ from common.workflow_types import workflow_loads, Action, ParameterVariant
 from common.async_logger import AsyncLogger, AsyncHandler
 from common.helpers import UUID_GLOB
 from common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
-from common.docker_helpers import get_secret, connect_to_aiodocker
 from common.global_cipher import GlobalCipher
+
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
@@ -99,8 +98,6 @@ class AppBase:
             except aioredis.errors.ReplyError:
                 continue  # Just keep trying to read messages. This likely gets thrown if a stream doesn't exist
 
-
-
             execution_id_action, stream, id_ = deref_stream_message(message)
             execution_id, action = execution_id_action
 
@@ -152,13 +149,11 @@ class AppBase:
                 action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
                 self.logger.exception(f"Failed to execute {action.label}-{action.id_}")
 
-            await self.redis.xadd(results_stream, {action.execution_id: message_dumps(action_result)})
-
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
             action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
                                                                 result="Action does not exist")
-            await self.redis.xadd(results_stream, {action.execution_id: message_dumps(action_result)})
+        await self.redis.xadd(results_stream, {action.execution_id: message_dumps(action_result)})
 
     @classmethod
     async def run(cls):
@@ -176,7 +171,4 @@ class AppBase:
 
             app = cls(redis=redis, logger=logger, console_logger=console_logger)
 
-
             await app.get_actions()
-
-

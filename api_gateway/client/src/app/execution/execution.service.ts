@@ -23,7 +23,7 @@ export class ExecutionService {
 	addWorkflowToQueue(workflow_id: string, execution_id: string = null, variables: EnvironmentVariable[] = []): Promise<WorkflowStatus> {
 		let data: any = { workflow_id };
 		if (execution_id) data.execution_id = execution_id;
-		if (variables.length > 0) data.environment_variables = classToPlain(variables);
+		if (variables.length > 0) data.workflow_variables = classToPlain(variables);
 
 		return this.http.post('api/workflowqueue', data)
 			.toPromise()
@@ -39,6 +39,19 @@ export class ExecutionService {
 	 */
 	performWorkflowStatusAction(executionId: string, action: string): Promise<void> {
 		return this.http.patch(`api/workflowqueue/${ executionId }`, { status: action })
+			.toPromise()
+			.then(() => null)
+			.catch(this.utils.handleResponseError);
+	}
+
+	/**
+	 * For a given executing workflow, asyncronously perform some action to change its status.
+	 * Only returns success
+	 * @param executionId Execution ID to act upon
+	 * @param action Action to take (e.g. abort, resume, pause)
+	 */
+	performWorkflowTrigger(executionId: string, trigger: string, data = {}): Promise<void> {
+		return this.http.patch(`api/workflowqueue/${ executionId }`, { status: 'trigger',  trigger_id: trigger, trigger_data: data})
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
