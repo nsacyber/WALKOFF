@@ -170,4 +170,4 @@ ControlWorkflow:
     status:
       description: The action to take on the executing workflow
       type: string
-      enum: ['pause', 'resume', 'abort']
+      enum: ['trigger', 'abort']

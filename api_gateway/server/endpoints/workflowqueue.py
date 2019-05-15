@@ -13,7 +13,7 @@ import gevent
 
 from marshmallow import ValidationError
 
-from common.message_types import StatusEnum
+from common.message_types import StatusEnum, message_dumps
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusSchema
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
@@ -159,15 +159,14 @@ def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['execute']))
-@with_workflow_status('control', "execution_id")
-def control_workflow(execution_id):
+@with_workflow_status('control', "execution")
+def control_workflow(execution):
     data = request.get_json()
     status = data['status']
 
-    workflow = workflow_getter(execution_id.workflow_id)
-
+    workflow = workflow_getter(execution.workflow_id)
     # The resource factory returns the WorkflowStatus model but we want the string of the execution ID
-    execution_id = str(execution_id.execution_id)
+    execution_id = str(execution.execution_id)
 
     # TODO: add in pause/resume here. Workers need to store and recover state for this
     if status == 'abort':
@@ -177,8 +176,45 @@ def control_workflow(execution_id):
                                                 Config.common_config.REDIS_ABORTING_WORKFLOWS, execution_id)
         current_app.running_context.cache.xadd(Config.common_config.REDIS_WORKFLOW_CONTROL, message)
 
-    return None, HTTPStatus.NO_CONTENT
+        return None, HTTPStatus.NO_CONTENT
+    elif status == 'trigger':
+        if execution.status not in (StatusEnum.PENDING, StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA):
+            return invalid_input_problem("workflow", "trigger", execution_id,
+                                         errors=["Workflow must be in a running state to accept triggers."])
 
+        trigger_id = data.get('trigger_id')
+        if not trigger_id:
+            return invalid_input_problem("workflow", "trigger", execution_id,
+                                         errors=["ID of the trigger must be specified in trigger_id."])
+        seen = False
+        for trigger in workflow.triggers:
+            if str(trigger.id_) == trigger_id:
+                seen = True
+
+        if not seen:
+            return invalid_input_problem("workflow", "trigger", execution_id,
+                                         errors=[f"trigger_id {trigger_id} was not found in this workflow."])
+
+        trigger_stream = f"{execution_id}-{trigger_id}:triggers"
+
+        try:
+            info = current_app.running_context.cache.xinfo_stream(trigger_stream)
+            stream_length = info["length"]
+        except Exception:
+            stream_length = 0
+
+        if stream_length > 0:
+            return invalid_input_problem("workflow", "trigger", execution_id,
+                                         errors=[f"This trigger has already received data."])
+
+        trigger_data = data.get('trigger_data')
+        logger.info(f"User '{get_jwt_claims().get('username', None)}' triggering workflow: {execution_id} at trigger "
+                    f"{trigger_id} with data {trigger_data}")
+
+        current_app.running_context.cache.xadd(trigger_stream,
+                                               {execution_id: message_dumps({"trigger_data": trigger_data})})
+
+        return jsonify({"trigger_stream": trigger_stream}), HTTPStatus.OK
 
 # ToDo: make these clear db endpoints for more resources
 def clear_workflow_status(all_=False, days=30):

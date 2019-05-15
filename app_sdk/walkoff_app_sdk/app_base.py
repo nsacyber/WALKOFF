@@ -95,8 +95,6 @@ class AppBase:
             except aioredis.errors.ReplyError:
                 continue  # Just keep trying to read messages. This likely gets thrown if a stream doesn't exist
 
-
-
             execution_id_action, stream, id_ = deref_stream_message(message)
             execution_id, action = execution_id_action
 
@@ -160,7 +158,4 @@ class AppBase:
 
             app = cls(redis=redis, logger=logger, console_logger=console_logger)
 
-
             await app.get_actions()
-
-

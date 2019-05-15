@@ -75,7 +75,7 @@ class Worker:
 
     @staticmethod
     async def run():
-        async with connect_to_redis_pool(config.REDIS_URI) as redis,\
+        async with connect_to_redis_pool(config.REDIS_URI) as redis, \
                 aiohttp.ClientSession(json_serialize=message_dumps) as session:
 
             # Attach our signal handlers to cleanly close services we've created
@@ -93,7 +93,7 @@ class Worker:
 
                 await redis.xgroup_create(worker.results_stream, config.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
                 logger.info(f"Starting execution of workflow: {workflow.name}")
-                status = WorkflowStatusMessage.execution_started(worker.workflow.execution_id,  worker.workflow.id_,
+                status = WorkflowStatusMessage.execution_started(worker.workflow.execution_id, worker.workflow.id_,
                                                                  worker.workflow.name)
 
                 await send_status_update(session, workflow.execution_id, status)
@@ -183,9 +183,6 @@ class Worker:
             if isinstance(node, Action):
                 node.execution_id = self.workflow.execution_id  # the app needs this as a key for the redis queue
 
-            elif isinstance(node, Trigger):
-                raise NotImplementedError
-
             self.scheduling_tasks.add(asyncio.create_task(self.schedule_node(node, parents, children)))
 
             for child in sorted(children.values(), reverse=True):
@@ -241,6 +238,24 @@ class Worker:
         # Send the status message through redis to ensure get_action_results completes it correctly
         await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
+    async def execute_trigger(self, trigger, trigger_data):
+        """ Execute a trigger and ship the data """
+        logger.debug(f"Echoing data from trigger: {trigger.name}-{self.workflow.execution_id}")
+        try:
+            result = trigger(trigger_data)
+            tmsg = NodeStatusMessage.success_from_node(trigger, self.workflow.execution_id, result)
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     tmsg)
+            self.accumulator[trigger.id_] = result
+            self.in_process.pop(trigger.id_)
+
+        # TODO: can/should a trigger actually raise any exceptions?
+        except Exception as e:
+            logger.exception(f"Worker received error for {trigger.name}-{self.workflow.execution_id}")
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     NodeStatusMessage.failure_from_node(trigger, self.workflow.execution_id,
+                                                                         result=repr(e)))
+
     async def get_globals(self):
         url = config.API_GATEWAY_URI.rstrip('/') + '/api'
         headers, self.token = await get_walkoff_auth_header(self.session, self.token)
@@ -275,12 +290,12 @@ class Worker:
 
     async def schedule_node(self, node, parents, children):
         """ Waits until all dependencies of an action are met and then schedules the action """
-        logger.info("Scheduling node...")
+        logger.info(f"Scheduling node {node.id_} ({node.name})...")
 
         while not all(parent.id_ in self.accumulator for parent in parents.values()):
             await asyncio.sleep(0)
 
-        logger.info("Node ready to execute!")
+        logger.info(f"Node {node.id_} ({node.name}) ready to execute.")
 
         if isinstance(node, Action):
             group = f"{node.app_name}:{node.app_version}"
@@ -318,7 +333,33 @@ class Worker:
             await self.execute_transform(node, parents.popitem()[1])
 
         elif isinstance(node, Trigger):
-            raise NotImplementedError
+            trigger_stream = f"{self.workflow.execution_id}-{node.id_}:triggers"
+            msg = None
+            logger.debug(f"Waiting for trigger in {self.workflow.execution_id} ({self.workflow.name}) at "
+                         f"{node.id_} ({node.name})")
+            while not msg:
+                try:
+                    with await self.redis as redis:
+                        msg = await redis.xread_group(config.REDIS_WORKFLOW_TRIGGERS_GROUP, CONTAINER_ID,
+                                                      streams=[trigger_stream], count=1, latest_ids=['>'])
+
+                    logger.debug(f"Trigger satisfied in {self.workflow.execution_id} ({self.workflow.name}) at "
+                                 f"{node.id_} ({node.name}) with message {msg}")
+
+                    await send_status_update(self.session, self.workflow.execution_id,
+                                             NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
+
+                    execution_id_trigger_message, stream, id_ = deref_stream_message(msg)
+                    execution_id, trigger_message = execution_id_trigger_message
+                    trigger_message = message_loads(trigger_message)
+
+                    await self.execute_trigger(node, trigger_message)
+
+                    await self.redis.delete(trigger_stream)
+                except aioredis.errors.ReplyError as e:
+                    logger.debug(f"Stream {trigger_stream} doesn't exist. Attempting to create it...")
+                    await self.redis.xgroup_create(trigger_stream, config.REDIS_WORKFLOW_TRIGGERS_GROUP,
+                                                   mkstream=True, latest_id='0')
 
         # TODO: decide if we want pending action messages and uncomment this line
         # await send_status_update(self.session, self.workflow.execution_id,

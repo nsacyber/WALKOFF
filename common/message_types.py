@@ -33,6 +33,9 @@ class MessageJSONDecoder(json.JSONDecoder):
             o["status"] = StatusEnum[o["status"]]
             return WorkflowStatusMessage(**o)
 
+        elif "trigger_data" in o:
+            return TriggerMessage(**o)
+
         else:
             return o
 
@@ -49,6 +52,9 @@ class MessageJSONEncoder(json.JSONEncoder):
         elif isinstance(o, WorkflowStatusMessage):
             return {"execution_id": o.execution_id, "workflow_id": o.workflow_id, "name": o.name, "status": o.status,
                     "started_at": o.started_at, "completed_at": o.completed_at, "user": o.user}
+
+        elif isinstance(o, TriggerMessage):
+            return {"trigger_data": o.trigger_data}
 
         elif isinstance(o, JSONPatch):
             if o.op in JSONPatchOps:
@@ -185,3 +191,11 @@ class NodeStatusMessage(object):
         completed_at = datetime.datetime.now()
         return NodeStatusMessage.from_node(node, execution_id, result=None, completed_at=completed_at,
                                            status=StatusEnum.ABORTED)
+
+
+class TriggerMessage(object):
+    """ Class that formats a TriggerMessage. """
+    __slots__ = ("trigger_data",)
+
+    def __init__(self, trigger_data):
+        self.trigger_data = trigger_data

@@ -55,7 +55,7 @@ class Workflow(Base):
 
     def validate(self):
         """Validates the object"""
-        node_ids = {node.id_ for node in self.actions + self.conditions + self.transforms}
+        node_ids = {node.id_ for node in self.actions + self.conditions + self.transforms + self.triggers}
         wfv_ids = {workflow_var.id_ for workflow_var in self.workflow_variables}
         global_ids = set(id_ for id_, in current_app.running_context.execution_db.session.query(GlobalVariable.id_))
 

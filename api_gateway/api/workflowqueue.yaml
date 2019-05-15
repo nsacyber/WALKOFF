@@ -53,21 +53,21 @@
             schema:
               $ref: '#/components/schemas/Error'
 
-/workflowqueue/{execution_id}:
-  parameters:
-    - name: execution_id
-      in: path
-      description: The ID that needs to be fetched.
-      required: true
-      schema:
-        type: string
-        format: uuid
+/workflowqueue/{execution}:
   get:
     tags:
       - WorkflowQueue
     summary: Get status information on a currently executing workflow
     description: ''
     operationId: api_gateway.server.endpoints.workflowqueue.get_workflow_status
+    parameters:
+      - name: execution
+        in: path
+        description: The ID of the execution to get.
+        required: true
+        schema:
+          type: string
+          format: uuid
     responses:
       200:
         description: Success
@@ -84,7 +84,7 @@
   patch:
     tags:
       - WorkflowQueue
-    summary: Pause, resume, or abort a workflow
+    summary: Abort or trigger a workflow
     description: ''
     operationId: api_gateway.server.endpoints.workflowqueue.control_workflow
     requestBody:
@@ -93,6 +93,14 @@
         application/json:
           schema:
             $ref: '#/components/schemas/ControlWorkflow'
+    parameters:
+      - name: execution
+        in: path
+        description: The ID of the execution to get.
+        required: true
+        schema:
+          type: string
+          format: uuid
     responses:
       204:
         description: Success.
