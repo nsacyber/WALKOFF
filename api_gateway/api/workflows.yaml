@@ -77,6 +77,12 @@
         required: true
         schema:
           type: string
+      - name: mode
+        in: query
+        description: 'Set to export to send as file.'
+        schema:
+          type: string
+          enum: ["export"]
     responses:
       200:
         description: Success
