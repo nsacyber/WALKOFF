@@ -29,6 +29,7 @@ class Worker:
                  session: aiohttp.ClientSession = None):
         self.workflow = workflow
         self.start_action = start_action if start_action is not None else self.workflow.start
+        self.results_stream = f"{workflow.execution_id}:results"
         self.accumulator = {}
         self.in_process = {}
         self.redis = redis
@@ -89,8 +90,7 @@ class Worker:
                 # Attach our abort signal handler to a specific instance of the worker
                 loop.add_signal_handler(signal.SIGQUIT, lambda: asyncio.ensure_future(worker.abort()))
 
-                results_stream = f"{workflow.execution_id}:results"
-                await redis.xgroup_create(results_stream, config.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
+                await redis.xgroup_create(worker.results_stream, config.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
                 logger.info(f"Starting execution of workflow: {workflow.name}")
                 status = WorkflowStatusMessage.execution_started(worker.workflow.execution_id,  worker.workflow.id_,
                                                                  worker.workflow.name)
@@ -214,44 +214,37 @@ class Worker:
         try:
             child_id = condition(parents, children, self.accumulator)
             selected_node = children.pop(child_id)
-            await send_status_update(self.session, self.workflow.execution_id,
-                                     NodeStatusMessage.success_from_node(condition, self.workflow.execution_id,
-                                                                         selected_node.name))
+            status = NodeStatusMessage.success_from_node(condition, self.workflow.execution_id, selected_node.name)
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
             # We preemptively schedule all branches of execution so we must cancel all "false" branches here
             [await self.cancel_subgraph(child) for child in children.values()]
 
-            self.in_process.pop(condition.id_)
-            self.accumulator[condition.id_] = selected_node
-
         except ConditionException as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
-            await send_status_update(self.session, self.workflow.execution_id,
-                                     NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id,
-                                                                         result=repr(e)))
+            status = NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id, result=repr(e))
+        except Exception as e:
+            logger.exception(f"Something bad happened in Condition evaluation: {e!r}")
+            return
 
-        except Exception:
-            logger.exception("Something happened in Condition evaluation")
+        # Send the status message through redis to ensure get_action_results completes it correctly
+        await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
     async def execute_transform(self, transform, parent):
         """ Execute an transform and ship its result """
         logger.debug(f"Attempting evaluation of: {transform.label}-{self.workflow.execution_id}")
         try:
             result = transform(self.accumulator[parent.id_])  # run transform on parent's result
-            await send_status_update(self.session, self.workflow.execution_id,
-                                     NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result))
+            status = NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result)
             logger.info(f"Transform {transform.label}-succeeded with result: {result}")
-
-            self.accumulator[transform.id_] = result
-            self.in_process.pop(transform.id_)
 
         # TODO: figure out exactly what can be raised by the possible transforms
         except Exception as e:
             logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
-            await send_status_update(self.session, self.workflow.execution_id,
-                                     NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id,
-                                                                         result=repr(e)))
+            status = NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, result=repr(e))
+
+        # Send the status message through redis to ensure get_action_results completes it correctly
+        await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
     async def get_globals(self):
         url = config.API_GATEWAY_URI.rstrip('/') + '/api'
@@ -339,25 +332,23 @@ class Worker:
 
     async def get_action_results(self):
         """ Continuously monitors the results queue until all scheduled actions have been completed """
-        results_stream = f"{self.workflow.execution_id}:results"
-
         while len(self.in_process) > 0:
             try:
                 with await self.redis as redis:
                     msg = await redis.xread_group(config.REDIS_ACTION_RESULTS_GROUP, CONTAINER_ID,
-                                                  streams=[results_stream], count=1, latest_ids=['>'])
+                                                  streams=[self.results_stream], count=1, latest_ids=['>'])
             except aioredis.errors.ReplyError:
                 logger.debug(f"Stream {self.workflow.execution_id} doesn't exist. Attempting to create it...")
-                await self.redis.xgroup_create(results_stream, config.REDIS_ACTION_RESULTS_GROUP,
+                await self.redis.xgroup_create(self.results_stream, config.REDIS_ACTION_RESULTS_GROUP,
                                                mkstream=True)
-                logger.debug(f"Created stream {results_stream}.")
+                logger.debug(f"Created stream {self.results_stream}.")
                 continue
 
             # Dereference the redis stream message and load the status message
             execution_id_node_message, stream, id_ = deref_stream_message(msg)
             execution_id, node_message = execution_id_node_message
             node_message = message_loads(node_message)
-
+            print(node_message.status, node_message.label)
             # Ensure that the received NodeStatusMessage is for an action we launched
             if node_message.execution_id == self.workflow.execution_id and node_message.node_id in self.in_process:
                 if node_message.status == StatusEnum.EXECUTING:
@@ -389,7 +380,7 @@ class Worker:
             await xdel(self.redis, stream=stream, id_=id_)
 
         # Remove the finished results stream and group
-        await self.redis.delete(results_stream)
+        await self.redis.delete(self.results_stream)
         pipe: aioredis.commands.Pipeline = self.redis.pipeline()
         futs = [pipe.delete(stream) for stream in self.streams]
         results = await pipe.execute()
