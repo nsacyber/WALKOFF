@@ -107,7 +107,7 @@ export class Workflow extends ExecutionElement {
 
 	get referenced_variables() : EnvironmentVariable[] {
 		if (!this.environment_variables) return [];
-		return this.environment_variables.filter(variable => this.all_arguments.some(arg => arg.reference == variable.id));
+		return this.environment_variables.filter(variable => this.all_arguments.some(arg => arg.value == variable.id));
 	}
 
 	listBranchCounters() : Select2OptionData[] {
@@ -131,13 +131,15 @@ export class Workflow extends ExecutionElement {
 
 	getNextActionName(actionName: string, actionType: ActionType = ActionType.ACTION) : string {
 		let numActions;
-		switch (actionType) {
-			case ActionType.CONDITION:
-				numActions = this.conditions.filter(a => a.action_name === actionName && a.name).length;
-				break;
-			default:
-				numActions = this.actions.filter(a => a.action_name === actionName && a.name).length;
-		}
+		// switch (actionType) {
+		// 	case ActionType.CONDITION:
+		// 		numActions = this.conditions.filter(a => a.action_name === actionName && a.name).length;
+		// 		break;
+		// 	default:
+		// 		numActions = this.actions.filter(a => a.action_name === actionName && a.name).length;
+		// }
+
+		numActions = this.nodes.filter(a => a.action_name === actionName && a.name).length;
 
 		return numActions ? `${actionName}_${ ++numActions }` : actionName;
 	}
@@ -146,6 +148,6 @@ export class Workflow extends ExecutionElement {
 		return this.branches
 			.filter(b => b.destination_id == action.id)
 			.map(b => this.nodes.find(a => a.id == b.source_id))
-			.reduce((previous, action) => $.unique(previous.concat([action], this.getPreviousActions(action))), []);
+			.reduce((previous, action) => previous.concat([action], this.getPreviousActions(action)).filter((v, i, a) => a.indexOf(v) == i), []);
 	}
 }
