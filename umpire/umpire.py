@@ -234,7 +234,6 @@ class Umpire:
             encryption_secret_id = await get_secret(self.docker_client, "encryption_key")
             secrets = await load_secrets(self.docker_client, project=self.app_repo.apps[app][version])
             secrets.append(SecretReference(secret_id=encryption_secret_id, secret_name="encryption_key"))
-            logger.info(f"THESE ARE THE SECRETS AHHHHHHHHHHHH{secrets}")
             mode = {"replicated": {'Replicas': replicas}}
             service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode)
             await self.docker_client.services.create(name=app_name, **service_kwargs)
@@ -245,7 +244,6 @@ class Umpire:
             return
 
         logger.info(f"Launched {app}")
-        logger.info(f"THESE ARE THE SECRETS AHHHHHHHHHHHH{secrets}")
 
 
     async def update_app(self, app, version, replicas=1):
