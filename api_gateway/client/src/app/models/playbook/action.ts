@@ -47,6 +47,7 @@ export class Action extends ExecutionElement {
 
 	set parallel_parameter(name: string) {
 		this.arguments.forEach(a => a.parallelized = false);
-		this.arguments.find(a => a.name == name).parallelized = true;
+		const argument = this.arguments.find(a => a.name == name);
+		if (argument) argument.parallelized = true;
 	}
 }
