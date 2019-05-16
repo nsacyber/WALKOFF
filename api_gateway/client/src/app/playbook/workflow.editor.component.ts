@@ -897,8 +897,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	_sanitizeArgumentsForSave(action: Action | Condition, workflow: Workflow): void {
 		const args = action.arguments;
 
-		console.log('hhhjhh', action.arguments)
-
 		// Filter out any arguments that are blank, essentially
 		const idsToRemove: number[] = [];
 		for (const argument of args) {
@@ -913,14 +911,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 			// Make sure reference is valid for this action
 			if (argument.variant == Variant.ACTION_RESULT) {	
-				const validReferences = [].concat(
-					workflow.getPreviousActions(action).map(a => a.id),
-					this.globals.map(g => g.id),
-					workflow.environment_variables.map(v => v.id)
-				)
-				console.log(validReferences)
+				const validReferences = workflow.getPreviousActions(action).map(a => a.id);
 				if (!validReferences.includes(argument.value)) {
-					console.log('hi')
 					idsToRemove.unshift(args.indexOf(argument));
 				}
 			}

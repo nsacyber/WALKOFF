@@ -59,7 +59,6 @@ export class PlaybookArgumentComponent implements OnChanges {
 	 */
 	ngOnChanges(): void {
 		this.initParameterSchema();
-		this.initBranchCounterSelect();
 		this.initTypeSelector();
 		this.initUserSelect();
 		this.initRoleSelect();
@@ -152,10 +151,6 @@ export class PlaybookArgumentComponent implements OnChanges {
 			if (Array.isArray(this.argument.value)) 
 				this.selectInitialValue = this.argument.value.map((val: number) => val.toString());
 		}
-	}
-
-	initBranchCounterSelect(): void {
-		this.branchCounters = this.loadedWorkflow.listBranchCounters();
 	}
 
 	/**
