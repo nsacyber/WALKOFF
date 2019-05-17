@@ -324,7 +324,7 @@ class Worker:
                 logger.error(f"Unable to defeference parameter:{param} for action:{action}")
                 break
 
-            param.variant = ParameterVariant.STATIC_VALUE
+            #param.variant = ParameterVariant.STATIC_VALUE
 
     async def schedule_node(self, node, parents, children):
         """ Waits until all dependencies of an action are met and then schedules the action """

@@ -6,10 +6,12 @@ import aioredis
 import aiohttp
 
 from walkoff_app_sdk.common.message_types import NodeStatusMessage, message_dumps
-from walkoff_app_sdk.common.workflow_types import workflow_loads, Action
+from walkoff_app_sdk.common.workflow_types import workflow_loads, Action, ParameterVariant
 from walkoff_app_sdk.common.async_logger import AsyncLogger, AsyncHandler
 from walkoff_app_sdk.common.helpers import UUID_GLOB
-from walkoff_app_sdk.common.redis_helpers import connect_to_redis_pool, xdel, deref_stream_message
+from walkoff_app_sdk.common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
+from walkoff_app_sdk.common.global_cipher import GlobalCipher
+
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
@@ -49,7 +51,7 @@ class AppBase:
     __version__ = None
     app_name = None
 
-    def __init__(self, redis=None, logger=None, console_logger=None):
+    def __init__(self, redis=None, logger=None, console_logger=None):#, docker_client=None):
         if self.app_name is None or self.__version__ is None:
             logger.error(("App name or version not set. Please ensure self.app_name is set to match the "
                           "docker-compose service name and self.__version__ is set to match the api.yaml."))
@@ -66,6 +68,7 @@ class AppBase:
         self.logger = logger if logger is not None else logging.getLogger("AppBaseLogger")
         self.console_logger = console_logger if console_logger is not None else logging.getLogger("ConsoleBaseLogger")
         self.current_execution_id = None
+        #self.docker_client: aiodocker.Docker = docker_client
 
     async def get_actions(self):
         """ Continuously monitors the action queue and asynchronously executes actions """
@@ -123,7 +126,17 @@ class AppBase:
                     if len(action.parameters) < 1:
                         result = await func()
                     else:
-                        result = await func(**{p.name: p.value for p in action.parameters})
+                        params = {}
+                        for p in action.parameters:
+                            if p.variant == ParameterVariant.GLOBAL:
+                                f = open('/run/secrets/encryption_key')
+                                key = f.read()
+                                my_cipher = GlobalCipher(key)
+                                temp = my_cipher.decrypt(p.value)
+                                params[p.name] = temp
+                            else:
+                                params[p.name] = p.value
+                        result = await func(**params)
                     action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result=result)
                     self.logger.debug(f"Executed {action.label}-{action.id_} with result: {result}")
 

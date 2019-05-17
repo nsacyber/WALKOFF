@@ -12,6 +12,7 @@ import aiohttp
 import aioredis
 from aiodocker.exceptions import DockerError
 from compose.cli.command import get_project
+from docker.types.services import SecretReference
 
 
 from common.config import config
@@ -21,7 +22,7 @@ from common.message_types import WorkflowStatusMessage
 from common.workflow_types import workflow_loads
 from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, get_containers,
                                    load_secrets, update_service, connect_to_aiodocker, get_service, get_replicas,
-                                   remove_service)
+                                   remove_service, get_secret)
 from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -230,7 +231,9 @@ class Umpire:
             image_name = full_tag
 
         try:
+            encryption_secret_id = await get_secret(self.docker_client, "encryption_key")
             secrets = await load_secrets(self.docker_client, project=self.app_repo.apps[app][version])
+            secrets.append(SecretReference(secret_id=encryption_secret_id, secret_name="encryption_key"))
             mode = {"replicated": {'Replicas': replicas}}
             service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode)
             await self.docker_client.services.create(name=app_name, **service_kwargs)
@@ -241,6 +244,7 @@ class Umpire:
             return
 
         logger.info(f"Launched {app}")
+
 
     async def update_app(self, app, version, replicas=1):
         app_name = f"{config.APP_PREFIX}_{app}"

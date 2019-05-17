@@ -11,6 +11,7 @@ services:
           memory: 8M
     restart: on-failure
   umpire:
+    command: python -m umpire.umpire --log-level=debug
     image: localhost:5000/umpire:latest
     build:
      context: ./

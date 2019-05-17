@@ -59,14 +59,12 @@ def get_all_workflow_status():
     r = current_app.running_context.execution_db.session.query(WorkflowStatus).order_by(WorkflowStatus.name).all()
     return r, HTTPStatus.OK
 
-
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
-@with_workflow_status('control', 'execution_id')
-def get_workflow_status(execution_id):
-    workflow_status = workflow_status_schema.dump(execution_id)
+@with_workflow_status('control', 'execution')
+def get_workflow_status(execution):
+    workflow_status = workflow_status_schema.dump(execution)
     return workflow_status, HTTPStatus.OK
-
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['execute']))

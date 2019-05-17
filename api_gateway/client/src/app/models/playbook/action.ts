@@ -1,11 +1,15 @@
-import { Type, Expose } from 'class-transformer';
+import { Type, Expose, Exclude } from 'class-transformer';
 
 import { Argument } from './argument';
 import { GraphPosition } from './graphPosition';
-import { ConditionalExpression } from './conditionalExpression';
 import { ExecutionElement } from './executionElement';
+import { ActionType } from '../api/actionApi';
 
 export class Action extends ExecutionElement {
+
+	@Exclude()
+	action_type: ActionType = ActionType.ACTION;
+	
 	// _workflow_id: number;
 	@Expose({ name: 'label' })
 	name: string;
