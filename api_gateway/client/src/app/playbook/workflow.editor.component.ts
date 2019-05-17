@@ -739,7 +739,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				_id: action.id,
 				label: action.name,
 				isStartNode: action.id === this.loadedWorkflow.start,
-				isParallelized: action.parallelized,
+				isParallelized: action instanceof Action && action.parallelized,
 				hasErrors: action.has_errors,
 				type: action.action_type
 			};
@@ -824,16 +824,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			action.position = cyData.find(cyAction => cyAction.data._id === action.id).position;
 
 			// Properly sanitize arguments through the tree
-<<<<<<< HEAD
 			if (action.arguments) this._sanitizeArgumentsForSave(action, workflowToSave);
-<<<<<<< HEAD
-
-			// if (action.trigger) this._sanitizeExpressionAndChildren(action.trigger);
-=======
-			if (action.arguments) this._sanitizeArgumentsForSave(action.arguments);
->>>>>>> parallel_actions
-=======
->>>>>>> 96e551f13925e76de1e8fb835aaed0999ef25b1b
 		});
 
 
@@ -913,7 +904,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
 	 * @param argument The argument to sanitize
 	 */
-	_sanitizeArgumentsForSave(action: Action | Condition, workflow: Workflow): void {
+	_sanitizeArgumentsForSave(action: Action | Condition | Trigger, workflow: Workflow): void {
 		const args = action.arguments;
 
 		// Filter out any arguments that are blank, essentially
@@ -1114,6 +1105,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// Delete the action from the workflow and delete any branches that reference this action
 		this.loadedWorkflow.actions = this.loadedWorkflow.actions.filter(a => a.id !== data._id);
 		this.loadedWorkflow.conditions = this.loadedWorkflow.conditions.filter(a => a.id !== data._id);
+		this.loadedWorkflow.triggers = this.loadedWorkflow.triggers.filter(a => a.id !== data._id);
 		this.loadedWorkflow.branches = this.loadedWorkflow.branches
 			.filter(ns => !(ns.source_id === data._id || ns.destination_id === data._id));
 	}
@@ -1299,7 +1291,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			pastedAction.id = newActionUuid;
 			pastedAction.name = this.loadedWorkflow.getNextActionName(pastedAction.action_name)
 			pastedAction.arguments.forEach(argument => delete argument.id);
-			this.loadedWorkflow.actions.push(pastedAction);
+			this.loadedWorkflow.addNode(pastedAction);
 
 			n.data({
 				id: newActionUuid,
