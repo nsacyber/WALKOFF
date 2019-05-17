@@ -33,6 +33,29 @@ export class Argument {
 	variant: Variant = Variant.STATIC_VALUE;
 
 	/**
+	 * If the worker should run this action in parallel based on this parameter or not
+	 */
+	parallelized: boolean = false;
+
+	/**
+	 * Selection is currently specified in the UI as a string,
+	 * but is split and sent/ingested as an array containing strings and numbers
+	 */
+	@Transform((value, obj, type) => {
+		switch(type) {
+			case TransformationType.CLASS_TO_PLAIN:
+				if (value) return value.split('.').map((v, i) => ({ name: 'selection_' + i, value: v }));
+				break;
+			case TransformationType.PLAIN_TO_CLASS:
+				if (Array.isArray(value)) return value.map(v => v.value).join('.');
+				break;
+			default:
+				if (value) return value;
+		}
+	})
+	selection?: string | Array<Argument>;
+
+	/**
 	 * Array of errors returned from the server for this Argument
 	 */
 	@Exclude()

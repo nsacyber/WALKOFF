@@ -1,8 +1,14 @@
 <div class="form-group argument {{id % 2 ? 'odd' : 'even'}}">
 	<!-- Label for argument with optional required icon -->
+<<<<<<< HEAD
 	<label for="{{argument.name}}">
 		Argument {{id+1}}: {{argument.name}} ({{parameterSchema.type}})
 		<i *ngIf="parameterApi.description != null" class="fa fa-info-circle" [title]="parameterApi.description"></i>
+=======
+	<label *ngIf="!isGlobalArgument" for="{{argument.name}}">
+		<b class="text-capitalize">{{argument.name}}</b> ({{parameterSchema.type}})
+		<i *ngIf="parameterApi.description != null" class="fa fa-info-circle" [ngbTooltip]="parameterApi.description" container="body"></i>
+>>>>>>> parallel_actions
 		<i *ngIf="parameterApi.required" class="fa fa-asterisk required" title="This field is required."></i>
 	</label>
 

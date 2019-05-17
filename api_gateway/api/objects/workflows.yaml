@@ -95,6 +95,9 @@ Action:
     id_:
       $ref: '#/components/schemas/Uuid'
       description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
+    parallelized:
+      type: boolean
+      default: false
     app_name:
       description: The app to which the action belongs
       type: string
@@ -117,6 +120,9 @@ Action:
       type: boolean
     errors:
       $ref: '#/components/schemas/ExecutionElementErrors'
+    parallel_parameter:
+      description: Alternative parameter to parallelize the action on
+      $ref: '#/components/schemas/Parameter'
     parameters:
       description: The input parameters to the action
       type: array
@@ -151,6 +157,7 @@ Branch:
 
 Parameter:
   type: object
+  nullable: true
   required: [name, variant]
   description: Object used for passing parameters into actions. The variety of parameter must be provided.
   additionalProperties: false
@@ -162,6 +169,9 @@ Parameter:
       example: regex
     errors:
       $ref: '#/components/schemas/ExecutionElementErrors'
+    parallelized:
+      type: boolean
+      default: false
     value:
       description: The value of the argument OR The ID of the action whose output should be used
     variant:

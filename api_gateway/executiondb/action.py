@@ -67,6 +67,9 @@ class Action(Base):
 
     # Columns specific to Actions
     priority = Column(Integer, default=3)
+    parallelized = Column(Boolean(), nullable=False, default=False)
+    # parallel_parameter = relationship('Parameter', cascade='all, delete, delete-orphan',
+    #                                   uselist=False, foreign_keys=[Parameter.parallel_action_id], passive_deletes=True)
     parameters = relationship('Parameter', cascade='all, delete, delete-orphan', foreign_keys=[Parameter.action_id],
                               passive_deletes=True)
 
@@ -106,6 +109,7 @@ class ActionSchema(BaseSchema):
     errors = field_for(Action, "errors", dump_only=True)
     is_valid = field_for(Action, "is_valid", dump_only=True)
     parameters = fields.Nested(ParameterSchema, many=True)
+    # parallel_parameter = fields.Nested(ParameterSchema, allow_none=True)
 
     class Meta:
         model = Action

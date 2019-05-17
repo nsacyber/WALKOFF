@@ -159,17 +159,18 @@ class ParameterVariant(enum.Enum):
 
 
 class Parameter:
-    __slots__ = ("name", "value", "variant", "reference", "id_", "errors")
+    __slots__ = ("name", "value", "variant", "id_", "errors", "parallelized")
 
-    def __init__(self, name, id_=None, value=None, variant=None, errors=None):
+    def __init__(self, name, parallelized=False, id_=None, value=None, variant=None, errors=None):
         self.id_ = id_
         self.name = name
+        self.parallelized = parallelized
         self.value = value
         self.variant = variant
         self.errors = errors
 
     def __str__(self):
-        return f"Parameter-{self.name}:{self.value or self.reference}"
+        return f"Parameter-{self.name}:{self.value}"
 
     def __eq__(self, other):
         if isinstance(other, Parameter) and self.__slots__ == other.__slots__:
@@ -238,12 +239,13 @@ class Node:
 
 
 class Action(Node):
-    __slots__ = ("parameters", "execution_id")
+    __slots__ = ("parameters", "execution_id", "parallelized")
 
-    def __init__(self, name, position, app_name, app_version, label, priority, parameters=None, id_=None,
-                 execution_id=None, errors=None, is_valid=None):
+    def __init__(self, name, position, app_name, app_version, label, priority, parallelized=False, parameters=None,
+                 id_=None, execution_id=None, errors=None, is_valid=None, **kwargs):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.parameters = parameters if parameters is not None else list()
+        self.parallelized = parallelized
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue
 

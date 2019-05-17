@@ -26,11 +26,28 @@ export class Action extends ExecutionElement {
 	@Type(() => Argument)
 	arguments: Argument[] = [];
 
-	// output: string;
-
-
 	get all_errors(): string[] {
 		return this.errors
 				   .concat(...(this.arguments) ? this.arguments.map(argument => argument.all_errors) : [])
+	}
+
+	getArgument(name: string) : Argument {
+		return this.arguments.find(a => a.name == name)
+	}
+
+	@Expose()
+	get parallelized(): boolean {
+		return (this.parallel_parameter) ? true : false
+	}
+
+	get parallel_parameter() : string {
+		const argument = this.arguments.find(a => a.parallelized == true);
+		return (argument) ? argument.name : null;
+	}
+
+	set parallel_parameter(name: string) {
+		this.arguments.forEach(a => a.parallelized = false);
+		const argument = this.arguments.find(a => a.name == name);
+		if (argument) argument.parallelized = true;
 	}
 }

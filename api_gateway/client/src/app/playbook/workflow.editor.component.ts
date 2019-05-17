@@ -461,6 +461,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					},
 				},
 				{
+					selector: `node[?isParallelized]`,
+					css: {
+						'ghost' : 'yes',
+						'ghost-offset-x' : '7px',
+						'ghost-offset-y': '-7px',
+						'ghost-opacity' : '.7'	
+					},
+				},
+				{
 					selector: 'node[?hasErrors]',
 					css: {
 						'color': '#991818',
@@ -720,6 +729,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				_id: action.id,
 				label: action.name,
 				isStartNode: action.id === this.loadedWorkflow.start,
+				isParallelized: action.parallelized,
 				hasErrors: action.has_errors,
 				type: ActionType.ACTION
 			};
@@ -817,9 +827,13 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			action.position = cyData.find(cyAction => cyAction.data._id === action.id).position;
 
 			// Properly sanitize arguments through the tree
+<<<<<<< HEAD
 			if (action.arguments) this._sanitizeArgumentsForSave(action, workflowToSave);
 
 			// if (action.trigger) this._sanitizeExpressionAndChildren(action.trigger);
+=======
+			if (action.arguments) this._sanitizeArgumentsForSave(action.arguments);
+>>>>>>> parallel_actions
 		});
 
 		workflowToSave.conditions.forEach(condition => {
@@ -1339,6 +1353,10 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.cy.elements('node[?isStartNode]').data('isStartNode', false);
 		// Apply start node highlighting to the new start node.
 		this.cy.elements(`node[_id="${ this.loadedWorkflow.start }"]`).data('isStartNode', true);
+	}
+
+	updateParallelizedNode(action: Action): void {
+		this.cy.elements(`node[_id="${ action.id }"]`).data('isParallelized', action.parallelized);
 	}
 
 	/**

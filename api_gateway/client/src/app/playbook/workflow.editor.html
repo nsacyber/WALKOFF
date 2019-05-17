@@ -31,8 +31,8 @@
             </button>
         </div> -->
         <div class="btn-group" role="group">
-            <button id="save-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Save Workflow"
-                [disabled]="!loadedWorkflow" (click)="save()">
+            <button id="save-button" type="button" class="btn btn-default" placement="bottom-left"
+                ngbTooltip="Save Workflow" [disabled]="!loadedWorkflow" (click)="save()">
                 <i class="fa fa-save"></i>
             </button>
         </div>
@@ -49,8 +49,8 @@
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="remove-button" type="button" class="btn btn-default" placement="bottom-left"
-                ngbTooltip="Delete" [disabled]="!loadedWorkflow" (click)="removeSelectedNodes()">
+            <button id="remove-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Delete"
+                [disabled]="!loadedWorkflow" (click)="removeSelectedNodes()">
                 <i class="fa fa-trash-o"></i>
             </button>
         </div>
@@ -80,9 +80,9 @@
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="clear-execution-highlighting-button" type="button" class="btn btn-default" placement="bottom-left"
-                ngbTooltip="Clear Execution Results" [disabled]="!loadedWorkflow || !loadedWorkflow.is_valid"
-                (click)="clearExecutionResults()">
+            <button id="clear-execution-highlighting-button" type="button" class="btn btn-default"
+                placement="bottom-left" ngbTooltip="Clear Execution Results"
+                [disabled]="!loadedWorkflow || !loadedWorkflow.is_valid" (click)="clearExecutionResults()">
                 <i class="fa fa-eraser"></i>
             </button>
         </div>
@@ -99,19 +99,20 @@
             </button>
         </div>
         <nav class="ml-auto" aria-label="breadcrumb">
-                <ol id="playbookBreadcrumbs" class="breadcrumb py-0 px-3 d-flex align-items-center">
-                    <li class="breadcrumb-item"><a href="" (click)="returnToWorkflows()">Workflows</a></li>
-                    <li class="breadcrumb-item d-flex align-items-center">
-                            <span>{{ loadedWorkflow?.name }}</span>
-                            <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" class=""
-                            id="currentWorkflowText"> (Incomplete)</label>
-                            <a id="copy-button" class="ml-1" href="" placement="bottom-right" ngbTooltip="Edit Description" (click)="editDescription()">
-                                <i class="fa fa-info-circle"></i>
-                            </a>
+            <ol id="playbookBreadcrumbs" class="breadcrumb py-0 px-3 d-flex align-items-center">
+                <li class="breadcrumb-item"><a href="" (click)="returnToWorkflows()">Workflows</a></li>
+                <li class="breadcrumb-item d-flex align-items-center">
+                    <span>{{ loadedWorkflow?.name }}</span>
+                    <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" class="" id="currentWorkflowText">
+                        (Incomplete)</label>
+                    <a id="copy-button" class="ml-1" href="" placement="bottom-right" ngbTooltip="Edit Description"
+                        (click)="editDescription()">
+                        <i class="fa fa-info-circle"></i>
+                    </a>
 
-                    </li>
-                </ol>
-            </nav>
+                </li>
+            </ol>
+        </nav>
     </div>
     <!-- Graph editor -->
     <div class="row graphEditorRow">
@@ -132,8 +133,7 @@
                             <div *ngFor="let actionApi of app.getFilteredActionApis(actionFilter)"
                                 class="card card-default actionPanel my-1" dnd-draggable [dragEnabled]="true"
                                 [dragData]="{ appName: app.name, actionApi: actionApi }"
-                                (dblclick)="handleDoubleClickEvent(actionApi)"
-                                [title]="actionApi.description">
+                                (dblclick)="handleDoubleClickEvent(actionApi)" [title]="actionApi.description">
                                 <div class="card-body my-auto p-2">
                                     <span>{{actionApi.name}}</span>
                                     <!-- <i class="fa fa-bars pull-right" aria-hidden="true"></i> -->
@@ -172,15 +172,16 @@
             <!-- Editor for Actions -->
             <div *ngIf="!waitingOnData && selectedAction" class="parametersEditor">
                 <div class="d-flex justify-content-between my-2">
-                        <h4 class="mb-0">Action Parameters</h4>
-                        <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary"
-                            (click)="setStartNode(selectedAction.id)">Set Start Action</button>
+                    <h4 class="mb-0">Action Parameters</h4>
+                    <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary"
+                        (click)="setStartNode(selectedAction.id)">Set Start Action</button>
 
                 </div>
 
                 <div class="form-row">
                     <div class="col-12 col-xl-6">
-                        <div class="input-group input-group-sm mb-3" placement="bottom" [ngbTooltip]="selectedAction.app_name">
+                        <div class="input-group input-group-sm mb-3" placement="bottom"
+                            [ngbTooltip]="selectedAction.app_name">
                             <div class="input-group-prepend">
                                 <span class="input-group-text text-white bg-primary">App</span>
                             </div>
@@ -188,7 +189,8 @@
                         </div>
                     </div>
                     <div class="col-12 col-xl-6">
-                        <div class="input-group input-group-sm mb-3" placement="bottom" [ngbTooltip]="selectedAction.action_name">
+                        <div class="input-group input-group-sm mb-3" placement="bottom"
+                            [ngbTooltip]="selectedAction.action_name">
                             <div class="input-group-prepend">
                                 <span class="input-group-text text-white bg-primary">Action</span>
                             </div>
@@ -206,7 +208,8 @@
 
                 <div class="form-group mt-3">
                     <label class="h5" for="id">ID</label>
-                    <input type="text" readonly class="form-control-plaintext px-2" [value]="selectedAction.id" name="id" >
+                    <input type="text" readonly class="form-control-plaintext px-2" [value]="selectedAction.id"
+                        name="id">
                 </div>
 
                 <div class="form-group mt-3">
@@ -223,6 +226,7 @@
                         [id]="id" [users]="users" [roles]="roles" [globals]="relevantGlobals"></playbook-argument-component>
                 </div> -->
                 <!-- Inputs -->
+
                 <div *ngIf="selectedActionApi.parameters.length">
                     <h5>Arguments</h5>
                     <playbook-argument-component
@@ -232,12 +236,31 @@
                         [parameterApi]="parameterApi" [id]="id" [users]="users" [roles]="roles"
                         (createVariable)="onCreateVariable($event)"></playbook-argument-component>
                 </div>
+
                 <div *ngIf="selectedActionApi.node_type == actionTypes.CONDITION" class="form-group mt-3">
                     <label class="h5" for="name">Conditional
                         <i class="fa fa-asterisk required" title="This field is required."></i>
                     </label>
-                    <ngx-codemirror [(ngModel)]="selectedAction.conditional" [options]="conditionalOptions"></ngx-codemirror>
+                    <ngx-codemirror [(ngModel)]="selectedAction.conditional" [options]="conditionalOptions">
+                    </ngx-codemirror>
                 </div>
+
+                <div *ngIf="selectedActionApi.canRunInParallel" class="form-group mt-3">
+                    <h5>Run In Parallel</h5>
+                    <div class="form-group row">
+                        <label for="parallel_parameter" class="col-sm-4 col-form-label">Parallelization:</label>
+                        <div class="col-sm-8">
+                            <select class="form-control" name="parallel_parameter"
+                                [(ngModel)]="selectedAction.parallel_parameter" (change)="updateParallelizedNode(selectedAction)">
+                                <option [value]="null">No Parallelization</option>
+                                <option *ngFor="let parameterApi of selectedActionApi.parallelParameters"
+                                    [value]="parameterApi.name" [label]="'Parallelize on  ' + parameterApi.name">
+                                    Parallize on <b>{{ parameterApi.name }}</b></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div *ngIf="selectedActionApi?.returns?.schema?.type || selectedActionApi?.returns?.example">
                     <div class="form-group mt-3">
                         <label class="h5">
