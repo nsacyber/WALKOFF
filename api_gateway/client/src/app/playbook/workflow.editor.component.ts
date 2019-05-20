@@ -471,6 +471,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					},
 				},
 				{
+					selector: `node[?isParallelized]`,
+					css: {
+						'ghost' : 'yes',
+						'ghost-offset-x' : '7px',
+						'ghost-offset-y': '-7px',
+						'ghost-opacity' : '.7'	
+					},
+				},
+				{
 					selector: 'node[?hasErrors]',
 					css: {
 						'color': '#991818',
@@ -730,6 +739,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				_id: action.id,
 				label: action.name,
 				isStartNode: action.id === this.loadedWorkflow.start,
+				isParallelized: action instanceof Action && action.parallelized,
 				hasErrors: action.has_errors,
 				type: action.action_type
 			};
@@ -894,7 +904,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
 	 * @param argument The argument to sanitize
 	 */
-	_sanitizeArgumentsForSave(action: Action | Condition, workflow: Workflow): void {
+	_sanitizeArgumentsForSave(action: Action | Condition | Trigger, workflow: Workflow): void {
 		const args = action.arguments;
 
 		// Filter out any arguments that are blank, essentially
@@ -1095,6 +1105,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// Delete the action from the workflow and delete any branches that reference this action
 		this.loadedWorkflow.actions = this.loadedWorkflow.actions.filter(a => a.id !== data._id);
 		this.loadedWorkflow.conditions = this.loadedWorkflow.conditions.filter(a => a.id !== data._id);
+		this.loadedWorkflow.triggers = this.loadedWorkflow.triggers.filter(a => a.id !== data._id);
 		this.loadedWorkflow.branches = this.loadedWorkflow.branches
 			.filter(ns => !(ns.source_id === data._id || ns.destination_id === data._id));
 	}
@@ -1280,7 +1291,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			pastedAction.id = newActionUuid;
 			pastedAction.name = this.loadedWorkflow.getNextActionName(pastedAction.action_name)
 			pastedAction.arguments.forEach(argument => delete argument.id);
-			this.loadedWorkflow.actions.push(pastedAction);
+			this.loadedWorkflow.addNode(pastedAction);
 
 			n.data({
 				id: newActionUuid,
@@ -1328,6 +1339,10 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.cy.elements('node[?isStartNode]').data('isStartNode', false);
 		// Apply start node highlighting to the new start node.
 		this.cy.elements(`node[_id="${ this.loadedWorkflow.start }"]`).data('isStartNode', true);
+	}
+
+	updateParallelizedNode(action: Action): void {
+		this.cy.elements(`node[_id="${ action.id }"]`).data('isParallelized', action.parallelized);
 	}
 
 	/**

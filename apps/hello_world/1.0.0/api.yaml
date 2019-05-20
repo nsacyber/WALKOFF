@@ -59,6 +59,7 @@ actions:
     parameters:
       - name: data
         description: array to echo
+        parallelizable: true
         required: true
         schema:
           type: array

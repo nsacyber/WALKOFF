@@ -21,8 +21,8 @@ def workflow_dump(obj, fp):
     return json.dump(obj, fp, cls=WorkflowJSONEncoder)
 
 
-def workflow_load(fp):
-    return json.load(fp, cls=WorkflowJSONDecoder)
+def workflow_load(obj, fp):
+    return json.load(obj, fp, cls=WorkflowJSONDecoder)
 
 
 def attrs_equal(self, other):
@@ -91,6 +91,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
     """ A custom encoder for encoding Workflow types to JSON strings.
         Note: JSON encoded strings of our custom objects are lossy...for now.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.workflow = {}
@@ -117,20 +118,26 @@ class WorkflowJSONEncoder(json.JSONEncoder):
                     "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
                     "execution_id": o.execution_id}
 
+        # elif isinstance(o, ParallelAction):
+        #     position = {"x": o.position.x, "y": o.position.y}
+        #     return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
+        #             "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
+        #             "execution_id": o.execution_id, "parallel_parameter": o.parallel_parameter}
+
         elif isinstance(o, Condition):
             position = {"x": o.position.x, "y": o.position.y}
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
-                    "conditional": o.conditional}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
+                    "label": o.label, "position": position, "conditional": o.conditional}
 
         elif isinstance(o, Transform):
             position = {"x": o.position.x, "y": o.position.y}
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
-                    "transform": o.transform, "parameter": o.parameter}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
+                    "label": o.label, "position": position, "transform": o.transform, "parameter": o.parameter}
 
         elif isinstance(o, Trigger):
             position = {"x": o.position.x, "y": o.position.y}
-            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "label": o.label, "position": position,
-                    "trigger": o.trigger}
+            return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
+                    "label": o.label, "position": position, "trigger": o.trigger}
 
         elif isinstance(o, Parameter):
             return {"name": o.name, "variant": o.variant, "value": o.value, "id_": o.id_}
@@ -159,17 +166,18 @@ class ParameterVariant(enum.Enum):
 
 
 class Parameter:
-    __slots__ = ("name", "value", "variant", "reference", "id_", "errors")
+    __slots__ = ("name", "value", "variant", "id_", "errors", "parallelized")
 
-    def __init__(self, name, id_=None, value=None, variant=None, errors=None):
+    def __init__(self, name, parallelized=False, id_=None, value=None, variant=None, errors=None):
         self.id_ = id_
         self.name = name
+        self.parallelized = parallelized
         self.value = value
         self.variant = variant
         self.errors = errors
 
     def __str__(self):
-        return f"Parameter-{self.name}:{self.value or self.reference}"
+        return f"Parameter-{self.name}:{self.value}"
 
     def __eq__(self, other):
         if isinstance(other, Parameter) and self.__slots__ == other.__slots__:
@@ -202,13 +210,14 @@ class Variable:
 
 
 class Node:
-    __slots__ = ("id_", "name", "app_name", "label", "position", "priority", "errors", "is_valid")
+    __slots__ = ("id_", "name", "app_name", "app_version", "label", "position", "priority", "errors", "is_valid")
 
-    def __init__(self, name, position: Point, label, app_name, id_=None, errors=None, is_valid=True):
+    def __init__(self, name, position: Point, label, app_name, app_version, id_=None, errors=None, is_valid=True):
         self.id_ = id_ if id_ is not None else str(uuid.uuid4())
-        self.is_valid = is_valid   # ToDo: Is this neccessary?
+        self.is_valid = is_valid  # ToDo: Is this neccessary?
         self.name = name
         self.app_name = app_name
+        self.app_version = app_version
         self.label = label
         self.position = position
         self.errors = errors if errors is not None else []
@@ -237,13 +246,13 @@ class Node:
 
 
 class Action(Node):
-    __slots__ = ("parameters", "execution_id", "app_version")
+    __slots__ = ("parameters", "execution_id", "parallelized")
 
-    def __init__(self, name, position, app_name, app_version, label, priority, parameters=None, id_=None,
-                 execution_id=None, errors=None, is_valid=None):
-        super().__init__(name, position, label, app_name, id_, errors)
-        self.app_version = app_version
+    def __init__(self, name, position, app_name, app_version, label, priority, parallelized=False, parameters=None,
+                 id_=None, execution_id=None, errors=None, is_valid=None, **kwargs):
+        super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.parameters = parameters if parameters is not None else list()
+        self.parallelized = parallelized
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue
 
@@ -265,8 +274,9 @@ class Action(Node):
 class Condition(Node):
     __slots__ = ("conditional",)
 
-    def __init__(self, name, position: Point, app_name, label, conditional, id_=None, errors=None):
-        super().__init__(name, position, label, app_name, id_, errors)
+    def __init__(self, name, position: Point, app_name, app_version, label, conditional, id_=None, errors=None,
+                 is_valid=None):
+        super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.conditional = conditional
         self.priority = 3  # Conditions have a fixed, mid valued priority
 
@@ -316,12 +326,38 @@ class Condition(Node):
         return child_id
 
 
+# class ParallelAction(Action):
+#     __slots__ = ("parallel_parameter")
+#
+#     def __init__(self, name, position, app_name, app_version, label, priority, parallel_parameter, parameters=None,
+#                  id_=None,
+#                  execution_id=None, errors=None, is_valid=None):
+#         super().__init__(name, position, app_name, app_version, label, priority, parameters, id_,
+#                          execution_id, errors, is_valid)
+#         self.parallel_parameter = parallel_parameter
+#
+#     def __str__(self):
+#         return f"Parallel Action: {self.label}::{self.id_}"
+#
+#     def __repr__(self):
+#         return f"Parallel Action: {self.label}::{self.id_}"
+
+    # def __eq__(self, other):
+    #     if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
+    #         return attrs_equal(self, other)
+    #     return False
+    #
+    # def __hash__(self):
+    #     return hash(id(self))
+
+
 # TODO: fully realize and implement triggers
 class Trigger(Node):
     __slots__ = ("trigger",)
 
-    def __init__(self, name, position: Point, app_name, label, trigger, id_=None, errors=None):
-        super().__init__(name, position, label, app_name, id_, errors)
+    def __init__(self, name, position: Point, app_name, app_version, label, trigger, id_=None, errors=None,
+                 is_valid=None):
+        super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.trigger = trigger
 
     def __str__(self):
@@ -342,8 +378,9 @@ class Trigger(Node):
 class Transform(Node):
     __slots__ = ("transform", "parameter")
 
-    def __init__(self, name, position: Point, app_name, label, transform, parameter=None, id_=None, errors=None):
-        super().__init__(name, position, label, app_name, id_, errors)
+    def __init__(self, name, position: Point, app_name, app_version, label, transform, parameter=None, id_=None,
+                 errors=None, is_valid=None):
+        super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.transform = transform.lower()
         self.parameter = parameter
         self.priority = 3  # Transforms have a fixed, mid valued priority

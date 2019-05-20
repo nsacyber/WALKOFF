@@ -1,7 +1,32 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
-     
+
+## [1.0.0-alpha.2]
+
+This update includes numerous bugfixes and a number of reintroduced features. 
+
+### Added
+* Trigger nodes allow you to pause workflow execution until webhook for the trigger is hit with data
+* Basic Condition nodes allow you to perform branching execution in a more flowchart-like manner
+* Basic Transform nodes allow you to write code snippets to transform/remap/select action results on the fly (UI support pending)
+
+
+### Changed
+* App version no longer required in app_name in api.tyaml
+* CRUD endpoints now accept resource names as keys when applicable
+* Globals can now be arbitrary JSON (UI support pending)
+
+### Removed
+
+### Fixed
+* Workflow import/export
+* Workflow validation (still needs work); workflows can be saved in an incomplete state again
+* Testing suite (still needs expansion)
+* Uniqueness constraints on CRUD operations
+* Dereferencing Global and Workflow variables in workflows
+* Ability to override starting parameters in a workflow execution
+
      
 ## [1.0.0-alpha.1]
 

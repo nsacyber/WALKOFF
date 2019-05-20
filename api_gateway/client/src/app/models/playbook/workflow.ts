@@ -101,6 +101,15 @@ export class Workflow extends ExecutionElement {
 		return this.environment_variables.filter(variable => this.all_arguments.some(arg => arg.value == variable.id));
 	}
 
+	addNode(node: Action | Condition | Trigger) {
+		if (node instanceof Action )
+			this.actions.push(node);
+		else if (node instanceof Condition)
+			this.conditions.push(node);
+		else if (node instanceof Trigger)
+			this.triggers.push(node);
+	}
+
 	deleteVariable(deletedVariable: EnvironmentVariable) {
 		this.environment_variables = this.environment_variables.filter(variable => variable.id !== deletedVariable.id);
 		this.all_arguments.filter(arg => arg.value == deletedVariable.id).forEach(arg => arg.value = '');
