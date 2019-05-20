@@ -245,7 +245,6 @@ class Umpire:
 
         logger.info(f"Launched {app}")
 
-
     async def update_app(self, app, version, replicas=1):
         app_name = f"{config.APP_PREFIX}_{app}"
         repo = f"{config.DOCKER_REGISTRY}/{app_name}"

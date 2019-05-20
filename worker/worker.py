@@ -259,13 +259,16 @@ class Worker:
     async def get_globals(self):
         url = config.API_GATEWAY_URI.rstrip('/') + '/api'
         headers, self.token = await get_walkoff_auth_header(self.session, self.token)
-        async with self.session.get(url + "/globals", headers=headers) as resp:
+        payload = {'to_decrypt': 'false'}
+        async with self.session.get(url + "/globals", headers=headers, params=payload) as resp:
             globals_ = await resp.json(loads=workflow_loads)
             logger.debug(f"Got globals: {globals_}")
             return {g.id_: g for g in globals_}
 
     async def dereference_params(self, action: Action):
         global_vars = await self.get_globals()
+        logger.error("THE GLOBALSSSSS")
+        logger.error(global_vars)
         for param in action.parameters:
             if param.variant == ParameterVariant.STATIC_VALUE:
                 continue

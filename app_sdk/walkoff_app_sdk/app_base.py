@@ -68,7 +68,6 @@ class AppBase:
         self.logger = logger if logger is not None else logging.getLogger("AppBaseLogger")
         self.console_logger = console_logger if console_logger is not None else logging.getLogger("ConsoleBaseLogger")
         self.current_execution_id = None
-        #self.docker_client: aiodocker.Docker = docker_client
 
     async def get_actions(self):
         """ Continuously monitors the action queue and asynchronously executes actions """

@@ -9,7 +9,7 @@ from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSche
 
 from sqlalchemy import Column, String, JSON, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from marshmallow import fields, EXCLUDE, pre_load, validates_schema, ValidationError as MarshmallowValidationError
+from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 
 from api_gateway.executiondb import Base, BaseSchema
 
@@ -86,7 +86,7 @@ class GlobalVariableSchema(BaseSchema):
         f = open('/run/secrets/encryption_key')
         key = f.read()
         my_cipher = GlobalCipher(key)
-        data['value'] = my_cipher.encrypt(data['value']).decode('utf-8')
+        data['value'] = my_cipher.encrypt(data['value'])
 
         try:
             if "schema" in data:
@@ -107,7 +107,7 @@ class GlobalCipher(object):
         raw = self.pad(raw)
         iv = Random.new().read(AES.block_size)
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return base64.b64encode(iv + cipher.encrypt(raw))
+        return (base64.b64encode(iv + cipher.encrypt(raw))).decode('utf-8')
 
     def decrypt(self, enc):
         enc = base64.b64decode(enc)

@@ -10,7 +10,7 @@ from walkoff_app_sdk.app_base import AppBase
 logger = logging.getLogger("apps")
 
 DEFAULT_TIMEOUT = 2
-WALKOFF_ADDRESS_DEFAULT = "http://api_gateway:8080"
+WALKOFF_ADDRESS_DEFAULT = "http://test_api_gateway:8080"
 
 class Walkoff(AppBase):
     __version__ = "1.0.0"
