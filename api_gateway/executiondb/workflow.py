@@ -133,7 +133,7 @@ class Workflow(Base):
 
                 elif wf.parallelized and not api.parallelizable:
                     action.errors.append(f"Parameter {wf.name} is marked parallelized in workflow, but is not "
-                                         f"parallelizable in api")
+                                          f"parallelizable in api")
 
                 if message is not "":
                     errors.append(message)
