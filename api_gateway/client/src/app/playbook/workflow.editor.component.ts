@@ -54,6 +54,7 @@ import { Variable } from '../models/variable';
 import { MetadataModalComponent } from './metadata.modal.component';
 import { Condition } from '../models/playbook/condition';
 import { Trigger } from '../models/playbook/trigger';
+import { WorkflowNode } from '../models/playbook/WorkflowNode';
 
 @Component({
 	selector: 'workflow-editor-component',
@@ -904,7 +905,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
 	 * @param argument The argument to sanitize
 	 */
-	_sanitizeArgumentsForSave(action: Action | Condition | Trigger, workflow: Workflow): void {
+	_sanitizeArgumentsForSave(action: WorkflowNode, workflow: Workflow): void {
 		const args = action.arguments;
 
 		// Filter out any arguments that are blank, essentially
@@ -915,7 +916,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 			// If value and reference are blank, add this argument's ID in the array to the list
 			// Add them in reverse so we don't have problems with the IDs sliding around on the splice
-			if (!argument.value) {
+			if (!argument.value && argument.value !== false) {
 				idsToRemove.unshift(args.indexOf(argument));
 			}
 
@@ -1103,11 +1104,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		if (this.selectedAction && this.selectedAction.id === data._id) { this.selectedAction = null; }
 
 		// Delete the action from the workflow and delete any branches that reference this action
-		this.loadedWorkflow.actions = this.loadedWorkflow.actions.filter(a => a.id !== data._id);
-		this.loadedWorkflow.conditions = this.loadedWorkflow.conditions.filter(a => a.id !== data._id);
-		this.loadedWorkflow.triggers = this.loadedWorkflow.triggers.filter(a => a.id !== data._id);
-		this.loadedWorkflow.branches = this.loadedWorkflow.branches
-			.filter(ns => !(ns.source_id === data._id || ns.destination_id === data._id));
+		this.loadedWorkflow.removeNode(data._id);
 	}
 
 	/**

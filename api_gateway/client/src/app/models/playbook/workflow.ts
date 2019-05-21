@@ -10,6 +10,7 @@ import { Argument } from './argument';
 import { Condition } from './condition';
 import { ActionType } from '../api/actionApi';
 import { Trigger } from './trigger';
+import { WorkflowNode } from './WorkflowNode';
 
 export class Workflow extends ExecutionElement {
 	// _playbook_id: number;
@@ -79,7 +80,7 @@ export class Workflow extends ExecutionElement {
 	 */
 	is_valid: boolean;
 
-	get nodes(): (Action | Condition | Trigger)[] {
+	get nodes(): WorkflowNode[] {
 		return [].concat(this.actions, this.conditions, this.triggers);
 	}
 
@@ -101,13 +102,20 @@ export class Workflow extends ExecutionElement {
 		return this.environment_variables.filter(variable => this.all_arguments.some(arg => arg.value == variable.id));
 	}
 
-	addNode(node: Action | Condition | Trigger) {
+	addNode(node: WorkflowNode) {
 		if (node instanceof Action )
 			this.actions.push(node);
 		else if (node instanceof Condition)
 			this.conditions.push(node);
 		else if (node instanceof Trigger)
 			this.triggers.push(node);
+	}
+
+	removeNode(nodeId: string) {
+		this.actions = this.actions.filter(a => a.id !== nodeId);
+		this.conditions = this.conditions.filter(a => a.id !== nodeId);
+		this.triggers = this.triggers.filter(a => a.id !== nodeId);
+		this.branches = this.branches.filter(b => !(b.source_id === nodeId || b.destination_id === nodeId));
 	}
 
 	deleteVariable(deletedVariable: EnvironmentVariable) {
@@ -120,7 +128,7 @@ export class Workflow extends ExecutionElement {
 		return numActions ? `${actionName}_${ ++numActions }` : actionName;
 	}
 
-	getPreviousActions(action: Action | Condition | Trigger): (Action | Condition | Trigger)[] {
+	getPreviousActions(action: WorkflowNode): WorkflowNode[] {
 		return this.branches
 			.filter(b => b.destination_id == action.id)
 			.map(b => this.nodes.find(a => a.id == b.source_id))
