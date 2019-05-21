@@ -4,8 +4,9 @@ import { Argument } from './argument';
 import { GraphPosition } from './graphPosition';
 import { ExecutionElement } from './executionElement';
 import { ActionType } from '../api/actionApi';
+import { WorkflowNode } from './WorkflowNode';
 
-export class Action extends ExecutionElement {
+export class Action extends ExecutionElement implements WorkflowNode {
 
 	@Exclude()
 	action_type: ActionType = ActionType.ACTION;

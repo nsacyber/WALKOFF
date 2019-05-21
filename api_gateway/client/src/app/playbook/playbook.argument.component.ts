@@ -12,6 +12,7 @@ import { Role } from '../models/role';
 import { Global } from '../models/global';
 import { Trigger } from '../models/playbook/trigger';
 import { Condition } from '../models/playbook/condition';
+import { WorkflowNode } from '../models/playbook/WorkflowNode';
 
 const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 
@@ -284,7 +285,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 	}
 
 	// TODO: maybe somehow recursively find actions that may occur before. Right now it just returns all of them.
-	getPreviousActions(): (Action | Condition | Trigger)[] {
+	getPreviousActions(): WorkflowNode[] {
 		return this.loadedWorkflow.getPreviousActions(this.selectedAction);
 	}
 
