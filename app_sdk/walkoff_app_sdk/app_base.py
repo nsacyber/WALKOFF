@@ -112,6 +112,8 @@ class AppBase:
         """ Execute an action, and push its result to Redis. """
         self.logger.debug(f"Attempting execution of: {action.label}-{action.execution_id}")
         self.console_logger.handlers[0].stream.set_execution_id(action.execution_id)
+        self.current_execution_id = action.execution_id
+
         results_stream = f"{action.execution_id}:results"
 
         if hasattr(self, action.name):

@@ -28,7 +28,7 @@ class HelloWorld(AppBase):
         Returns Hello World from the hostname the action is run on
         :return: Hello World from your hostname
         """
-        message = f"Hello World from {socket.gethostname()}!"
+        message = f"Hello World from {socket.gethostname()} in workflow {self.current_execution_id}!"
 
         # This logs to the docker logs
         self.logger.info(message)
