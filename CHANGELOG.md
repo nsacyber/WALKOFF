@@ -11,13 +11,16 @@ This update includes numerous bugfixes and a number of reintroduced features.
 * Basic Condition nodes allow you to perform branching execution in a more flowchart-like manner
 * Basic Transform nodes allow you to write code snippets to transform/remap/select action results on the fly (UI support pending)
 
-
 ### Changed
+* WALKOFF now runs utilizing stack deploy, allowing for the use of external Docker secrets
 * App version no longer required in app_name in api.tyaml
 * CRUD endpoints now accept resource names as keys when applicable
 * Globals can now be arbitrary JSON (UI support pending)
 
 ### Removed
+
+### Security
+* Implemented AES-256 encryption/decryption for Global Variables. Exclusive-access decryption based on account level standing still needs to be implemented in the future. Currently, any GET request to the API gateway will return a decrypted Global Variable, regardless of account.  
 
 ### Fixed
 * Workflow import/export
@@ -26,6 +29,7 @@ This update includes numerous bugfixes and a number of reintroduced features.
 * Uniqueness constraints on CRUD operations
 * Dereferencing Global and Workflow variables in workflows
 * Ability to override starting parameters in a workflow execution
+* Ability to update/delete encrypted Global Variables
 
      
 ## [1.0.0-alpha.1]
