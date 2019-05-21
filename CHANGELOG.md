@@ -12,7 +12,7 @@ This update includes numerous bugfixes and a number of reintroduced features.
 * Basic Transform nodes allow you to write code snippets to transform/remap/select action results on the fly (UI support pending)
 
 ### Changed
-* WALKOFF now runs exlusicvely in swarm mode, allowing for the use of external Docker secrets
+* WALKOFF now runs utilizing stack deploy, allowing for the use of external Docker secrets
 * App version no longer required in app_name in api.tyaml
 * CRUD endpoints now accept resource names as keys when applicable
 * Globals can now be arbitrary JSON (UI support pending)
