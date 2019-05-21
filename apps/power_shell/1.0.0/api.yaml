@@ -61,6 +61,7 @@ actions:
     parameters:
       - name: hosts
         description: list of hosts to execute on
+        parallelizable: true
         required: true
         schema:
           type: array
@@ -146,6 +147,7 @@ actions:
     parameters:
       - name: hosts
         description: list of hosts to execute on
+        parallelizable: true
         required: true
         schema:
           type: array
