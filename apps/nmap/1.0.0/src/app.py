@@ -22,10 +22,9 @@ class Nmap(AppBase):
         for target in targets:
             nmap_proc = NmapProcess(target, options)
 
-            # executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
-            # loop = asyncio.get_event_loop()
-            # await loop.run_in_executor(executor, nmap_proc.run)
-            nmap_proc.run()
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(executor, nmap_proc.run)
 
             try:
                 results.append(nmap_proc.stdout)

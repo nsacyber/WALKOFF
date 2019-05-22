@@ -250,7 +250,8 @@ class Worker:
             action_to_parallel_map[act.id_] = new_value
             self.parallel_in_process[act.id_] = act
 
-        self.in_process.pop(node.id_)
+
+        # self.in_process.pop(node.id_)
         exceptions = await asyncio.gather(*schedule_tasks, return_exceptions=True)
 
         while not actions.intersection(set(self.parallel_accumulator.keys())) == actions:
@@ -264,9 +265,9 @@ class Worker:
         self.accumulator[node.id_] = results
 
         # self.accumulator[node.id_] = [self.parallel_accumulator[a] for a in actions]
-        await send_status_update(self.session, self.workflow.execution_id,
-                                 NodeStatusMessage.success_from_node(node, self.workflow.execution_id,
-                                                                     self.accumulator[node.id_]))
+        status = NodeStatusMessage.success_from_node(node, self.workflow.execution_id, self.accumulator[node.id_])
+
+        await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
     async def execute_transform(self, transform, parent):
         """ Execute an transform and ship its result """
