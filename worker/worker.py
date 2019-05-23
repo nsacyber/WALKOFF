@@ -201,12 +201,11 @@ class Worker:
             parents = {n.id_: n for n in self.workflow.predecessors(node)} if node is not self.start_action else {}
             children = {n.id_: n for n in self.workflow.successors(node)}
 
-            if node is not self.start_action:
-                for parent_id in parents:
-                    if node.id_ not in self.parent_map.keys():
-                        self.parent_map[node.id_] = 1
-                    else:
-                        self.parent_map[node.id_] = self.parent_map[node.id_] + 1
+            for parent_id in parents:
+                if node.id_ not in self.parent_map.keys():
+                    self.parent_map[node.id_] = 1
+                else:
+                    self.parent_map[node.id_] = self.parent_map[node.id_] + 1
 
             self.in_process[node.id_] = node
 
