@@ -131,8 +131,8 @@ class Workflow(Base):
                         message = (f"Parameter '{wf.name}' refers to global variable '{wf.value}' "
                                    f"which does not exist.")
 
-                if wf.parallelized and not api.parallelizable:
-                    action.errors.apppend(f"Parameter {wf.name} is marked parallelized in workflow, but is not "
+                elif wf.parallelized and not api.parallelizable:
+                    action.errors.append(f"Parameter {wf.name} is marked parallelized in workflow, but is not "
                                           f"parallelizable in api")
 
                 if message is not "":

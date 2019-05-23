@@ -260,35 +260,44 @@ class Worker:
         schedule_tasks = []
         actions = set()
         action_to_parallel_map = {}
+        results = []
         parallel_parameter = [p for p in node.parameters if p.parallelized]
         unparallelized = list(set(node.parameters) - set(parallel_parameter))
 
         for i, value in enumerate(parallel_parameter[0].value):
+            new_value = [value]
             # params = node.append(array[i])
             params = []
             params.extend(unparallelized)
-            params.append(Parameter(parallel_parameter[0].name, value=value,
+            params.append(Parameter(parallel_parameter[0].name, value=new_value,
                                     variant=ParameterVariant.STATIC_VALUE))
             # params.append([parameter])
             act = Action(node.name, node.position, node.
-                         app_name, node.app_version, f"{node.name}:shard_{i}",
+                         app_name, node.app_version, f"{node.name}:shard_{value}",
                          node.priority, parameters=params, execution_id=node.execution_id)
             actions.add(act.id_)
             schedule_tasks.append(asyncio.create_task(self.schedule_node(act, {}, {})))
-            action_to_parallel_map[act.id_] = value
+            action_to_parallel_map[act.id_] = new_value
             self.parallel_in_process[act.id_] = act
 
-        self.in_process.pop(node.id_)
+
+        # self.in_process.pop(node.id_)
         exceptions = await asyncio.gather(*schedule_tasks, return_exceptions=True)
 
         while not actions.intersection(set(self.parallel_accumulator.keys())) == actions:
             await asyncio.sleep(0)
 
-        self.accumulator[node.id_] = [(action_to_parallel_map[a], self.parallel_accumulator[a])
-                                      for a in actions]
-        await send_status_update(self.session, self.workflow.execution_id,
-                                 NodeStatusMessage.success_from_node(node, self.workflow.execution_id,
-                                                                     self.accumulator[node.id_]))
+        for a in actions:
+            contents = self.parallel_accumulator[a]
+            for individual in contents:
+                results.append(individual)
+
+        self.accumulator[node.id_] = results
+
+        # self.accumulator[node.id_] = [self.parallel_accumulator[a] for a in actions]
+        status = NodeStatusMessage.success_from_node(node, self.workflow.execution_id, self.accumulator[node.id_])
+
+        await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
     async def execute_transform(self, transform, parent):
         """ Execute an transform and ship its result """

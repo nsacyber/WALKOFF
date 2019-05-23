@@ -58,44 +58,40 @@ class Nmap(AppBase):
     async def parse_xml_for_linux(self, nmap_arr):
         xml_str = None
         output = []
-
         for nmap in nmap_arr:
-
-            xml_str = nmap[1]
-
+            xml_str = nmap
             try:
                 nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
+                for host in nmap_obj.hosts:
+                    if host.is_up():
+                        try:
+                            if host.os_match_probabilities()[0].osclasses[0].osfamily == "Linux":
+                                output.append(str(host.address))
+                        except Exception as e:
+                            self.logger.info("Object is not a Linux machine")
+
             except Exception as e:
                 return e, 'XMLError'
 
-            for host in nmap_obj.hosts:
-                if host.is_up():
-                    try:
-                        if host.os_match_probabilities()[0].osclasses[0].osfamily == "Linux":
-                            output.append(str(host.address))
-                    except Exception as e:
-                        print("Object is not a Linux machine")
         return output
 
     async def parse_xml_for_windows(self, nmap_arr):
         xml_str = None
         output = []
         for nmap in nmap_arr:
-
-            xml_str = nmap[1]
-
+            xml_str = nmap
             try:
                 nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
+                for host in nmap_obj.hosts:
+                    if host.is_up():
+                        try:
+                            if host.os_match_probabilities()[0].osclasses[0].osfamily == "Windows":
+                                output.append(str(host.address))
+                        except Exception as e:
+                            self.logger.info("Object is not a Windows machine")
             except Exception as e:
                 return e, 'XMLError'
 
-            for host in nmap_obj.hosts:
-                if host.is_up():
-                    try:
-                        if host.os_match_probabilities()[0].osclasses[0].osfamily == "Windows":
-                            output.append(str(host.address))
-                    except Exception as e:
-                        print("Object is not a Windows machine")
         return output
 
     async def parse_xml_for_linux_from_file(self, nmap_file):
@@ -120,7 +116,7 @@ class Nmap(AppBase):
                     if host.os_match_probabilities()[0].osclasses[0].osfamily == "Linux":
                         output.append(str(host.address))
                 except Exception as e:
-                    print("Object is not a Linux machine")
+                    self.logger.info("Object is not a Linux machine")
         return output
 
     async def parse_xml_for_windows_from_file(self, nmap_file):
@@ -146,7 +142,7 @@ class Nmap(AppBase):
                     if host.os_match_probabilities()[0].osclasses[0].osfamily == "Windows":
                         output.append(str(host.address))
                 except Exception as e:
-                    print("Object is not a Windows machine")
+                    self.logger.info("Object is not a Windows machine")
         return output
 
     async def xml_to_json(self, nmap_out, is_file=False):

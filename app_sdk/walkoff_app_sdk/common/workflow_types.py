@@ -116,7 +116,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
             position = {"x": o.position.x, "y": o.position.y}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
                     "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
-                    "execution_id": o.execution_id}
+                    "parallelized": o.parallelized, "execution_id": o.execution_id}
 
         # elif isinstance(o, ParallelAction):
         #     position = {"x": o.position.x, "y": o.position.y}

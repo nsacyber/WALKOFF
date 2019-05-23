@@ -10,6 +10,8 @@ This update includes numerous bugfixes and a number of reintroduced features.
 * Trigger nodes allow you to pause workflow execution until webhook for the trigger is hit with data
 * Basic Condition nodes allow you to perform branching execution in a more flowchart-like manner
 * Basic Transform nodes allow you to write code snippets to transform/remap/select action results on the fly (UI support pending)
+* Parallel Action node types in the workflow editor
+* Display UUIDs for workflow and workflow nodes in UI
 
 ### Changed
 * WALKOFF now runs utilizing stack deploy, allowing for the use of external Docker secrets
@@ -25,11 +27,16 @@ This update includes numerous bugfixes and a number of reintroduced features.
 ### Fixed
 * Workflow import/export
 * Workflow validation (still needs work); workflows can be saved in an incomplete state again
+* Validate workfow name uniqueness when creating workflows
 * Testing suite (still needs expansion)
 * Uniqueness constraints on CRUD operations
 * Dereferencing Global and Workflow variables in workflows
 * Ability to override starting parameters in a workflow execution
 * Ability to update/delete encrypted Global Variables
+* Hide global values by default on Globals tab
+* Default boolean parameters to false
+* Copying and pasting of nodes in workflow editor
+* Accessing action results before conditionals in parameters that follow it
 
      
 ## [1.0.0-alpha.1]
