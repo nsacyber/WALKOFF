@@ -154,15 +154,14 @@ class Worker:
                              return_exceptions=True)
         logger.info("Successfully aborted workflow!")
 
-    async def cancel_helper(self, node, to_cancel, visited):
+    async def cancel_helper(self, node, to_cancel):
         children = set(self.workflow.successors(node))
 
         for child in children:
             if self.parent_map[child.id_] == 1:
                 to_cancel.append(child.id_)
                 self.cancelled.append(node.id_)
-                visited.append(child)
-                await self.cancel_helper(child, to_cancel, visited)
+                await self.cancel_helper(child, to_cancel)
 
         return to_cancel
 
@@ -175,7 +174,7 @@ class Worker:
         cancelled_tasks = set()
 
         self.cancelled.append(node.id_)
-        to_cancel = await self.cancel_helper(node, [node.id_], [])
+        to_cancel = await self.cancel_helper(node, [node.id_])
 
         for task in self.scheduling_tasks:
             for _, arg in getcoroutinelocals(task._coro).items():
