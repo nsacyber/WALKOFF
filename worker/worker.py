@@ -43,6 +43,8 @@ class Worker:
         self.execution_task = None
         self.session = session
         self.token = None
+        self.parent_map = {}
+        self.cancelled = []
 
     @staticmethod
     async def get_workflow(redis: aioredis.Redis):
@@ -152,19 +154,36 @@ class Worker:
                              return_exceptions=True)
         logger.info("Successfully aborted workflow!")
 
+    async def cancel_helper(self, node, to_cancel, visited):
+        children = set(self.workflow.successors(node))
+
+        for child in children:
+            if self.parent_map[child.id_] == 1:
+                to_cancel.append(child.id_)
+                self.cancelled.append(node.id_)
+                visited.append(child)
+                await self.cancel_helper(child, to_cancel, visited)
+
+        return to_cancel
+
     async def cancel_subgraph(self, node):
         """
             Cancels the task related to the current node as well as the tasks related to every child of that node.
             Also removes them from the worker's internal in_process queue.
         """
-        dependents = self.workflow.get_dependents(node)
+        # dependents = self.workflow.get_dependents(node)
         cancelled_tasks = set()
+
+        self.cancelled.append(node.id_)
+        to_cancel = await self.cancel_helper(node, [node.id_], [])
 
         for task in self.scheduling_tasks:
             for _, arg in getcoroutinelocals(task._coro).items():
                 if isinstance(arg, Node):
-                    if arg in dependents:
+                    if arg.id_ in to_cancel:
                         self.in_process.pop(arg.id_)
+                        self.accumulator[arg.id_] = None
+                        self.cancelled.append(arg.id_)
                         task.cancel()
                         cancelled_tasks.add(task)
 
@@ -182,6 +201,14 @@ class Worker:
             node = queue.pop()
             parents = {n.id_: n for n in self.workflow.predecessors(node)} if node is not self.start_action else {}
             children = {n.id_: n for n in self.workflow.successors(node)}
+
+            if node is not self.start_action:
+                for parent_id in parents:
+                    if node.id_ not in self.parent_map.keys():
+                        self.parent_map[node.id_] = 1
+                    else:
+                        self.parent_map[node.id_] = self.parent_map[node.id_] + 1
+
             self.in_process[node.id_] = node
 
             if isinstance(node, Action):
@@ -214,7 +241,10 @@ class Worker:
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
             # We preemptively schedule all branches of execution so we must cancel all "false" branches here
-            [await self.cancel_subgraph(child) for child in children.values()]
+            #[await self.cancel_subgraph(child) for child in children.values()]
+            for child in children.values():
+                if self.parent_map[child.id_] == 1:
+                    await self.cancel_subgraph(child)
 
         except ConditionException as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
@@ -297,6 +327,7 @@ class Worker:
     async def get_globals(self):
         url = config.API_GATEWAY_URI.rstrip('/') + '/api'
         headers, self.token = await get_walkoff_auth_header(self.session, self.token)
+        # saving decryption for app-level
         payload = {'to_decrypt': 'false'}
         async with self.session.get(url + "/globals", headers=headers, params=payload) as resp:
             globals_ = await resp.json(loads=workflow_loads)
@@ -305,8 +336,7 @@ class Worker:
 
     async def dereference_params(self, action: Action):
         global_vars = await self.get_globals()
-        logger.error("THE GLOBALSSSSS")
-        logger.error(global_vars)
+
         for param in action.parameters:
             if param.variant == ParameterVariant.STATIC_VALUE:
                 continue
@@ -324,10 +354,8 @@ class Worker:
                     param.value = global_vars[param.value].value
 
             else:
-                logger.error(f"Unable to defeference parameter:{param} for action:{action}")
+                logger.error(f"Unable to dereference parameter:{param} for action:{action}")
                 break
-
-            #param.variant = ParameterVariant.STATIC_VALUE
 
     async def schedule_node(self, node, parents, children):
         """ Waits until all dependencies of an action are met and then schedules the action """
@@ -337,6 +365,16 @@ class Worker:
             await asyncio.sleep(0)
 
         logger.info(f"Node {node.id_} ({node.name}) ready to execute.")
+
+        # node has more than one parent, check if both parent nodes have been cancelled
+        if len(parents) > 1:
+            count = 0
+            for parent in parents:
+                if parent in self.cancelled:
+                    count = count + 1
+
+            if count == self.parent_map[node.id_]:
+                await self.cancel_subgraph(node)
 
         if isinstance(node, Action):
             if node.parallelized:
@@ -447,7 +485,7 @@ class Worker:
                 elif node_message.status == StatusEnum.FAILURE:
                     self.accumulator[node_message.node_id] = node_message.result
                     await self.cancel_subgraph(self.workflow.nodes[node_message.node_id])  # kill the children!
-                    logger.info(f"Worker recieved error \"{node_message.result}\" for: {node_message.label}-"
+                    logger.info(f"Worker received error \"{node_message.result}\" for: {node_message.label}-"
                                 f"{node_message.execution_id}")
 
                 else:
@@ -465,8 +503,9 @@ class Worker:
                     logger.debug(f"PARALLEL Worker received result for: {node_message.label}-{node_message.execution_id}")
 
                 elif node_message.status == StatusEnum.FAILURE:
-                    self.parallel_accumulator[node_message.node_id] = node_message.result
-                    logger.debug(f"PARALLEL Worker recieved error \"{node_message.result}\" for: {node_message.label}-"
+                    # self.parallel_accumulator[node_message.node_id] = node_message.result
+                    self.parallel_accumulator[node_message.node_id] = None
+                    logger.debug(f"PARALLEL Worker received error \"{node_message.result}\" for: {node_message.label}-"
                                 f"{node_message.execution_id}")
 
                 else:
