@@ -232,3 +232,7 @@
 #executionResultsModal > .modal-dialog {
 	max-width: 95%;
 }
+
+body ngb-popover-window.popover {
+	max-width: 400px
+}

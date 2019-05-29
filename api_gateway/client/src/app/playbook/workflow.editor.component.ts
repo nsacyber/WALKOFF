@@ -115,6 +115,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	actionFilter: string = '';
 	actionFilterControl = new FormControl();
 	actionTypes = ActionType;
+	sseErrorTimeout: any; 
 
 	tags: string[] = [];
 	
@@ -212,6 +213,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
     consoleEventHandler(message: any): void {
+		if (this.sseErrorTimeout) {
+			clearTimeout(this.sseErrorTimeout);
+			delete this.sseErrorTimeout;
+		}
+		
 		console.log('c', message)
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
@@ -255,6 +261,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
 	nodeStatusEventHandler(message: any): void {
+		if (this.sseErrorTimeout) {
+			clearTimeout(this.sseErrorTimeout);
+			delete this.sseErrorTimeout;
+		}
+
 		const nodeStatusEvent = plainToClass(NodeStatusEvent, (JSON.parse(message.data) as object));
 		console.log('action', nodeStatusEvent);
 
@@ -338,15 +349,24 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	statusEventErrorHandler(e: any) {
-		if (this.eventSource && this.eventSource.close)
-			this.eventSource.close();
-		if (this.consoleEventSource && this.consoleEventSource.close)
-			this.consoleEventSource.close();
+		if (this.sseErrorTimeout) return;
+		this.sseErrorTimeout = setTimeout(async () => {
+			try {
+				await this.playbookService.getApis();
+				delete this.sseErrorTimeout;
+			}
+			catch(e) {
+				if (this.eventSource && this.eventSource.close)
+					this.eventSource.close();
+				if (this.consoleEventSource && this.consoleEventSource.close)
+					this.consoleEventSource.close();
 
-		const options = {backdrop: undefined, closeButton: false, buttons: { ok: { label: 'Reload Page' }}}
-		this.utils
-			.alert('The server stopped responding. Reload the page to try again.', options)
-			.then(() => location.reload(true))
+				const options = {backdrop: undefined, closeButton: false, buttons: { ok: { label: 'Reload Page' }}}
+				this.utils
+					.alert('The server stopped responding. Reload the page to try again.', options)
+					.then(() => location.reload(true))
+			}
+		}, 5 * 1000)
 	}
 
 	/**
