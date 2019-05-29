@@ -56,12 +56,10 @@ class Nmap(AppBase):
         return results
 
     async def parse_xml_for_linux(self, nmap_arr):
-        xml_str = None
         output = []
         for nmap in nmap_arr:
-            xml_str = nmap
             try:
-                nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
+                nmap_obj = NmapParser.parse(nmap_data=nmap, data_type='XML')
                 for host in nmap_obj.hosts:
                     if host.is_up():
                         try:
@@ -71,17 +69,15 @@ class Nmap(AppBase):
                             self.logger.info("Object is not a Linux machine")
 
             except Exception as e:
-                return e, 'XMLError'
+                return e
 
         return output
 
     async def parse_xml_for_windows(self, nmap_arr):
-        xml_str = None
         output = []
         for nmap in nmap_arr:
-            xml_str = nmap
             try:
-                nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
+                nmap_obj = NmapParser.parse(nmap_data=nmap, data_type='XML')
                 for host in nmap_obj.hosts:
                     if host.is_up():
                         try:
@@ -90,7 +86,7 @@ class Nmap(AppBase):
                         except Exception as e:
                             self.logger.info("Object is not a Windows machine")
             except Exception as e:
-                return e, 'XMLError'
+                return e
 
         return output
 

@@ -44,10 +44,14 @@ class MessageJSONEncoder(json.JSONEncoder):
     """ A custom encoder for encoding Message types to JSON strings. """
     def default(self, o):
         if isinstance(o, NodeStatusMessage):
-            return {"name": o.name, "node_id": o.node_id, "label": o.label, "app_name": o.app_name,
-                    "execution_id": o.execution_id, "result": o.result, "status": o.status,
-                    "started_at": o.started_at, "completed_at": o.completed_at, "combined_id": o.combined_id,
-                    "arguments": o.arguments}
+            if o.status == StatusEnum.FAILURE:
+                return o.result
+
+            else:
+                return {"name": o.name, "node_id": o.node_id, "label": o.label, "app_name": o.app_name,
+                        "execution_id": o.execution_id, "result": o.result, "status": o.status,
+                        "started_at": o.started_at, "completed_at": o.completed_at, "combined_id": o.combined_id,
+                        "arguments": o.arguments}
 
         elif isinstance(o, WorkflowStatusMessage):
             return {"execution_id": o.execution_id, "workflow_id": o.workflow_id, "name": o.name, "status": o.status,

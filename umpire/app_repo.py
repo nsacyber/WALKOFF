@@ -1,9 +1,11 @@
 import logging
 import re
 import asyncio
+import zipfile
 from pathlib import Path
 
 import aiohttp
+import os
 import yaml
 from compose.cli.command import get_project
 
@@ -117,6 +119,16 @@ class AppRepo:
 
         self.apps = {}
         await self.get_loaded_apis()
+        for app in self.path.iterdir():
+            if not app.is_dir():
+                try:
+                    zip_ref = zipfile.ZipFile(app, 'r')
+                    zip_ref.extractall("apps/")
+                    zip_ref.close()
+                    os.remove(app)
+                except Exception as e:
+                    logger.error(f"Zip error: {e}")
+                    continue
         for app in self.path.iterdir():
             #  grabs only directories and ignores all __* directories i.e. __pycache__
             if app.is_dir() and not re.fullmatch(r"(__.*)", app.name):

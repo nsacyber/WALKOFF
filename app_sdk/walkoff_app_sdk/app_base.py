@@ -147,8 +147,8 @@ class AppBase:
                                                                         result="Action not callable")
 
             except Exception as e:
-                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
                 self.logger.exception(f"Failed to execute {action.label}-{action.id_}")
+                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
 
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
