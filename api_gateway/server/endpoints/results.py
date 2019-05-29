@@ -19,6 +19,7 @@ from api_gateway.executiondb.workflowresults import (WorkflowStatus, NodeStatus,
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.problem import unique_constraint_problem, invalid_id_problem
 
+from common.elasticsearch_helpers import connect_to_elasticsearch, flatten_data_for_es
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +92,10 @@ def push_to_action_stream_queue(node_statuses, event):
         node_status_json["execution_id"] = str(node_status_json["execution_id"])
         execution_id = str(node_status_json["execution_id"])
         sse_event_text = sse_format(data=node_status_json, event=event, event_id=event_id)
+
+        es = connect_to_elasticsearch()
+        body = node_status_json
+        es.create(index='walkoff-results-index', id=node_status.combined_id, body=body)
 
         if execution_id in action_stream_subs:
             action_stream_subs[execution_id].put(sse_event_text)

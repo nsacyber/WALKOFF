@@ -102,10 +102,15 @@ services:
     - "EXECUTION_DB_PASSWORD=walkoff"
     - "WALKOFF_DB_USERNAME=walkoff"
     - "WALKOFF_DB_PASSWORD=walkoff"
+    - "ES_URI=elasticsearch:9200"
     stop_signal: SIGINT
     stop_grace_period: 30s
     secrets:
       - encryption_key
+    depends_on:
+      - elasticsearch
+      - postgres
+      - redis
 
   redis:
     container_name: redis
@@ -132,6 +137,29 @@ services:
       - walkoff_default
 #    volumes:
 #      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: "docker.elastic.co/elasticsearch/elasticsearch:7.0.0"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9200/_cat/health"]
+    environment:
+      - "discovery.type=single-node"
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - walkoff_default
+
+  kibana:
+    container_name: kibana
+    image: "docker.elastic.co/kibana/kibana:7.0.0"
+    ports:
+      - 5601:5601
+    networks:
+      - walkoff_default
+    depends_on:
+      - elasticsearch
 
 secrets:
   encryption_key:

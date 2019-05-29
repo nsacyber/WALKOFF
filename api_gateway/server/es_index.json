@@ -1,0 +1,64 @@
+{
+    "settings": {
+        "index": {
+            "mapper.dynamic": false
+        }
+    },
+    "mappings": {
+        "my_type": {
+            "dynamic": "strict",
+            "_source": {
+                "excludes": ["flatData.*"]
+            },
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "enabled": false
+                },
+                "flatData": {
+                    "type": "nested",
+                    "properties": {
+                        "key": {
+                            "type": "keyword",
+                            "include_in_all": false
+                        },
+                        "type": {
+                            "type": "keyword",
+                            "include_in_all": false
+                        },
+                        "key_type": {
+                            "type": "keyword",
+                            "include_in_all": false
+                        },
+                        "value_string": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "value_boolean": {
+                            "type": "boolean"
+                        },
+                        "value_date": {
+                            "type": "date"
+                        },
+                        "value_long": {
+                            "type": "long"
+                        },
+                        "value_float": {
+                            "type": "float"
+                        },
+                        "value_null": {
+                            "type": "boolean",
+                            "null_value": false,
+                            "include_in_all": false
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
