@@ -22,7 +22,7 @@ Table of Contents
    :maxdepth: 5
    :caption: API Reference:
 
-   apps
+   test
 
 
 
