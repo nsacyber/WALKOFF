@@ -18,25 +18,15 @@ Installation Steps
 
 Table of Contents
 ==================
-* :ref:`genindex`
-   blurb
-* :ref:`modindex`
-   blurb
-* :ref:`search`
-   blurb
-
-Change Log
-========================
-
-Stability and Versioning
-========================
-The apps and interfaces API is relatively stable, and changes to it will cause a minor version bump. However, no
-guarantee is made of the stability of the walkoff module itself until version 1.0.0 is released.
-
 .. toctree::
    :maxdepth: 5
    :caption: API Reference:
 
    apps
-   interfaces
-   platform
+
+
+
+Change Log
+========================
+
+
