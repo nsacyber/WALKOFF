@@ -12,6 +12,22 @@ usage and app and interface development. This documentation is intended to help 
 provide a reference for project contributors.
 
 
+Installation Steps
+========================
+
+
+Table of Contents
+==================
+* :ref:`genindex`
+   blurb
+* :ref:`modindex`
+   blurb
+* :ref:`search`
+   blurb
+
+Change Log
+========================
+
 Stability and Versioning
 ========================
 The apps and interfaces API is relatively stable, and changes to it will cause a minor version bump. However, no
@@ -24,10 +40,3 @@ guarantee is made of the stability of the walkoff module itself until version 1.
    apps
    interfaces
    platform
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
