@@ -24,9 +24,3 @@ Table of Contents
 
    testing
 
-
-
-Change Log
-========================
-
-
