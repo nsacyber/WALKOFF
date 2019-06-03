@@ -93,9 +93,16 @@ def push_to_action_stream_queue(node_statuses, event):
         execution_id = str(node_status_json["execution_id"])
         sse_event_text = sse_format(data=node_status_json, event=event, event_id=event_id)
 
+        logger.error(f"COMPARE THIS: {node_status_json}")
         es = connect_to_elasticsearch()
-        body = node_status_json
-        es.create(index='walkoff-results-index', id=node_status.combined_id, body=body)
+        body = flatten_data_for_es(node_status_json)
+        logger.error(f"TO THIS: {body}")
+        logger.error(f"ES CONNECTION: {es}")
+
+        # es.create(index='test', id=node_status.combined_id, body=body)
+        #
+        # x = es.get(index='test', id=node_status.combined_id)
+        # logger.error(f"THIS IS THE ES RESULT::::::: {x}")
 
         if execution_id in action_stream_subs:
             action_stream_subs[execution_id].put(sse_event_text)

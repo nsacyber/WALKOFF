@@ -17,6 +17,7 @@ from api_gateway.helpers import compose_api
 from api_gateway.server.blueprints import console, root
 from api_gateway.server.endpoints.results import results_stream
 from common.elasticsearch_helpers import connect_to_elasticsearch
+from common.init_containers import init_elasticsearch
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +86,12 @@ register_swagger_blueprint(_app)
 
 add_health_check(_app)
 
-with open('api_gateway/server/es_index.json') as f:
-    es = connect_to_elasticsearch()
-    es.indices.create(index='walkoff-results-index', body=json.load(f), wait_for_active_shards=1)
-    print(f"Was ES index creation successful? {es.indices.exists('walkoff-results-index')}")
-
 app = _app
+
+with open('api_gateway/server/temp.json') as f:
+    init_elasticsearch()
+    es = connect_to_elasticsearch()
+    es.indices.create(index='test', body=json.load(f))
+    logger.error(f"Was ES index creation successful? {es.indices.exists('test')}")
+
+
