@@ -115,14 +115,14 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	actionFilter: string = '';
 	actionFilterControl = new FormControl();
 	actionTypes = ActionType;
-	sseErrorTimeout: any; 
+	sseErrorTimeout: any;
 
 	tags: string[] = [];
-	
-	conditionalOptions = { 
+
+	conditionalOptions = {
 		tabSize: 4,
 		indentUnit: 4,
-		mode: 'python', 
+		mode: 'python',
 		placeholder: `# Python to set selected_node to an output action
 # For example:
 # 		
@@ -212,12 +212,12 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			});
 	}
 
-    consoleEventHandler(message: any): void {
+  consoleEventHandler(message: any): void {
 		if (this.sseErrorTimeout) {
 			clearTimeout(this.sseErrorTimeout);
 			delete this.sseErrorTimeout;
 		}
-		
+
 		console.log('c', message)
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
@@ -283,7 +283,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.addClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
-						incomingEdges.addClass('success-highlight');	
+						incomingEdges.addClass('success-highlight');
 						break;
 					case NodeStatuses.SUCCESS:
 						matchingNode.addClass('success-highlight');
@@ -379,7 +379,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const executionId = UUID.UUID();
 		Promise.all([
 			this.getNodeStatusSSE(executionId),
-			// this.getConsoleSSE(executionId)
+			this.getConsoleSSE(executionId)
 		]).then(() => {
 			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
 				.then((workflowStatus: WorkflowStatus) => {
@@ -497,7 +497,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 						'ghost' : 'yes',
 						'ghost-offset-x' : '7px',
 						'ghost-offset-y': '-7px',
-						'ghost-opacity' : '.7'	
+						'ghost-opacity' : '.7'
 					},
 				},
 				{
@@ -941,7 +941,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			}
 
 			// Make sure reference is valid for this action
-			if (argument.variant == Variant.ACTION_RESULT) {	
+			if (argument.variant == Variant.ACTION_RESULT) {
 				const validReferences = workflow.getPreviousActions(action).map(a => a.id);
 				if (!validReferences.includes(argument.value)) {
 					idsToRemove.unshift(args.indexOf(argument));
@@ -1215,7 +1215,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			case ActionType.TRIGGER:
 				this.insertTrigger(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
 				break;
-			default: 
+			default:
 				this.insertAction(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
 		}
 
@@ -1455,7 +1455,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
 		let initialValue = null;
-		if (parameterApi.schema.type === 'array') { 
+		if (parameterApi.schema.type === 'array') {
 			initialValue = [];
 		} else if (parameterApi.schema.type === 'object') {
 			initialValue = {};

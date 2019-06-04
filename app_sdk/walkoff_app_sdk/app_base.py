@@ -38,7 +38,7 @@ class HTTPStream:
     async def write(self, message):
         data = {"message": message}
         params = {"workflow_execution_id": self.execution_id}
-        url = f"{API_GATEWAY_URI}/api/streams/console/log"
+        url = f"{API_GATEWAY_URI}/api/streams/console/logger"
 
         await self.session.post(url, json=data, params=params)
 
