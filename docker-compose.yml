@@ -34,7 +34,7 @@ services:
       - SWARM_NETWORK=walkoff_default
       - APP_PREFIX=walkoff_app
       - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=registry:5000
+      - DOCKER_REGISTRY=localhost:5000
 
       # Redis options
       - REDIS_URI=redis://redis:6379
