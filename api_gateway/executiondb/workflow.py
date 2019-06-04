@@ -158,11 +158,6 @@ class Workflow(Base):
         return True
 
 
-@event.listens_for(Workflow, "before_update")
-def validate_before_update(mapper, connection, target):
-    target.validate()
-
-
 class WorkflowSchema(BaseSchema):
     """Schema for workflows
     """

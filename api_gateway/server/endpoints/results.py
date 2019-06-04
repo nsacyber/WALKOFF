@@ -12,7 +12,6 @@ from sqlalchemy.exc import IntegrityError
 import jsonpatch
 
 from api_gateway.server.decorators import with_resource_factory, paginate, is_valid_uid
-from api_gateway.executiondb.workflow import Workflow
 from api_gateway.executiondb.workflowresults import (WorkflowStatus, NodeStatus, WorkflowStatusSchema,
                                                      NodeStatusSchema)
 
@@ -48,10 +47,6 @@ def sse_format(data, event_id, event=None, retry=None):
     return formatted + '\n'
 
 
-def workflow_getter(workflow_id):
-    return current_app.running_context.execution_db.session.query(Workflow).filter_by(id_=workflow_id).first()
-
-
 def workflow_status_getter(execution_id):
     return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
         execution_id=execution_id).first()
@@ -62,7 +57,6 @@ def node_status_getter(combined_id):
         combined_id=combined_id).first()
 
 
-with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
 with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
 
 node_status_schema = NodeStatusSchema()

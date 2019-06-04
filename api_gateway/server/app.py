@@ -9,6 +9,9 @@ from healthcheck import HealthCheck
 from jinja2 import FileSystemLoader
 from yaml import Loader, load
 
+from sqlalchemy import event
+from api_gateway.executiondb.workflow import Workflow
+
 import api_gateway.config
 from api_gateway.extensions import db, jwt
 from api_gateway.server import context
@@ -82,4 +85,15 @@ register_blueprints(_app)
 register_swagger_blueprint(_app)
 
 add_health_check(_app)
+
+
+# Validate database models before saving them, here.
+# This is here to avoid circular imports.
+with _app.app_context():
+    @event.listens_for(_app.running_context.execution_db.session, "before_flush")
+    def validate_before_flush(session, flush_context, instances):
+        for instance in session.dirty:
+            if isinstance(instance, Workflow):
+                instance.validate()
+
 app = _app
