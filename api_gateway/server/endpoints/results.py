@@ -99,17 +99,17 @@ def push_to_action_stream_queue(node_statuses, event):
         logger.error(f"TO THIS: {body}")
         logger.error(f"ES CONNECTION: {es}")
 
-        # es.create(index='test', id=node_status.combined_id, body=body)
+        with open('api_gateway/server/to_post.json') as f:
+            es.create(index='test', id=node_status.combined_id, body=json.load(f))
         #
-        # x = es.get(index='test', id=node_status.combined_id)
-        # logger.error(f"THIS IS THE ES RESULT::::::: {x}")
+        x = es.get(index='test', id=node_status.combined_id)
+        logger.error(f"THIS IS THE ES RESULT::::::: {x}")
 
         if execution_id in action_stream_subs:
             action_stream_subs[execution_id].put(sse_event_text)
         if 'all' in action_stream_subs:
             action_stream_subs['all'].put(sse_event_text)
         event_id += 1
-
 
 # @jwt_required
 # @permissions_accepted_for_resources(ResourcePermissions("workflowstatus", ["create"]))

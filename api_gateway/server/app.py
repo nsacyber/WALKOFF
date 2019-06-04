@@ -92,6 +92,6 @@ with open('api_gateway/server/temp.json') as f:
     init_elasticsearch()
     es = connect_to_elasticsearch()
     es.indices.create(index='test', body=json.load(f))
-    logger.error(f"Was ES index creation successful? {es.indices.exists('test')}")
+    logger.info(f"Was ES index creation successful? {es.indices.exists('test')}")
 
 
