@@ -138,6 +138,7 @@ class AppBase:
                             else:
                                 params[p.name] = p.value
                         result = await func(**params)
+
                     action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result=result)
                     self.logger.debug(f"Executed {action.label}-{action.id_} with result: {result}")
 

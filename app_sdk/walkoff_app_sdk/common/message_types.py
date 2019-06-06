@@ -21,6 +21,7 @@ def message_load(obj):
 
 class MessageJSONDecoder(json.JSONDecoder):
     """ A custom decoder for decoding JSON strings to Message types. """
+
     def __init__(self, *args, **kwargs):
         json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
 
@@ -33,26 +34,37 @@ class MessageJSONDecoder(json.JSONDecoder):
             o["status"] = StatusEnum[o["status"]]
             return WorkflowStatusMessage(**o)
 
+        elif "trigger_data" in o:
+            return TriggerMessage(**o)
+
         else:
             return o
 
 
 class MessageJSONEncoder(json.JSONEncoder):
     """ A custom encoder for encoding Message types to JSON strings. """
+
     def default(self, o):
         if isinstance(o, NodeStatusMessage):
-            if o.status == StatusEnum.FAILURE:
-                return o.result
+            r = {"name": o.name, "node_id": o.node_id, "label": o.label, "app_name": o.app_name,
+                 "execution_id": o.execution_id, "result": o.result, "status": o.status,
+                 "started_at": o.started_at, "completed_at": o.completed_at, "combined_id": o.combined_id,
+                 "arguments": o.arguments}
 
-            else:
-                return {"name": o.name, "node_id": o.node_id, "label": o.label, "app_name": o.app_name,
-                        "execution_id": o.execution_id, "result": o.result, "status": o.status,
-                        "started_at": o.started_at, "completed_at": o.completed_at, "combined_id": o.combined_id,
-                        "arguments": o.arguments}
+            try:
+                json.dumps(o.result)
+            except (TypeError, ValueError):
+                r["result"] = f"Node returned result of type '{type(o.result)}' which is not JSON serializable."
+                r["status"] = StatusEnum.FAILURE
+            finally:
+                return r
 
         elif isinstance(o, WorkflowStatusMessage):
             return {"execution_id": o.execution_id, "workflow_id": o.workflow_id, "name": o.name, "status": o.status,
                     "started_at": o.started_at, "completed_at": o.completed_at, "user": o.user}
+
+        elif isinstance(o, TriggerMessage):
+            return {"trigger_data": o.trigger_data}
 
         elif isinstance(o, JSONPatch):
             if o.op in JSONPatchOps:
@@ -184,8 +196,17 @@ class NodeStatusMessage(object):
         completed_at = datetime.datetime.now()
         return NodeStatusMessage.from_node(node, execution_id, result=result, completed_at=completed_at,
                                            status=StatusEnum.FAILURE)
+
     @classmethod
     def aborted_from_node(cls, node, execution_id):
         completed_at = datetime.datetime.now()
         return NodeStatusMessage.from_node(node, execution_id, result=None, completed_at=completed_at,
                                            status=StatusEnum.ABORTED)
+
+
+class TriggerMessage(object):
+    """ Class that formats a TriggerMessage. """
+    __slots__ = ("trigger_data",)
+
+    def __init__(self, trigger_data):
+        self.trigger_data = trigger_data
