@@ -88,10 +88,10 @@ add_health_check(_app)
 
 app = _app
 
-with open('api_gateway/server/temp.json') as f:
+with open('api_gateway/server/es_index.json') as f:
     init_elasticsearch()
     es = connect_to_elasticsearch()
-    es.indices.create(index='test', body=json.load(f))
-    logger.info(f"Was ES index creation successful? {es.indices.exists('test')}")
+    es.indices.create(index='walkoff_results_index', body=json.load(f))
+    logger.info(f"Was ES index creation successful? {es.indices.exists('walkoff_results_index')}")
 
 

@@ -33,7 +33,6 @@ def flatten_data_for_es(data, prefix=""):
         return {
             "key": key,
             "type": type_,
-            "key_type": f"{key}.{type_}",
             f"value_{type_}": value
         }
 
@@ -48,13 +47,12 @@ def flatten_data_for_es(data, prefix=""):
     elif isinstance(data, list):
         """If data is a list, flatten its contents"""
         results_map = {}
-        for ele in data:
-            flattened = [item for sub in flatten_data_for_es(ele, prefix) for item in sub]
+        for elem in data:
+            flattened = flatten_data_for_es(elem)
             for result in flattened:
                 key = result["key"]
                 if key not in results_map:
                     results_map[key] = {}
-
                 type_ = result["type"]
                 if type_ not in results_map[key]:
                     results_map[key][type_] = []

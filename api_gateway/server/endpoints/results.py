@@ -93,17 +93,26 @@ def push_to_action_stream_queue(node_statuses, event):
         execution_id = str(node_status_json["execution_id"])
         sse_event_text = sse_format(data=node_status_json, event=event, event_id=event_id)
 
-        logger.error(f"COMPARE THIS: {node_status_json}")
-        es = connect_to_elasticsearch()
-        body = flatten_data_for_es(node_status_json)
-        logger.error(f"TO THIS: {body}")
-        logger.error(f"ES CONNECTION: {es}")
+        if node_status_json['status'] == "SUCCESS" or node_status_json['status'] == "FAILURE":
+            es = connect_to_elasticsearch()
 
-        with open('api_gateway/server/to_post.json') as f:
-            es.create(index='test', id=node_status.combined_id, body=json.load(f))
-        #
-        x = es.get(index='test', id=node_status.combined_id)
-        logger.error(f"THIS IS THE ES RESULT::::::: {x}")
+            body = flatten_data_for_es({"result": node_status_json["result"]})
+            args = flatten_data_for_es({"arguments": node_status_json["arguments"]})
+
+            return_json = {
+                "label": node_status_json["label"],
+                "name": node_status_json["name"],
+                "app_name": node_status_json["app_name"],
+                "node_id": node_status_json["node_id"],
+                "execution_id": node_status_json["execution_id"],
+                "arguments": args,
+                "completed_at": node_status_json["completed_at"],
+                "result": body
+            }
+            es.create(index='walkoff_results_index', id=node_status.combined_id, body=return_json)
+
+            x = es.get(index='walkoff_results_index', id=node_status.combined_id)
+            logger.info(f"Pushed to ElasticSearch: {x}")
 
         if execution_id in action_stream_subs:
             action_stream_subs[execution_id].put(sse_event_text)
