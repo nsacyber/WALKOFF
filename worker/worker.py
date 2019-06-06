@@ -73,6 +73,7 @@ class Worker:
             try:
                 if not (await redis.sismember(config.REDIS_ABORTING_WORKFLOWS, execution_id)):
                     await redis.sadd(config.REDIS_EXECUTING_WORKFLOWS, execution_id)
+                    logger.error(f"THE WORKFLOW: {workflow}")
                     yield workflow_loads(workflow)
 
             finally:  # Clean up workflow-queue

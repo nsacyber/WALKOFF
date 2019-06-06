@@ -76,7 +76,15 @@ class WorkflowJSONDecoder(json.JSONDecoder):
 
         elif "actions" in o and "branches" in o:
             branches = {Branch(self.nodes[b.source_id], self.nodes[b.destination_id], b.id_) for b in self.branches}
-            workflow_variables = {var.id_: var for var in o["workflow_variables"]}
+
+            try:
+                workflow_variables = {var.id_: var for var in o["workflow_variables"]}
+            except:
+                workflow_variables = {}
+                for var in o["workflow_variables"]:
+                    workflow_obj = Variable(id_=var["id_"], name=var["name"], value=var["value"])
+                    workflow_variables[workflow_obj.id_] = workflow_obj
+
             start = self.nodes[o["start"]]
             o["branches"] = branches
             o["workflow_variables"] = workflow_variables

@@ -44,7 +44,7 @@ class Workflow(Base):
     branches = relationship("Branch", cascade="all, delete-orphan", passive_deletes=True)
     conditions = relationship("Condition", cascade="all, delete-orphan", passive_deletes=True)
     transforms = relationship("Transform", cascade="all, delete-orphan", passive_deletes=True)
-    workflow_variables = relationship("WorkflowVariable", cascade="all, delete-orphan", passive_deletes=True)
+    workflow_variables = relationship("WorkflowVariable", cascade="save-update")
     triggers = relationship("Trigger", cascade="all, delete-orphan", passive_deletes=True)
 
     children = ['actions', 'conditions', 'transforms', 'triggers']
