@@ -324,7 +324,7 @@ class Worker:
         logger.debug(f"Echoing data from trigger: {trigger.name}-{self.workflow.execution_id}")
         try:
             result = trigger(trigger_data)
-            tmsg = NodeStatusMessage.success_from_node(trigger, self.workflow.execution_id, result, paramters={})
+            tmsg = NodeStatusMessage.success_from_node(trigger, self.workflow.execution_id, result, parameters={})
             await send_status_update(self.session, self.workflow.execution_id,
                                      tmsg)
             self.accumulator[trigger.id_] = result
