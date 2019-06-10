@@ -145,8 +145,9 @@ class Worker:
         self.execution_task.cancel()
 
         # Try to cancel any outstanding actions
-        msgs = [NodeStatusMessage.aborted_from_node(action, action.execution_id, parameters=
-                (await self.dereference_params(action))) for action in self.in_process.values()]
+        msgs = [NodeStatusMessage.aborted_from_node(action, action.execution_id,
+                                                    parameters=(await self.dereference_params(action)))
+                                                    for action in self.in_process.values()]
         message_tasks = [send_status_update(self.session, self.workflow.execution_id, msg) for msg in msgs]
         await asyncio.gather(*message_tasks, return_exceptions=True)
 
@@ -236,7 +237,6 @@ class Worker:
         try:
             child_id = condition(parents, children, self.accumulator)
             selected_node = children.pop(child_id)
-            logger.info("THESE HAVE BEEN UPDATEDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
             status = NodeStatusMessage.success_from_node(condition, self.workflow.execution_id, selected_node.name,
                                                          parameters={})
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
@@ -496,10 +496,13 @@ class Worker:
             execution_id, node_message = execution_id_node_message
             node_message = message_loads(node_message)
 
-            # Ensure that the received NodeStatusMessage is for an action we launched
-            params = await self.dereference_params(self.workflow.nodes[node_message.node_id])
-            node_message.parameters = params
+            try:
+                params = await self.dereference_params(self.workflow.nodes[node_message.node_id])
+                node_message.parameters = params
+            except:
+                node_message.parameters = {}
 
+            # Ensure that the received NodeStatusMessage is for an action we launched
             if node_message.execution_id == self.workflow.execution_id and node_message.node_id in self.in_process:
                 if node_message.status == StatusEnum.EXECUTING:
                     logger.info(f"App started execution of: {node_message.label}-{node_message.execution_id}")
