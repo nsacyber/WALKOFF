@@ -2,6 +2,7 @@ import socket
 import asyncio
 import time
 import random
+import json
 
 from walkoff_app_sdk.app_base import AppBase
 
@@ -37,6 +38,10 @@ class HelloWorld(AppBase):
         await self.console_logger.info(message)
 
         return message
+
+    async def repeat_trigger(self, call):
+        this = json.loads(call)
+        return this
 
     async def repeat_back_to_me(self, call):
         return f"REPEATING: {call}"

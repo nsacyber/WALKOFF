@@ -21,6 +21,17 @@ actions:
     returns:
       schema:
         type: number
+  - name: repeat_trigger
+    description: returns the outputs from the trigger data
+    parameters:
+      - name: call
+        description: message to hold output from
+        required: true
+        schema:
+          type: string
+    returns:
+      schema:
+        type: object
   - name: repeat_back_to_me
     description: Repeats the call parameter
     parameters:
