@@ -7,7 +7,7 @@ from Crypto.Cipher import AES
 class GlobalCipher(object):
 
     def __init__(self, key):
-        self.key = key
+        self.key = key.rstrip()
 
     def encrypt(self, raw):
         raw = self.pad(raw)

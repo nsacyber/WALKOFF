@@ -237,8 +237,14 @@
                         (createVariable)="onCreateVariable($event)"></playbook-argument-component>
                 </div>
 
+                <ng-template #conditionalTooltip><pre>
+if input_1.result > input_2.result:
+    selected_node = output_1
+else:
+    selected_node = output_2</pre></ng-template>
                 <div *ngIf="selectedActionApi.node_type == actionTypes.CONDITION" class="form-group mt-3">
                     <label class="h5" for="name">Conditional
+                        <i class="fa fa-info-circle" [autoClose]="'outside'" [ngbPopover]="conditionalTooltip" popoverTitle="Example Conditional" container="body"></i>
                         <i class="fa fa-asterisk required" title="This field is required."></i>
                     </label>
                     <ngx-codemirror [(ngModel)]="selectedAction.conditional" [options]="conditionalOptions">

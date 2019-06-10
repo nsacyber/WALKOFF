@@ -70,7 +70,6 @@ class GlobalVariableTemplateSchema(BaseSchema):
         except (SchemaError, JSONSchemaValidationError) as e:
             raise MarshmallowValidationError(str(e))
 
-
 class GlobalVariableSchema(BaseSchema):
     """Schema for global variables
     """
@@ -101,7 +100,7 @@ class GlobalVariableSchema(BaseSchema):
 class GlobalCipher(object):
 
     def __init__(self, key):
-        self.key = key
+        self.key = key.rstrip()
 
     def encrypt(self, raw):
         raw = self.pad(raw)

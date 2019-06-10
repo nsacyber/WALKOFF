@@ -44,7 +44,7 @@ class Workflow(Base):
     branches = relationship("Branch", cascade="all, delete-orphan", passive_deletes=True)
     conditions = relationship("Condition", cascade="all, delete-orphan", passive_deletes=True)
     transforms = relationship("Transform", cascade="all, delete-orphan", passive_deletes=True)
-    workflow_variables = relationship("WorkflowVariable", cascade="all, delete-orphan", passive_deletes=True)
+    workflow_variables = relationship("WorkflowVariable", cascade="save-update")
     triggers = relationship("Trigger", cascade="all, delete-orphan", passive_deletes=True)
 
     children = ['actions', 'conditions', 'transforms', 'triggers']
@@ -156,11 +156,6 @@ class Workflow(Base):
                 if not child.is_valid_rec():
                     return False
         return True
-
-
-@event.listens_for(Workflow, "before_update")
-def validate_before_update(mapper, connection, target):
-    target.validate()
 
 
 class WorkflowSchema(BaseSchema):

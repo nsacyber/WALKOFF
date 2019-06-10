@@ -145,7 +145,9 @@ class Worker:
         self.execution_task.cancel()
 
         # Try to cancel any outstanding actions
-        msgs = [NodeStatusMessage.aborted_from_node(action, action.execution_id) for action in self.in_process.values()]
+        msgs = [NodeStatusMessage.aborted_from_node(action, action.execution_id,
+                                                    parameters=(await self.dereference_params(action)))
+                                                    for action in self.in_process.values()]
         message_tasks = [send_status_update(self.session, self.workflow.execution_id, msg) for msg in msgs]
         await asyncio.gather(*message_tasks, return_exceptions=True)
 
@@ -235,7 +237,8 @@ class Worker:
         try:
             child_id = condition(parents, children, self.accumulator)
             selected_node = children.pop(child_id)
-            status = NodeStatusMessage.success_from_node(condition, self.workflow.execution_id, selected_node.name)
+            status = NodeStatusMessage.success_from_node(condition, self.workflow.execution_id, selected_node.name,
+                                                         parameters={})
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
             # We preemptively schedule all branches of execution so we must cancel all "false" branches here
@@ -246,7 +249,8 @@ class Worker:
 
         except ConditionException as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
-            status = NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id, result=repr(e))
+            status = NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id, result=repr(e),
+                                                         parameters={})
         except Exception as e:
             logger.exception(f"Something bad happened in Condition evaluation: {e!r}")
             return
@@ -254,7 +258,7 @@ class Worker:
         # Send the status message through redis to ensure get_action_results completes it correctly
         await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
-    async def execute_parallel_action(self, node: Action):
+    async def execute_parallel_action(self, node: Action, params=None):
         schedule_tasks = []
         actions = set()
         action_to_parallel_map = {}
@@ -293,7 +297,8 @@ class Worker:
         self.accumulator[node.id_] = results
 
         # self.accumulator[node.id_] = [self.parallel_accumulator[a] for a in actions]
-        status = NodeStatusMessage.success_from_node(node, self.workflow.execution_id, self.accumulator[node.id_])
+        status = NodeStatusMessage.success_from_node(node, self.workflow.execution_id, self.accumulator[node.id_],
+                                                     parameters=params)
 
         await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
@@ -302,13 +307,14 @@ class Worker:
         logger.debug(f"Attempting evaluation of: {transform.label}-{self.workflow.execution_id}")
         try:
             result = transform(self.accumulator[parent.id_])  # run transform on parent's result
-            status = NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result)
+            status = NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result, parameters={})
             logger.info(f"Transform {transform.label}-succeeded with result: {result}")
 
         # TODO: figure out exactly what can be raised by the possible transforms
         except Exception as e:
             logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
-            status = NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, result=repr(e))
+            status = NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, result=repr(e),
+                                                         parameters={})
 
         # Send the status message through redis to ensure get_action_results completes it correctly
         await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
@@ -318,7 +324,7 @@ class Worker:
         logger.debug(f"Echoing data from trigger: {trigger.name}-{self.workflow.execution_id}")
         try:
             result = trigger(trigger_data)
-            tmsg = NodeStatusMessage.success_from_node(trigger, self.workflow.execution_id, result)
+            tmsg = NodeStatusMessage.success_from_node(trigger, self.workflow.execution_id, result, paramters={})
             await send_status_update(self.session, self.workflow.execution_id,
                                      tmsg)
             self.accumulator[trigger.id_] = result
@@ -329,7 +335,7 @@ class Worker:
             logger.exception(f"Worker received error for {trigger.name}-{self.workflow.execution_id}")
             await send_status_update(self.session, self.workflow.execution_id,
                                      NodeStatusMessage.failure_from_node(trigger, self.workflow.execution_id,
-                                                                         result=repr(e)))
+                                                                         result=repr(e), parameters={}))
 
     async def get_globals(self):
         url = config.API_GATEWAY_URI.rstrip('/') + '/api'
@@ -342,9 +348,11 @@ class Worker:
             return {g.id_: g for g in globals_}
 
     async def dereference_params(self, action: Action):
+        param_ret = {}
         global_vars = await self.get_globals()
 
         for param in action.parameters:
+            param_ret[param.name] = param.value
             if param.variant == ParameterVariant.STATIC_VALUE:
                 continue
 
@@ -363,6 +371,8 @@ class Worker:
             else:
                 logger.error(f"Unable to dereference parameter:{param} for action:{action}")
                 break
+
+        return param_ret
 
     async def schedule_node(self, node, parents, children):
         """ Waits until all dependencies of an action are met and then schedules the action """
@@ -385,10 +395,11 @@ class Worker:
 
         if isinstance(node, Action):
             if node.parallelized:
-                await self.dereference_params(node)
+                params = await self.dereference_params(node)
                 await send_status_update(self.session, self.workflow.execution_id,
-                                         NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
-                asyncio.create_task(self.execute_parallel_action(node))
+                                         NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
+                                                                               parameters=params))
+                asyncio.create_task(self.execute_parallel_action(node, params))
 
             else:
                 group = f"{node.app_name}:{node.app_version}"
@@ -408,21 +419,25 @@ class Worker:
                 except aioredis.ReplyError as e:
                     logger.debug(f"Issue creating redis stream {e!r}")
 
-                await self.dereference_params(node)
+                params = await self.dereference_params(node)
+
                 await send_status_update(self.session, self.workflow.execution_id,
-                                         NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
+                                         NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
+                                                                               parameters=params))
                 await self.redis.xadd(stream, {node.execution_id: workflow_dumps(node)})
 
         elif isinstance(node, Condition):
             await send_status_update(self.session, self.workflow.execution_id,
-                                     NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
+                                     NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
+                                                                           parameters={}))
             await self.evaluate_condition(node, parents, children)
 
         elif isinstance(node, Transform):
             if len(parents) > 1:
                 logger.error(f"Error scheduling {node.name}: Transforms cannot have more than 1 incoming connection.")
             await send_status_update(self.session, self.workflow.execution_id,
-                                     NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
+                                     NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
+                                                                           parameters={}))
             await self.execute_transform(node, parents.popitem()[1])
 
         elif isinstance(node, Trigger):
@@ -468,6 +483,7 @@ class Worker:
                 with await self.redis as redis:
                     msg = await redis.xread_group(config.REDIS_ACTION_RESULTS_GROUP, CONTAINER_ID,
                                                   streams=[self.results_stream], count=1, latest_ids=['>'])
+
             except aioredis.errors.ReplyError:
                 logger.debug(f"Stream {self.workflow.execution_id} doesn't exist. Attempting to create it...")
                 await self.redis.xgroup_create(self.results_stream, config.REDIS_ACTION_RESULTS_GROUP,
@@ -479,6 +495,12 @@ class Worker:
             execution_id_node_message, stream, id_ = deref_stream_message(msg)
             execution_id, node_message = execution_id_node_message
             node_message = message_loads(node_message)
+
+            try:
+                params = await self.dereference_params(self.workflow.nodes[node_message.node_id])
+                node_message.parameters = params
+            except:
+                node_message.parameters = {}
 
             # Ensure that the received NodeStatusMessage is for an action we launched
             if node_message.execution_id == self.workflow.execution_id and node_message.node_id in self.in_process:

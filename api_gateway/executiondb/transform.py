@@ -59,11 +59,6 @@ class Transform(Base):
         return True
 
 
-@event.listens_for(Transform, 'before_update')
-def validate_before_update(mapper, connection, target):
-    target.validate()
-
-
 class TransformSchema(BaseSchema):
     """Schema for transforms
     """

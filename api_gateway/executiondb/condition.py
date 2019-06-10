@@ -57,11 +57,6 @@ class Condition(Base):
         return True
 
 
-@event.listens_for(Condition, 'before_update')
-def validate_before_update(mapper, connection, target):
-    target.validate()
-
-
 class ConditionSchema(BaseSchema):
     """Schema for conditions
     """

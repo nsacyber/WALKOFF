@@ -55,6 +55,19 @@ class Umpire:
         await self.build_app_sdk()
         await self.build_worker()
 
+        for app_name, app in self.app_repo.apps.items():
+            for version_name, version in app.items():
+                image_name = version.services[0].image_name
+                image = None
+                try:
+                    image = await self.docker_client.images.pull(image_name)
+                except DockerError:
+                    logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
+
+                # if we didn't find the image, try to build it
+                if image is None:
+                    await self.build_app(app_name, version_name)
+
         if len(self.app_repo.apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
             exit(1)

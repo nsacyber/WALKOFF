@@ -10,6 +10,9 @@ from healthcheck import HealthCheck
 from jinja2 import FileSystemLoader
 from yaml import Loader, load
 
+from sqlalchemy import event
+from api_gateway.executiondb.workflow import Workflow
+
 import api_gateway.config
 from api_gateway.extensions import db, jwt
 from api_gateway.server import context
@@ -25,9 +28,9 @@ logger = logging.getLogger(__name__)
 def register_blueprints(flaskapp):
     flaskapp.logger.info('Registering builtin blueprints')
     flaskapp.register_blueprint(results_stream, url_prefix='/api/streams/workflowqueue')
-    flaskapp.register_blueprint(console.console_page, url_prefix='/api/streams/console')
+    flaskapp.register_blueprint(console.console_stream, url_prefix='/api/streams/console')
     flaskapp.register_blueprint(root.root_page, url_prefix='/')
-    for blueprint in (results_stream, console.console_page):
+    for blueprint in (results_stream, console.console_stream):
         blueprint.cache = flaskapp.running_context.cache
 
 
@@ -86,12 +89,32 @@ register_swagger_blueprint(_app)
 
 add_health_check(_app)
 
-app = _app
+
+# Validate database models before saving them, here.
+# This is here to avoid circular imports.
+with _app.app_context():
+    @event.listens_for(_app.running_context.execution_db.session, "before_flush")
+    def validate_before_flush(session, flush_context, instances):
+        for instance in session.dirty:
+            if isinstance(instance, Workflow):
+                instance.validate()
+
+
+@_app.after_request
+def after_request(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, public, max-age=0"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
+
 
 with open('api_gateway/server/es_index.json') as f:
     init_elasticsearch()
     es = connect_to_elasticsearch()
     es.indices.create(index='walkoff_results_index', body=json.load(f))
     logger.info(f"Was ES index creation successful? {es.indices.exists('walkoff_results_index')}")
+
+app = _app
+
 
 

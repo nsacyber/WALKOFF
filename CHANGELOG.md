@@ -10,7 +10,7 @@ This update includes numerous bugfixes and a number of reintroduced features.
 * Trigger nodes allow you to pause workflow execution until webhook for the trigger is hit with data
 * Basic Condition nodes allow you to perform branching execution in a more flowchart-like manner
 * Basic Transform nodes allow you to write code snippets to transform/remap/select action results on the fly (UI support pending)
-* Parallel Action node types in the workflow editor
+* Parallel Action node types in the workflow editor allow you to parallelize actions on a specified parameter
 * Display UUIDs for workflow and workflow nodes in UI
 
 ### Changed
