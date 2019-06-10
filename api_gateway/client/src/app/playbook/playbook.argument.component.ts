@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, ViewEncapsulation, Input, Output, EventEmitter, OnChanges, ElementRef, ViewChild } from '@angular/core';
 import { Select2OptionData } from 'ng2-select2/ng2-select2';
 
 import { Workflow } from '../models/playbook/workflow';
@@ -10,9 +10,8 @@ import { GenericObject } from '../models/genericObject';
 import { User } from '../models/user';
 import { Role } from '../models/role';
 import { Global } from '../models/global';
-import { Trigger } from '../models/playbook/trigger';
-import { Condition } from '../models/playbook/condition';
 import { WorkflowNode } from '../models/playbook/WorkflowNode';
+import { JsonEditorComponent } from 'ang-jsoneditor';
 
 const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 
@@ -34,6 +33,8 @@ export class PlaybookArgumentComponent implements OnChanges {
 	@Input() globals: Global[];
 	@Input() branchCounters: any[];
 
+	@ViewChild('jsonEditor') jsonEditor: JsonEditorComponent;
+
 	@Output() createVariable = new EventEmitter<Argument>();
 
 	valueType: string = Variant.STATIC_VALUE;
@@ -44,11 +45,25 @@ export class PlaybookArgumentComponent implements OnChanges {
 	availableTypes: string[] = AVAILABLE_TYPES;
 	arrayTypes: string[] = [];
 	objectTypes: GenericObject = {};
+
 	// Simple parameter schema reference so I'm not constantly showing parameterApi.schema
 	parameterSchema: ParameterSchema;
 	selectData: Select2OptionData[];
 	selectConfig: Select2Options;
 	selectInitialValue: string[];
+
+	initialValue;
+
+	editorOptionsData: any = {
+		modes: ['tree', 'code'],
+		history: false,
+		search: false,
+		navigationBar: false,
+		statusBar: false,
+		enableSort: false,
+		enableTransform: false,
+	}
+	
 
 	// tslint:disable-next-line:no-empty
 	constructor() { }
@@ -88,6 +103,10 @@ export class PlaybookArgumentComponent implements OnChanges {
 				}
 			}
 		}
+
+		// Store initial value for use in JSONeditor widget
+		this.initialValue = this.argument.value;
+		if (this.parameterSchema) this.editorOptionsData.schema = this.parameterSchema;
 	}
 
 	initTypeSelector(): void {
@@ -154,6 +173,10 @@ export class PlaybookArgumentComponent implements OnChanges {
 			if (Array.isArray(this.argument.value)) 
 				this.selectInitialValue = this.argument.value.map((val: number) => val.toString());
 		}
+	}
+
+	updateValue($event: any): void {
+		this.argument.value = $event;
 	}
 
 	/**

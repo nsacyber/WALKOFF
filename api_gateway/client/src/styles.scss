@@ -13,6 +13,7 @@
 @import '@swimlane/ngx-datatable/release/assets/icons.css';
 @import 'select2/dist/css/select2.min.css';
 @import 'ngx-toastr/toastr.css';
+@import "~jsoneditor/dist/jsoneditor.min.css";
 
 /* Hack along for modal animations in ng-bootstrap */
 @keyframes modal-b-fade {
@@ -58,4 +59,23 @@
 .bootbox-body {
     padding-top: 1rem;
     padding-bottom: 1rem;
+}
+
+div.jsoneditor {
+    border: thin solid #DDD;
+
+    a.jsoneditor-poweredBy {
+        display: none;
+    }
+}
+
+div.jsoneditor-menu {
+    background-color: #3c8dbc;
+    border-bottom: 1px solid #3c8dbc;
+}
+
+div.jsoneditor-contextmenu ul li button.jsoneditor-selected,
+div.jsoneditor-contextmenu ul li button.jsoneditor-selected:focus, 
+div.jsoneditor-contextmenu ul li button.jsoneditor-selected:hover {
+    background-color: #aecbdc;
 }
