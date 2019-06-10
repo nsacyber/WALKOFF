@@ -258,7 +258,7 @@ class Worker:
         # Send the status message through redis to ensure get_action_results completes it correctly
         await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
-    async def execute_parallel_action(self, node: Action, params=None):
+    async def execute_parallel_action(self, node: Action, parameters):
         schedule_tasks = []
         actions = set()
         action_to_parallel_map = {}
@@ -298,7 +298,7 @@ class Worker:
 
         # self.accumulator[node.id_] = [self.parallel_accumulator[a] for a in actions]
         status = NodeStatusMessage.success_from_node(node, self.workflow.execution_id, self.accumulator[node.id_],
-                                                     parameters=params)
+                                                     parameters=parameters)
 
         await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
