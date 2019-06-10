@@ -67,7 +67,7 @@ def push_to_action_stream_queue(node_statuses, event):
             es = connect_to_elasticsearch()
 
             body = flatten_data_for_es({"result": node_status_json["result"]})
-            args = flatten_data_for_es({"arguments": node_status_json["arguments"]})
+            params = flatten_data_for_es({"parameters": node_status_json["parameters"]})
 
             return_json = {
                 "label": node_status_json["label"],
@@ -75,7 +75,7 @@ def push_to_action_stream_queue(node_statuses, event):
                 "app_name": node_status_json["app_name"],
                 "node_id": node_status_json["node_id"],
                 "execution_id": node_status_json["execution_id"],
-                "arguments": args,
+                "parameters": params,
                 "completed_at": node_status_json["completed_at"],
                 "result": body
             }
