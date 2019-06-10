@@ -115,6 +115,17 @@ actions:
     returns:
       schema:
         type: string
+  - name: sftp_copy_from_json
+    description: Copy remote file to remote host using sftp
+    parameters:
+      - name: input
+        required: true
+        schema:
+          type: object
+        description: source path of the file to copy
+    returns:
+      schema:
+        type: string
   - name: run_shell_script_file
     description: runs the specified shell script on the remote server(s)
     parameters:

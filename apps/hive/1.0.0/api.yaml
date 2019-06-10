@@ -1,0 +1,111 @@
+walkoff_version: 1.0.0
+app_version: 1.0.0
+name: hive
+description: The Hive app allows for walkoff to generate or close cases in TheHive
+contact_info:
+  name: FORGE Cyber
+  url: https://github.com/
+  email: hoffman_thomas@bah.com
+license_info:
+  name: Full Government Use Rights
+  url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
+actions:
+  - name: create_case
+    description: creates a hive case
+    parameters:
+      - name: log_data
+        description: log data to generate custom fields
+        schema:
+          type: string
+        required: true
+      - name: url
+        description: URL of TheHive
+        schema:
+          type: string
+        required: true
+      - name: api_key
+        description: API key to access TheHive
+        schema:
+          type: string
+        required: true
+    returns:
+      schema:
+        type: object
+  - name: update_case
+    description: Updates a case data as well as severity
+    parameters:
+      - name: input
+        description: json from trigger
+        schema:
+          type: object
+        required: true
+      - name: id
+        description: id for case
+        schema:
+          type: string
+        required: true
+      - name: severity
+        description: severity of change
+        schema:
+          type: integer
+        required: true
+      - name: url
+        description: URL of TheHive
+        schema:
+          type: string
+        required: true
+      - name: api_key
+        description: API key to access TheHive
+        schema:
+          type: string
+        required: true
+  - name: close_case
+    description: Closes a case in TheHive
+    parameters:
+    - name: case_id
+      description: ID of case to close
+      schema:
+        type: string
+      required: true
+    - name: url
+      description: URL of TheHive
+      schema:
+        type: string
+      required: true
+
+    - name: api_key
+      description: API key to access TheHive
+      schema:
+        type: string
+      required: true
+
+    - name: resolution_status
+      description: Resolution status of the case to close.
+      schema:
+        type: string
+        enum: ['TruePositive', 'FalsePositive', 'Indeterminate']
+      required: true
+
+    - name: impact_status
+      description: Impact status of the case to close. The impact status is only captured when resolution status is TruePositive
+      schema:
+        type: string
+        enum: ['NoImpact', 'WithImpact']
+      required: true
+
+    - name: tags
+      description: Tags to add to the case once closed. Comma separated string.
+      schema:
+        type: string
+      required: true
+
+    - name: summary
+      description: Explanation of why the case was closed.
+      schema:
+        type: string
+        enum: ['Case closed by WALKOFF']
+      required: true
+
+    returns:
+      schema:
+        type: object
