@@ -58,9 +58,8 @@ class Nmap(AppBase):
     async def parse_xml_for_linux(self, nmap_arr):
         output = []
         for nmap in nmap_arr:
-            xml_str = nmap[1]
             try:
-                nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
+                nmap_obj = NmapParser.parse(nmap_data=nmap, data_type='XML')
                 for host in nmap_obj.hosts:
                     if host.is_up():
                         try:
