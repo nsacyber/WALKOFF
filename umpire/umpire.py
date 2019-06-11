@@ -45,7 +45,7 @@ class Umpire:
     @classmethod
     async def init(cls, docker_client, redis, session):
         self = cls(docker_client, redis, session)
-        await redis.flushall()  # TODO: do a more targeted cleanup of redis
+        # await redis.flushall()  # TODO: do a more targeted cleanup of redis
         self.app_repo = await AppRepo.create(config.APPS_PATH, session)
         self.running_apps = await self.get_running_apps()
         self.worker = await get_service(self.docker_client, "worker")

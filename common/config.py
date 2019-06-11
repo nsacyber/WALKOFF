@@ -39,7 +39,7 @@ class Config:
     SWARM_NETWORK = os.getenv("SWARM_NETWORK", "walkoff_default")
     APP_PREFIX = os.getenv("APP_PREFIX", "walkoff_app")
     STACK_PREFIX = os.getenv("STACK_PREFIX", "walkoff")
-    DOCKER_REGISTRY = os.getenv("DOCKER_REGISTRY", "localhost:5000")
+    DOCKER_REGISTRY = os.getenv("DOCKER_REGISTRY", "127.0.0.1:5000")
     UMPIRE_HEARTBEAT = os.getenv("UMPIRE_HEARTBEAT", "1")
 
     # Redis options

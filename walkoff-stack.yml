@@ -1,7 +1,7 @@
 version: '3.5'
 services:
   umpire:
-    image: localhost:5000/umpire:latest
+    image: 127.0.0.1:5000/umpire:latest
     build:
       context: ./
       dockerfile: umpire/Dockerfile
@@ -21,7 +21,7 @@ services:
       - SWARM_NETWORK=walkoff_default
       - APP_PREFIX=walkoff_app
       - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=localhost:5000
+      - DOCKER_REGISTRY=127.0.0.1:5000
 
       # Redis options
       - REDIS_URI=redis://redis:6379
@@ -67,7 +67,7 @@ services:
   api_gateway:
     ports:
     - "8080:8080"
-    image: "localhost:5000/api_gateway:latest"
+    image: "127.0.0.1:5000/api_gateway:latest"
     build:
       context: ./
       dockerfile: ./api_gateway/Dockerfile

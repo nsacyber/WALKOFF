@@ -1,4 +1,4 @@
-FROM localhost:5000/walkoff_app_sdk as base
+FROM 127.0.0.1:5000/walkoff_app_sdk as base
 
 FROM base as builder
 
