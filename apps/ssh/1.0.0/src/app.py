@@ -43,7 +43,7 @@ class SSH(AppBase):
 
         curr_dir = os.getcwd()
         temp_dir = os.path.join(curr_dir, r'temp_data')
-        os.makedirs(temp_dir)
+        os.makedirs(temp_dir, exist_ok=True)
 
         async with asyncssh.connect(host=src_host, port=src_port, username=src_username, password=src_password,
                                     known_hosts=None) as conn:
