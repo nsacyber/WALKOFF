@@ -51,7 +51,12 @@ class Umpire:
         self.worker = await get_service(self.docker_client, "worker")
         services = await self.docker_client.services.list()
         self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
-        await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
+
+        try:
+            await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
+        except aioredis.errors.BusyGroupError:
+            logger.info("Workflow Queue stream already exists, not creating new one.")
+
         await self.build_app_sdk()
         await self.build_worker()
 
