@@ -133,6 +133,41 @@ services:
       - walkoff_default
 #    volumes:
 #      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data
+#
+#elasticsearch:
+#    container_name: elasticsearch
+#    image: "docker.elastic.co/elasticsearch/elasticsearch:7.0.0"
+#    healthcheck:
+#      test: ["CMD", "curl", "-sf", "http://localhost:9200/_cat/health"]
+#    environment:
+#      - "discovery.type=single-node"
+#    ports:
+#      - 9200:9200
+#      - 9300:9300
+#    networks:
+#      - walkoff_default
+
+  portainer:
+    container_name: portainer_data
+    image: "portainer/portainer"
+    ports:
+      - 9020:9000
+    networks:
+      - walkoff_default
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+#      - portainer_data:/data portainer/portainer
+
+#  kibana:
+#    container_name: kibana
+#    image: "docker.elastic.co/kibana/kibana:7.0.0"
+#    ports:
+#      - 5601:5601
+#    networks:
+#      - walkoff_default
+#    depends_on:
+#      - elasticsearch
+
 
 secrets:
   encryption_key:
