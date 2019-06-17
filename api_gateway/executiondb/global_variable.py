@@ -64,7 +64,7 @@ class GlobalVariableTemplateSchema(BaseSchema):
         unknown = EXCLUDE
 
     @validates_schema
-    def validate_global_template(self, data):
+    def validate_global_template(self, data, **kwargs):
         try:
             Draft4Validator.check_schema(data["schema"])
         except (SchemaError, JSONSchemaValidationError) as e:
@@ -81,7 +81,7 @@ class GlobalVariableSchema(BaseSchema):
         unknown = EXCLUDE
 
     @validates_schema
-    def validate_global(self, data):
+    def validate_global(self, data, **kwargs):
         f = open('/run/secrets/encryption_key')
         key = f.read()
         my_cipher = GlobalCipher(key)
