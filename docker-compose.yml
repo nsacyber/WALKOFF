@@ -155,6 +155,9 @@ services:
       - 9020:9000
     networks:
       - walkoff_default
+    deploy:
+      placement:
+        constraints: [node.role==manager]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 #      - portainer_data:/data portainer/portainer

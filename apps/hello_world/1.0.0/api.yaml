@@ -21,8 +21,8 @@ actions:
     returns:
       schema:
         type: number
-  - name: repeat_trigger
-    description: returns the outputs from the trigger data
+  - name: repeat_trigger_as_json
+    description: returns the outputs from the trigger data if it's in Json format.
     parameters:
       - name: call
         description: message to hold output from
