@@ -50,7 +50,7 @@ class AppApiSchema(BaseSchema):
         unknown = EXCLUDE
 
     @validates_schema
-    def validate_app_api(self, data):
+    def validate_app_api(self, data, **kwargs):
         # Enforce Semantic Versioning
         for key in ("walkoff_version", "app_version"):
             try:

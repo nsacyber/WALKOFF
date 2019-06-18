@@ -36,7 +36,7 @@ class ReturnApiSchema(BaseSchema):
         unknown = EXCLUDE
 
     @validates_schema
-    def validate_parameter_api(self, data):
+    def validate_parameter_api(self, data, **kwargs):
         try:
             if "schema" in data:
                 Draft4Validator.check_schema(data["schema"])
