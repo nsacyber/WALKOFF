@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from sqlalchemy import Column, String, Boolean, ForeignKey, JSON, event
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from asteval import Interpreter
 
 from marshmallow import EXCLUDE
 
@@ -39,8 +40,17 @@ class Condition(Base):
 
     def validate(self):
         """Validates the object"""
-        # TODO: Implement validation of conditional against asteval library
         self.errors = []
+        # TODO: Implement validation of conditional against asteval library
+        # aeval = Interpreter()
+        # aeval(self.conditional)
+        #
+        # logger.error(f"THIS IS THE CONDITIONAL {self.conditional}")
+        # if len(aeval.error) > 0:
+        #     for err in aeval.error:
+        #         self.errors.append(err.get_error())
+        # else:
+        #     self.errors = []
 
     def is_valid_rec(self):
         if self.errors:
