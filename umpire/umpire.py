@@ -142,7 +142,7 @@ class Umpire:
             secrets = await load_secrets(self.docker_client, project=project)
             mode = {"replicated": {'Replicas': replicas}}
             service_kwargs = ServiceKwargs.configure(image=worker.image_name, service=worker, secrets=secrets,
-                                                     mode=mode)
+                                                     mode=mode, mounts=[])
             await self.docker_client.services.create(name=worker.name, **service_kwargs)
             self.worker = await get_service(self.docker_client, worker.name)
 
@@ -253,7 +253,9 @@ class Umpire:
             secrets = await load_secrets(self.docker_client, project=self.app_repo.apps[app][version])
             secrets.append(SecretReference(secret_id=encryption_secret_id, secret_name="encryption_key"))
             mode = {"replicated": {'Replicas': replicas}}
-            service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode)
+            mounts = ["shared:/app/shared"]
+            service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode,
+                                                     mounts=mounts)
             await self.docker_client.services.create(name=app_name, **service_kwargs)
             self.running_apps[app_name] = await get_service(self.docker_client, app_name)
 

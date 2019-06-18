@@ -21,6 +21,7 @@ services:
     volumes:
      - /var/run/docker.sock:/var/run/docker.sock
      - ./apps:/app/apps
+     - ./data/shared:/app/shared
     environment:
       # Worker options
       - WORKER_TIMEOUT=30

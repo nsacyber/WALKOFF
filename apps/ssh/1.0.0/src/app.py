@@ -118,7 +118,7 @@ class SSH(AppBase):
         results = {}
 
         curr_dir = os.getcwd()
-        temp_dir = os.path.join(curr_dir, r'scripts')
+        temp_dir = os.path.join(curr_dir, r'shared')
         os.chdir(temp_dir)
         curr_dir = os.getcwd()
         local_file_path = os.path.join(curr_dir, local_file_name)
