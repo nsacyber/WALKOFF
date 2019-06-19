@@ -41,16 +41,6 @@ class Condition(Base):
     def validate(self):
         """Validates the object"""
         self.errors = []
-        # TODO: Implement validation of conditional against asteval library
-        # aeval = Interpreter()
-        # aeval(self.conditional)
-        #
-        # logger.error(f"THIS IS THE CONDITIONAL {self.conditional}")
-        # if len(aeval.error) > 0:
-        #     for err in aeval.error:
-        #         self.errors.append(err.get_error())
-        # else:
-        #     self.errors = []
 
     def is_valid_rec(self):
         if self.errors:
