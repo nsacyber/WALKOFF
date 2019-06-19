@@ -22,7 +22,7 @@ from common.message_types import WorkflowStatusMessage
 from common.workflow_types import workflow_loads
 from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, get_containers,
                                    load_secrets, update_service, connect_to_aiodocker, get_service, get_replicas,
-                                   remove_service, get_secret)
+                                   remove_service, get_secret, load_volumes)
 from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -253,7 +253,10 @@ class Umpire:
             secrets = await load_secrets(self.docker_client, project=self.app_repo.apps[app][version])
             secrets.append(SecretReference(secret_id=encryption_secret_id, secret_name="encryption_key"))
             mode = {"replicated": {'Replicas': replicas}}
-            mounts = ["shared:/app/shared"]
+            mounts = await load_volumes(project=self.app_repo.apps[app][version])
+            # TODO: change to environmental variable abs path + data/shared
+            # shared_path = "/home/osboxes/Desktop/WALKOFF/data/shared:/app/shared:rw"
+            # mounts.append(shared_path)
             service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode,
                                                      mounts=mounts)
             await self.docker_client.services.create(name=app_name, **service_kwargs)

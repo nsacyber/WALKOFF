@@ -224,6 +224,19 @@ async def get_containers(docker_client, service, short_ids=False):
     return set(get_container_id(t) for t in tasks if get_state(t) == "running" and has_container(t))
 
 
+async def load_volumes(project):
+    service = project.services[0]
+    volume_references = []
+    for service_volume in service.options["volumes"]:
+        host_path = service_volume.external
+        container_path = service_volume.internal
+        mode = service_volume.mode
+
+        mount = host_path + ":" + container_path + ":" + mode
+        volume_references.append(mount)
+
+    return volume_references
+
 
 async def load_secrets(docker_client, project):
     service = project.services[0]
