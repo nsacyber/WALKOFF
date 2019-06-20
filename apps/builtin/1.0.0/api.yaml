@@ -10,15 +10,21 @@ license_info:
   name: Creative Commons
   url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
 actions:
-  - name: Trigger
-    description: Takes input from an API Call and triggers the rest of the workflow to beign executing again.
-    node_type: TRIGGER
-    returns:
-      schema:
-        type: string
   - name: Condition
     description: Takes input from a previous action and chooses which branch to take according to your logic.
     node_type: CONDITION
+    returns:
+      schema:
+        type: string
+  - name: Transform
+    description: Takes input from previous actions and allows you to transform it according to your logic.
+    node_type: Transform
+    returns:
+      schema:
+        type: string
+  - name: Trigger
+    description: Takes input from an API Call and triggers the rest of the workflow to beign executing again.
+    node_type: TRIGGER
     returns:
       schema:
         type: string

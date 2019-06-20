@@ -237,17 +237,33 @@
                         (createVariable)="onCreateVariable($event)"></playbook-argument-component>
                 </div>
 
-                <ng-template #conditionalTooltip><pre>
+                <ng-template #conditionalTooltip>
+                    <pre>
 if input_1.result > input_2.result:
     selected_node = output_1
 else:
-    selected_node = output_2</pre></ng-template>
+    selected_node = output_2</pre>
+                </ng-template>
                 <div *ngIf="selectedActionApi.node_type == actionTypes.CONDITION" class="form-group mt-3">
                     <label class="h5" for="name">Conditional
-                        <i class="fa fa-info-circle" [autoClose]="'outside'" [ngbPopover]="conditionalTooltip" popoverTitle="Example Conditional" container="body"></i>
+                        <i class="fa fa-info-circle" [autoClose]="'outside'" [ngbPopover]="conditionalTooltip"
+                            popoverTitle="Example Conditional" container="body"></i>
                         <i class="fa fa-asterisk required" title="This field is required."></i>
                     </label>
                     <ngx-codemirror [(ngModel)]="selectedAction.conditional" [options]="conditionalOptions">
+                    </ngx-codemirror>
+                </div>
+
+                <ng-template #transformTooltip>
+                    <pre>result = input.result.get("key")</pre>
+                </ng-template>
+                <div *ngIf="selectedActionApi.node_type == actionTypes.TRANSFORM" class="form-group mt-3">
+                    <label class="h5" for="name">Transform
+                        <i class="fa fa-info-circle" [autoClose]="'outside'" [ngbPopover]="transformTooltip"
+                            popoverTitle="Example Transform" container="body"></i>
+                        <i class="fa fa-asterisk required" title="This field is required."></i>
+                    </label>
+                    <ngx-codemirror [(ngModel)]="selectedAction.transform" [options]="transformOptions">
                     </ngx-codemirror>
                 </div>
 
@@ -257,7 +273,8 @@ else:
                         <label for="parallel_parameter" class="col-sm-4 col-form-label">Parallelization:</label>
                         <div class="col-sm-8">
                             <select class="form-control" name="parallel_parameter"
-                                [(ngModel)]="selectedAction.parallel_parameter" (change)="updateParallelizedNode(selectedAction)">
+                                [(ngModel)]="selectedAction.parallel_parameter"
+                                (change)="updateParallelizedNode(selectedAction)">
                                 <option [value]="null">No Parallelization</option>
                                 <option *ngFor="let parameterApi of selectedActionApi.parallelParameters"
                                     [value]="parameterApi.name" [label]="'Parallelize on  ' + parameterApi.name">

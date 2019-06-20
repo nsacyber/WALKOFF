@@ -11,6 +11,7 @@ import { Condition } from './condition';
 import { ActionType } from '../api/actionApi';
 import { Trigger } from './trigger';
 import { WorkflowNode } from './WorkflowNode';
+import { Transform } from './transform';
 
 export class Workflow extends ExecutionElement {
 	// _playbook_id: number;
@@ -59,6 +60,12 @@ export class Workflow extends ExecutionElement {
 	triggers?: Trigger[] = [];
 
 	/**
+	 * Array of triggers between actions.
+	 */
+	@Type(() => Transform)
+	transforms?: Transform[] = [];
+
+	/**
 	 * Array of environment variables.
 	 */
 	@Type(() => EnvironmentVariable)
@@ -81,7 +88,7 @@ export class Workflow extends ExecutionElement {
 	is_valid: boolean;
 
 	get nodes(): WorkflowNode[] {
-		return [].concat(this.actions, this.conditions, this.triggers);
+		return [].concat(this.actions, this.conditions, this.triggers, this.transforms);
 	}
 
 	/**
@@ -109,12 +116,15 @@ export class Workflow extends ExecutionElement {
 			this.conditions.push(node);
 		else if (node instanceof Trigger)
 			this.triggers.push(node);
+		else if (node instanceof Transform)
+			this.transforms.push(node);
 	}
 
 	removeNode(nodeId: string) {
 		this.actions = this.actions.filter(a => a.id !== nodeId);
 		this.conditions = this.conditions.filter(a => a.id !== nodeId);
 		this.triggers = this.triggers.filter(a => a.id !== nodeId);
+		this.transforms = this.transforms.filter(a => a.id !== nodeId);
 		this.branches = this.branches.filter(b => !(b.source_id === nodeId || b.destination_id === nodeId));
 	}
 

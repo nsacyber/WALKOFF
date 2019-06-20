@@ -55,6 +55,7 @@ import { MetadataModalComponent } from './metadata.modal.component';
 import { Condition } from '../models/playbook/condition';
 import { Trigger } from '../models/playbook/trigger';
 import { WorkflowNode } from '../models/playbook/WorkflowNode';
+import { Transform } from '../models/playbook/transform';
 
 @Component({
 	selector: 'workflow-editor-component',
@@ -130,6 +131,16 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 #     selected_node = output_1
 # else:
 #     selected_node = output_2`
+	}
+
+	transformOptions = {
+		tabSize: 4,
+		indentUnit: 4,
+		mode: 'python',
+		placeholder: `# Python to transform previous nodes results using python code
+# For example:
+# 		
+# result = input.result.get("key")`
 	}
 
 	constructor(
@@ -228,9 +239,9 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	get consoleContent() {
-		let content = `******************************* Console Output *******************************`;
+		let content = `******************************* Console Output *******************************\n`;
 		this.consoleLog.forEach(log => {
-			content += '\n' + log.message;
+			content += log.message;
 		})
 		return content;
 	}
@@ -458,7 +469,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				{
 					selector: `node[type="${ ActionType.ACTION }"]`,
 					css: {
-						'background-color': '#bbb',
+						'shape': 'roundrectangle',
+						'padding': '15px'
 					},
 				},
 				{
@@ -474,6 +486,13 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 						'shape': 'polygon',
 						'shape-polygon-points': '-1, -1, 1, -1, 0, 1',
 						'text-margin-y': '-15px',
+						'padding': '25px'
+					},
+				},
+				{
+					selector: `node[type="${ ActionType.TRANSFORM }"]`,
+					css: {
+						'shape': 'ellipse',
 						'padding': '25px'
 					},
 				},
@@ -1196,11 +1215,12 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const newActionUuid = (firstTime) ? UUID.UUID() : addedNode.data._id;
 
 		const args: Argument[] = [];
-		const parameters = this._getAction(appName, appVersion, actionName).parameters;
+		const actionApi = this._getAction(appName, appVersion, actionName);
+		
 		// TODO: might be able to remove this entirely
 		// due to the argument component auto-initializing default values
-		if (parameters && parameters.length) {
-			this._getAction(appName, appVersion, actionName).parameters.forEach((parameter) => {
+		if (actionApi && actionApi.parameters) {
+			actionApi.parameters.forEach((parameter) => {
 				args.push(this.getDefaultArgument(parameter));
 			});
 		}
@@ -1214,6 +1234,9 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				break;
 			case ActionType.TRIGGER:
 				this.insertTrigger(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
+				break;
+			case ActionType.TRANSFORM:
+				this.insertTransform(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
 				break;
 			default:
 				this.insertAction(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
@@ -1273,6 +1296,17 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		trigger.action_name = actionName;
 		trigger.arguments = args;
 		this.loadedWorkflow.triggers.push(trigger);
+	}
+
+	private insertTransform(appName: any, actionName: any, newActionUuid: any, uniqueActionName: string, appVersion: any, args: Argument[]) {
+		const transform = new Transform();
+		transform.id = newActionUuid;
+		transform.name = uniqueActionName;
+		transform.app_name = appName;
+		transform.app_version = appVersion;
+		transform.action_name = actionName;
+		transform.arguments = args;
+		this.loadedWorkflow.transforms.push(transform);
 	}
 
 	// TODO: update this to properly "cut" actions from the loadedWorkflow.
@@ -1428,7 +1462,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param actionName Name of the ActionApi to query
 	 */
 	_getAction(appName: string, appVersion: string, actionName: string): ActionApi {
-		return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
+		//return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
 		return this.appApis.find(a => a.name === appName && a.app_version == appVersion)
 				.action_apis.find(a => a.name === actionName);
 	}
