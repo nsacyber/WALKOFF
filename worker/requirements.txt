@@ -6,3 +6,4 @@ docker
 docker-compose
 pyyaml
 sqlalchemy
+asteval

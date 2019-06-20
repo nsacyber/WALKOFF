@@ -3,7 +3,6 @@ from uuid import uuid4
 
 from sqlalchemy import Column, String, Boolean, ForeignKey, JSON, event
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from asteval import Interpreter
 
 from marshmallow import EXCLUDE
 

@@ -89,7 +89,7 @@ class Umpire:
             for signame in {'SIGINT', 'SIGTERM'}:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
-            logger.info("Umpire ready!")
+            logger.info("Umpire is ready!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),
                                  asyncio.create_task(ump.monitor_queues(autoscale_worker, autoscale_app,
                                                                         autoheal_worker, autoheal_apps)))

@@ -5,6 +5,7 @@ import os
 import signal
 from collections import deque
 from inspect import getcoroutinelocals
+from asteval import Interpreter
 
 import aiohttp
 import aioredis
@@ -242,15 +243,27 @@ class Worker:
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
             # We preemptively schedule all branches of execution so we must cancel all "false" branches here
-            #[await self.cancel_subgraph(child) for child in children.values()]
             for child in children.values():
                 if self.parent_map[child.id_] == 1:
                     await self.cancel_subgraph(child)
 
         except ConditionException as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
-            status = NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id, result=repr(e),
+
+            aeval = Interpreter()
+            aeval(condition.conditional)
+            if len(aeval.error) > 0:
+                error_tuple = (aeval.error[0]).get_error()
+                ret = error_tuple[0] + "(): " + error_tuple[1]
+
+            status = NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id, result=ret,
                                                          parameters={})
+        except KeyError as e:
+            logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
+            status = NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id,
+                                                         result="ConditionError(): selected_node may not be a string",
+                                                         parameters={})
+
         except Exception as e:
             logger.exception(f"Something bad happened in Condition evaluation: {e!r}")
             return
