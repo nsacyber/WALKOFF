@@ -18,7 +18,7 @@ actions:
         type: string
   - name: Transform
     description: Takes input from previous actions and allows you to transform it according to your logic.
-    node_type: Transform
+    node_type: TRANSFORM
     returns:
       schema:
         type: string

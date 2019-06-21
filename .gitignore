@@ -49,3 +49,4 @@ __pycache__/
 api_gateway/api/composed_api.yaml
 data/registry/
 app_sdk/walkoff_app_sdk.egg-info
+venv/
