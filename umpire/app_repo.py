@@ -119,6 +119,12 @@ class AppRepo:
 
         self.apps = {}
         await self.get_loaded_apis()
+
+        with open("./umpire/builtin.yaml") as f:
+            builtin = yaml.safe_load(f)
+            await self.store_api(builtin)
+            # self.apps["Builtin"] = {"1.0.0": builtin}
+
         for app in self.path.iterdir():
             if not app.is_dir():
                 try:
