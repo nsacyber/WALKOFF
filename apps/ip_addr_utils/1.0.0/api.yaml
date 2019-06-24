@@ -11,13 +11,13 @@ license_info:
   url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
 actions:
   - name: set_timestamp
-    description: Sets the timestamp fro which scipt outputs will be filed under
+    description: Outputs the timestamp at the time of this action's execution
     returns:
       schema:
         type: string
-      example: Hopefully this works.
+      example: "2019-06-19_10-46-11"
   - name: cidr_to_array
-    description: Converts ip address from CIDR notation to individual IP's for easier integration with other apps.
+    description: Converts an array of ip addresses from CIDR notation to individual IP's for easier integration with other apps, specifically NMAP's "run_scan"
     parameters:
       - name: ip_array
         description: list of hosts to execute on

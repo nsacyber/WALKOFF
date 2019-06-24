@@ -154,26 +154,27 @@ class Nmap(AppBase):
             except IOError as e:
                 return e, 'FileReadError'
         else:
-            xml_str = nmap_out
+            for nmap in nmap_out:
+                xml_str = nmap
 
-        try:
-            nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
-        except Exception as e:
-            return e, 'XMLError'
+                try:
+                    nmap_obj = NmapParser.parse(nmap_data=xml_str, data_type='XML')
+                except Exception as e:
+                    return e, 'XMLError'
 
-        ret = []
-        for host in nmap_obj.hosts:
-            if host.is_up():
-                ret.append({"name": host.hostnames.pop() if len(host.hostnames) else host.address,
-                 "address": host.address,
-                 "services": [{"port": service.port,
-                               "protocol": service.protocol,
-                               "state": service.state,
-                               "service": service.service,
-                               "banner": service.banner} for service in host.services]})
+                ret = []
+                for host in nmap_obj.hosts:
+                    if host.is_up():
+                        ret.append({"name": host.hostnames.pop() if len(host.hostnames) else host.address,
+                         "address": host.address,
+                         "services": [{"port": service.port,
+                                       "protocol": service.protocol,
+                                       "state": service.state,
+                                       "service": service.service,
+                                       "banner": service.banner} for service in host.services]})
 
-        ret = json.dumps(ret)
-        ret = json.loads(ret)
+                ret = json.dumps(ret)
+                ret = json.loads(ret)
 
         return ret
 
@@ -186,9 +187,9 @@ class Nmap(AppBase):
                 temp_dir = os.path.join(curr_dir, r'files')
                 os.chdir(temp_dir)
                 with open(nmap_json) as j:
-                    obj = json.load(j)
+                    obj = j
             else:
-                obj = json.loads(nmap_json)
+                obj = nmap_json
         except IOError as e:
             return e, 'FileReadError'
         except (AttributeError, ValueError) as e:

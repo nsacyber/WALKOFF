@@ -133,7 +133,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
         elif isinstance(o, Transform):
             position = {"x": o.position.x, "y": o.position.y}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
-                    "label": o.label, "position": position, "transform": o.transform, "parameter": o.parameter}
+                    "label": o.label, "position": position, "transform": o.transform}
 
         elif isinstance(o, Trigger):
             position = {"x": o.position.x, "y": o.position.y}
@@ -357,13 +357,12 @@ class Trigger(Node):
 
 
 class Transform(Node):
-    __slots__ = ("transform", "parameter")
+    __slots__ = ("transform",)
 
-    def __init__(self, name, position: Point, app_name, app_version, label, transform, parameter=None, id_=None,
+    def __init__(self, name, position: Point, app_name, app_version, label, transform, id_=None,
                  errors=None, is_valid=None):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
-        self.transform = transform.lower()
-        self.parameter = parameter
+        self.transform = transform
         self.priority = 3  # Transforms have a fixed, mid valued priority
 
     def __str__(self):
@@ -380,30 +379,36 @@ class Transform(Node):
     def __hash__(self):
         return hash(id(self))
 
-    def __call__(self, data):
+    @staticmethod
+    def format_node_names(nodes):
+        # We need to format space delimited names into underscore delimited names
+        names_to_modify = {node.label for node in nodes.values() if node.label.count(' ') > 0}
+        formatted_nodes = {}
+        for node in nodes.values():
+            formatted_name = node.label.strip().replace(' ', '_')
+
+            if formatted_name in names_to_modify:  # we have to check for a name conflict as described above
+                logger.error(f"Error processing condition. {node.label} or {formatted_name} must be renamed.")
+
+            formatted_nodes[formatted_name] = node
+        return formatted_nodes
+
+    def __call__(self, parents, accumulator) -> str:
         """ Execute an action and ship its result """
-        logger.debug(f"Attempting execution of: {self.name}-{self.id_}")
-        transform = f"_{self.__class__.__name__}__{self.transform}"
-        if hasattr(self, transform):
-            if self.parameter is None:
-                result = getattr(self, transform)(data=data)
-            else:
-                result = getattr(self, transform)(self.parameter, data=data)
-            logger.debug(f"Executed {self.name}-{self.id_} with result: {result}")
-            return result
-        else:
-            logger.error(f"{self.__class__.__name__} has no method {self.transform}")
+        parent_symbols = {k: ParentSymbol(accumulator[v.id_]) for k, v in self.format_node_names(parents).items()}
+        # children_symbols = {k: ChildSymbol(v.id_) for k, v in self.format_node_names(children).items()}
+        syms = make_symbol_table(use_numpy=False, **parent_symbols)
+        aeval = Interpreter(usersyms=syms, no_while=True, no_try=True, no_functiondef=True, no_ifexp=True,
+                            no_augassign=True, no_assert=True, no_delete=True, no_raise=True,
+                            no_print=True, use_numpy=False, builtins_readonly=True)
 
-    # TODO: add JSON to CSV parsing and vice versa.
-    def __get_value_at_index(self, index, data=None):
-        return data[index]
+        aeval(self.transform)
+        output = aeval.symtable.get("result", None)
 
-    def __get_value_at_key(self, key, data=None):
-        return data[key]
+        if len(aeval.error) > 0:
+            raise ConditionException
 
-    def __split_string_to_array(self, delimiter=' ', data=None):
-        return data.split(delimiter)
-
+        return output
 
 class DiGraph:
     __slots__ = ("nodes", "edges", "rev_adjacency")

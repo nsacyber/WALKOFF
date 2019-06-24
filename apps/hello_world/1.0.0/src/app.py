@@ -39,7 +39,7 @@ class HelloWorld(AppBase):
 
         return message
 
-    async def repeat_trigger_as_json(self, call):
+    async def string_to_json(self, call):
         this = json.loads(call)
         return this
 

@@ -235,7 +235,7 @@ Transform:
     label:
       description: The user defined name of the transform
       type: string
-      example: split string
+      example: transform
     is_valid:
       description: are the contents of this transform valid?
       type: boolean
@@ -244,9 +244,7 @@ Transform:
     transform:
       description: The transform to apply to the result of its parent Action
       type: string
-      enum: [get_value_at_index, get_value_at_key, split_string_to_array]
-    parameter:
-      description: The parameter to pass to the chosen transform
+      example: "result = input.get('Walkoff')"
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
       $ref: '#/components/schemas/Position'

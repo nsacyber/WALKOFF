@@ -315,11 +315,11 @@ class Worker:
 
         await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
-    async def execute_transform(self, transform, parent):
+    async def execute_transform(self, transform, parents):
         """ Execute an transform and ship its result """
         logger.debug(f"Attempting evaluation of: {transform.label}-{self.workflow.execution_id}")
         try:
-            result = transform(self.accumulator[parent.id_])  # run transform on parent's result
+            result = transform(parents, self.accumulator)  # run transform on parent's result
             status = NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result, parameters={})
             logger.info(f"Transform {transform.label}-succeeded with result: {result}")
 
@@ -446,12 +446,10 @@ class Worker:
             await self.evaluate_condition(node, parents, children)
 
         elif isinstance(node, Transform):
-            if len(parents) > 1:
-                logger.error(f"Error scheduling {node.name}: Transforms cannot have more than 1 incoming connection.")
             await send_status_update(self.session, self.workflow.execution_id,
                                      NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
                                                                            parameters={}))
-            await self.execute_transform(node, parents.popitem()[1])
+            await self.execute_transform(node, parents)
 
         elif isinstance(node, Trigger):
             trigger_stream = f"{self.workflow.execution_id}-{node.id_}:triggers"

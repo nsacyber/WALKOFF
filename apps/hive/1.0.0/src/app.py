@@ -110,16 +110,16 @@ class Hive(AppBase):
         obs_pol(case_id, api, data, log)
         return case_id
 
-    async def update_case(self, input, id, severity, url, api_key):
+    async def update_case(self, log_data, id, severity, url, api_key):
         self.logger.info('Updating a case in TheHive')
         self.logger.info('TheHive URL: {}'.format(url))
         self.logger.info('TheHive API key: {}'.format(api_key))
 
-        log_data = input.get("walkoff")
-        self.logger.info('The data: {}'.format(log_data))
+        input = log_data.get("walkoff")
+        self.logger.info('The data: {}'.format(input))
 
-        if isinstance(log_data, str):
-            log_data = json.loads(log_data)
+        if isinstance(input, str):
+            input = json.loads(input)
 
         if url.startswith('http://'):
             pass
@@ -133,7 +133,7 @@ class Hive(AppBase):
 
         self.logger.info('TheHive API connected')
 
-        data = log_data
+        data = input
         tags = ['Walkoff']
 
         try:
