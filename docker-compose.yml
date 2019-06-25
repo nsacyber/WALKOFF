@@ -80,8 +80,8 @@ services:
   #      - /var/lib/boot2docker/auth:/auth
 
   api_gateway:
-    ports:
-    - "8080:8080"
+#    ports:
+#    - "8080:8080"
     image: "127.0.0.1:5000/api_gateway:latest"
     build:
       context: ./
@@ -171,6 +171,14 @@ services:
 #    depends_on:
 #      - elasticsearch
 
+  nginx:
+    image: 'bitnami/nginx:latest'
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
+      - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
+      - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
 
 secrets:
   encryption_key:
