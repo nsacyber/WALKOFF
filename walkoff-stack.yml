@@ -1,17 +1,14 @@
 version: '3.5'
 services:
-#  dockerhost:
-#    image: qoomon/docker-host
-#    networks:
-#      - walkoff_default
-#    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 8M
-#    restart: on-failure
   umpire:
-    command: python -m umpire.umpire # --log-level=debug
+    command: python -m umpire.umpire
+      # Valid flags for umpire:
+      # --log-level
+      # --disable-worker-autoscale
+      # --disable-app-autoscale
+      # --disable-worker-autoheal
+      # --disable-app-autoheal
+      # --debug (asyncio debug)
     image: 127.0.0.1:5000/umpire:latest
     build:
      context: ./
