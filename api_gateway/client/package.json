@@ -56,7 +56,7 @@
     "codemirror": "^5.45.0",
     "core-js": "^2.5.4",
     "csvtojson": "^2.0.8",
-    "cytoscape": "^3.2.3",
+    "cytoscape": "^3.7.3",
     "cytoscape-clipboard": "^2.0.4",
     "cytoscape-edgehandles": "^3.2.3",
     "cytoscape-grid-guide": "~2.1.2",
