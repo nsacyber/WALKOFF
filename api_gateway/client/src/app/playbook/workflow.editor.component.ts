@@ -493,7 +493,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					selector: `node[type="${ ActionType.TRANSFORM }"]`,
 					css: {
 						'shape': 'ellipse',
-						'padding': '25px'
+						'padding': '20px'
 					},
 				},
 				{
@@ -648,6 +648,10 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		// Create the Cytoscape graph
 		cytoscape.warnings(false);
+
+		// Create new elements before recreating the new graph
+		const elements = this.getGraphElements();
+
 		this.cy = cytoscape(Object.assign({}, defaults, options));
 
 		// Enable various Cytoscape extensions
@@ -761,36 +765,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			},
 		});
 
-		// Load the data into the graph
-		// If a node does not have a label field, set it to
-		// the action. The label is what is displayed in the graph.
-		const edges = this.loadedWorkflow.branches.map(branch => {
-			const edge: any = { group: 'edges' };
-			edge.data = {
-				id: branch.id,
-				_id: branch.id,
-				source: branch.source_id,
-				target: branch.destination_id,
-				hasErrors: branch.has_errors
-			};
-			return edge;
-		});
-
-		const nodes = this.loadedWorkflow.nodes.map(action => {
-			const node: any = { group: 'nodes', position: this.utils.cloneDeep(action.position) };
-			node.data = {
-				id: action.id,
-				_id: action.id,
-				label: action.name,
-				isStartNode: action.id === this.loadedWorkflow.start,
-				isParallelized: action instanceof Action && action.parallelized,
-				hasErrors: action.has_errors,
-				type: action.action_type
-			};
-			return node;
-		});
-
-		this.cy.add([].concat(nodes, edges));
+		this.cy.add(elements);
 
 		if(!options.zoom || !options.pan) setImmediate(() => this.cy.fit(null, 50));
 
@@ -823,6 +798,47 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		})
 
 		// this.cyJsonData = JSON.stringify(this.loadedWorkflow, null, 2);
+	}
+
+	// Load the data into the graph
+	getGraphElements() {
+		// If a node does not have a label field, set it to
+		// the action. The label is what is displayed in the graph.
+		const edges = this.loadedWorkflow.branches.map(branch => {
+			const edge: any = { group: 'edges' };
+			edge.data = {
+				id: branch.id,
+				_id: branch.id,
+				source: branch.source_id,
+				target: branch.destination_id,
+				hasErrors: branch.has_errors
+			};
+			return edge;
+		});
+
+		const nodes = this.loadedWorkflow.nodes.map(action => {
+			const node: any = { group: 'nodes', position: this.utils.cloneDeep(action.position) };
+			node.data = {
+				id: action.id,
+				_id: action.id,
+				label: action.name,
+				isStartNode: action.id === this.loadedWorkflow.start,
+				isParallelized: action instanceof Action && action.parallelized,
+				hasErrors: action.has_errors,
+				type: action.action_type
+			};
+			return node;
+		});
+
+		const elements = [].concat(nodes, edges);
+		const oldElements = (this.cy) ? this.cy.elements().jsons() : [];
+		oldElements.forEach(old => {
+			elements
+				.filter(el => el.data.id == old.data.id)
+				.forEach(el => el.classes = old.classes)
+		})
+
+		return elements;
 	}
 
 	/**

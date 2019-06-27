@@ -106,6 +106,8 @@ services:
     stop_grace_period: 30s
     secrets:
       - encryption_key
+    volumes:
+      - ./api_gateway/client/:/app/api_gateway/client
 
   redis:
     container_name: redis
