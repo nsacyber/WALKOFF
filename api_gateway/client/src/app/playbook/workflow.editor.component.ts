@@ -117,6 +117,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	actionFilterControl = new FormControl();
 	actionTypes = ActionType;
 	sseErrorTimeout: any;
+	showConsole: boolean = false
 
 	tags: string[] = [];
 
@@ -432,7 +433,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.router.navigateByUrl(`/workflows/${ workflow.id }`);
 	}
 
-	setupGraph(): void {
+	setupGraph(options: any = {}): void {
 		// Convert our selection arrays to a string
 		if (!this.loadedWorkflow.actions) { this.loadedWorkflow.actions = []; }
 
@@ -441,8 +442,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			if (this.consoleArea && this.consoleArea.codeMirror) this.consoleArea.codeMirror.refresh();
 		});
 
-		// Create the Cytoscape graph
-		this.cy = cytoscape({
+		const defaults = {
 			container: document.getElementById('cy'),
 			boxSelectionEnabled: false,
 			autounselectify: false,
@@ -493,7 +493,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					selector: `node[type="${ ActionType.TRANSFORM }"]`,
 					css: {
 						'shape': 'ellipse',
-						'padding': '25px'
+						'padding': '20px'
 					},
 				},
 				{
@@ -644,7 +644,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					}
 				}
 			],
-		});
+		};
+
+		// Create the Cytoscape graph
+		cytoscape.warnings(false);
+
+		// Create new elements before recreating the new graph
+		const elements = this.getGraphElements();
+
+		this.cy = cytoscape(Object.assign({}, defaults, options));
 
 		// Enable various Cytoscape extensions
 		// Undo/Redo extension
@@ -757,7 +765,43 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			},
 		});
 
-		// Load the data into the graph
+		this.cy.add(elements);
+
+		if(!options.zoom || !options.pan) setImmediate(() => this.cy.fit(null, 50));
+
+		this.setStartNode(this.loadedWorkflow.start);
+
+		// Note: these bindings need to use arrow notation
+		// to actually be able to use 'this' to refer to the PlaybookComponent.
+		// Configure handler when user clicks on node or edge
+		this.cy.on('select', 'node', (e: any) => this.onNodeSelect(e));
+		this.cy.on('select', 'edge', (e: any) => this.onEdgeSelect(e));
+		this.cy.on('unselect', (e: any) => this.onUnselect(e));
+
+		// Configure handlers when nodes/edges are added or removed
+		this.cy.on('add', 'node', (e: any) => this.onNodeAdded(e));
+		this.cy.on('free', 'node', (e: any) => this.onNodeMoved(e));
+		this.cy.on('remove', 'node', (e: any) => this.onNodeRemoved(e));
+		this.cy.on('remove', 'edge', (e: any) => this.onEdgeRemove(e));
+
+		// Allow right clicking to create an edge
+		this.cy.on('mouseover mouseout', 'node', (e: any) => e.target.removeClass('just-created'));
+		this.cy.on('cxttapstart', 'node', (e: any) => this.edgeHandler.start(e.target));
+		this.cy.on('cxttapend', 'node', (e: any) => this.edgeHandler.stop());
+		this.cy.on('cxtdragover', 'node', (e: any) => this.edgeHandler.preview(e.target));
+		this.cy.on('cxtdragout', 'node', (e: any) => {
+			if (this.edgeHandler.options.snap && e.target.same(this.edgeHandler.targetNode)) {
+				// then keep the preview
+			} else {
+				this.edgeHandler.unpreview(e.target);
+			}
+		})
+
+		// this.cyJsonData = JSON.stringify(this.loadedWorkflow, null, 2);
+	}
+
+	// Load the data into the graph
+	getGraphElements() {
 		// If a node does not have a label field, set it to
 		// the action. The label is what is displayed in the graph.
 		const edges = this.loadedWorkflow.branches.map(branch => {
@@ -786,38 +830,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			return node;
 		});
 
-		this.cy.add([].concat(nodes, edges));
-
-		this.cy.fit(null, 50);
-
-		this.setStartNode(this.loadedWorkflow.start);
-
-		// Note: these bindings need to use arrow notation
-		// to actually be able to use 'this' to refer to the PlaybookComponent.
-		// Configure handler when user clicks on node or edge
-		this.cy.on('select', 'node', (e: any) => this.onNodeSelect(e));
-		this.cy.on('select', 'edge', (e: any) => this.onEdgeSelect(e));
-		this.cy.on('unselect', (e: any) => this.onUnselect(e));
-
-		// Configure handlers when nodes/edges are added or removed
-		this.cy.on('add', 'node', (e: any) => this.onNodeAdded(e));
-		this.cy.on('remove', 'node', (e: any) => this.onNodeRemoved(e));
-		this.cy.on('remove', 'edge', (e: any) => this.onEdgeRemove(e));
-
-		// Allow right clicking to create an edge
-		this.cy.on('mouseover mouseout', 'node', (e: any) => e.target.removeClass('just-created'));
-		this.cy.on('cxttapstart', 'node', (e: any) => this.edgeHandler.start(e.target));
-		this.cy.on('cxttapend', 'node', (e: any) => this.edgeHandler.stop());
-		this.cy.on('cxtdragover', 'node', (e: any) => this.edgeHandler.preview(e.target));
-		this.cy.on('cxtdragout', 'node', (e: any) => {
-			if (this.edgeHandler.options.snap && e.target.same(this.edgeHandler.targetNode)) {
-				// then keep the preview
-			} else {
-				this.edgeHandler.unpreview(e.target);
-			}
+		const elements = [].concat(nodes, edges);
+		const oldElements = (this.cy) ? this.cy.elements().jsons() : [];
+		oldElements.forEach(old => {
+			elements
+				.filter(el => el.data.id == old.data.id)
+				.forEach(el => el.classes = old.classes)
 		})
 
-		// this.cyJsonData = JSON.stringify(this.loadedWorkflow, null, 2);
+		return elements;
 	}
 
 	/**
@@ -1130,6 +1151,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	/**
+	 * This function checks when a node is added and sets start node if no other nodes exist.
+	 * @param e JS Event fired
+	 */
+	onNodeMoved(event: any): void {
+		const node = event.target.json();
+		this.loadedWorkflow.nodes.find(n => n.id == node.data.id).position = node.position;
+	}
+
+	/**
 	 * This function fires when a node is removed. If the node was the start node, it sets it to a new root node.
 	 * It also removes the corresponding action from the workflow.
 	 * @param e JS Event fired
@@ -1216,7 +1246,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		const args: Argument[] = [];
 		const actionApi = this._getAction(appName, appVersion, actionName);
-		
+
 		// TODO: might be able to remove this entirely
 		// due to the argument component auto-initializing default values
 		if (actionApi && actionApi.parameters) {
@@ -1228,19 +1258,29 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const actionType = this._getAction(appName, appVersion, actionName).node_type;
 		const uniqueActionName = this.loadedWorkflow.getNextActionName(actionName);
 
+		let newNode: WorkflowNode;
 		switch(actionType) {
 			case ActionType.CONDITION:
-				this.insertConditional(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
+				newNode = new Condition();
 				break;
 			case ActionType.TRIGGER:
-				this.insertTrigger(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
+				newNode = new Trigger();
 				break;
 			case ActionType.TRANSFORM:
-				this.insertTransform(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
+				newNode = new Transform();
 				break;
 			default:
-				this.insertAction(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
+				newNode = new Action();
 		}
+
+		newNode.id = newActionUuid;
+		newNode.name = uniqueActionName;
+		newNode.app_name = appName;
+		newNode.app_version = appVersion;
+		newNode.action_name = actionName;
+		newNode.arguments = args;
+		newNode.position = location;
+		this.loadedWorkflow.addNode(newNode);
 
 		// Add the node with the new ID to the graph in the location dropped into by the mouse.
 		const nodeToBeAdded = {
@@ -1263,50 +1303,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.cy.add(nodeToBeAdded);
 
 		return nodeToBeAdded;
-	}
-
-	private insertAction(appName: any, actionName: any, newActionUuid: any, uniqueActionName: string, appVersion: any, args: Argument[]) {
-		const actionToBeAdded = new Action();
-		actionToBeAdded.id = newActionUuid;
-		actionToBeAdded.name = uniqueActionName;
-		actionToBeAdded.app_name = appName;
-		actionToBeAdded.app_version = appVersion;
-		actionToBeAdded.action_name = actionName;
-		actionToBeAdded.arguments = args;
-		this.loadedWorkflow.actions.push(actionToBeAdded);
-	}
-
-	private insertConditional(appName: any, actionName: any, newActionUuid: any, uniqueActionName: string, appVersion: any, args: Argument[]) {
-		const condition = new Condition();
-		condition.id = newActionUuid;
-		condition.name = uniqueActionName;
-		condition.app_name = appName;
-		condition.app_version = appVersion;
-		condition.action_name = actionName;
-		condition.arguments = args;
-		this.loadedWorkflow.conditions.push(condition);
-	}
-
-	private insertTrigger(appName: any, actionName: any, newActionUuid: any, uniqueActionName: string, appVersion: any, args: Argument[]) {
-		const trigger = new Trigger();
-		trigger.id = newActionUuid;
-		trigger.name = uniqueActionName;
-		trigger.app_name = appName;
-		trigger.app_version = appVersion;
-		trigger.action_name = actionName;
-		trigger.arguments = args;
-		this.loadedWorkflow.triggers.push(trigger);
-	}
-
-	private insertTransform(appName: any, actionName: any, newActionUuid: any, uniqueActionName: string, appVersion: any, args: Argument[]) {
-		const transform = new Transform();
-		transform.id = newActionUuid;
-		transform.name = uniqueActionName;
-		transform.app_name = appName;
-		transform.app_version = appVersion;
-		transform.action_name = actionName;
-		transform.arguments = args;
-		this.loadedWorkflow.transforms.push(transform);
 	}
 
 	// TODO: update this to properly "cut" actions from the loadedWorkflow.
@@ -1625,6 +1621,21 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	getErrors() : any[] {
 		if (!this.loadedWorkflow) return [];
 		return this.loadedWorkflow.all_errors.map(error => ({ error }));
+	}
+
+	toggleConsole() {
+		this.showConsole = ! this.showConsole;
+		const options = { zoom: this.cy.zoom(), pan: this.cy.pan() }
+		setTimeout(() => this.setupGraph(options), 255);
+	}
+
+	switchConsoleTabs($e: NgbTabChangeEvent) {
+		this.showConsole = true;
+		const options = { zoom: this.cy.zoom(), pan: this.cy.pan() }
+		setTimeout(() => {
+			this.setupGraph(options);
+			this.recalculateConsoleTable($e);
+		}, 255);
 	}
 
 	/**

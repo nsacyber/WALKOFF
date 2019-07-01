@@ -55,9 +55,11 @@ export class PlaybookArgumentComponent implements OnChanges {
 	initialValue;
 
 	editorOptionsData: any = {
-		modes: ['tree', 'code'],
+		mode: 'code',
+		modes: ['code', 'tree'],
 		history: false,
 		search: false,
+		// mainMenuBar: false,
 		navigationBar: false,
 		statusBar: false,
 		enableSort: false,

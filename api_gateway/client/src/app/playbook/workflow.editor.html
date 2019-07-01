@@ -115,7 +115,7 @@
         </nav>
     </div>
     <!-- Graph editor -->
-    <div class="row graphEditorRow">
+    <div class="row graphEditorRow" [class.show-console]="showConsole">
         <!-- Column for app/action display for drag and drop -->
         <div class="col-md-2 graphEditorColumn">
             <div class="panel-group" id="accordion" #accordion [hidden]="!loadedWorkflow">
@@ -123,10 +123,11 @@
                     <input class="form-control" placeholder="Filter Actions..." [formControl]="actionFilterControl" />
                 </div>
                 <div *ngFor="let app of getAppsWithActions()" class="card card-default my-1">
-                    <div class="card-heading playbook-heading collapsed" data-toggle="collapse"
+                    <div class="card-heading playbook-heading collapsed p-2" data-toggle="collapse"
                         [attr.data-target]="'#actionsCollapse-' + app.id"
                         [title]="app.info ? app.info.description : ''">
-                        <h5 class="card-title my-auto p-2">{{app.name}}</h5>
+                        <h5 class="card-title my-auto">{{app.name}}</h5>
+                        <small class="form-text text-muted">{{ app.description }}</small>
                     </div>
                     <div id="actionsCollapse-{{app.id}}" class="card-collapse collapse action-panel">
                         <div class="card-body my-auto p-3">
@@ -136,6 +137,7 @@
                                 (dblclick)="handleDoubleClickEvent(actionApi)" [title]="actionApi.description">
                                 <div class="card-body my-auto p-2">
                                     <span>{{actionApi.name}}</span>
+                                    <small class="form-text text-muted">{{ actionApi.description }}</small>
                                     <!-- <i class="fa fa-bars pull-right" aria-hidden="true"></i> -->
                                 </div>
                             </div>
@@ -146,25 +148,8 @@
         </div>
 
         <!-- Actual cytoscape graph editor -->
-        <div class="col-md-7 graphEditorColumn">
-            <div id="cy" #cyRef dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow"
-                tabindex="0"></div>
-            <div id="cy-instructions" [hidden]="loadedWorkflow">
-                <p>Instructions:</p>
-                <p>
-                    <button class="btn btn-primary" data-toggle="modal" data-target="#workflowsModal">Load
-                        Workflow</button>
-                </p>
-                <p>
-                    Use this button to load the workflow into the graph. After loading an initial workflow you may use
-                    the Load Workflow button
-                    on the toolbar.
-                </p>
-                <p>
-                    <b>Drag and drop</b> items from Actions tab into the graph to create a new workflow action.
-                    <b>Double click</b> also works.
-                </p>
-            </div>
+        <div class="col-md-7 graphEditorColumn graphArea">
+            <div id="cy" #cyRef dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow" tabindex="0"></div>
         </div>
 
         <!-- Parameter editors -->
@@ -172,7 +157,7 @@
             <!-- Editor for Actions -->
             <div *ngIf="!waitingOnData && selectedAction" class="parametersEditor">
                 <div class="d-flex justify-content-between my-2">
-                    <h4 class="mb-0">Action Parameters</h4>
+                    <h4 class="mb-0">Action Settings</h4>
                     <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary"
                         (click)="setStartNode(selectedAction.id)">Set Start Action</button>
 
@@ -213,9 +198,7 @@
                 </div>
 
                 <div class="form-group mt-3">
-                    <label class="h5" for="name">Name
-                        <i class="fa fa-asterisk required" title="This field is required."></i>
-                    </label>
+                    <label class="h5" for="name">Name<i class="fa fa-asterisk required" title="This field is required."></i></label>
                     <input type="text" class="form-control" [(ngModel)]="selectedAction.name" name="name" required>
                 </div>
                 <!-- <div *ngIf="!selectedActionApi.global" class="form-group globalArgument">
@@ -371,9 +354,14 @@ else:
         </div>
     </div>
 
-    <div class="mb-3">
-        <ngb-tabset destoryOnHide="false" (tabChange)="recalculateConsoleTable($event)">
-            <ngb-tab title="Console" id="console-tab">
+    <div class="bottom-panel fixed-bottom mb-1 pt-1 border-top" [class.show-console]="showConsole">
+        <ngb-tabset destoryOnHide="false" (tabChange)="switchConsoleTabs($event)">
+            <ngb-tab id="console-tab">
+                <ng-template ngbTabTitle>
+                    <div (click)="toggleConsole()">Console
+                        <span *ngIf="consoleLog.length > 0"class="badge badge-pill badge-primary">{{ consoleLog.length }}</span>
+                    </div>
+                </ng-template>
                 <ng-template ngbTabContent>
                     <ngx-codemirror #consoleArea [(ngModel)]="consoleContent" [options]="{
                         lineNumbers: true,
@@ -384,7 +372,12 @@ else:
                 </ng-template>
             </ngb-tab>
 
-            <ngb-tab *ngIf="loadedWorkflow?.id && !loadedWorkflow?.has_errors" title="Execution" id="execution-tab">
+            <ngb-tab *ngIf="loadedWorkflow?.id && !loadedWorkflow?.has_errors" id="execution-tab">
+                <ng-template ngbTabTitle>
+                    <div (click)="toggleConsole()">Execution Results 
+                            <span *ngIf="nodeStatuses.length > 0"class="badge badge-pill badge-primary">{{ nodeStatuses.length }}</span>
+                    </div>
+                </ng-template>
                 <ng-template ngbTabContent>
                     <div id="executionResultsModal">
                         <div #workflowResultsContainer>
@@ -429,8 +422,10 @@ else:
                 </ng-template>
             </ngb-tab>
 
-            <ngb-tab *ngIf="loadedWorkflow?.environment_variables?.length > 0" title="Workflow Variables"
-                id="variable-tab">
+            <ngb-tab *ngIf="loadedWorkflow?.environment_variables?.length > 0" id="variable-tab">
+                <ng-template ngbTabTitle>
+                    <div (click)="toggleConsole()">Workflow Variables</div>
+                </ng-template>
                 <ng-template ngbTabContent>
                     <ngx-datatable #environmentVariableTable class='material expandable' [columnMode]="'flex'"
                         [rows]="getVariables()" [sortType]="'multi'" [footerHeight]="25" [rowHeight]="undefined"
@@ -456,8 +451,10 @@ else:
                 </ng-template>
             </ngb-tab>
 
-            <ngb-tab *ngIf="loadedWorkflow?.has_errors"
-                title="Workflow Errors ({{ loadedWorkflow?.all_errors.length }})" id="error-tab">
+            <ngb-tab *ngIf="loadedWorkflow?.has_errors" id="error-tab">
+                <ng-template ngbTabTitle>
+                    <div (click)="toggleConsole()">Workflow Errors <span class="badge badge-pill badge-secondary">{{ loadedWorkflow?.all_errors.length }}</span></div>
+                </ng-template>
                 <ng-template ngbTabContent>
                     <ngx-datatable #errorLogTable class='material expandable' [columnMode]="'flex'" [rows]="getErrors()"
                         [sortType]="'multi'" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]" [limit]="10">

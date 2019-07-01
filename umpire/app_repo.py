@@ -100,6 +100,7 @@ class AppRepo:
     async def delete_unused_apps_and_apis(self):
         url = f"{config.API_GATEWAY_URI}/api/apps/apis"
         appnames = {key for key, value in self.apps.items()}
+        appnames.add('Builtin')
         unused_apis = set(self.loaded_apis.keys()).difference(appnames)
 
         # Return as there is nothing to delete (these should always be the same)
@@ -122,8 +123,8 @@ class AppRepo:
 
         with open("./umpire/builtin.yaml") as f:
             builtin = yaml.safe_load(f)
-            await self.store_api(builtin)
-            # self.apps["Builtin"] = {"1.0.0": builtin}
+            if builtin.get("name") not in self.loaded_apis:
+                await self.store_api(builtin)
 
         for app in self.path.iterdir():
             if not app.is_dir():
