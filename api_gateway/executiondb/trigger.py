@@ -31,6 +31,9 @@ class Trigger(Base):
     workflow_id = Column(UUID(as_uuid=True), ForeignKey('workflow.id_', ondelete='CASCADE'))
     children = []
 
+    # Columns specific to Trigger
+    trigger_schema = Column(JSON, default={})
+
     def __init__(self, **kwargs):
         super(Trigger, self).__init__(**kwargs)
         self.validate()

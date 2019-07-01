@@ -1,9 +1,11 @@
 import logging
 import re
 import asyncio
+import zipfile
 from pathlib import Path
 
 import aiohttp
+import os
 import yaml
 from compose.cli.command import get_project
 
@@ -98,6 +100,7 @@ class AppRepo:
     async def delete_unused_apps_and_apis(self):
         url = f"{config.API_GATEWAY_URI}/api/apps/apis"
         appnames = {key for key, value in self.apps.items()}
+        appnames.add('Builtin')
         unused_apis = set(self.loaded_apis.keys()).difference(appnames)
 
         # Return as there is nothing to delete (these should always be the same)
@@ -117,6 +120,22 @@ class AppRepo:
 
         self.apps = {}
         await self.get_loaded_apis()
+
+        with open("./umpire/builtin.yaml") as f:
+            builtin = yaml.safe_load(f)
+            if builtin.get("name") not in self.loaded_apis:
+                await self.store_api(builtin)
+
+        for app in self.path.iterdir():
+            if not app.is_dir():
+                try:
+                    zip_ref = zipfile.ZipFile(app, 'r')
+                    zip_ref.extractall("apps/")
+                    zip_ref.close()
+                    os.remove(app)
+                except Exception as e:
+                    logger.error(f"Zip error: {e}")
+                    continue
         for app in self.path.iterdir():
             #  grabs only directories and ignores all __* directories i.e. __pycache__
             if app.is_dir() and not re.fullmatch(r"(__.*)", app.name):

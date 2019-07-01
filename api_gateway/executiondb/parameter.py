@@ -28,6 +28,7 @@ class ParameterApi(Base):
     location = Column(String(), nullable=False)
     description = Column(String(), default="")
     required = Column(Boolean(), default=False)
+    parallelizable = Column(Boolean(), default=False)
     placeholder = Column(JSON, default="")
     schema = Column(JSON, default={})
     action_api_id = Column(UUID(as_uuid=True), ForeignKey('action_api.id_', ondelete='CASCADE'))
@@ -42,7 +43,7 @@ class ParameterApiSchema(BaseSchema):
         unknown = EXCLUDE
 
     @validates_schema
-    def validate_parameter_api(self, data):
+    def validate_parameter_api(self, data, **kwargs):
         try:
             if "schema" in data:
                 Draft4Validator.check_schema(data["schema"])
@@ -62,6 +63,8 @@ class Parameter(Base):
 
     # Columns specific to Parameter model
     action_id = Column(UUID(as_uuid=True), ForeignKey('action.id_', ondelete='CASCADE'))
+    parallelized = Column(Boolean(), nullable=False, default=False)
+    # parallel_action_id = Column(UUID(as_uuid=True), ForeignKey('action.id_', ondelete='CASCADE'))
     variant = Column(Enum(ParameterVariant), nullable=False)
 
 

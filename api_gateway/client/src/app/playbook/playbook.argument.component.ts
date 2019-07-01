@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, Input, Output, EventEmitter, OnChanges } from '@angular/core';
+import { Component, ViewEncapsulation, Input, Output, EventEmitter, OnChanges, ElementRef, ViewChild } from '@angular/core';
 import { Select2OptionData } from 'ng2-select2/ng2-select2';
 
 import { Workflow } from '../models/playbook/workflow';
@@ -10,6 +10,8 @@ import { GenericObject } from '../models/genericObject';
 import { User } from '../models/user';
 import { Role } from '../models/role';
 import { Global } from '../models/global';
+import { WorkflowNode } from '../models/playbook/WorkflowNode';
+import { JsonEditorComponent } from 'ang-jsoneditor';
 
 const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 
@@ -31,6 +33,8 @@ export class PlaybookArgumentComponent implements OnChanges {
 	@Input() globals: Global[];
 	@Input() branchCounters: any[];
 
+	@ViewChild('jsonEditor') jsonEditor: JsonEditorComponent;
+
 	@Output() createVariable = new EventEmitter<Argument>();
 
 	valueType: string = Variant.STATIC_VALUE;
@@ -41,11 +45,27 @@ export class PlaybookArgumentComponent implements OnChanges {
 	availableTypes: string[] = AVAILABLE_TYPES;
 	arrayTypes: string[] = [];
 	objectTypes: GenericObject = {};
+
 	// Simple parameter schema reference so I'm not constantly showing parameterApi.schema
 	parameterSchema: ParameterSchema;
 	selectData: Select2OptionData[];
 	selectConfig: Select2Options;
 	selectInitialValue: string[];
+
+	initialValue;
+
+	editorOptionsData: any = {
+		mode: 'code',
+		modes: ['code', 'tree'],
+		history: false,
+		search: false,
+		// mainMenuBar: false,
+		navigationBar: false,
+		statusBar: false,
+		enableSort: false,
+		enableTransform: false,
+	}
+	
 
 	// tslint:disable-next-line:no-empty
 	constructor() { }
@@ -59,7 +79,6 @@ export class PlaybookArgumentComponent implements OnChanges {
 	 */
 	ngOnChanges(): void {
 		this.initParameterSchema();
-		this.initBranchCounterSelect();
 		this.initTypeSelector();
 		this.initUserSelect();
 		this.initRoleSelect();
@@ -86,6 +105,10 @@ export class PlaybookArgumentComponent implements OnChanges {
 				}
 			}
 		}
+
+		// Store initial value for use in JSONeditor widget
+		this.initialValue = this.argument.value;
+		if (this.parameterSchema) this.editorOptionsData.schema = this.parameterSchema;
 	}
 
 	initTypeSelector(): void {
@@ -154,8 +177,8 @@ export class PlaybookArgumentComponent implements OnChanges {
 		}
 	}
 
-	initBranchCounterSelect(): void {
-		this.branchCounters = this.loadedWorkflow.listBranchCounters();
+	updateValue($event: any): void {
+		this.argument.value = $event;
 	}
 
 	/**
@@ -287,7 +310,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 	}
 
 	// TODO: maybe somehow recursively find actions that may occur before. Right now it just returns all of them.
-	getPreviousActions(): Action[] {
+	getPreviousActions(): WorkflowNode[] {
 		return this.loadedWorkflow.getPreviousActions(this.selectedAction);
 	}
 

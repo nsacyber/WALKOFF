@@ -31,6 +31,30 @@ def list_apps(path):
     return __list_valid_directories(path)
 
 
+def sse_format(data, event_id, event=None, retry=None):
+    """Get this SSE formatted as needed to send to the client
+    Args:
+        event_id (int): The ID related to this event.
+        retry (int): The time in milliseconds the client should wait to retry to connect to this SSE stream if the
+            connection is broken. Default is 3 seconds (3000 milliseconds)
+    Returns:
+        (str): This SSE formatted to be sent to the client
+    """
+    if isinstance(data, dict):
+        try:
+            data = json.dumps(data)
+        except TypeError:
+            data = str(data)
+
+    formatted = 'id: {}\n'.format(event_id)
+    if event:
+        formatted += 'event: {}\n'.format(event)
+    if retry is not None:
+        formatted += 'retry: {}\n'.format(retry)
+    if data:
+        formatted += 'data: {}\n'.format(data)
+    return formatted + '\n'
+
 # def list_interfaces(path=None):
 #     return __list_valid_directories(path)
 

@@ -19,7 +19,7 @@ from api_gateway.executiondb.transform import TransformSchema
 from api_gateway.executiondb.branch import BranchSchema
 from api_gateway.executiondb.workflow_variable import WorkflowVariableSchema
 from api_gateway.executiondb import Base, BaseSchema
-from api_gateway.executiondb.action import ActionSchema, ActionApi
+from api_gateway.executiondb.action import ActionSchema, ActionApi, Action
 from api_gateway.executiondb.trigger import TriggerSchema
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ class Workflow(Base):
     branches = relationship("Branch", cascade="all, delete-orphan", passive_deletes=True)
     conditions = relationship("Condition", cascade="all, delete-orphan", passive_deletes=True)
     transforms = relationship("Transform", cascade="all, delete-orphan", passive_deletes=True)
-    workflow_variables = relationship("WorkflowVariable", cascade="all, delete-orphan", passive_deletes=True)
+    workflow_variables = relationship("WorkflowVariable", cascade="save-update")
     triggers = relationship("Trigger", cascade="all, delete-orphan", passive_deletes=True)
 
     children = ['actions', 'conditions', 'transforms', 'triggers']
@@ -55,7 +55,7 @@ class Workflow(Base):
 
     def validate(self):
         """Validates the object"""
-        node_ids = {node.id_ for node in self.actions + self.conditions + self.transforms}
+        node_ids = {node.id_ for node in self.actions + self.conditions + self.transforms + self.triggers}
         wfv_ids = {workflow_var.id_ for workflow_var in self.workflow_variables}
         global_ids = set(id_ for id_, in current_app.running_context.execution_db.session.query(GlobalVariable.id_))
 
@@ -69,7 +69,7 @@ class Workflow(Base):
         self.branches[:] = [branch for branch in self.branches
                             if branch.source_id in node_ids
                             and branch.destination_id in node_ids]
-
+        action: Action
         for action in self.actions:
             errors = []
 
@@ -85,8 +85,18 @@ class Workflow(Base):
             for p in action_api.parameters:
                 params[p.name] = {"api": p}
 
+            count = 0
             for p in action.parameters:
                 params.get(p.name, {})["wf"] = p
+                if p.parallelized:
+                    count += 1
+
+            if count == 0 and action.parallelized:
+                action.errors.append("No parallelized parameter set.")
+            elif count == 1 and not action.parallelized:
+                action.errors.append("Set action to be parallelized.")
+            elif count > 1:
+                action.errors.append("Too many parallelized parameters")
 
             for name, pair in params.items():
                 api = pair.get("api")
@@ -121,6 +131,10 @@ class Workflow(Base):
                         message = (f"Parameter '{wf.name}' refers to global variable '{wf.value}' "
                                    f"which does not exist.")
 
+                elif wf.parallelized and not api.parallelizable:
+                    action.errors.append(f"Parameter {wf.name} is marked parallelized in workflow, but is not "
+                                          f"parallelizable in api")
+
                 if message is not "":
                     errors.append(message)
 
@@ -142,11 +156,6 @@ class Workflow(Base):
                 if not child.is_valid_rec():
                     return False
         return True
-
-
-@event.listens_for(Workflow, "before_update")
-def validate_before_update(mapper, connection, target):
-    target.validate()
 
 
 class WorkflowSchema(BaseSchema):

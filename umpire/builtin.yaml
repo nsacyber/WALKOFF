@@ -1,0 +1,35 @@
+walkoff_version: 1.0.0
+app_version: 1.0.0
+name: Builtin
+description: Walkoff built-in functions useful in workflow development.
+contact_info:
+  name: Walkoff Team
+  url: https://github.com/nsacyber/walkoff
+  email: walkoff@nsa.gov
+license_info:
+  name: Creative Commons
+  url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
+actions:
+  - name: Condition
+    description: Takes input from a previous action and chooses which branch to take according to your logic.
+    node_type: CONDITION
+    returns:
+      schema:
+        type: string
+  - name: Transform
+    description: Takes input from previous actions and allows you to transform it according to your logic.
+    node_type: TRANSFORM
+    returns:
+      schema:
+        type: string
+  - name: Trigger
+    description: Takes input from an API Call and triggers the rest of the workflow to beign executing again.
+    node_type: TRIGGER
+    returns:
+      schema:
+        type: string
+#  - name: Condition
+#    description: Takes in input from a previous node, and decides which branch to take accordingly
+#    returns:
+#      schema:
+#        type: String

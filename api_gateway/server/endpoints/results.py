@@ -11,45 +11,15 @@ from sqlalchemy.exc import IntegrityError
 
 import jsonpatch
 
+from api_gateway.helpers import sse_format
 from api_gateway.server.decorators import with_resource_factory, paginate, is_valid_uid
-from api_gateway.executiondb.workflow import Workflow
 from api_gateway.executiondb.workflowresults import (WorkflowStatus, NodeStatus, WorkflowStatusSchema,
                                                      NodeStatusSchema)
 
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.problem import unique_constraint_problem, invalid_id_problem
 
-
 logger = logging.getLogger(__name__)
-
-
-def sse_format(data, event_id, event=None, retry=None):
-    """Get this SSE formatted as needed to send to the client
-    Args:
-        event_id (int): The ID related to this event.
-        retry (int): The time in milliseconds the client should wait to retry to connect to this SSE stream if the
-            connection is broken. Default is 3 seconds (3000 milliseconds)
-    Returns:
-        (str): This SSE formatted to be sent to the client
-    """
-    if isinstance(data, dict):
-        try:
-            data = json.dumps(data)
-        except TypeError:
-            data = str(data)
-
-    formatted = 'id: {}\n'.format(event_id)
-    if event:
-        formatted += 'event: {}\n'.format(event)
-    if retry is not None:
-        formatted += 'retry: {}\n'.format(retry)
-    if data:
-        formatted += 'data: {}\n'.format(data)
-    return formatted + '\n'
-
-
-def workflow_getter(workflow_id):
-    return current_app.running_context.execution_db.session.query(Workflow).filter_by(id_=workflow_id).first()
 
 
 def workflow_status_getter(execution_id):
@@ -62,7 +32,6 @@ def node_status_getter(combined_id):
         combined_id=combined_id).first()
 
 
-with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
 with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
 
 node_status_schema = NodeStatusSchema()

@@ -11,18 +11,19 @@ license_info:
   url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
 actions:
   - name: run_scan
-    description: Runs an nmap scan, returns results as string or filename
+    description: Runs an nmap scan on an array of target hosts, returns an array of results as strings
     parameters:
       - name: targets
+        description: The target(s) to scan, comma separated values. Can be used with output of ip_addr_utils's cidr_to_array, in order to specify ip's more easily.
+        parallelizable: true
         required: true
         schema:
           type: array
-        description: The target(s) to scan, comma separated values, CIDR supported
       - name: options
+        description: see nmap manpage -- some options require root
         required: true
         schema:
           type: string
-        description: see nmap manpage -- some options require root
     returns:
       schema:
         type: array
@@ -34,8 +35,9 @@ actions:
         required: true
         schema:
           type: array
-        description: The target (or targets in CIDR notation) to scan
+        description: The target(s) to scan, if you would like to process multiple targets, take a look at ip_addr_util's cidr_to_array action.
       - name: options
+        description: see nmap manpage -- some options require root
         required: true
         schema:
           type: string
@@ -44,53 +46,53 @@ actions:
         type: string
       description: xml string on nmap output
   - name: parse_xml_for_linux
-    description: looks into xml nmap for osfamily to match Linux
+    description: Looks into xml input for osfamily to match Linux, use "run_scan" with the -O option in order to get the desired osfamily field of a specified host.
     parameters:
       - name: nmap_arr
         required: true
         schema:
           type: array
-        description: nmap output as xml array
+        description: nmap output as an array of xml strings
     returns:
       schema:
         type: array
-      description: os
+      description: Returns an array of hosts that are Linux machines
   - name: parse_xml_for_windows
-    description: looks into xml nmap for osfamily to match Windows
+    description: Looks into xml input for osfamily to match Linux, use "run_scan" with the -O option in order to get the desired osfamily field of a specified host.
     parameters:
       - name: nmap_arr
         required: true
         schema:
           type: array
-        description: nmap output as xml array
+        description: nmap output as an array of xml strings
     returns:
       schema:
         type: array
-      description: os
+      description: Returns an array of hosts that are Windows machines
   - name: parse_xml_for_linux_from_file
-    description: looks into xml nmap for osfamily
+    description: Looks into xml input from a file to determine if the osfamily matches Linux. Make sure to give your nmap scan the proper options such that "osfamily" is present in the XML
     parameters:
       - name: nmap_file
         required: true
         schema:
           type: string
-        description: nmap output as xml filename
+        description: Filename containing nmap output as an xml
     returns:
       schema:
         type: array
-      description: os
+      description: Returns an array of hosts that are Linux machines
   - name: parse_xml_for_windows_from_file
-    description: looks into xml nmap for osfamily
+    description: Looks into xml input from a file to determine if the osfamily matches Windows. Make sure to give your nmap scan the proper options such that "osfamily" is present in the XML
     parameters:
       - name: nmap_file
         required: true
         schema:
           type: string
-        description: nmap output as xml filename
+        description: Filename containing nmap output as an xml
     returns:
       schema:
         type: array
-      description: os
+      description: Returns an array of hosts that are Windows machines
   - name: xml_to_json
     description: transforms xml nmap results into json
     parameters:
@@ -103,11 +105,11 @@ actions:
         required: true
         schema:
           type: boolean
-        description: whether the previous parameter is a filename or string
+        description: True if nmap_out is being passed in as a file, or False if xml is being passed in as a string such as if it's passed in from a run_scan.
     returns:
       schema:
         type: string
-      description: xml string on nmap output
+      description: json formatting for xml string from nmap output
   - name: ports_and_hosts_from_json
     description: retrieves the hosts and ports from an nmap scan for use with OpenVAS
     parameters:
@@ -118,10 +120,11 @@ actions:
           type: string
       - name: is_file
         required: true
-        description: whether or not first input is a filename or not
+        description: True if nmap_out is being passed in as a file, or False if xml is being passed in as a string such as if it's passed in from a run_scan.
         schema:
           type: boolean
         placeholder: false
     returns:
       schema:
         type: string
+      description: Returns a dictionary of ports and hosts

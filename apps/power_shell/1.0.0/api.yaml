@@ -11,7 +11,7 @@ license_info:
   url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
 actions:
   - name: set_timestamp
-    description: Sets the timestamp fro which scipt outputs will be filed under
+    description: Outputs the timestamp at the time of this action's execution
     returns:
       schema:
         type: string
@@ -57,10 +57,11 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: exec_command_prompt
-    description: Executes the powershell command on remote devices.
+    description: Executes commands through a command prompt on remote devices.
     parameters:
       - name: hosts
         description: list of hosts to execute on
+        parallelizable: true
         required: true
         schema:
           type: array
@@ -105,7 +106,7 @@ actions:
         schema:
           type: array
       - name: shell_type
-        description: type of shell you want to execute
+        description: type of shell you want to execute, type "powershell" if you want to execute a powershell script
         required: true
         schema:
           type: string
@@ -146,11 +147,12 @@ actions:
     parameters:
       - name: hosts
         description: list of hosts to execute on
+        parallelizable: true
         required: true
         schema:
           type: array
       - name: shell_type
-        description: type of shell you want to execute
+        description: Type of shell you want to execute, type "powershell" if you want to execute a powershell script
         required: true
         schema:
           type: string

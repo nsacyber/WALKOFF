@@ -9,6 +9,9 @@ import { ConditionalExpression } from './conditionalExpression';
 import { Argument } from './argument';
 import { Condition } from './condition';
 import { ActionType } from '../api/actionApi';
+import { Trigger } from './trigger';
+import { WorkflowNode } from './WorkflowNode';
+import { Transform } from './transform';
 
 export class Workflow extends ExecutionElement {
 	// _playbook_id: number;
@@ -51,6 +54,18 @@ export class Workflow extends ExecutionElement {
 	conditions?: Condition[] = [];
 
 	/**
+	 * Array of triggers between actions.
+	 */
+	@Type(() => Trigger)
+	triggers?: Trigger[] = [];
+
+	/**
+	 * Array of triggers between actions.
+	 */
+	@Type(() => Transform)
+	transforms?: Transform[] = [];
+
+	/**
 	 * Array of environment variables.
 	 */
 	@Type(() => EnvironmentVariable)
@@ -72,36 +87,20 @@ export class Workflow extends ExecutionElement {
 	 */
 	is_valid: boolean;
 
-	get nodes(): (Action | Condition)[] {
-		return [].concat(this.actions, this.conditions);
+	get nodes(): WorkflowNode[] {
+		return [].concat(this.actions, this.conditions, this.triggers, this.transforms);
 	}
 
 	/**
 	 * Array of errors returned from the server for this Argument and any of its descendants 
 	 */
 	get all_errors(): string[] {
-		return this.errors
-				   .concat(...this.actions.map(action => action.all_errors))
-				   .concat(...this.branches.map(branch => branch.all_errors))
+		return this.errors.concat(...this.nodes.map(action => action.all_errors))
 	}
 
 	get all_arguments(): Argument[] {
 		let allArgs: Argument[] = [];
-		const getExpressionArguments = (expression: ConditionalExpression) => {
-			expression.conditions.forEach(condition => {
-				allArgs = allArgs.concat(condition.arguments);
-				//condition.transforms.forEach(transform => allArgs = allArgs.concat(transform.arguments));
-			})
-			expression.child_expressions.forEach(getExpressionArguments);
-		}
-
-		this.actions.forEach(action => {
-			allArgs = allArgs.concat(action.arguments);
-		})
-		this.branches.forEach(branch => {
-			if (branch.condition) getExpressionArguments(branch.condition);
-		})
-
+		this.nodes.forEach(action => allArgs = allArgs.concat(action.arguments));
 		return allArgs;
 	}
 
@@ -110,41 +109,36 @@ export class Workflow extends ExecutionElement {
 		return this.environment_variables.filter(variable => this.all_arguments.some(arg => arg.value == variable.id));
 	}
 
-	listBranchCounters() : Select2OptionData[] {
-		return this.branches.map(branch  => {
-			const sourceAction = this.findActionById(branch.source_id);
-			const destAction = this.findActionById(branch.destination_id);
-			return { id: branch.id, text: `${ (sourceAction || { name: null}).name } > ${ (destAction || { name: null}).name }` }
-		})
+	addNode(node: WorkflowNode) {
+		if (node instanceof Action )
+			this.actions.push(node);
+		else if (node instanceof Condition)
+			this.conditions.push(node);
+		else if (node instanceof Trigger)
+			this.triggers.push(node);
+		else if (node instanceof Transform)
+			this.transforms.push(node);
 	}
 
-	findActionById(id: string) : Action {
-		return this.actions.find(action => action.id == id)
+	removeNode(nodeId: string) {
+		this.actions = this.actions.filter(a => a.id !== nodeId);
+		this.conditions = this.conditions.filter(a => a.id !== nodeId);
+		this.triggers = this.triggers.filter(a => a.id !== nodeId);
+		this.transforms = this.transforms.filter(a => a.id !== nodeId);
+		this.branches = this.branches.filter(b => !(b.source_id === nodeId || b.destination_id === nodeId));
 	}
 
 	deleteVariable(deletedVariable: EnvironmentVariable) {
 		this.environment_variables = this.environment_variables.filter(variable => variable.id !== deletedVariable.id);
-		this.all_arguments
-			.filter(arg => arg.value == deletedVariable.id)
-			.forEach(arg => arg.value = '');
+		this.all_arguments.filter(arg => arg.value == deletedVariable.id).forEach(arg => arg.value = '');
 	}
 
-	getNextActionName(actionName: string, actionType: ActionType = ActionType.ACTION) : string {
-		let numActions;
-		// switch (actionType) {
-		// 	case ActionType.CONDITION:
-		// 		numActions = this.conditions.filter(a => a.action_name === actionName && a.name).length;
-		// 		break;
-		// 	default:
-		// 		numActions = this.actions.filter(a => a.action_name === actionName && a.name).length;
-		// }
-
-		numActions = this.nodes.filter(a => a.action_name === actionName && a.name).length;
-
+	getNextActionName(actionName: string) : string {
+		let numActions = this.nodes.filter(a => a.action_name === actionName && a.name).length;
 		return numActions ? `${actionName}_${ ++numActions }` : actionName;
 	}
 
-	getPreviousActions(action: Action | Condition): (Action | Condition)[] {
+	getPreviousActions(action: WorkflowNode): WorkflowNode[] {
 		return this.branches
 			.filter(b => b.destination_id == action.id)
 			.map(b => this.nodes.find(a => a.id == b.source_id))

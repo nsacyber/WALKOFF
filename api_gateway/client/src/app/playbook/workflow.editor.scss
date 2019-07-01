@@ -69,9 +69,23 @@
 }
 
 /* Console Row = 200px */
-.workflowEditorMain .graphEditorRow, .workflowEditorMain .graphEditorColumn {
-	height: calc(100vh - 310px);
+.workflowEditorMain .graphEditorRow {
+	height: calc(100vh - 170px);
+	transition: height 0.25s ease-in-out;
 	overflow: auto;
+
+	&.show-console {
+		height: calc(100vh - 470px);
+	}
+}
+
+.workflowEditorMain .graphEditorColumn {
+	height: 100%;
+	overflow: auto;
+
+	&.graphArea {
+		overflow: hidden;
+	}
 }
 
 .workflowEditorMain .playbook-heading {
@@ -231,4 +245,23 @@
 
 #executionResultsModal > .modal-dialog {
 	max-width: 95%;
+}
+
+.bottom-panel {
+	.tab-content {
+		max-height: 0px;
+		height: 0px;
+		overflow-y: auto;
+		transition: all 0.25s ease-in-out;
+	}
+
+
+	&.show-console .tab-content {
+		max-height: 300px;
+		height: 300px;
+	}
+}
+
+body ngb-popover-window.popover {
+	max-width: 400px
 }

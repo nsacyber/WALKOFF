@@ -53,6 +53,9 @@ import { ActivatedRoute } from '@angular/router';
 import { Variable } from '../models/variable';
 import { MetadataModalComponent } from './metadata.modal.component';
 import { Condition } from '../models/playbook/condition';
+import { Trigger } from '../models/playbook/trigger';
+import { WorkflowNode } from '../models/playbook/WorkflowNode';
+import { Transform } from '../models/playbook/transform';
 
 @Component({
 	selector: 'workflow-editor-component',
@@ -113,13 +116,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	actionFilter: string = '';
 	actionFilterControl = new FormControl();
 	actionTypes = ActionType;
+	sseErrorTimeout: any;
+	showConsole: boolean = false
 
 	tags: string[] = [];
-	
-	conditionalOptions = { 
+
+	conditionalOptions = {
 		tabSize: 4,
 		indentUnit: 4,
-		mode: 'python', 
+		mode: 'python',
 		placeholder: `# Python to set selected_node to an output action
 # For example:
 # 		
@@ -127,6 +132,16 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 #     selected_node = output_1
 # else:
 #     selected_node = output_2`
+	}
+
+	transformOptions = {
+		tabSize: 4,
+		indentUnit: 4,
+		mode: 'python',
+		placeholder: `# Python to transform previous nodes results using python code
+# For example:
+# 		
+# result = input.result.get("key")`
 	}
 
 	constructor(
@@ -209,7 +224,12 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			});
 	}
 
-    consoleEventHandler(message: any): void {
+  consoleEventHandler(message: any): void {
+		if (this.sseErrorTimeout) {
+			clearTimeout(this.sseErrorTimeout);
+			delete this.sseErrorTimeout;
+		}
+
 		console.log('c', message)
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
@@ -220,9 +240,9 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	get consoleContent() {
-		let content = `******************************* Console Output *******************************`;
+		let content = `******************************* Console Output *******************************\n`;
 		this.consoleLog.forEach(log => {
-			content += '\n' + log.message;
+			content += log.message;
 		})
 		return content;
 	}
@@ -253,6 +273,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
 	nodeStatusEventHandler(message: any): void {
+		if (this.sseErrorTimeout) {
+			clearTimeout(this.sseErrorTimeout);
+			delete this.sseErrorTimeout;
+		}
+
 		const nodeStatusEvent = plainToClass(NodeStatusEvent, (JSON.parse(message.data) as object));
 		console.log('action', nodeStatusEvent);
 
@@ -270,7 +295,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.addClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
-						incomingEdges.addClass('success-highlight');	
+						incomingEdges.addClass('success-highlight');
 						break;
 					case NodeStatuses.SUCCESS:
 						matchingNode.addClass('success-highlight');
@@ -336,15 +361,24 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	statusEventErrorHandler(e: any) {
-		if (this.eventSource && this.eventSource.close)
-			this.eventSource.close();
-		if (this.consoleEventSource && this.consoleEventSource.close)
-			this.consoleEventSource.close();
+		if (this.sseErrorTimeout) return;
+		this.sseErrorTimeout = setTimeout(async () => {
+			try {
+				await this.playbookService.getApis();
+				delete this.sseErrorTimeout;
+			}
+			catch(e) {
+				if (this.eventSource && this.eventSource.close)
+					this.eventSource.close();
+				if (this.consoleEventSource && this.consoleEventSource.close)
+					this.consoleEventSource.close();
 
-		const options = {backdrop: undefined, closeButton: false, buttons: { ok: { label: 'Reload Page' }}}
-		this.utils
-			.alert('The server stopped responding. Reload the page to try again.', options)
-			.then(() => location.reload(true))
+				const options = {backdrop: undefined, closeButton: false, buttons: { ok: { label: 'Reload Page' }}}
+				this.utils
+					.alert('The server stopped responding. Reload the page to try again.', options)
+					.then(() => location.reload(true))
+			}
+		}, 5 * 1000)
 	}
 
 	/**
@@ -357,7 +391,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const executionId = UUID.UUID();
 		Promise.all([
 			this.getNodeStatusSSE(executionId),
-			// this.getConsoleSSE(executionId)
+			this.getConsoleSSE(executionId)
 		]).then(() => {
 			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
 				.then((workflowStatus: WorkflowStatus) => {
@@ -399,7 +433,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.router.navigateByUrl(`/workflows/${ workflow.id }`);
 	}
 
-	setupGraph(): void {
+	setupGraph(options: any = {}): void {
 		// Convert our selection arrays to a string
 		if (!this.loadedWorkflow.actions) { this.loadedWorkflow.actions = []; }
 
@@ -408,8 +442,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			if (this.consoleArea && this.consoleArea.codeMirror) this.consoleArea.codeMirror.refresh();
 		});
 
-		// Create the Cytoscape graph
-		this.cy = cytoscape({
+		const defaults = {
 			container: document.getElementById('cy'),
 			boxSelectionEnabled: false,
 			autounselectify: false,
@@ -436,14 +469,31 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				{
 					selector: `node[type="${ ActionType.ACTION }"]`,
 					css: {
-						'background-color': '#bbb',
+						'shape': 'roundrectangle',
+						'padding': '15px'
 					},
 				},
 				{
 					selector: `node[type="${ ActionType.CONDITION }"]`,
 					css: {
 						'shape': 'diamond',
-						'padding': '30px'
+						'padding': '25px'
+					},
+				},
+				{
+					selector: `node[type="${ ActionType.TRIGGER }"]`,
+					css: {
+						'shape': 'polygon',
+						'shape-polygon-points': '-1, -1, 1, -1, 0, 1',
+						'text-margin-y': '-15px',
+						'padding': '25px'
+					},
+				},
+				{
+					selector: `node[type="${ ActionType.TRANSFORM }"]`,
+					css: {
+						'shape': 'ellipse',
+						'padding': '20px'
 					},
 				},
 				{
@@ -458,6 +508,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					css: {
 						'border-width': '3px',
 						'border-color': '#991818',
+					},
+				},
+				{
+					selector: `node[?isParallelized]`,
+					css: {
+						'ghost' : 'yes',
+						'ghost-offset-x' : '7px',
+						'ghost-offset-y': '-7px',
+						'ghost-opacity' : '.7'
 					},
 				},
 				{
@@ -585,7 +644,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					}
 				}
 			],
-		});
+		};
+
+		// Create the Cytoscape graph
+		cytoscape.warnings(false);
+
+		// Create new elements before recreating the new graph
+		const elements = this.getGraphElements();
+
+		this.cy = cytoscape(Object.assign({}, defaults, options));
 
 		// Enable various Cytoscape extensions
 		// Undo/Redo extension
@@ -698,50 +765,9 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			},
 		});
 
-		// Load the data into the graph
-		// If a node does not have a label field, set it to
-		// the action. The label is what is displayed in the graph.
-		const edges = this.loadedWorkflow.branches.map(branch => {
-			const edge: any = { group: 'edges' };
-			edge.data = {
-				id: branch.id,
-				_id: branch.id,
-				source: branch.source_id,
-				target: branch.destination_id,
-				hasErrors: branch.has_errors
-			};
-			return edge;
-		});
+		this.cy.add(elements);
 
-		const actions = this.loadedWorkflow.actions.map(action => {
-			const node: any = { group: 'nodes', position: this.utils.cloneDeep(action.position) };
-			node.data = {
-				id: action.id,
-				_id: action.id,
-				label: action.name,
-				isStartNode: action.id === this.loadedWorkflow.start,
-				hasErrors: action.has_errors,
-				type: ActionType.ACTION
-			};
-			return node;
-		});
-
-		const conditionals = this.loadedWorkflow.conditions.map(condition => {
-			const node: any = { group: 'nodes', position: this.utils.cloneDeep(condition.position) };
-			node.data = {
-				id: condition.id,
-				_id: condition.id,
-				label: condition.name,
-				isStartNode: condition.id === this.loadedWorkflow.start,
-				hasErrors: condition.has_errors,
-				type: ActionType.CONDITION
-			};
-			return node;
-		});
-
-		this.cy.add([].concat(edges, actions, conditionals));
-
-		this.cy.fit(null, 50);
+		if(!options.zoom || !options.pan) setImmediate(() => this.cy.fit(null, 50));
 
 		this.setStartNode(this.loadedWorkflow.start);
 
@@ -754,6 +780,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		// Configure handlers when nodes/edges are added or removed
 		this.cy.on('add', 'node', (e: any) => this.onNodeAdded(e));
+		this.cy.on('free', 'node', (e: any) => this.onNodeMoved(e));
 		this.cy.on('remove', 'node', (e: any) => this.onNodeRemoved(e));
 		this.cy.on('remove', 'edge', (e: any) => this.onEdgeRemove(e));
 
@@ -771,6 +798,47 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		})
 
 		// this.cyJsonData = JSON.stringify(this.loadedWorkflow, null, 2);
+	}
+
+	// Load the data into the graph
+	getGraphElements() {
+		// If a node does not have a label field, set it to
+		// the action. The label is what is displayed in the graph.
+		const edges = this.loadedWorkflow.branches.map(branch => {
+			const edge: any = { group: 'edges' };
+			edge.data = {
+				id: branch.id,
+				_id: branch.id,
+				source: branch.source_id,
+				target: branch.destination_id,
+				hasErrors: branch.has_errors
+			};
+			return edge;
+		});
+
+		const nodes = this.loadedWorkflow.nodes.map(action => {
+			const node: any = { group: 'nodes', position: this.utils.cloneDeep(action.position) };
+			node.data = {
+				id: action.id,
+				_id: action.id,
+				label: action.name,
+				isStartNode: action.id === this.loadedWorkflow.start,
+				isParallelized: action instanceof Action && action.parallelized,
+				hasErrors: action.has_errors,
+				type: action.action_type
+			};
+			return node;
+		});
+
+		const elements = [].concat(nodes, edges);
+		const oldElements = (this.cy) ? this.cy.elements().jsons() : [];
+		oldElements.forEach(old => {
+			elements
+				.filter(el => el.data.id == old.data.id)
+				.forEach(el => el.classes = old.classes)
+		})
+
+		return elements;
 	}
 
 	/**
@@ -809,7 +877,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 
 		// Go through our workflow and update some parameters
-		workflowToSave.actions.forEach(action => {
+		workflowToSave.nodes.forEach(action => {
 			// Set action name if empty
 			if (!action.name) action.name = workflowToSave.getNextActionName(action.action_name);
 
@@ -818,22 +886,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 			// Properly sanitize arguments through the tree
 			if (action.arguments) this._sanitizeArgumentsForSave(action, workflowToSave);
-
-			// if (action.trigger) this._sanitizeExpressionAndChildren(action.trigger);
 		});
 
-		workflowToSave.conditions.forEach(condition => {
-			// Set action name if empty
-			if (!condition.name) condition.name = workflowToSave.getNextActionName(condition.action_name, ActionType.CONDITION);
-
-			// Set the new cytoscape positions on our loadedworkflow
-			condition.position = cyData.find(cyAction => cyAction.data._id === condition.id).position;
-
-			// Properly sanitize arguments through the tree
-			if (condition.arguments) this._sanitizeArgumentsForSave(condition, workflowToSave);
-
-			// if (condition.trigger) this._sanitizeExpressionAndChildren(condition.trigger);
-		});
 
 		workflowToSave.branches.forEach(branch => {
 			this._sanitizeExpressionAndChildren(branch.condition);
@@ -911,10 +965,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
 	 * @param argument The argument to sanitize
 	 */
-	_sanitizeArgumentsForSave(action: Action | Condition, workflow: Workflow): void {
+	_sanitizeArgumentsForSave(action: WorkflowNode, workflow: Workflow): void {
 		const args = action.arguments;
-
-		console.log('hhhjhh', action.arguments)
 
 		// Filter out any arguments that are blank, essentially
 		const idsToRemove: number[] = [];
@@ -924,20 +976,14 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 			// If value and reference are blank, add this argument's ID in the array to the list
 			// Add them in reverse so we don't have problems with the IDs sliding around on the splice
-			if (!argument.value) {
+			if (!argument.value && argument.value !== false) {
 				idsToRemove.unshift(args.indexOf(argument));
 			}
 
 			// Make sure reference is valid for this action
-			if (argument.variant == Variant.ACTION_RESULT) {	
-				const validReferences = [].concat(
-					workflow.getPreviousActions(action).map(a => a.id),
-					this.globals.map(g => g.id),
-					workflow.environment_variables.map(v => v.id)
-				)
-				console.log(validReferences)
+			if (argument.variant == Variant.ACTION_RESULT) {
+				const validReferences = workflow.getPreviousActions(action).map(a => a.id);
 				if (!validReferences.includes(argument.value)) {
-					console.log('hi')
 					idsToRemove.unshift(args.indexOf(argument));
 				}
 			}
@@ -1105,6 +1151,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	/**
+	 * This function checks when a node is added and sets start node if no other nodes exist.
+	 * @param e JS Event fired
+	 */
+	onNodeMoved(event: any): void {
+		const node = event.target.json();
+		this.loadedWorkflow.nodes.find(n => n.id == node.data.id).position = node.position;
+	}
+
+	/**
 	 * This function fires when a node is removed. If the node was the start node, it sets it to a new root node.
 	 * It also removes the corresponding action from the workflow.
 	 * @param e JS Event fired
@@ -1118,10 +1173,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		if (this.selectedAction && this.selectedAction.id === data._id) { this.selectedAction = null; }
 
 		// Delete the action from the workflow and delete any branches that reference this action
-		this.loadedWorkflow.actions = this.loadedWorkflow.actions.filter(a => a.id !== data._id);
-		this.loadedWorkflow.conditions = this.loadedWorkflow.conditions.filter(a => a.id !== data._id);
-		this.loadedWorkflow.branches = this.loadedWorkflow.branches
-			.filter(ns => !(ns.source_id === data._id || ns.destination_id === data._id));
+		this.loadedWorkflow.removeNode(data._id);
 	}
 
 	/**
@@ -1193,25 +1245,42 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const newActionUuid = (firstTime) ? UUID.UUID() : addedNode.data._id;
 
 		const args: Argument[] = [];
-		const parameters = this._getAction(appName, appVersion, actionName).parameters;
+		const actionApi = this._getAction(appName, appVersion, actionName);
+
 		// TODO: might be able to remove this entirely
 		// due to the argument component auto-initializing default values
-		if (parameters && parameters.length) {
-			this._getAction(appName, appVersion, actionName).parameters.forEach((parameter) => {
+		if (actionApi && actionApi.parameters) {
+			actionApi.parameters.forEach((parameter) => {
 				args.push(this.getDefaultArgument(parameter));
 			});
 		}
 
 		const actionType = this._getAction(appName, appVersion, actionName).node_type;
-		const uniqueActionName = this.loadedWorkflow.getNextActionName(actionName, actionType);
+		const uniqueActionName = this.loadedWorkflow.getNextActionName(actionName);
 
+		let newNode: WorkflowNode;
 		switch(actionType) {
 			case ActionType.CONDITION:
-				this.insertConditional(appName, actionName, newActionUuid, uniqueActionName, appVersion, args)
+				newNode = new Condition();
 				break;
-			default: 
-				this.insertAction(appName, actionName, newActionUuid, uniqueActionName, appVersion, args);
+			case ActionType.TRIGGER:
+				newNode = new Trigger();
+				break;
+			case ActionType.TRANSFORM:
+				newNode = new Transform();
+				break;
+			default:
+				newNode = new Action();
 		}
+
+		newNode.id = newActionUuid;
+		newNode.name = uniqueActionName;
+		newNode.app_name = appName;
+		newNode.app_version = appVersion;
+		newNode.action_name = actionName;
+		newNode.arguments = args;
+		newNode.position = location;
+		this.loadedWorkflow.addNode(newNode);
 
 		// Add the node with the new ID to the graph in the location dropped into by the mouse.
 		const nodeToBeAdded = {
@@ -1234,28 +1303,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.cy.add(nodeToBeAdded);
 
 		return nodeToBeAdded;
-	}
-
-	private insertAction(appName: any, actionName: any, newActionUuid: any, uniqueActionName: string, appVersion: any, args: Argument[]) {
-		const actionToBeAdded = new Action();
-		actionToBeAdded.id = newActionUuid;
-		actionToBeAdded.name = uniqueActionName;
-		actionToBeAdded.app_name = appName;
-		actionToBeAdded.app_version = appVersion;
-		actionToBeAdded.action_name = actionName;
-		actionToBeAdded.arguments = args;
-		this.loadedWorkflow.actions.push(actionToBeAdded);
-	}
-
-	private insertConditional(appName: any, actionName: any, newActionUuid: any, uniqueActionName: string, appVersion: any, args: Argument[]) {
-		const condition = new Condition();
-		condition.id = newActionUuid;
-		condition.name = uniqueActionName;
-		condition.app_name = appName;
-		condition.app_version = appVersion;
-		condition.action_name = actionName;
-		condition.arguments = args;
-		this.loadedWorkflow.conditions.push(condition);
 	}
 
 	// TODO: update this to properly "cut" actions from the loadedWorkflow.
@@ -1291,7 +1338,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			pastedAction.id = newActionUuid;
 			pastedAction.name = this.loadedWorkflow.getNextActionName(pastedAction.action_name)
 			pastedAction.arguments.forEach(argument => delete argument.id);
-			this.loadedWorkflow.actions.push(pastedAction);
+			this.loadedWorkflow.addNode(pastedAction);
 
 			n.data({
 				id: newActionUuid,
@@ -1339,6 +1386,10 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.cy.elements('node[?isStartNode]').data('isStartNode', false);
 		// Apply start node highlighting to the new start node.
 		this.cy.elements(`node[_id="${ this.loadedWorkflow.start }"]`).data('isStartNode', true);
+	}
+
+	updateParallelizedNode(action: Action): void {
+		this.cy.elements(`node[_id="${ action.id }"]`).data('isParallelized', action.parallelized);
 	}
 
 	/**
@@ -1407,7 +1458,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param actionName Name of the ActionApi to query
 	 */
 	_getAction(appName: string, appVersion: string, actionName: string): ActionApi {
-		return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
+		//return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
 		return this.appApis.find(a => a.name === appName && a.app_version == appVersion)
 				.action_apis.find(a => a.name === actionName);
 	}
@@ -1434,7 +1485,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
 		let initialValue = null;
-		if (parameterApi.schema.type === 'array') { 
+		if (parameterApi.schema.type === 'array') {
 			initialValue = [];
 		} else if (parameterApi.schema.type === 'object') {
 			initialValue = {};
@@ -1570,6 +1621,21 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	getErrors() : any[] {
 		if (!this.loadedWorkflow) return [];
 		return this.loadedWorkflow.all_errors.map(error => ({ error }));
+	}
+
+	toggleConsole() {
+		this.showConsole = ! this.showConsole;
+		const options = { zoom: this.cy.zoom(), pan: this.cy.pan() }
+		setTimeout(() => this.setupGraph(options), 255);
+	}
+
+	switchConsoleTabs($e: NgbTabChangeEvent) {
+		this.showConsole = true;
+		const options = { zoom: this.cy.zoom(), pan: this.cy.pan() }
+		setTimeout(() => {
+			this.setupGraph(options);
+			this.recalculateConsoleTable($e);
+		}, 255);
 	}
 
 	/**

@@ -170,4 +170,10 @@ ControlWorkflow:
     status:
       description: The action to take on the executing workflow
       type: string
-      enum: ['pause', 'resume', 'abort']
+      enum: ['trigger', 'abort']
+    trigger_id:
+      description: The ID of the trigger node
+      $ref: '#/components/schemas/Uuid'
+    trigger_data:
+      description: The data that will be sent to the trigger
+      type: string

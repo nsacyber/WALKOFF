@@ -14,6 +14,8 @@ For app development instructions, see [the app SDK](app_sdk/README.md).
 
 If you would like to view version 0.9.4, see [the master branch](https://github.com/nsacyber/WALKOFF/tree/master). 
 
+For general documentation for the latest version of WALKOFF, see our [ReadTheDocs](https://walkoff.readthedocs.io/en/latest/) page.
+
 ## Requirements
 
 * Docker 18.06.0+: https://docs.docker.com/install/
@@ -44,5 +46,5 @@ docker-compose up -d --build
 # Follow logs for services (append service names from the docker-compose.yml to follow specific services):
 docker-compose logs -f api_gateway
 
-# UI is viewable at http://localhost:8080
+# UI is viewable at https://localhost:8080
 ```

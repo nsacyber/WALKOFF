@@ -66,7 +66,7 @@ class WorkflowJSONDecoder(json.JSONDecoder):
             self.nodes[node.id_] = node
             return node
 
-        elif "trigger" in o:
+        elif "trigger_schema" in o:
             node = Trigger(**o)
             self.nodes[node.id_] = node
             return node
@@ -76,7 +76,15 @@ class WorkflowJSONDecoder(json.JSONDecoder):
 
         elif "actions" in o and "branches" in o:
             branches = {Branch(self.nodes[b.source_id], self.nodes[b.destination_id], b.id_) for b in self.branches}
-            workflow_variables = {var.id_: var for var in o["workflow_variables"]}
+
+            try:
+                workflow_variables = {var.id_: var for var in o["workflow_variables"]}
+            except:
+                workflow_variables = {}
+                for var in o["workflow_variables"]:
+                    workflow_obj = Variable(id_=var["id_"], name=var["name"], value=var["value"])
+                    workflow_variables[workflow_obj.id_] = workflow_obj
+
             start = self.nodes[o["start"]]
             o["branches"] = branches
             o["workflow_variables"] = workflow_variables
@@ -125,12 +133,12 @@ class WorkflowJSONEncoder(json.JSONEncoder):
         elif isinstance(o, Transform):
             position = {"x": o.position.x, "y": o.position.y}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
-                    "label": o.label, "position": position, "transform": o.transform, "parameter": o.parameter}
+                    "label": o.label, "position": position, "transform": o.transform}
 
         elif isinstance(o, Trigger):
             position = {"x": o.position.x, "y": o.position.y}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
-                    "label": o.label, "position": position, "trigger": o.trigger}
+                    "label": o.label, "position": position, "trigger_schema": o.trigger_schema}
 
         elif isinstance(o, Parameter):
             return {"name": o.name, "variant": o.variant, "value": o.value, "id_": o.id_}
@@ -159,17 +167,18 @@ class ParameterVariant(enum.Enum):
 
 
 class Parameter:
-    __slots__ = ("name", "value", "variant", "reference", "id_", "errors")
+    __slots__ = ("name", "value", "variant", "id_", "errors", "parallelized")
 
-    def __init__(self, name, id_=None, value=None, variant=None, errors=None):
+    def __init__(self, name, parallelized=False, id_=None, value=None, variant=None, errors=None):
         self.id_ = id_
         self.name = name
+        self.parallelized = parallelized
         self.value = value
         self.variant = variant
         self.errors = errors
 
     def __str__(self):
-        return f"Parameter-{self.name}:{self.value or self.reference}"
+        return f"Parameter-{self.name}:{self.value}"
 
     def __eq__(self, other):
         if isinstance(other, Parameter) and self.__slots__ == other.__slots__:
@@ -238,12 +247,13 @@ class Node:
 
 
 class Action(Node):
-    __slots__ = ("parameters", "execution_id")
+    __slots__ = ("parameters", "execution_id", "parallelized")
 
-    def __init__(self, name, position, app_name, app_version, label, priority, parameters=None, id_=None,
-                 execution_id=None, errors=None, is_valid=None):
+    def __init__(self, name, position, app_name, app_version, label, priority, parallelized=False, parameters=None,
+                 id_=None, execution_id=None, errors=None, is_valid=None, **kwargs):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.parameters = parameters if parameters is not None else list()
+        self.parallelized = parallelized
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue
 
@@ -317,14 +327,13 @@ class Condition(Node):
         return child_id
 
 
-# TODO: fully realize and implement triggers
 class Trigger(Node):
-    __slots__ = ("trigger",)
+    __slots__ = ("trigger_schema",)
 
-    def __init__(self, name, position: Point, app_name, app_version, label, trigger, id_=None, errors=None,
+    def __init__(self, name, position: Point, app_name, app_version, label, trigger_schema, id_=None, errors=None,
                  is_valid=None):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
-        self.trigger = trigger
+        self.trigger_schema = trigger_schema
 
     def __str__(self):
         return f"Trigger: {self.label}::{self.id_}"
@@ -340,15 +349,20 @@ class Trigger(Node):
     def __hash__(self):
         return hash(id(self))
 
+    def __call__(self, data):
+        """ A trigger simply echos the data it was given """
+        result = data.trigger_data
+        logger.debug(f"Executed {self.name}-{self.id_} with result: {result}")
+        return result
+
 
 class Transform(Node):
-    __slots__ = ("transform", "parameter")
+    __slots__ = ("transform",)
 
-    def __init__(self, name, position: Point, app_name, app_version, label, transform, parameter=None, id_=None,
+    def __init__(self, name, position: Point, app_name, app_version, label, transform, id_=None,
                  errors=None, is_valid=None):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
-        self.transform = transform.lower()
-        self.parameter = parameter
+        self.transform = transform
         self.priority = 3  # Transforms have a fixed, mid valued priority
 
     def __str__(self):
@@ -365,30 +379,36 @@ class Transform(Node):
     def __hash__(self):
         return hash(id(self))
 
-    def __call__(self, data):
+    @staticmethod
+    def format_node_names(nodes):
+        # We need to format space delimited names into underscore delimited names
+        names_to_modify = {node.label for node in nodes.values() if node.label.count(' ') > 0}
+        formatted_nodes = {}
+        for node in nodes.values():
+            formatted_name = node.label.strip().replace(' ', '_')
+
+            if formatted_name in names_to_modify:  # we have to check for a name conflict as described above
+                logger.error(f"Error processing condition. {node.label} or {formatted_name} must be renamed.")
+
+            formatted_nodes[formatted_name] = node
+        return formatted_nodes
+
+    def __call__(self, parents, accumulator) -> str:
         """ Execute an action and ship its result """
-        logger.debug(f"Attempting execution of: {self.name}-{self.id_}")
-        transform = f"_{self.__class__.__name__}__{self.transform}"
-        if hasattr(self, transform):
-            if self.parameter is None:
-                result = getattr(self, transform)(data=data)
-            else:
-                result = getattr(self, transform)(self.parameter, data=data)
-            logger.debug(f"Executed {self.name}-{self.id_} with result: {result}")
-            return result
-        else:
-            logger.error(f"{self.__class__.__name__} has no method {self.transform}")
+        parent_symbols = {k: ParentSymbol(accumulator[v.id_]) for k, v in self.format_node_names(parents).items()}
+        # children_symbols = {k: ChildSymbol(v.id_) for k, v in self.format_node_names(children).items()}
+        syms = make_symbol_table(use_numpy=False, **parent_symbols)
+        aeval = Interpreter(usersyms=syms, no_while=True, no_try=True, no_functiondef=True, no_ifexp=True,
+                            no_augassign=True, no_assert=True, no_delete=True, no_raise=True,
+                            no_print=True, use_numpy=False, builtins_readonly=True)
 
-    # TODO: add JSON to CSV parsing and vice versa.
-    def __get_value_at_index(self, index, data=None):
-        return data[index]
+        aeval(self.transform)
+        output = aeval.symtable.get("result", None)
 
-    def __get_value_at_key(self, key, data=None):
-        return data[key]
+        if len(aeval.error) > 0:
+            raise ConditionException
 
-    def __split_string_to_array(self, delimiter=' ', data=None):
-        return data.split(delimiter)
-
+        return output
 
 class DiGraph:
     __slots__ = ("nodes", "edges", "rev_adjacency")

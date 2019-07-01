@@ -35,8 +35,6 @@ tags:
     description: Scheduler Operations
   - name: Triggers
     description: Trigger Operations
-  - name: System
-    description: System Operations
   - name: Client
     description: Serves up client pages
   - name: System

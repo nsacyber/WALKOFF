@@ -12,22 +12,15 @@ usage and app and interface development. This documentation is intended to help 
 provide a reference for project contributors.
 
 
-Stability and Versioning
+Installation Steps
 ========================
-The apps and interfaces API is relatively stable, and changes to it will cause a minor version bump. However, no
-guarantee is made of the stability of the walkoff module itself until version 1.0.0 is released.
 
+
+Table of Contents
+==================
 .. toctree::
    :maxdepth: 5
    :caption: API Reference:
 
-   apps
-   interfaces
-   platform
+   testing
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

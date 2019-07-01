@@ -16,6 +16,8 @@ import { ToastrModule } from 'ngx-toastr';
 import { GridsterModule } from 'angular-gridster2';
 import { ChartsModule } from 'ng2-charts';
 
+import { NgJsonEditorModule } from 'ang-jsoneditor' 
+
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import 'codemirror/mode/shell/shell';
 import 'codemirror/mode/python/python';
@@ -82,6 +84,7 @@ import { ImportModalComponent } from './playbook/import.modal.component';
 		GridsterModule,
 		ChartsModule,
 		CodemirrorModule,
+		NgJsonEditorModule
 	],
 	declarations: [
 		//Main component

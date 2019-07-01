@@ -1,7 +1,43 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
-     
+
+## [1.0.0-alpha.2]
+
+This update includes numerous bugfixes and a number of reintroduced features. 
+
+### Added
+* Trigger nodes allow you to pause workflow execution until webhook for the trigger is hit with data
+* Basic Condition nodes allow you to perform branching execution in a more flowchart-like manner
+* Basic Transform nodes allow you to write code snippets to transform/remap/select action results on the fly (UI support pending)
+* Parallel Action node types in the workflow editor allow you to parallelize actions on a specified parameter
+* Display UUIDs for workflow and workflow nodes in UI
+
+### Changed
+* WALKOFF now runs utilizing stack deploy, allowing for the use of external Docker secrets
+* App version no longer required in app_name in api.tyaml
+* CRUD endpoints now accept resource names as keys when applicable
+* Globals can now be arbitrary JSON (UI support pending)
+
+### Removed
+
+### Security
+* Implemented AES-256 encryption/decryption for Global Variables. Exclusive-access decryption based on account level standing still needs to be implemented in the future. Currently, any GET request to the API gateway will return a decrypted Global Variable, regardless of account.  
+
+### Fixed
+* Workflow import/export
+* Workflow validation (still needs work); workflows can be saved in an incomplete state again
+* Validate workfow name uniqueness when creating workflows
+* Testing suite (still needs expansion)
+* Uniqueness constraints on CRUD operations
+* Dereferencing Global and Workflow variables in workflows
+* Ability to override starting parameters in a workflow execution
+* Ability to update/delete encrypted Global Variables
+* Hide global values by default on Globals tab
+* Default boolean parameters to false
+* Copying and pasting of nodes in workflow editor
+* Accessing action results before conditionals in parameters that follow it
+
      
 ## [1.0.0-alpha.1]
 

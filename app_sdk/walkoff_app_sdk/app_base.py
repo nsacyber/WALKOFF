@@ -6,10 +6,12 @@ import aioredis
 import aiohttp
 
 from walkoff_app_sdk.common.message_types import NodeStatusMessage, message_dumps
-from walkoff_app_sdk.common.workflow_types import workflow_loads, Action
+from walkoff_app_sdk.common.workflow_types import workflow_loads, Action, ParameterVariant
 from walkoff_app_sdk.common.async_logger import AsyncLogger, AsyncHandler
 from walkoff_app_sdk.common.helpers import UUID_GLOB
-from walkoff_app_sdk.common.redis_helpers import connect_to_redis_pool, xdel, deref_stream_message
+from walkoff_app_sdk.common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
+from walkoff_app_sdk.common.global_cipher import GlobalCipher
+
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
@@ -36,7 +38,7 @@ class HTTPStream:
     async def write(self, message):
         data = {"message": message}
         params = {"workflow_execution_id": self.execution_id}
-        url = f"{API_GATEWAY_URI}/api/streams/console/log"
+        url = f"{API_GATEWAY_URI}/api/streams/console/logger"
 
         await self.session.post(url, json=data, params=params)
 
@@ -49,7 +51,7 @@ class AppBase:
     __version__ = None
     app_name = None
 
-    def __init__(self, redis=None, logger=None, console_logger=None):
+    def __init__(self, redis=None, logger=None, console_logger=None):#, docker_client=None):
         if self.app_name is None or self.__version__ is None:
             logger.error(("App name or version not set. Please ensure self.app_name is set to match the "
                           "docker-compose service name and self.__version__ is set to match the api.yaml."))
@@ -95,8 +97,6 @@ class AppBase:
             except aioredis.errors.ReplyError:
                 continue  # Just keep trying to read messages. This likely gets thrown if a stream doesn't exist
 
-
-
             execution_id_action, stream, id_ = deref_stream_message(message)
             execution_id, action = execution_id_action
 
@@ -112,6 +112,8 @@ class AppBase:
         """ Execute an action, and push its result to Redis. """
         self.logger.debug(f"Attempting execution of: {action.label}-{action.execution_id}")
         self.console_logger.handlers[0].stream.set_execution_id(action.execution_id)
+        self.current_execution_id = action.execution_id
+
         results_stream = f"{action.execution_id}:results"
 
         if hasattr(self, action.name):
@@ -125,7 +127,18 @@ class AppBase:
                     if len(action.parameters) < 1:
                         result = await func()
                     else:
-                        result = await func(**{p.name: p.value for p in action.parameters})
+                        params = {}
+                        for p in action.parameters:
+                            if p.variant == ParameterVariant.GLOBAL:
+                                f = open('/run/secrets/encryption_key')
+                                key = f.read()
+                                my_cipher = GlobalCipher(key)
+                                temp = my_cipher.decrypt(p.value)
+                                params[p.name] = temp
+                            else:
+                                params[p.name] = p.value
+                        result = await func(**params)
+
                     action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result=result)
                     self.logger.debug(f"Executed {action.label}-{action.id_} with result: {result}")
 
@@ -135,8 +148,8 @@ class AppBase:
                                                                         result="Action not callable")
 
             except Exception as e:
-                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
                 self.logger.exception(f"Failed to execute {action.label}-{action.id_}")
+                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
 
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
@@ -160,7 +173,4 @@ class AppBase:
 
             app = cls(redis=redis, logger=logger, console_logger=console_logger)
 
-
             await app.get_actions()
-
-

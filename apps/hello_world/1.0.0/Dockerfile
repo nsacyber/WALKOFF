@@ -1,5 +1,5 @@
 # Base our app image off of the WALKOFF App SDK image
-FROM localhost:5000/walkoff_app_sdk as base
+FROM 127.0.0.1:5000/walkoff_app_sdk as base
 
 # We're going to stage away all of the bloat from the build tools so lets create a builder stage
 FROM base as builder

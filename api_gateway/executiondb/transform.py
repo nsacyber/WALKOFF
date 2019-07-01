@@ -31,8 +31,7 @@ class Transform(Base):
     workflow_id = Column(UUID(as_uuid=True), ForeignKey('workflow.id_', ondelete='CASCADE'))
 
     # Columns specific to Transform model
-    transform = Column(String(80), nullable=False)
-    parameter = Column(JSON, nullable=False)
+    transform = Column(String(512), nullable=False)
     children = []
 
     def __init__(self, **kwargs):
@@ -57,11 +56,6 @@ class Transform(Base):
                 if not child.is_valid_rec():
                     return False
         return True
-
-
-@event.listens_for(Transform, 'before_update')
-def validate_before_update(mapper, connection, target):
-    target.validate()
 
 
 class TransformSchema(BaseSchema):

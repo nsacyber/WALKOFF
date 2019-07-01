@@ -21,6 +21,18 @@ actions:
     returns:
       schema:
         type: number
+  - name: string_to_json
+    description: returns the string output from trigger data if it's in Json format.
+    parameters:
+      - name: call
+        description: string to be converted to json
+        required: true
+        schema:
+          type: string
+    returns:
+      schema:
+        type: object
+      example: '{"Walkoff":"Running"}'
   - name: repeat_back_to_me
     description: Repeats the call parameter
     parameters:
@@ -59,6 +71,7 @@ actions:
     parameters:
       - name: data
         description: array to echo
+        parallelizable: true
         required: true
         schema:
           type: array

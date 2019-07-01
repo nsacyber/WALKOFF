@@ -143,7 +143,7 @@ class PowerShell(AppBase):
 
         return results
 
-    async def exec_powershell(self, hosts, shell_type, arguments, username, password, transport, server_cert_validation,
+    async def exec_powershell_script(self, hosts, shell_type, arguments, username, password, transport, server_cert_validation,
                               message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
@@ -181,9 +181,6 @@ class PowerShell(AppBase):
                 results[host] = {"stdout": "", "stderr": f"{e}"}
 
         return results
-
-    #     script = "$t = @'\n{}\n'@".format(script)
-    #     script += ';Invoke-Expression $t'
 
 
 if __name__ == "__main__":

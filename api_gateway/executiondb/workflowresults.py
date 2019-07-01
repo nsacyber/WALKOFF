@@ -69,7 +69,7 @@ class NodeStatus(Base):
     app_name = Column(String, nullable=False)
     label = Column(String, nullable=False)
     result = Column(JSON, default=None)
-    arguments = Column(String)  # TODO: refactor this to parameters to match every other node model
+    parameters = Column(JSON, default=None)
 
     workflow_execution_id = Column(UUID(as_uuid=True),
                                    ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))

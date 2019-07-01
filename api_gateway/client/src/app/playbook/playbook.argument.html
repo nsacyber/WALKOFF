@@ -1,9 +1,9 @@
 <div class="form-group argument {{id % 2 ? 'odd' : 'even'}}">
 	<!-- Label for argument with optional required icon -->
 	<label for="{{argument.name}}">
-		Argument {{id+1}}: {{argument.name}} ({{parameterSchema.type}})
-		<i *ngIf="parameterApi.description != null" class="fa fa-info-circle" [title]="parameterApi.description"></i>
-		<i *ngIf="parameterApi.required" class="fa fa-asterisk required" title="This field is required."></i>
+		<b class="text-capitalize">{{argument.name}}</b> ({{parameterSchema.type}})
+		<i *ngIf="parameterApi.required" class="fa fa-asterisk required m-0" title="This field is required."></i>
+		<small class="form-text text-muted">{{ parameterApi.description }}</small>
 	</label>
 
 	<!-- Columns for allowing users to specify outputs of other action as arguments for this one -->
@@ -80,7 +80,12 @@
 		</div>
 	</div>
 </div>
-<div *ngIf="isStatic && isNormalArray(parameterSchema)" class="indent">
+
+<div *ngIf="isStatic && (isNormalArray(parameterSchema) || parameterSchema.type === 'object')" class="mb-3">
+	<json-editor #jsonEditor [options]="editorOptionsData" [data]="initialValue" (change)="updateValue($event)"></json-editor>
+</div>
+
+<div *ngIf="false && isStatic && isNormalArray(parameterSchema)" class="indent">
 	<div class="row">
 		<div class="col-6">
 			<select class="form-control" [(ngModel)]="selectedType" name="selectedType">
@@ -90,7 +95,7 @@
 		<div class="col-6">
 			<div class="form-group">
 				<button class="btn btn-primary pull-right" (click)="addItem()" [disabled]="!selectedType">
-					<i class="fa fa-plus"></i>Add Item
+					<i class="fa fa-plus"></i>Add Items
 				</button>
 			</div>
 		</div>
@@ -115,7 +120,8 @@
 		<input *ngIf="arrayTypes[itemId] === 'boolean'" type="checkbox" class="form-control" [(ngModel)]="argument.value[itemId]">
 	</div>
 </div>
-<div *ngIf="isStatic && parameterSchema.type === 'object'" class="indent">
+
+<div *ngIf="false && isStatic && parameterSchema.type === 'object'" class="indent">
 	<div class="row">
 		<div class="col-6">
 			<input type="text" class="form-control" [(ngModel)]="propertyName" placeholder="Enter a parameter name">

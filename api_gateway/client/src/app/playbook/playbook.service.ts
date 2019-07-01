@@ -142,13 +142,20 @@ export class PlaybookService {
 	 */
 	async importWorkflow(fileToImport: File): Promise<Workflow> {
 		const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
-		const body = await this.utils.readUploadedFileAsText(fileToImport);
+		const body = JSON.parse(await this.utils.readUploadedFileAsText(fileToImport));
+		body.name = await this.nextWorkflowName(body.name);
 
 		return this.http.post('/api/workflows', body, { headers })
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
+	}
+
+	async nextWorkflowName(name: string) : Promise<string> {
+		const workflows = await this.getWorkflows();
+		const count = workflows.filter(w => w.name.match(new RegExp(`^${ name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') }( \(\d+\))?$`))).length;
+		return (count > 0) ? `${ name } (${ count })`: name;
 	}
 
 	/**
@@ -236,6 +243,19 @@ export class PlaybookService {
 	}
 
 	/**
+	 * For a given executing workflow, asyncronously perform some action to change its status.
+	 * Only returns success
+	 * @param executionId Execution ID to act upon
+	 * @param action Action to take (e.g. abort, resume, pause)
+	 */
+	performWorkflowTrigger(executionId: string, trigger: string, data = {}): Promise<void> {
+		return this.http.patch(`api/workflowqueue/${ executionId }`, { status: 'trigger',  trigger_id: trigger, trigger_data: data})
+			.toPromise()
+			.then(() => null)
+			.catch(this.utils.handleResponseError);
+	}
+
+	/**
 	 * Returns an array of all globals within the DB.
 	 */
 	getGlobals(): Promise<Variable[]> {
@@ -248,25 +268,35 @@ export class PlaybookService {
 	getApis(): Promise<AppApi[]> {
 		return this.http.get('/api/apps/apis')
 			.toPromise()
-			.then((data: any[]) => {
-				return [{
-					id_: '30f06bd4-3703-f8a9-47e0-8853ea916913',
-					name: 'Builtin',
-					description: 'Walkoff built-in functions',
-					app_version: '1.0.0',
-					walkoff_version: '1.0.0',
-					contact_info: {email: "walkoff@nsa.gov", name: "Walkoff Team", url: "https://github.com/nsacyber/walkoff"},
-					license_info: {name: "Creative Commons", url: "https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md"},
-					external_docs: {},
-					actions: [
-						{
-							id_: '7a1c6838-1b14-4ddc-7d84-935fcbc260ca',
-							name: 'Condition',
-							node_type: ActionType.CONDITION,
-						}
-					]
-				}].concat(data);
-			})
+			// .then((data: any[]) => {
+			// 	return [{
+			// 		id_: '30f06bd4-3703-f8a9-47e0-8853ea916913',
+			// 		name: 'Builtin',
+			// 		description: 'Walkoff built-in functions',
+			// 		app_version: '1.0.1',
+			// 		walkoff_version: '1.0.0',
+			// 		contact_info: {email: "walkoff@nsa.gov", name: "Walkoff Team", url: "https://github.com/nsacyber/walkoff"},
+			// 		license_info: {name: "Creative Commons", url: "https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md"},
+			// 		external_docs: {},
+			// 		actions: [
+			// 			{
+			// 				id_: '7a1c6838-1b14-4ddc-7d84-935fcbc260ca',
+			// 				name: 'Condition',
+			// 				node_type: ActionType.CONDITION,
+			// 			},
+			// 			{
+			// 				id_: '21f7c721-448f-da7b-fea9-9b781824e7d3',
+			// 				name: 'Trigger',
+			// 				node_type: ActionType.TRIGGER,
+			// 			},
+			// 			{
+			// 				id_: '40a9e8ee-9a4f-ffb7-0a01-0cd25a6bd3a2',
+			// 				name: 'Transform',
+			// 				node_type: ActionType.TRANSFORM,
+			// 			}
+			// 		]
+			// 	}].concat(data);
+			// })
 			.then((data: any[]) => plainToClass(AppApi, data))
 			.then((appApis: AppApi[]) => {
 				appApis.forEach(app => app.action_apis.map(action => {

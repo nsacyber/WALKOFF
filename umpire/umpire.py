@@ -12,6 +12,7 @@ import aiohttp
 import aioredis
 from aiodocker.exceptions import DockerError
 from compose.cli.command import get_project
+from docker.types.services import SecretReference
 
 
 from common.config import config
@@ -21,7 +22,7 @@ from common.message_types import WorkflowStatusMessage
 from common.workflow_types import workflow_loads
 from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, get_containers,
                                    load_secrets, update_service, connect_to_aiodocker, get_service, get_replicas,
-                                   remove_service)
+                                   remove_service, get_secret, load_volumes)
 from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -44,15 +45,33 @@ class Umpire:
     @classmethod
     async def init(cls, docker_client, redis, session):
         self = cls(docker_client, redis, session)
-        await redis.flushall()  # TODO: do a more targeted cleanup of redis
+        # await redis.flushall()  # TODO: do a more targeted cleanup of redis
         self.app_repo = await AppRepo.create(config.APPS_PATH, session)
         self.running_apps = await self.get_running_apps()
         self.worker = await get_service(self.docker_client, "worker")
         services = await self.docker_client.services.list()
         self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
-        await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
+
+        try:
+            await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
+        except aioredis.errors.BusyGroupError:
+            logger.info("Workflow Queue stream already exists, not creating new one.")
+
         await self.build_app_sdk()
         await self.build_worker()
+
+        for app_name, app in self.app_repo.apps.items():
+            for version_name, version in app.items():
+                image_name = version.services[0].image_name
+                image = None
+                try:
+                    image = await self.docker_client.images.pull(image_name)
+                except DockerError:
+                    logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
+
+                # if we didn't find the image, try to build it
+                if image is None:
+                    await self.build_app(app_name, version_name)
 
         if len(self.app_repo.apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
@@ -70,7 +89,7 @@ class Umpire:
             for signame in {'SIGINT', 'SIGTERM'}:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
-            logger.info("Umpire ready!")
+            logger.info("Umpire is ready!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),
                                  asyncio.create_task(ump.monitor_queues(autoscale_worker, autoscale_app,
                                                                         autoheal_worker, autoheal_apps)))
@@ -123,7 +142,7 @@ class Umpire:
             secrets = await load_secrets(self.docker_client, project=project)
             mode = {"replicated": {'Replicas': replicas}}
             service_kwargs = ServiceKwargs.configure(image=worker.image_name, service=worker, secrets=secrets,
-                                                     mode=mode)
+                                                     mode=mode, mounts=[])
             await self.docker_client.services.create(name=worker.name, **service_kwargs)
             self.worker = await get_service(self.docker_client, worker.name)
 
@@ -230,9 +249,16 @@ class Umpire:
             image_name = full_tag
 
         try:
+            encryption_secret_id = await get_secret(self.docker_client, "encryption_key")
             secrets = await load_secrets(self.docker_client, project=self.app_repo.apps[app][version])
+            secrets.append(SecretReference(secret_id=encryption_secret_id, secret_name="encryption_key"))
             mode = {"replicated": {'Replicas': replicas}}
-            service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode)
+            mounts = await load_volumes(project=self.app_repo.apps[app][version])
+            # TODO: change to environmental variable abs path + data/shared
+            # shared_path = "/home/osboxes/Desktop/WALKOFF/data/shared:/app/shared:rw"
+            # mounts.append(shared_path)
+            service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode,
+                                                     mounts=mounts)
             await self.docker_client.services.create(name=app_name, **service_kwargs)
             self.running_apps[app_name] = await get_service(self.docker_client, app_name)
 

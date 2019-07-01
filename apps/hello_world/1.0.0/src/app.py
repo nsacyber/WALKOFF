@@ -2,6 +2,7 @@ import socket
 import asyncio
 import time
 import random
+import json
 
 from walkoff_app_sdk.app_base import AppBase
 
@@ -28,7 +29,7 @@ class HelloWorld(AppBase):
         Returns Hello World from the hostname the action is run on
         :return: Hello World from your hostname
         """
-        message = f"Hello World from {socket.gethostname()}!"
+        message = f"Hello World from {socket.gethostname()} in workflow {self.current_execution_id}!"
 
         # This logs to the docker logs
         self.logger.info(message)
@@ -37,6 +38,10 @@ class HelloWorld(AppBase):
         await self.console_logger.info(message)
 
         return message
+
+    async def string_to_json(self, call):
+        this = json.loads(call)
+        return this
 
     async def repeat_back_to_me(self, call):
         return f"REPEATING: {call}"

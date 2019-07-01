@@ -20,6 +20,7 @@ export class ExecutionVariableModalComponent {
             if (form.value[variable.id] && form.value[variable.id] != '') {
                 let newV = new EnvironmentVariable();
                 newV.id = variable.id;
+                newV.name = variable.name;
                 newV.value = form.value[variable.id];
                 variables.push(newV);
             }

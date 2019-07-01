@@ -10,9 +10,9 @@
 				<i class="fa fa-play"></i>
 				Execute Workflow
 			</button>
-			<button *ngIf="selectedWorkflow && selectedWorkflow.referenced_variables.length > 0" (click)="openVariableModal()" title="Edit Environment Variables" class="btn btn-outline-primary mx-1">
+			<button *ngIf="selectedWorkflow && selectedWorkflow.referenced_variables.length > 0" (click)="openVariableModal()" title="Edit Workflow Variables" class="btn btn-outline-primary mx-1">
 				<i class="fa fa-cog"></i>
-				Edit Environment Variables
+				Edit Workflow Variables
 			</button>
 		</div>
 		<div class="col col-lg-4 my-1 my-lg-none">
@@ -87,7 +87,7 @@
 					 [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
 					 [limit]="10">
 						<!-- Column Templates -->
-						<ngx-datatable-column name="ID" prop="node_id" [flexGrow]="2"></ngx-datatable-column>
+						<ngx-datatable-column name="ID" prop="node_id" [flexGrow]="3"></ngx-datatable-column>
 						<ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>
 						<ngx-datatable-column name="Action Name" prop="name" [flexGrow]="1"></ngx-datatable-column>
 						<ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
@@ -110,7 +110,7 @@
 								{{getFriendlyArguments(row.arguments)}}
 							</ng-template>
 						</ngx-datatable-column>
-						<ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="3">
+						<ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="4">
 							<ng-template let-row="row" ngx-datatable-cell-template>
 								{{getFriendlyJSON(row.result)}}
 							</ng-template>

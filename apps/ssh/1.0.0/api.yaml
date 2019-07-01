@@ -14,6 +14,7 @@ actions:
     description: Execute command on remote server with SSH client
     parameters:
       - name: hosts
+        parallelizable: true
         schema:
           type: array
         description: hosts or hostnames of the remote server
@@ -44,7 +45,7 @@ actions:
       schema:
         type: string
   - name: exec_local_command
-    description: Run a local bash command
+    description: Run a local bash command on the container
     parameters:
       - name: command
         required: true
@@ -61,45 +62,45 @@ actions:
         required: true
         schema:
           type: string
-        description: source path of the file to copy
+        description: source path of the file to copy from
       - name: dest_path
         required: true
         schema:
           type: string
-        description: remote path of the file destination
+        description: remote path of the file's destination
       - name: src_host
         schema:
           type: string
-        description: host or hostname of the remote server
+        description: host or hostname of the remote server to copy from
         required: true
       - name: src_port
         schema:
           type: integer
           minimum: 1
           maximum: 65535
-        description: port number
+        description: port number for the src_host
         required: true
       - name: src_username
         schema:
           type: string
-        description: username to login with
+        description: username to login with for the src_host
         required: true
       - name: src_password
         schema:
           type: string
-        description: password to login with
+        description: password to login with for the src_host
         required: true
       - name: dest_host
         schema:
           type: string
-        description: host or hostname of the remote server
+        description: host or hostname of the remote server you would like to copy to
         required: true
       - name: dest_port
         schema:
           type: integer
           minimum: 1
           maximum: 65535
-        description: port number
+        description: port number for the dst_host
         required: true
       - name: dest_username
         schema:
@@ -111,6 +112,17 @@ actions:
           type: string
         description: password to login with
         required: true
+    returns:
+      schema:
+        type: string
+  - name: sftp_copy_from_json
+    description: Copy remote file to remote host using sftp
+    parameters:
+      - name: input
+        required: true
+        schema:
+          type: object
+        description: source path of the file to copy
     returns:
       schema:
         type: string

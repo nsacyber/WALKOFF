@@ -1,18 +1,18 @@
 version: '3.5'
 services:
-  dockerhost:
-    image: qoomon/docker-host
-    networks:
-      - walkoff_default
-    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
-    deploy:
-      resources:
-        limits:
-          memory: 8M
-    restart: on-failure
+#  dockerhost:
+#    image: qoomon/docker-host
+#    networks:
+#      - walkoff_default
+#    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 8M
+#    restart: on-failure
   umpire:
-#    command: python -m umpire.umpire --log-level=debug --disable-worker-autoscale
-    image: localhost:5000/umpire:latest
+    command: python -m umpire.umpire # --log-level=debug
+    image: 127.0.0.1:5000/umpire:latest
     build:
      context: ./
      dockerfile: umpire/Dockerfile
@@ -24,7 +24,7 @@ services:
     environment:
       # Worker options
       - WORKER_TIMEOUT=30
-      - API_GATEWAY_URI=http://dockerhost:8080
+      - API_GATEWAY_URI=http://api_gateway:8080
       - WALKOFF_USERNAME=admin
       - WALKOFF_PASSWORD=admin
 
@@ -34,7 +34,7 @@ services:
       - SWARM_NETWORK=walkoff_default
       - APP_PREFIX=walkoff_app
       - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=localhost:5000
+      - DOCKER_REGISTRY=127.0.0.1:5000
 
       # Redis options
       - REDIS_URI=redis://redis:6379
@@ -80,9 +80,9 @@ services:
   #      - /var/lib/boot2docker/auth:/auth
 
   api_gateway:
-    ports:
-    - "8080:8080"
-    image: "localhost:5000/api_gateway:latest"
+#    ports:
+#    - "8080:8080"
+    image: "127.0.0.1:5000/api_gateway:latest"
     build:
       context: ./
       dockerfile: ./api_gateway/Dockerfile
@@ -114,6 +114,7 @@ services:
       - 6379:6379
     networks:
       - walkoff_default
+    command: redis-server --port 6379
 #    volumes:
 #      - /var/lib/boot2docker/redis:/data
 
@@ -132,6 +133,52 @@ services:
       - walkoff_default
 #    volumes:
 #      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data
+#
+#elasticsearch:
+#    container_name: elasticsearch
+#    image: "docker.elastic.co/elasticsearch/elasticsearch:7.0.0"
+#    healthcheck:
+#      test: ["CMD", "curl", "-sf", "http://localhost:9200/_cat/health"]
+#    environment:
+#      - "discovery.type=single-node"
+#    ports:
+#      - 9200:9200
+#      - 9300:9300
+#    networks:
+#      - walkoff_default
+
+  portainer:
+    container_name: portainer_data
+    image: "portainer/portainer"
+    ports:
+      - 9020:9000
+    networks:
+      - walkoff_default
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+#      - portainer_data:/data portainer/portainer
+
+#  kibana:
+#    container_name: kibana
+#    image: "docker.elastic.co/kibana/kibana:7.0.0"
+#    ports:
+#      - 5601:5601
+#    networks:
+#      - walkoff_default
+#    depends_on:
+#      - elasticsearch
+
+  nginx:
+    image: 'bitnami/nginx:latest'
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
+      - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
+      - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
 
 secrets:
   encryption_key:

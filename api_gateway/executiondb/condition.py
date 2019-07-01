@@ -39,7 +39,6 @@ class Condition(Base):
 
     def validate(self):
         """Validates the object"""
-        # TODO: Implement validation of conditional against asteval library
         self.errors = []
 
     def is_valid_rec(self):
@@ -55,11 +54,6 @@ class Condition(Base):
                 if not child.is_valid_rec():
                     return False
         return True
-
-
-@event.listens_for(Condition, 'before_update')
-def validate_before_update(mapper, connection, target):
-    target.validate()
 
 
 class ConditionSchema(BaseSchema):

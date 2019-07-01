@@ -39,7 +39,7 @@ class Config:
     SWARM_NETWORK = os.getenv("SWARM_NETWORK", "walkoff_default")
     APP_PREFIX = os.getenv("APP_PREFIX", "walkoff_app")
     STACK_PREFIX = os.getenv("STACK_PREFIX", "walkoff")
-    DOCKER_REGISTRY = os.getenv("DOCKER_REGISTRY", "localhost:5000")
+    DOCKER_REGISTRY = os.getenv("DOCKER_REGISTRY", "127.0.0.1:5000")
     UMPIRE_HEARTBEAT = os.getenv("UMPIRE_HEARTBEAT", "1")
 
     # Redis options
@@ -52,6 +52,7 @@ class Config:
     REDIS_WORKFLOWS_IN_PROCESS = os.getenv("REDIS_WORKFLOWS_IN_PROCESS", "workflows-in-process")
     REDIS_WORKFLOW_GROUP = os.getenv("REDIS_WORKFLOW_GROUP", "workflow-group")
     REDIS_ACTION_RESULTS_GROUP = os.getenv("REDIS_ACTION_RESULTS_GROUP", "action-results-group")
+    REDIS_WORKFLOW_TRIGGERS_GROUP = os.getenv("REDIS_WORKFLOW_TRIGGERS_GROUP", "workflow-triggers-group")
     REDIS_WORKFLOW_CONTROL = os.getenv("REDIS_WORKFLOW_CONTROL", "workflow-control")
     REDIS_WORKFLOW_CONTROL_GROUP = os.getenv("REDIS_WORKFLOW_CONTROL_GROUP", "workflow-control-group")
 

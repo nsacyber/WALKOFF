@@ -1,10 +1,28 @@
 <div id="main" class="settingsMain">
     <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item"><a class="nav-link active"href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
+        <li class="nav-item"><a class="nav-link active"href="#containerSettings" data-toggle="tab" role="tab">Container Settings</a></li>
+        <li class="nav-item"><a class="nav-link"href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
         <li class="nav-item"><a class="nav-link"href="#roleSettings" data-toggle="tab" role="tab">Role Settings</a></li>
     </ul>
     <div class="tab-content">
-        <div id="userSettings" class="tab-pane fade show active">
+        <div id="containerSettings" class="tab-pane fade show active">
+            <h1 class="settingsHeader">Container Settings</h1>
+            <div class="d-flex justify-content-center align-items-center mt-5">
+                    <div class="card bg-light border-0 shadow-sm w-50">
+                            <div class="card-body">
+                                <h4 class="mb-3">Portainer.io</h4>
+                                <p>
+                                    Docker stack management and logs are provided by <a href="https://www.portainer.io/" target="_blank">portainer.io</a>.
+                                    Use the button below to view container information for this WALKOFF instance.
+                                </p>
+                                <p class="d-flex justify-content-center align-items-center">
+                                    <a class="btn btn-primary" href="/portainer/" target="_blank">Manage Stack</a>
+                                </p>
+                            </div>
+                        </div>
+            </div>
+        </div>
+        <div id="userSettings" class="tab-pane fade">
             <h1 class="settingsHeader">User Settings</h1>
 
             <div class="row">
