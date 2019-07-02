@@ -32,7 +32,7 @@ APP_NAME_PREFIX = "walkoff_app_"
 def parse_yaml(path):
     with open(path) as fp:
         try:
-            return yaml.load(fp, Loader=yaml.FullLoader)
+            return yaml.safe_load(fp)
         except yaml.YAMLError as e:
             logger.info(f"Invalid yaml: {path}. {e}")
         except yaml.scanner.ScannerError as e:
@@ -154,7 +154,7 @@ class Bootloader:
                     if resp.status == 200:
                         return
             except aiohttp.ClientConnectionError:
-                print("no connection")
+                logger.info(f"Registry not available yet. Checking again in {time} seconds.")
                 await asyncio.sleep(time)
                 time *= 2
 
@@ -178,7 +178,9 @@ class Bootloader:
 
         # Merge the base, walkoff, and app composes
         app_composes = generate_app_composes()
-        merged_compose = merge_composes(base_compose, app_composes)
+        walkoff_compose = parse_yaml(Config.WALKOFF_COMPOSE)
+        merged_compose = merge_composes(base_compose, app_composes + [walkoff_compose])
+        return_code = await deploy_compose(merged_compose)
 
         # The registry is up so lets push the images we need into it
 
