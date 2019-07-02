@@ -39,6 +39,7 @@ class Workflow(Base):
     start = Column(UUID(as_uuid=True))
     description = Column(String(), default="")
     tags = Column(JSON, default="")
+    _walkoff_type = Column(String(80), default="workflow")
 
     actions = relationship("Action", cascade="all, delete-orphan", passive_deletes=True)
     branches = relationship("Branch", cascade="all, delete-orphan", passive_deletes=True)

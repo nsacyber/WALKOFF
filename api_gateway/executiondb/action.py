@@ -68,8 +68,7 @@ class Action(Base):
     # Columns specific to Actions
     priority = Column(Integer, default=3)
     parallelized = Column(Boolean(), nullable=False, default=False)
-    # parallel_parameter = relationship('Parameter', cascade='all, delete, delete-orphan',
-    #                                   uselist=False, foreign_keys=[Parameter.parallel_action_id], passive_deletes=True)
+    _walkoff_type = Column(String(80), default="actions")
     parameters = relationship('Parameter', cascade='all, delete, delete-orphan', foreign_keys=[Parameter.action_id],
                               passive_deletes=True)
 

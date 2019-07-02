@@ -31,6 +31,8 @@ class WorkflowVariable(Base):
     # Columns common to all Variable models
     name = Column(String(80), nullable=False)
     value = Column(JSON)
+    _walkoff_type = Column(String(80), default="variable")
+
 
     # Columns specific to WorkflowVariable model
     description = Column(String(255), default="")

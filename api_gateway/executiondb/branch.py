@@ -1,7 +1,7 @@
 import logging
 from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey
+from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 
 from marshmallow import EXCLUDE
@@ -18,6 +18,8 @@ class Branch(Base):
 
     source_id = Column(UUID(as_uuid=True), nullable=False)
     destination_id = Column(UUID(as_uuid=True), nullable=False)
+    _walkoff_type = Column(String(80), default="branch")
+
 
     workflow_id = Column(UUID(as_uuid=True), ForeignKey('workflow.id_', ondelete='CASCADE'))
 

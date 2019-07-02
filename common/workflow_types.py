@@ -41,58 +41,81 @@ class WorkflowJSONDecoder(json.JSONDecoder):
         self.branches = set()
 
     def object_hook(self, o):
-        if "x" in o and "y" in o:
-            return Point(**o)
 
-        elif "parameters" in o and "priority" in o:
-            node = Action(**o)
-            self.nodes[node.id_] = node
-            return node
-
-        elif "variant" in o:
-            o["variant"] = ParameterVariant[o["variant"]]
-            return Parameter(**o)
-
-        elif "source_id" in o and "destination_id" in o:
-            self.branches.add(Branch(source_id=o["source_id"], destination_id=o["destination_id"], id_=o["id_"]))
-
-        elif "conditional" in o:
-            node = Condition(**o)
-            self.nodes[node.id_] = node
-            return node
-
-        elif "transform" in o:
-            node = Transform(**o)
-            self.nodes[node.id_] = node
-            return node
-
-        elif "trigger_schema" in o:
-            node = Trigger(**o)
-            self.nodes[node.id_] = node
-            return node
-
-        elif "description" in o and "value" in o:
-            return Variable(**o)
-
-        elif "actions" in o and "branches" in o:
-            branches = {Branch(self.nodes[b.source_id], self.nodes[b.destination_id], b.id_) for b in self.branches}
-
-            try:
-                workflow_variables = {var.id_: var for var in o["workflow_variables"]}
-            except:
-                workflow_variables = {}
-                for var in o["workflow_variables"]:
-                    workflow_obj = Variable(id_=var["id_"], name=var["name"], value=var["value"])
-                    workflow_variables[workflow_obj.id_] = workflow_obj
-
-            start = self.nodes[o["start"]]
-            o["branches"] = branches
-            o["workflow_variables"] = workflow_variables
-            o["start"] = start
-            return Workflow(**o)
-
-        else:
+        if o.get("_walkoff_type") is None:
+            print("Hello")
             return o
+        else:
+            if o["_walkoff_type"] == "position":
+                o.pop("_walkoff_type")
+                return Point(**o)
+
+            elif o["_walkoff_type"] == "actions":
+                # "parameters" in o and "priority" in o:
+                o.pop("_walkoff_type")
+                node = Action(**o)
+                self.nodes[node.id_] = node
+                return node
+
+            elif o["_walkoff_type"] == "parameters":
+                # "variant" in o
+                o.pop("_walkoff_type")
+                o["variant"] = ParameterVariant[o["variant"]]
+                return Parameter(**o)
+
+            elif o["_walkoff_type"] == "branch":
+                # "source_id" in o and "destination_id" in o
+                o.pop("_walkoff_type")
+                self.branches.add(Branch(source_id=o["source_id"], destination_id=o["destination_id"], id_=o["id_"]))
+
+            elif o["_walkoff_type"] == "conditions":
+                # "conditional" in o
+                o.pop("_walkoff_type")
+                node = Condition(**o)
+                self.nodes[node.id_] = node
+                return node
+
+            elif o["_walkoff_type"] == "transforms":
+                # "transform" in o
+                o.pop("_walkoff_type")
+                node = Transform(**o)
+                self.nodes[node.id_] = node
+                return node
+
+            elif o["_walkoff_type"] == "triggers":
+                # "trigger_schema" in o
+                o.pop("_walkoff_type")
+                node = Trigger(**o)
+                self.nodes[node.id_] = node
+                return node
+
+            elif o["_walkoff_type"] == "variable":
+                # "description" in o and "value" in o
+                o.pop("_walkoff_type")
+                return Variable(**o)
+
+            elif o["_walkoff_type"] == "workflow":
+                o.pop("_walkoff_type")
+                if o.get("actions") is not None and o.get("branches") is not None:
+                    # "actions" in o and "branches" in o
+                    branches = {Branch(self.nodes[b.source_id], self.nodes[b.destination_id], b.id_) for b in self.branches}
+
+                    try:
+                        workflow_variables = {var.id_: var for var in o["workflow_variables"]}
+                    except:
+                        workflow_variables = {}
+                        for var in o["workflow_variables"]:
+                            workflow_obj = Variable(id_=var["id_"], name=var["name"], value=var["value"])
+                            workflow_variables[workflow_obj.id_] = workflow_obj
+
+                    start = self.nodes[o["start"]]
+                    o["branches"] = branches
+                    o["workflow_variables"] = workflow_variables
+                    o["start"] = start
+                    return Workflow(**o)
+
+            else:
+                return o
 
 
 class WorkflowJSONEncoder(json.JSONEncoder):

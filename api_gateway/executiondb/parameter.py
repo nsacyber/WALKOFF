@@ -32,6 +32,7 @@ class ParameterApi(Base):
     placeholder = Column(JSON, default="")
     schema = Column(JSON, default={})
     action_api_id = Column(UUID(as_uuid=True), ForeignKey('action_api.id_', ondelete='CASCADE'))
+    _walkoff_type = Column(String(80), default="parameters")
 
 
 class ParameterApiSchema(BaseSchema):
