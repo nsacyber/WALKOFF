@@ -43,8 +43,11 @@ class WorkflowJSONDecoder(json.JSONDecoder):
     def object_hook(self, o):
 
         if o.get("_walkoff_type") is None:
-            print("Hello")
-            return o
+            if o.get("x") is not None and o.get("y") is not None:
+                return Point(**o)
+            else:
+                print("Hello")
+                return o
         else:
             if o["_walkoff_type"] == "position":
                 o.pop("_walkoff_type")
@@ -143,23 +146,23 @@ class WorkflowJSONEncoder(json.JSONEncoder):
                     "errors": None}
 
         elif isinstance(o, Action):
-            position = {"x": o.position.x, "y": o.position.y}
+            position = {"x": o.position.x, "y": o.position.y, "_walkoff_type": "position"}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
                     "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
                     "execution_id": o.execution_id}
 
         elif isinstance(o, Condition):
-            position = {"x": o.position.x, "y": o.position.y}
+            position = {"x": o.position.x, "y": o.position.y, "_walkoff_type": "position"}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
                     "label": o.label, "position": position, "conditional": o.conditional}
 
         elif isinstance(o, Transform):
-            position = {"x": o.position.x, "y": o.position.y}
+            position = {"x": o.position.x, "y": o.position.y, "_walkoff_type": "position"}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
                     "label": o.label, "position": position, "transform": o.transform}
 
         elif isinstance(o, Trigger):
-            position = {"x": o.position.x, "y": o.position.y}
+            position = {"x": o.position.x, "y": o.position.y, "_walkoff_type": "position"}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
                     "label": o.label, "position": position, "trigger_schema": o.trigger_schema}
 

@@ -11,7 +11,7 @@ services:
 #          memory: 8M
 #    restart: on-failure
   umpire:
-    command: python -m umpire.umpire # --log-level=debug
+    command: python -m umpire.umpire --disable-worker-autoscale --disable-worker-autoheal # --log-level=debug
     image: 127.0.0.1:5000/umpire:latest
     build:
      context: ./

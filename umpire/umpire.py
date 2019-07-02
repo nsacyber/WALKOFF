@@ -424,9 +424,10 @@ class Umpire:
                             dead_pending = await self.redis.xpending(key, app_group, "-", "+", 1, consumer=consumer)
 
                             # Umpire claims the message in the name of the UMPIRE!
-                            msg = await self.redis.xclaim(key, app_group, "UMPIRE", 1000,
+                            msg = await self.redis.xclaim(key, app_group, "UMPIRE", 1,
                                                           dead_pending[0][0].decode())
-
+                            print(msg)
+                            print(dead_pending)
                             # Dereference the stuff we need. This may change as redis solidifies their plan
                             execution_id, action = msg[0][-1].popitem()
                             id_ = msg[0][0]
