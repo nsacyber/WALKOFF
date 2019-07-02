@@ -56,6 +56,11 @@ class Config:
     REDIS_WORKFLOW_CONTROL = os.getenv("REDIS_WORKFLOW_CONTROL", "workflow-control")
     REDIS_WORKFLOW_CONTROL_GROUP = os.getenv("REDIS_WORKFLOW_CONTROL_GROUP", "workflow-control-group")
 
+    # Bootloader options
+    BASE_COMPOSE = "./bootloader/base-compose.yml"
+    WALKOFF_COMPOSE = "./bootloader/walkoff-compose.yml"
+    TMP_COMPOSE = "./data/tmp-compose.yml"
+
     # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
     # See: https://docs.docker.com/compose/reference/envvars/ for more information.
     # DOCKER_HOST = os.environ.get("DOCKER_HOST", "tcp://ip_of_docker_swarm_manager:2376")

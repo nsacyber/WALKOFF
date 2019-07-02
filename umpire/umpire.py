@@ -25,7 +25,7 @@ from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_conte
                                    remove_service, get_secret, load_volumes)
 from umpire.app_repo import AppRepo
 
-logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
+logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("UMPIRE")
 
 CONTAINER_ID = os.getenv("HOSTNAME", "local_umpire")

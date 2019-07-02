@@ -1,0 +1,152 @@
+version: '3.5'
+services:
+  dockerhost:
+    image: qoomon/docker-host
+    networks:
+      - walkoff_default
+    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+    deploy:
+      resources:
+        limits:
+          memory: 8M
+    restart: on-failure
+
+  umpire:
+#    command: python -m umpire.umpire --log-level=debug --disable-worker-autoscale
+    image: localhost:5000/umpire:latest
+    build:
+     context: ./
+     dockerfile: umpire/Dockerfile
+    networks:
+     - walkoff_default
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+     - ./apps:/app/apps
+    environment:
+      # Worker options
+      - WORKER_TIMEOUT=30
+      - API_GATEWAY_URI=http://dockerhost:8080
+      - WALKOFF_USERNAME=admin
+      - WALKOFF_PASSWORD=admin
+
+      # Umpire options
+      - APPS_PATH=./apps
+      - APP_REFRESH=60
+      - SWARM_NETWORK=walkoff_default
+      - APP_PREFIX=walkoff_app
+      - STACK_PREFIX=walkoff
+      - DOCKER_REGISTRY=localhost:5000
+
+      # Redis options
+      - REDIS_URI=redis://redis:6379
+      - REDIS_ACTIONS_IN_PROCESS=actions-in-process
+      - REDIS_WORKFLOW_QUEUE=workflow-queue
+      - REDIS_WORKFLOWS_IN_PROCESS=workflows-in-process
+
+      # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
+      # See: https://docs.docker.com/compose/reference/envvars/ for more information.
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      # - DOCKER_HOST=tcp://ip_of_docker_swarm_manager:2376
+      # - DOCKER_TLS_VERIFY=1
+      # - DOCKER_CERT_PATH=/Path/to/certs/for/remote/docker/daemon
+    deploy:
+     placement:
+       constraints: [node.role==manager]
+    depends_on:
+     - redis
+    secrets:
+      - encryption_key
+
+  api_gateway:
+    ports:
+    - "8080:8080"
+    image: "localhost:5000/api_gateway:latest"
+    build:
+      context: ./
+      dockerfile: ./api_gateway/Dockerfile
+    networks:
+      - walkoff_default
+    environment:
+    - "REDIS_OPTIONS={\"host\": \"redis\", \"port\": 6379}"
+    - "IP=0.0.0.0"
+    - "PORT=8080"
+    - "WALKOFF_DB_TYPE=postgresql"
+    - "EXECUTION_DB_TYPE=postgresql"
+    - "DB_PATH=walkoff"
+    - "EXECUTION_DB_PATH=execution"
+    - "WALKOFF_DB_HOST=postgres"
+    - "EXECUTION_DB_HOST=postgres"
+    - "EXECUTION_DB_USERNAME=walkoff"
+    - "EXECUTION_DB_PASSWORD=walkoff"
+    - "WALKOFF_DB_USERNAME=walkoff"
+    - "WALKOFF_DB_PASSWORD=walkoff"
+    stop_signal: SIGINT
+    stop_grace_period: 30s
+    secrets:
+      - encryption_key
+  worker:
+    image: worker
+    build:
+      context: ./
+      dockerfile: ./worker/Dockerfile
+    environment:
+      # Worker options
+      - WORKER_TIMEOUT=30
+      - API_GATEWAY_URI=http://api_gateway:8080
+      - WALKOFF_USERNAME=admin
+      - WALKOFF_PASSWORD=admin
+
+      # Umpire options
+      - APPS_PATH=./apps
+      - APP_REFRESH=60
+      - SWARM_NETWORK=walkoff_default
+      - APP_PREFIX=walkoff_app
+      - STACK_PREFIX=walkoff
+      - DOCKER_REGISTRY=localhost:5000
+
+      # Redis options
+      - REDIS_URI=redis://redis:6379
+
+      # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
+      # See: https://docs.docker.com/compose/reference/envvars/ for more information.
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      # - DOCKER_HOST=tcp://ip_of_docker_swarm_manager:2376
+      # - DOCKER_TLS_VERIFY=1
+      # - DOCKER_CERT_PATH=/Path/to/certs/for/remote/docker/daemon
+
+    deploy:
+      mode: replicated
+      replicas: 10
+      restart_policy:
+        condition: none
+    restart: "no"
+
+  walkoff_app_sdk:
+    build:
+      context: ../app_sdk
+      dockerfile: ./Dockerfile
+    image: walkoff_app_sdk
+    environment:
+      # Worker options
+      - WORKER_TIMEOUT=30
+      - API_GATEWAY_URI=http://api_gateway:8080
+      - WALKOFF_USERNAME=admin
+      - WALKOFF_PASSWORD=admin
+
+      # Umpire options
+      - APPS_PATH=./apps
+      - APP_REFRESH=60
+      - SWARM_NETWORK=walkoff_default
+      - APP_PREFIX=walkoff_app
+      - STACK_PREFIX=walkoff
+      - DOCKER_REGISTRY=localhost:5000
+
+      # Redis options
+      - REDIS_URI=redis://redis:6379
+
+      # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
+      # See: https://docs.docker.com/compose/reference/envvars/ for more information.
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      # - DOCKER_HOST=tcp://ip_of_docker_swarm_manager:2376
+      # - DOCKER_TLS_VERIFY=1
+      # - DOCKER_CERT_PATH=/Path/to/certs/for/remote/docker/daemon
