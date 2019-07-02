@@ -205,6 +205,11 @@ class Worker:
             children = {n.id_: n for n in self.workflow.successors(node)}
 
             for parent_id in parents:
+                # check if parent not a child of start action. If not, set accumulator value of invalid parent to None
+                if parents[parent_id] not in self.workflow.get_dependents(self.start_action):
+                    logger.info(f" WARNING! Node {parents[parent_id]} is not a child of the start action {self.start_action}. This node will not run.")
+                    self.accumulator[parent_id] = None
+
                 if node.id_ not in self.parent_map.keys():
                     self.parent_map[node.id_] = 1
                 else:
@@ -261,7 +266,7 @@ class Worker:
         except KeyError as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
             status = NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id,
-                                                         result="ConditionError(): selected_node may not be a string",
+                                                         result="ConditionError(): ensure that a non-parent node is selected and that the node name is not a string.",
                                                          parameters={})
 
         except Exception as e:
