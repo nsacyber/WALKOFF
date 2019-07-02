@@ -1,37 +1,143 @@
-Flask >= 0.10.0
-Flask_SQLAlchemy >= 2.1
-flask_jwt_extended >= 3.4.0
-sqlalchemy >= 1.3.4
-sqlalchemy-utils >= 0.34.0
-APscheduler >= 3.0.0
-gevent >= 1.2
-gunicorn
-connexion >= 2.0
-pyyaml >= 3.0
-passlib >= 1.7.0
-blinker >= 1.4
-enum34
-futures; python_version < "3"
-semver
-jsonschema == 2.6.0
-six >= 1.10.0
-marshmallow == 3.0.0rc2
-marshmallow-sqlalchemy == 0.13.0
-marshmallow-enum >= 1.4.1
-pynacl
-alembic
-healthcheck
-psycopg2-binary
-click
-pyopenssl
-gitpython
-dill
-redis >= 3.0
-fluent-logger
-werkzeug
-requests
-swagger_spec_validator
-flask-swagger-ui
-jsonpatch
-asteval
-pycrypto
+Jul 02 09:09:04 xomm-server arma3server[6102]: 13:09:04 Server: Object 2:802 not found (message Type_92)
+Jul 02 09:09:04 xomm-server arma3server[6102]: 13:09:04 Server: Object 2:839 not found (message Type_120)
+Jul 02 09:08:59 xomm-server arma3server[6102]: 13:08:59 Server: Object 2:3430 not found (message Type_92)
+Jul 02 09:08:57 xomm-server arma3server[6102]: 13:08:57 Server: Object 2:5036 not found (message Type_92)
+Jul 02 09:08:54 xomm-server arma3server[6102]: 13:08:54 Server: Object 2:5086 not found (message Type_92)
+Jul 02 09:08:54 xomm-server arma3server[6102]: 13:08:54 Server: Object 2:5087 not found (message Type_92)
+Jul 02 09:08:50 xomm-server arma3server[6102]: 13:08:50 Server: Object 2:5036 not found (message Type_120)
+Jul 02 09:08:49 xomm-server arma3server[6102]: 13:08:49 Server: Object 2:5087 not found (message Type_120)
+Jul 02 09:08:46 xomm-server arma3server[6102]: 13:08:46 Server: Object 2:3430 not found (message Type_120)
+Jul 02 09:08:46 xomm-server arma3server[6102]: 13:08:46 Server: Object 2:839 not found (message Type_92)
+Jul 02 09:08:44 xomm-server arma3server[6102]: 13:08:44 Server: Object 2:5052 not found (message Type_92)
+Jul 02 09:08:44 xomm-server arma3server[6102]: 13:08:44 Server: Object 2:5051 not found (message Type_92)
+Jul 02 09:08:44 xomm-server arma3server[6102]: 13:08:44 Server: Object 2:802 not found (message Type_92)
+Jul 02 09:08:44 xomm-server arma3server[6102]: 13:08:44 Server: Object 2:5086 not found (message Type_120)
+Jul 02 09:08:39 xomm-server arma3server[6102]: 13:08:39 Server: Object 2:3430 not found (message Type_92)
+Jul 02 09:08:37 xomm-server arma3server[6102]: 13:08:37 Server: Object 2:5036 not found (message Type_92)
+Jul 02 09:08:34 xomm-server arma3server[6102]: 13:08:34 Server: Object 2:5086 not found (message Type_92)
+Jul 02 09:08:34 xomm-server arma3server[6102]: 13:08:34 Server: Object 2:5087 not found (message Type_92)
+Jul 02 09:08:33 xomm-server arma3server[6102]: 13:08:33 Server: Object 2:802 not found (message Type_120)
+Jul 02 09:08:31 xomm-server arma3server[6102]: 13:08:31 Server: Object 2:5051 not found (message Type_120)
+Jul 02 09:08:29 xomm-server arma3server[6102]: 13:08:29 Server: Object 2:5052 not found (message Type_120)
+Jul 02 09:08:27 xomm-server arma3server[6102]: 13:08:27 Server: Object 2:839 not found (message Type_120)
+Jul 02 09:08:26 xomm-server arma3server[6102]: 13:08:26 Server: Object 2:839 not found (message Type_92)
+Jul 02 09:08:24 xomm-server arma3server[6102]: 13:08:24 Server: Object 2:5052 not found (message Type_92)
+Jul 02 09:08:24 xomm-server arma3server[6102]: 13:08:24 Server: Object 2:5051 not found (message Type_92)
+Jul 02 09:08:24 xomm-server arma3server[6102]: 13:08:24 Server: Object 2:802 not found (message Type_92)
+Jul 02 09:08:19 xomm-server arma3server[6102]: 13:08:19 Server: Object 2:3430 not found (message Type_92)
+Jul 02 09:08:16 xomm-server arma3server[6102]: 13:08:16 Server: Object 2:5036 not found (message Type_92)
+Jul 02 09:08:14 xomm-server arma3server[6102]: 13:08:14 Server: Object 2:5086 not found (message Type_92)
+Jul 02 09:08:14 xomm-server arma3server[6102]: 13:08:14 Server: Object 2:5087 not found (message Type_92)
+Jul 02 09:08:13 xomm-server arma3server[6102]: 13:08:13 Server: Object 2:5036 not found (message Type_120)
+Jul 02 09:08:12 xomm-server arma3server[6102]: 13:08:12 Server: Object 2:5087 not found (message Type_120)
+Jul 02 09:08:10 xomm-server arma3server[6102]: 13:08:10 Server: Object 2:3430 not found (message Type_120)
+Jul 02 09:08:07 xomm-server arma3server[6102]: 13:08:07 Server: Object 2:5086 not found (message Type_120)
+Jul 02 09:08:06 xomm-server arma3server[6102]: 13:08:06 Server: Object 2:839 not found (message Type_92)
+Jul 02 09:08:04 xomm-server arma3server[6102]: 13:08:04 Server: Object 2:5052 not found (message Type_92)
+Jul 02 09:08:04 xomm-server arma3server[6102]: 13:08:04 Server: Object 2:5051 not found (message Type_92)
+Jul 02 09:08:04 xomm-server arma3server[6102]: 13:08:04 Server: Object 2:802 not found (message Type_92)
+Jul 02 09:07:59 xomm-server arma3server[6102]: 13:07:59 Server: Object 2:3430 not found (message Type_92)
+Jul 02 09:07:56 xomm-server arma3server[6102]: 13:07:56 Server: Object 2:5036 not found (message Type_92)
+Jul 02 09:07:56 xomm-server arma3server[6102]: 13:07:56 Server: Object 2:802 not found (message Type_120)
+Jul 02 09:07:54 xomm-server arma3server[6102]: 13:07:54 Server: Object 2:5051 not found (message Type_120)
+Jul 02 09:07:54 xomm-server arma3server[6102]: 13:07:54 Server: Object 2:5087 not found (message Type_92)
+Jul 02 09:07:54 xomm-server arma3server[6102]: 13:07:54 Server: Object 2:5086 not found (message Type_92)
+Jul 02 09:07:53 xomm-server arma3server[6102]: 13:07:53 Server: Object 2:5052 not found (message Type_120)
+Jul 02 09:07:50 xomm-server arma3server[6102]: 13:07:50 Server: Object 2:839 not found (message Type_120)
+Jul 02 09:07:46 xomm-server arma3server[6102]: 13:07:46 Server: Object 2:839 not found (message Type_92)
+Jul 02 09:07:44 xomm-server arma3server[6102]: 13:07:44 Server: Object 2:5052 not found (message Type_92)
+Jul 02 09:07:44 xomm-server arma3server[6102]: 13:07:44 Server: Object 2:5051 not found (message Type_92)
+Jul 02 09:07:44 xomm-server arma3server[6102]: 13:07:44 Server: Object 2:802 not found (message Type_92)
+Jul 02 09:07:39 xomm-server arma3server[6102]: 13:07:39 Server: Object 2:3430 not found (message Type_92)
+Jul 02 09:07:36 xomm-server arma3server[6102]: 13:07:36 Server: Object 2:5036 not found (message Type_92)
+Jul 02 09:07:36 xomm-server arma3server[6102]: 13:07:36 Server: Object 2:5036 not found (message Type_120)
+Jul 02 09:07:36 xomm-server arma3server[6102]: 13:07:36 Server: Object 2:5087 not found (message Type_120)
+Jul 02 09:07:34 xomm-server arma3server[6102]: 13:07:34 Server: Object 2:5086 not found (message Type_92)
+Jul 02 09:07:34 xomm-server arma3server[6102]: 13:07:34 Server: Object 2:5087 not found (message Type_92)
+Jul 02 09:07:33 xomm-server arma3server[6102]: 13:07:33 Server: Object 2:3430 not found (message Type_120)
+Jul 02 09:07:31 xomm-server arma3server[6102]: 13:07:31 Server: Object 2:5086 not found (message Type_120)
+Jul 02 09:07:26 xomm-server arma3server[6102]: 13:07:26 Server: Object 2:839 not found (message Type_92)
+Jul 02 09:07:24 xomm-server arma3server[6102]: 13:07:24 Server: Object 2:5051 not found (message Type_92)
+Jul 02 09:07:24 xomm-server arma3server[6102]: 13:07:24 Server: Object 2:802 not found (message Type_92)
+Jul 02 09:07:24 xomm-server arma3server[6102]: 13:07:24 Server: Object 2:5052 not found (message Type_92)
+Jul 02 09:07:20 xomm-server arma3server[6102]: 13:07:20 Server: Object 2:802 not found (message Type_120)
+Jul 02 09:07:19 xomm-server arma3server[6102]: 13:07:19 Server: Object 2:3430 not found (message Type_92)
+Jul 02 09:07:17 xomm-server arma3server[6102]: 13:07:17 Server: Object 2:5051 not found (message Type_120)
+Jul 02 09:07:16 xomm-server arma3server[6102]: 13:07:16 Server: Object 2:5036 not found (message Type_92)
+Jul 02 09:07:16 xomm-server arma3server[6102]: 13:07:16 Server: Object 2:5052 not found (message Type_120)
+Jul 02 09:07:14 xomm-server arma3server[6102]: 13:07:14 Server: Object 2:5086 not found (message Type_92)
+Jul 02 09:07:14 xomm-server arma3server[6102]: 13:07:14 Server: Object 2:5087 not found (message Type_92)
+Jul 02 09:07:14 xomm-server arma3server[6102]: 13:07:14 Server: Object 2:839 not found (message Type_120)
+Jul 02 09:07:06 xomm-server arma3server[6102]: 13:07:06 Server: Object 2:839 not found (message Type_92)
+Jul 02 09:07:04 xomm-server arma3server[6102]: 13:07:04 Server: Object 2:5052 not found (message Type_92)
+Jul 02 09:07:04 xomm-server arma3server[6102]: 13:07:04 Server: Object 2:5051 not found (message Type_92)
+Jul 02 09:07:04 xomm-server arma3server[6102]: 13:07:04 Server: Object 2:802 not found (message Type_92)
+Jul 02 09:07:00 xomm-server arma3server[6102]: 13:07:00 Server: Object 2:5036 not found (message Type_120)
+Jul 02 09:06:59 xomm-server arma3server[6102]: 13:06:59 Server: Object 2:5087 not found (message Type_120)
+Jul 02 09:06:59 xomm-server arma3server[6102]: 13:06:59 Server: Object 2:3430 not found (message Type_92)
+Jul 02 09:06:57 xomm-server arma3server[6102]: 13:06:57 Server: Object 2:3430 not found (message Type_120)
+Jul 02 09:06:56 xomm-server arma3server[6102]: 13:06:56 Server: Object 2:5036 not found (message Type_92)
+Jul 02 09:06:54 xomm-server arma3server[6102]: 13:06:54 Server: Object 2:5086 not found (message Type_120)
+Jul 02 09:06:54 xomm-server arma3server[6102]: 13:06:54 Server: Object 2:5086 not found (message Type_92)
+Jul 02 09:06:54 xomm-server arma3server[6102]: 13:06:54 Server: Object 2:5087 not found (message Type_92)
+Jul 02 09:06:46 xomm-server arma3server[6102]: 13:06:46 Server: Object 2:839 not found (message Type_92)
+Jul 02 09:06:44 xomm-server arma3server[6102]: 13:06:44 Server: Object 2:5052 not found (message Type_92)
+Jul 02 09:06:44 xomm-server arma3server[6102]: 13:06:44 Server: Object 2:5051 not found (message Type_92)
+Jul 02 09:06:44 xomm-server arma3server[6102]: 13:06:44 Server: Object 2:802 not found (message Type_92)
+Jul 02 10:35:57 xomm-server arma3server[6102]: 14:35:57 Server: Object 2:5052 not found (message Type_120)
+Jul 02 10:35:55 xomm-server arma3server[6102]: 14:35:55 Server: Object 2:839 not found (message Type_120)
+Jul 02 10:35:49 xomm-server arma3server[6102]: 14:35:49 Server: Object 2:839 not found (message Type_92)
+Jul 02 10:35:47 xomm-server arma3server[6102]: 14:35:47 Server: Object 2:5052 not found (message Type_92)
+Jul 02 10:35:47 xomm-server arma3server[6102]: 14:35:47 Server: Object 2:5051 not found (message Type_92)
+Jul 02 10:35:47 xomm-server arma3server[6102]: 14:35:47 Server: Object 2:802 not found (message Type_92)
+Jul 02 10:35:42 xomm-server arma3server[6102]: 14:35:42 Server: Object 2:3430 not found (message Type_92)
+Jul 02 10:35:40 xomm-server arma3server[6102]: 14:35:40 Server: Object 2:5087 not found (message Type_120)
+Jul 02 10:35:39 xomm-server arma3server[6102]: 14:35:39 Server: Object 2:5036 not found (message Type_92)
+Jul 02 10:35:39 xomm-server arma3server[6102]: 14:35:39 Server: Object 2:5036 not found (message Type_120)
+Jul 02 10:35:38 xomm-server arma3server[6102]: 14:35:38 Server: Object 2:3430 not found (message Type_120)
+Jul 02 10:35:37 xomm-server arma3server[6102]: 14:35:37 Server: Object 2:5086 not found (message Type_92)
+Jul 02 10:35:37 xomm-server arma3server[6102]: 14:35:37 Server: Object 2:5087 not found (message Type_92)
+Jul 02 10:35:33 xomm-server arma3server[6102]: 14:35:33 Server: Object 2:5086 not found (message Type_120)
+Jul 02 10:35:29 xomm-server arma3server[6102]: 14:35:29 Server: Object 2:839 not found (message Type_92)
+Jul 02 10:35:27 xomm-server arma3server[6102]: 14:35:27 Server: Object 2:5052 not found (message Type_92)
+Jul 02 10:35:27 xomm-server arma3server[6102]: 14:35:27 Server: Object 2:5051 not found (message Type_92)
+Jul 02 10:35:27 xomm-server arma3server[6102]: 14:35:27 Server: Object 2:802 not found (message Type_92)
+Jul 02 10:35:25 xomm-server arma3server[6102]: 14:35:25 Server: Object 2:5051 not found (message Type_120)
+Jul 02 10:35:23 xomm-server arma3server[6102]: 14:35:23 Server: Object 2:802 not found (message Type_120)
+Jul 02 10:35:22 xomm-server arma3server[6102]: 14:35:22 Server: Object 2:3430 not found (message Type_92)
+Jul 02 10:35:20 xomm-server arma3server[6102]: 14:35:20 Server: Object 2:5052 not found (message Type_120)
+Jul 02 10:35:19 xomm-server arma3server[6102]: 14:35:19 Server: Object 2:5036 not found (message Type_92)
+Jul 02 10:35:18 xomm-server arma3server[6102]: 14:35:18 Server: Object 2:839 not found (message Type_120)
+Jul 02 10:35:17 xomm-server arma3server[6102]: 14:35:17 Server: Object 2:5086 not found (message Type_92)
+Jul 02 10:35:17 xomm-server arma3server[6102]: 14:35:17 Server: Object 2:5087 not found (message Type_92)
+Jul 02 10:35:09 xomm-server arma3server[6102]: 14:35:09 Server: Object 2:839 not found (message Type_92)
+Jul 02 10:35:07 xomm-server arma3server[6102]: 14:35:07 Server: Object 2:5052 not found (message Type_92)
+Jul 02 10:35:07 xomm-server arma3server[6102]: 14:35:07 Server: Object 2:5051 not found (message Type_92)
+Jul 02 10:35:07 xomm-server arma3server[6102]: 14:35:07 Server: Object 2:802 not found (message Type_92)
+Jul 02 10:35:03 xomm-server arma3server[6102]: 14:35:03 Server: Object 2:5087 not found (message Type_120)
+Jul 02 10:35:03 xomm-server arma3server[6102]: 14:35:03 Server: Object 2:5036 not found (message Type_120)
+Jul 02 10:35:02 xomm-server arma3server[6102]: 14:35:02 Server: Object 2:3430 not found (message Type_92)
+Jul 02 10:35:01 xomm-server arma3server[6102]: 14:35:01 Server: Object 2:3430 not found (message Type_120)
+Jul 02 10:34:59 xomm-server arma3server[6102]: 14:34:59 Server: Object 2:5036 not found (message Type_92)
+Jul 02 10:34:57 xomm-server arma3server[6102]: 14:34:57 Server: Object 2:5086 not found (message Type_92)
+Jul 02 10:34:57 xomm-server arma3server[6102]: 14:34:57 Server: Object 2:5087 not found (message Type_92)
+Jul 02 10:34:56 xomm-server arma3server[6102]: 14:34:56 Server: Object 2:5086 not found (message Type_120)
+Jul 02 10:34:49 xomm-server arma3server[6102]: 14:34:49 Server: Object 2:839 not found (message Type_92)
+Jul 02 10:34:48 xomm-server arma3server[6102]: 14:34:48 Server: Object 2:5051 not found (message Type_120)
+Jul 02 10:34:47 xomm-server arma3server[6102]: 14:34:47 Server: Object 2:5052 not found (message Type_92)
+Jul 02 10:34:47 xomm-server arma3server[6102]: 14:34:47 Server: Object 2:5051 not found (message Type_92)
+Jul 02 10:34:47 xomm-server arma3server[6102]: 14:34:47 Server: Object 2:802 not found (message Type_92)
+Jul 02 10:34:46 xomm-server arma3server[6102]: 14:34:46 Server: Object 2:802 not found (message Type_120)
+Jul 02 10:34:43 xomm-server arma3server[6102]: 14:34:43 Server: Object 2:5052 not found (message Type_120)
+Jul 02 10:34:42 xomm-server arma3server[6102]: 14:34:42 Server: Object 2:3430 not found (message Type_92)
+Jul 02 10:34:41 xomm-server arma3server[6102]: 14:34:41 Server: Object 2:839 not found (message Type_120)
+Jul 02 10:34:39 xomm-server arma3server[6102]: 14:34:39 Server: Object 2:5036 not found (message Type_92)
+Jul 02 10:34:37 xomm-server arma3server[6102]: 14:34:37 Server: Object 2:5086 not found (message Type_92)
+Jul 02 10:34:37 xomm-server arma3server[6102]: 14:34:37 Server: Object 2:5087 not found (message Type_92)
+Jul 02 10:34:29 xomm-server arma3server[6102]: 14:34:29 Server: Object 2:839 not found (message Type_92)
+Jul 02 10:34:27 xomm-server arma3server[6102]: 14:34:27 Server: Object 2:5052 not found (message Type_92)
+Jul 02 10:34:27 xomm-server arma3server[6102]: 14:34:27 Server: Object 2:5051 not found (message Type_92)
+Jul 02 10:34:27 xomm-server arma3server[6102]: 14:34:27 Server: Object 2:802 not found (message Type_92)
+Jul 02 10:34:27 xomm-server arma3server[6102]: 14:34:27 Server: Object 2:5087 not found (message Type_120)
+Jul 02 10:34:26 xomm-server arma3server[6102]: 14:34:26 Server: Object 2:5036 not found (message Type_120)
+Jul 02 10:34:24 xomm-server arma3server[6102]: 14:34:24 Server: Object 2:3430 not found (message Type_120)
