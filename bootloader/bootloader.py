@@ -66,6 +66,18 @@ def compose_from_app(path: pathlib.Path, name):
     return compose
 
 
+def log_proc_output(proc):
+    stdout, stderr = await proc.communicate()
+    if proc.returncode:
+        for line in stderr.decode().split('\n'):
+            if line != '':
+                logger.error(line)
+    else:
+        for line in stdout.decode().split('\n'):
+            if line != '':
+                logger.info(line)
+
+
 def merge_composes(base, others):
     if not isinstance(base, dict):
         base = parse_yaml(base)
@@ -101,18 +113,26 @@ async def deploy_compose(compose):
     dump_yaml(Config.TMP_COMPOSE, compose)
     compose = Config.TMP_COMPOSE
 
-    proc = await asyncio.create_subprocess_exec("docker", "stack", "deploy", "--compose-file", compose,
-                                                "walkoff", stderr=asyncio.subprocess.PIPE,
-                                                stdout=asyncio.subprocess.PIPE)
-    stdout, stderr = await proc.communicate()
-    if proc.returncode:
-        for line in stderr.decode().split('\n'):
-            if line != '':
-                logger.error(line)
-    else:
-        for line in stdout.decode().split('\n'):
-            if line != '':
-                logger.info(line)
+    proc = await asyncio.create_subprocess_exec("docker", "stack", "deploy", "--compose-file", compose, "walkoff",
+                                                stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+    log_proc_output(proc)
+
+    return proc.returncode
+
+
+async def build_image(service):
+    proc = await asyncio.create_subprocess_exec("docker", "build", repo,
+                                                stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+    log_proc_output(proc)
+
+    return proc.returncode
+
+
+async def push_image(repo):
+    proc = await asyncio.create_subprocess_exec("docker", "push", repo,
+                                                stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+    log_proc_output(proc)
+
     return proc.returncode
 
 
@@ -183,21 +203,18 @@ class Bootloader:
         return_code = await deploy_compose(merged_compose)
 
         # The registry is up so lets push the images we need into it
+        for service in merged_compose["services"]:
+            tag_image("127.0.0.1:5000", service["image"])
+            push_image(service["image"])
+
+
 
         return
 
     async def down(self):
         proc = await asyncio.create_subprocess_exec("docker", "stack", "rm", "walkoff", stderr=asyncio.subprocess.PIPE,
                                                     stdout=asyncio.subprocess.PIPE)
-        stdout, stderr = await proc.communicate()
-        if proc.returncode:
-            for line in stderr.decode().split('\n'):
-                if line != '':
-                    logger.error(line)
-        else:
-            for line in stdout.decode().split('\n'):
-                if line != '':
-                    logger.info(line)
+        log_proc_output(proc)
 
         return
 
