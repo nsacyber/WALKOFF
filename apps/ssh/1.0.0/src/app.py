@@ -3,6 +3,7 @@ import logging
 import asyncio
 
 import asyncssh
+import shutil
 
 from walkoff_app_sdk.app_base import AppBase
 
@@ -38,8 +39,8 @@ class SSH(AppBase):
 
         return results
 
-    async def sftp_copy(self, src_path, dest_path, src_host, src_port, src_username, src_password, dest_host, dest_port,
-                        dest_username, dest_password):
+    async def sftp_copy(self, src_path, dest_path, src_host, src_port, src_username, src_password, dest_host,
+                             dest_port, dest_username, dest_password):
 
         curr_dir = os.getcwd()
         temp_dir = os.path.join(curr_dir, r'temp_data')
@@ -49,25 +50,73 @@ class SSH(AppBase):
                                     known_hosts=None) as conn:
             async with asyncssh.connect(host=dest_host, port=dest_port, username=dest_username, password=dest_password,
                                         tunnel=conn, known_hosts=None) as tunneled_conn:
+
+                # allowing for ~ (home directory)
+                if dest_path[0] == "~":
+                    s = list(dest_path)
+                    s[0] = "."
+                    dest_path = "".join(s)
+
+                if src_path[0] == "~":
+                    s = list(src_path)
+                    s[0] = "."
+                    src_path = "".join(s)
+
                 # grab remote file, place in container
-                async with conn.start_sftp_client() as sftp:
-                    results = await sftp.get(src_path, temp_dir)
+                try:
+                    async with conn.start_sftp_client() as sftp:
+                        await sftp.mget(src_path, temp_dir)
+                except asyncssh.SFTPError as e:
+                    try:
+                        async with conn.start_sftp_client() as sftp:
+                            await sftp.mget(src_path, temp_dir, recurse=True)
+                    except Exception as e2:
+                        return e2
 
                 spliced_path = src_path.split('/')
                 file_name = spliced_path[len(spliced_path) - 1]
 
                 # copy grabbed file to desired location
-                async with tunneled_conn.start_sftp_client() as sftp2:
-                    results2 = await sftp2.put(temp_dir + "/" + file_name, dest_path)
+                try:
+                    async with tunneled_conn.start_sftp_client() as sftp2:
+                        await sftp2.mput(temp_dir + "/" + file_name, dest_path)
+                except asyncssh.SFTPError as e:
+                    try:
+                        async with tunneled_conn.start_sftp_client() as sftp2:
+                            await sftp2.mput(temp_dir + "/" + file_name, dest_path, recurse=True)
+                    except Exception as e2:
+                        return e2
 
         # cleaning up temp file
-        for file in os.listdir(temp_dir):
-            file_path = os.path.join(temp_dir, file)
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-        os.rmdir(temp_dir)
+        try:
+            shutil.rmtree(temp_dir)
+        except:
+            print("Error while deleting container directory.")
 
-        return "Successfully Copied File."
+        # for file in os.listdir(temp_dir):
+        #     file_path = os.path.join(temp_dir, file)
+        #     if os.path.isfile(file_path):
+        #         os.remove(file_path)
+        #     if os.path.isdir(file_path):
+        #         os.remove(file_path)
+        # os.rmdir(temp_dir)
+
+        return "Successfully Copied File(s)."
+    #
+    # async def sftp_copy_folder(self, src_path, dest_path, src_host, src_port, src_username, src_password, dest_host, dest_port,
+    #                     dest_username, dest_password):
+    #
+    #     curr_dir = os.getcwd()
+    #     temp_dir = os.path.join(curr_dir, r'temp_data')
+    #     os.makedirs(temp_dir, exist_ok=True)
+    #
+    #     async with asyncssh.connect(host=src_host, port=src_port, username=src_username, password=src_password,
+    #                                 known_hosts=None) as conn:
+    #         async with asyncssh.connect(host=dest_host, port=dest_port, username=dest_username, password=dest_password,
+    #                                     tunnel=conn, known_hosts=None) as tunneled_conn:
+    #             # grab remote folder, place in container
+    #             async with conn.start_sftp_client() as sftp:
+    #                 results = await sftp.get(src_path, temp_dir)
 
     async def sftp_copy_from_json(self, input):
         try:
