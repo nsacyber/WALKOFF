@@ -68,7 +68,7 @@ class Action(Base):
     # Columns specific to Actions
     priority = Column(Integer, default=3)
     parallelized = Column(Boolean(), nullable=False, default=False)
-    _walkoff_type = Column(String(80), default="action")
+    _walkoff_type = Column(String(80), default=__tablename__)
     parameters = relationship('Parameter', cascade='all, delete, delete-orphan', foreign_keys=[Parameter.action_id],
                               passive_deletes=True)
 
@@ -77,6 +77,7 @@ class Action(Base):
     def __init__(self, **kwargs):
         super(Action, self).__init__(**kwargs)
         self.position["_walkoff_type"] = "position"
+        self._walkoff_type = self.__tablename__
         self.validate()
 
     def validate(self):

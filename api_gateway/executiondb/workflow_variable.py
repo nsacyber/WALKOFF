@@ -31,12 +31,15 @@ class WorkflowVariable(Base):
     # Columns common to all Variable models
     name = Column(String(80), nullable=False)
     value = Column(JSON)
-    _walkoff_type = Column(String(80), default="variable")
-
+    _walkoff_type = Column(String(80), default=__tablename__)
 
     # Columns specific to WorkflowVariable model
     description = Column(String(255), default="")
     workflow_id = Column(UUID(as_uuid=True), ForeignKey('workflow.id_', ondelete='CASCADE'))
+
+    def __init__(self, **kwargs):
+        super(WorkflowVariable, self).__init__(**kwargs)
+        self._walkoff_type = self.__tablename__
 
 
 class WorkflowVariableSchema(BaseSchema):
