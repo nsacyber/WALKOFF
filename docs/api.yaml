@@ -1,0 +1,2718 @@
+swagger: '2.0'
+info:
+  description: >-
+    An active cyber defense development framework enabling orchestration
+    capabilities to be written once and deployed across WALKOFF-enabled
+    orchestration tools. https://nsacyber.github.io/WALKOFF/
+  version: 0.9.0
+  title: WALKOFF
+  contact:
+    email: walkoff@nsa.gov
+  license:
+    name: Creative-Commons
+    url: 'http://creativecommons.org/licenses/by/4.0/'
+
+tags:
+  - name: Authorization
+    description: Authorization Operations
+  - name: Apps
+    description: App Management Operations
+  - name: Configuration
+    description: System Configuration Operations
+  - name: GlobalVariables
+    description: GlobalVariable Operations
+  - name: Users
+    description: User operations
+  - name: Roles
+    description: Role Operations
+  - name: Workflows
+    description: Workflow Operations
+  - name: WorkflowQueue
+    description: Workflow Control Operations
+  - name: Events
+    description: Event Operations
+  - name: Scheduler
+    description: Scheduler Operations
+  - name: Dashboards
+    description: Dashboard Operations
+  - name: Triggers
+    description: Trigger Operations
+  - name: Client
+    description: Serves up client pages
+  - name: System
+    description: System Resources
+  - name: TempInternal
+    description: TempInternal
+
+
+
+basePath: /api
+
+schemes:
+  - http
+  - https
+
+paths:
+  # APPS
+  /apps:
+    get:
+      tags:
+        - System
+      summary: Gets all apps
+      description: ''
+      operationId: api_gateway.server.endpoints.appapi.read_all_app_names
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of app names
+                items:
+                  type: string
+                  example: [PhillipsHue, OpenDaylight, PaloAlto]
+
+  /apps/apis:
+    get:
+      tags:
+        - Apps
+      summary: Get all app apis
+      description: ''
+      operationId: api_gateway.server.endpoints.appapi.read_all_app_apis
+      parameters:
+        - name: page
+          in: query
+          description: page of data to get
+          required: false
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+    post:  # ToDo: Delete this when testing is finished
+      tags:
+        - Apps
+      summary: Create app api
+      description: ''
+      operationId: api_gateway.server.endpoints.appapi.create_app_api
+      requestBody:
+        description: The app api object to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/AppApi'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/AppApi'
+
+  /apps/apis/{app}:
+    get:
+      tags:
+        - Apps
+      summary: Get and app's api
+      description: ''
+      operationId: api_gateway.server.endpoints.appapi.read_app_api
+      parameters:
+        - name: app
+          in: path
+          description: Name OR ID of the app to get
+          required: true
+          type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/AppApi'
+        404:
+          description: App does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+    put:  # ToDo: Delete this when testing is finished
+      tags:
+        - Apps
+      summary: Replace app api
+      description: ''
+      operationId: api_gateway.server.endpoints.appapi.update_app_api
+      parameters:
+        - name: app
+          in: path
+          description: Name OR ID of the app to get
+          required: true
+          type: string
+      requestBody:
+        description: The app api object to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/AppApi'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/AppApi'
+        404:
+          description: AppApi does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+        400:
+          description: AppApi already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+    delete:  # ToDo: Delete this when testing is finished
+      tags:
+        - Apps
+      summary: Delete app api
+      description: ''
+      operationId: api_gateway.server.endpoints.appapi.delete_app_api
+      parameters:
+        - name: app
+          in: path
+          description: Name OR ID of the app to get
+          required: true
+          type: string
+      responses:
+        204:
+          description: Success
+        404:
+          description: AppApi does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+  # AUTH
+  /auth:
+    post:
+      tags:
+        - Authorization
+      summary: Login and get access and refresh tokens
+      description: ''
+      operationId: api_gateway.server.endpoints.auth.login
+      requestBody:
+        description: The username and password
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/Authentication'
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Token'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+      security: []
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authorization
+      summary: Get a fresh access token
+      description: ''
+      operationId: api_gateway.server.endpoints.auth.refresh
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Token'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authorization
+      summary: Logout of walkoff
+      operationId: api_gateway.server.endpoints.auth.logout
+      requestBody:
+        description: The refresh token to be revoked
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+                  description: the refresh token to be revoked
+      responses:
+        204:
+          description: Success
+        400:
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  # CONFIGURATION
+  /configuration:
+    get:
+      tags:
+        - Configuration
+      summary: Reads the configuration
+      operationId: api_gateway.server.endpoints.configuration.read_config_values
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Configuration'
+        401:
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Configuration
+      summary: Updates the configuration
+      operationId: api_gateway.server.endpoints.configuration.update_configuration
+      requestBody:
+        required: true
+        description: The configuration object
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/Configuration'
+      responses:
+        200:
+          description: Success
+        401:
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+        515:
+          description: Could not write configuration to file
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    patch:
+      tags:
+        - Configuration
+      summary: Updates the configuration
+      operationId: api_gateway.server.endpoints.configuration.patch_configuration
+      requestBody:
+        description: The configuration object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/Configuration'
+      responses:
+        200:
+          description: Success
+        401:
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+        515:
+          description: Could not write configuration to file
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  #DASHBOARDS
+  /dashboards:
+    get:
+      tags:
+        - Dashboards
+      summary: Read all dashboards
+      description: Retrieves all dashboards currently stored in the database.
+      operationId: api_gateway.server.endpoints.dashboards.read_all_dashboards
+      parameters:
+        - name: page
+          in: query
+          description: page of data to get
+          required: false
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: A list of the full representation of all dashboards
+                items:
+                  $ref: '#/definitions/Dashboard'
+        404:
+          description: No dashboards exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    post:
+      tags:
+        - Dashboards
+      summary: Create a dashboard
+      description: Creates a dashboard from the JSON in request body
+      operationId: api_gateway.server.endpoints.dashboards.create_dashboard
+      requestBody:
+        description: The dashboard object to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/Dashboard'
+      responses:
+        201:
+          description: Workflow created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Dashboard'
+        400:
+          description: Workflow already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Dashboards
+      summary: Update a dashboard
+      description: Updates a whole dashboard using the JSON request body
+      operationId: api_gateway.server.endpoints.dashboards.update_dashboard
+      requestBody:
+        description: The dashboard object to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/Dashboard'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [dashboard]
+                properties:
+                  dashboard:
+                    $ref: '#/definitions/Workflow'
+        404:
+          description: Dashboard does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  /dashboards/{dashboard}:
+    get:
+      tags:
+        - Dashboards
+      summary: Get a dashboard by id
+      description: Retrieve a single dashboard from database by ID.
+      operationId: api_gateway.server.endpoints.dashboards.read_dashboard
+      parameters:
+        - in: path
+          name: dashboard
+          description: ID of the global to be fetched
+          type: string
+#            format: uuid
+          required: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Dashboard'
+        404:
+          description: No dashboard with that ID exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Dashboards
+      summary: Delete a dashboard
+      description: Deletes a dashboard by ID
+      operationId: api_gateway.server.endpoints.dashboards.delete_dashboard
+      parameters:
+        - in: path
+          name: dashboard
+          description: ID of the global to be fetched
+          type: string
+            #format: uuid
+          required: true
+      responses:
+        201:
+          description: Workflow updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Dashboard'
+        404:
+          description: Dashboard does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  #GLOBAL_VARIABLES
+  /globals/{global_var}:
+    get:
+      tags:
+        - GlobalVariables
+      summary: Read a global
+      description: ''
+      operationId: api_gateway.server.endpoints.global_variables.read_global
+      parameters:
+        - in: path
+          name: global_var
+          description: ID of the global to be fetched
+          type: string
+          #  format: uuid
+          required: true
+        - name: to_decrypt
+          in: query
+          description: 'Determine whether or not to decrypt global variable'
+          type: string
+          enum: ["false"]
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/GlobalVariable'
+        404:
+          description: GlobalVariable does not exist.
+    put:
+      tags:
+        - GlobalVariables
+      summary: Update a global
+      description: ''
+      operationId: api_gateway.server.endpoints.global_variables.update_global
+      parameters:
+        - in: path
+          name: global_var
+          description: ID of the global to be fetched
+          type: string
+          #  format: uuid
+          required: true
+      requestBody:
+        description: The new global object to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/GlobalVariable'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/GlobalVariable'
+        404:
+          description: GlobalVariable does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - GlobalVariables
+      summary: Remove a global
+      description: ''
+      operationId: api_gateway.server.endpoints.global_variables.delete_global
+      parameters:
+        - in: path
+          name: global_var
+          description: ID of the global to be fetched
+          type: string
+          #format: uuid
+          required: true
+      responses:
+        204:
+          description: Success
+        404:
+          description: GlobalVariable does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+  /globals:
+    get:
+      tags:
+        - GlobalVariables
+      summary: Get all globals
+      description: ''
+      operationId: api_gateway.server.endpoints.global_variables.read_all_globals
+      parameters:
+        - name: page
+          in: query
+          description: page of data to get
+          required: false
+          type: integer
+        - name: to_decrypt
+          in: query
+          description: 'Determine whether or not to decrypt global variable'
+          type: string
+          enum: ["false"]
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: A list of globals
+                items:
+                  $ref: '#/definitions/GlobalVariable'
+    post:
+      tags:
+        - GlobalVariables
+      summary: Add a global
+      description: ''
+      operationId: api_gateway.server.endpoints.global_variables.create_global
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/GlobalVariable'
+      responses:
+        201:
+          description: Object created
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/GlobalVariable'
+        400:
+          description: GlobalVariable already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  /globals/templates/{global_template}:
+    get:
+      tags:
+        - GlobalVariables
+      summary: Read a global template
+      description: ''
+      operationId: api_gateway.server.endpoints.global_variables.read_global_templates
+      parameters:
+        - in: path
+          name: global_template
+          description: ID of the global template to be fetched
+          type: string
+          #  format: uuid
+          required: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/GlobalVariableTemplate'
+        404:
+          description: GlobalVariableTemplate does not exist.
+    put:
+      tags:
+        - GlobalVariables
+      summary: Update a global template
+      description: ''
+      operationId: api_gateway.server.endpoints.global_variables.update_global_templates
+      parameters:
+        - in: path
+          name: global_template
+          description: ID of the global template to be fetched
+          type: string
+           # format: uuid
+          required: true
+      requestBody:
+        description: The new global template to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/GlobalVariableTemplate'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/GlobalVariableTemplate'
+        404:
+          description: GlobalVariableTemplate does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - GlobalVariables
+      summary: Remove a global
+      description: ''
+      operationId: api_gateway.server.endpoints.global_variables.delete_global_templates
+      parameters:
+        - in: path
+          name: global_template
+          description: ID of the global template to be fetched
+          type: string
+          #  format: uuid
+          required: true
+      responses:
+        204:
+          description: Success
+        404:
+          description: GlobalVariableTemplate does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+  /globals/templates:
+    get:
+      tags:
+        - GlobalVariables
+      summary: Get all global templates
+      description: ''
+      operationId: api_gateway.server.endpoints.global_variables.read_all_global_templates
+      parameters:
+        - name: page
+          in: query
+          description: page of data to get
+          required: false
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: A list of globals
+                items:
+                  $ref: '#/definitions/GlobalVariableTemplate'
+    post:
+      tags:
+        - GlobalVariables
+      summary: Add a global
+      description: ''
+      operationId: api_gateway.server.endpoints.global_variables.create_global_templates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/GlobalVariableTemplate'
+      responses:
+        201:
+          description: Object created
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/GlobalVariableTemplate'
+        400:
+          description: GlobalVariable already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  # ROLES
+  /roles:
+    get:
+      tags:
+        - Roles
+      summary: Read all roles
+      description: ''
+      operationId: api_gateway.server.endpoints.roles.read_all_roles
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                description: A list of roles
+                type: array
+                items:
+                  $ref: '#/definitions/Role'
+    post:
+      tags:
+        - Roles
+      summary: Create a role
+      description: ''
+      operationId: api_gateway.server.endpoints.roles.create_role
+      requestBody:
+        description: The role object to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/AddRole'
+      responses:
+        201:
+          description: Object created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Role'
+        400:
+          description: Object exists.
+  /roles/{role_id}:
+    get:
+      tags:
+        - Roles
+      summary: Read a role
+      description: ''
+      operationId: api_gateway.server.endpoints.roles.read_role
+      parameters:
+        - name: role_id
+          in: path
+          description: The name that needs to be fetched.
+          required: true
+          type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Role'
+        404:
+          description: Object does not exist.
+    put:
+      tags:
+        - Roles
+      summary: Update a role
+      description: ''
+      operationId: api_gateway.server.endpoints.roles.update_role
+      parameters:
+        - name: role_id
+          in: path
+          description: The name that needs to be fetched.
+          required: true
+          type: string
+      requestBody:
+        description: Updated fields for the role object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/Role'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Role'
+        404:
+          description: Object does not exist.
+    delete:
+      tags:
+        - Roles
+      summary: Delete a role
+      description: ''
+      operationId: api_gateway.server.endpoints.roles.delete_role
+      parameters:
+        - name: role_id
+          in: path
+          description: The name that needs to be fetched.
+          required: true
+          type: string
+      responses:
+        204:
+          description: Success
+        404:
+          description: Object does not exist.
+
+  /availableresourceactions:
+    get:
+      tags:
+        - Roles
+      summary: Read all available resource actions
+      description: ''
+      operationId: api_gateway.server.endpoints.roles.read_available_resource_actions
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                description: List of available resource actions
+                type: array
+                items:
+                  $ref: '#/definitions/AvailableResourceAction'
+
+  # SCHEDULER
+  /scheduler:
+    get:
+      tags:
+        - Scheduler
+      summary: Get the current scheduler status.
+      description: ''
+      operationId: api_gateway.server.endpoints.scheduler.get_scheduler_status
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Scheduler'
+    put:
+      tags:
+        - Scheduler
+      summary: Update the status of the scheduler
+      description: ''
+      operationId: api_gateway.server.endpoints.scheduler.update_scheduler_status
+      requestBody:
+        description: The new Scheduled Task object
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  description: Requested status of the scheduler
+                  type: string
+                  enum: [start, stop, pause, resume]
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    description: The current status of the scheduler
+
+  /scheduledtasks:
+    get:
+      tags:
+        - Scheduler
+      summary: Get all the scheduled tasks
+      operationId: api_gateway.server.endpoints.scheduler.read_all_scheduled_tasks
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                description: A list of Scheduled Task objects
+                type: array
+                items:
+                  $ref: '#/definitions/ScheduledTask'
+    post:
+      tags:
+        - Scheduler
+      summary: Create a new Scheduled Task
+      operationId: api_gateway.server.endpoints.scheduler.create_scheduled_task
+      requestBody:
+        description: The new Scheduled Task object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/AddScheduledTask'
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                description: A list of Scheduled Task objects
+                type: array
+                items:
+                  $ref: '#/definitions/ScheduledTask'
+        400:
+          description: Scheduled task already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  /scheduledtasks/{scheduled_task_id}:
+    parameters:
+      - name: scheduled_task_id
+        in: path
+        description: The ID of the scheduled task.
+        required: true
+        type: string
+    get:
+      tags:
+        - Scheduler
+      summary: Get the scheduled task
+      operationId: api_gateway.server.endpoints.scheduler.read_scheduled_task
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/ScheduledTask'
+        404:
+          description: Scheduled task does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Scheduler
+      summary: Update a new Scheduled Task
+      operationId: api_gateway.server.endpoints.scheduler.update_scheduled_task
+      requestBody:
+        description: The updated Scheduled Task object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/ScheduledTask'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/ScheduledTask'
+        404:
+          description: Scheduled task does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+        400:
+          description: Scheduled task name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Scheduler
+      summary: Delete the scheduled task
+      operationId: api_gateway.server.endpoints.scheduler.delete_scheduled_task
+      responses:
+        204:
+          description: Success
+        404:
+          description: Scheduled task does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  # USERS
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Read all users
+      description: ''
+      operationId: api_gateway.server.endpoints.users.read_all_users
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: A list of users
+                items:
+                  $ref: '#/definitions/DisplayUser'
+    post:
+      tags:
+        - Users
+      summary: Create a user
+      description: ''
+      operationId: api_gateway.server.endpoints.users.create_user
+      requestBody:
+        description: The new user object to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/AddUser'
+      responses:
+        201:
+          description: User created.
+          content:
+            application/json:
+              schema:
+                description: The newly created user.
+                $ref: '#/definitions/DisplayUser'
+        400:
+          description: Could not create user <username>. User already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  /users/{user_id}:
+    parameters:
+      - name: user_id
+        in: path
+        description: The id of the user to be fetched
+        required: true
+        type: integer
+    get:
+      tags:
+        - Users
+      summary: Get a user
+      description: ''
+      operationId: api_gateway.server.endpoints.users.read_user
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                description: The user object matching the user id inputted
+                $ref: '#/definitions/DisplayUser'
+        404:
+          description: Could not display user <username>. User does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Users
+      summary: Update a user
+      description: ''
+      operationId: api_gateway.server.endpoints.users.update_user
+      requestBody:
+        description: Updated fields for the user object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/EditUser'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                description: The updated user.
+                $ref: '#/definitions/DisplayUser'
+        400:
+          description: Invalid password
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+        404:
+          description: Could not edit user <username>. User does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Users
+      summary: Delete a user
+      description: ''
+      operationId: api_gateway.server.endpoints.users.delete_user
+      responses:
+        204:
+          description: Success
+        401:
+          description: Could not delete user <username>. User is current user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+        404:
+          description: Could not delete user <username>. User does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  # WORKFLOWQUEUE
+  /workflowqueue:
+    get:
+      tags:
+        - WorkflowQueue
+      summary: Get status information on the workflows currently executing
+      description: ''
+      operationId: api_gateway.server.endpoints.workflowqueue.get_all_workflow_status
+      parameters:
+        - name: page
+          in: query
+          description: page of data to get
+          required: false
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/definitions/WorkflowStatusSummary'
+    post:
+      tags:
+        - WorkflowQueue
+      summary: Execute a workflow
+      description: ''
+      operationId: api_gateway.server.endpoints.workflowqueue.execute_workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/ExecuteWorkflow'
+      responses:
+        202:
+          description: Success asynchronous.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Uuid'
+        404:
+          description: Workflow does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+        400:
+          description: Invalid input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+  /workflowqueue/{execution}:
+    get:
+      tags:
+        - WorkflowQueue
+      summary: Get status information on a currently executing workflow
+      description: ''
+      operationId: api_gateway.server.endpoints.workflowqueue.get_workflow_status
+      parameters:
+        - name: execution
+          in: path
+          description: The ID of the execution to get.
+          required: true
+          type: string
+            #format: uuid
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/WorkflowStatus'
+        404:
+          description: Object does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    patch:
+      tags:
+        - WorkflowQueue
+      summary: Abort or trigger a workflow
+      description: ''
+      operationId: api_gateway.server.endpoints.workflowqueue.control_workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/ControlWorkflow'
+      parameters:
+        - name: execution
+          in: path
+          description: The ID of the execution to get.
+          required: true
+          type: string
+          #  format: uuid
+      responses:
+        204:
+          description: Success.
+        404:
+          description: Workflow does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+        400:
+          description: Invalid input error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+
+  /workflowqueue/cleardb:
+    parameters:
+      - name: all_
+        in: query
+        description: Whether or not to delete all workflow statuses, defaults to false
+        required: false
+        type: boolean
+      - name: days
+        in: query
+        description: The number of days of workflow statuses to keep
+        required: false
+        type: integer
+    delete:
+      tags:
+        - WorkflowQueue
+      summary: Removes workflow statuses from the execution database. It will delete all of them or ones older than a certain number of days
+      description: ''
+      operationId: api_gateway.server.endpoints.workflowqueue.clear_workflow_status
+      responses:
+        204:
+          description: Success
+
+  #WORFKLOWS
+  /workflows:
+    get:
+      tags:
+        - Workflows
+      summary: Read all workflows in playbook
+      description: ''
+      operationId: api_gateway.server.endpoints.workflows.read_all_workflows
+      parameters:
+        - name: page
+          in: query
+          description: page of data to get
+          required: false
+          type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                description: The JSON representation of all the workflows meta data
+                items:
+                  $ref: '#/definitions/WorkflowMetaData'
+        404:
+          description: No workflows exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    post:
+      tags:
+        - Workflows
+      summary: Create a workflow
+      description: ''
+      operationId: api_gateway.server.endpoints.workflows.create_workflow
+      parameters:
+        - in: query
+          name: source
+          description: The ID of the workflow to clone
+          type: string
+          #format: uuid
+          required: false
+      requestBody:
+        description: The workflow object to be created
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/Workflow'
+      responses:
+        201:
+          description: Workflow created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Workflow'
+
+        400:
+          description: Workflow already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+  /workflows/{workflow}:
+    get:
+      tags:
+        - Workflows
+      summary: Read a workflow
+      description: ''
+      operationId: api_gateway.server.endpoints.workflows.read_workflow
+      parameters:
+        - name: workflow
+          in: path
+          description: 'The name or ID of the workflow to get.'
+          required: true
+          type: string
+        - name: mode
+          in: query
+          description: 'Set to export to send as file.'
+          type: string
+          enum: ["export"]
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Workflow'
+        404:
+          description: Workflow does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    put:
+      tags:
+        - Workflows
+      summary: Update a workflow
+      description: ''
+      operationId: api_gateway.server.endpoints.workflows.update_workflow
+      requestBody:
+        description: The fields of the workflow object to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/definitions/Workflow'
+      parameters:
+        - name: workflow
+          in: path
+          description: 'The name or ID of the workflow to get.'
+          required: true
+          type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [workflow]
+                properties:
+                  workflow:
+                    $ref: '#/definitions/Workflow'
+        404:
+          description: Workflow does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+        400:
+          description: Workflow already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - Workflows
+      summary: Delete a workflow
+      description: ''
+      operationId: api_gateway.server.endpoints.workflows.delete_workflow
+      parameters:
+        - name: workflow
+          in: path
+          description: 'The name or ID of the workflow to get.'
+          required: true
+          type: string
+      responses:
+        204:
+          description: Success
+        404:
+          description: Workflow does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/Error'
+
+securityDefinitions:
+  AuthenticationToken:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: >
+      We use a JWT authorization workflow. Use the /api/auth endpoint to get JWT access and refresh tokens. Then use the
+      access token in the header "Authorization: Bearer accesstoken.goes.here".  That token will expire in 15 minutes by
+      default. When it expires, you'll receive a 401 response code. At that point, use the /api/auth/refresh
+      with the header "Authorization: Bearer refreshtoken.goes.here" to receive a fresh access token. When you're done,
+      please use the /api/auth/logout endpoint to log out.  See the implementation in the Walkoff App for an example
+      implementation.
+security:
+  - AuthenticationToken: []
+
+definitions:
+  Error:
+    type: object
+    required: [title, detail, status, type]
+    description: An error in RFC 7807 format
+    properties:
+      title:
+        type: string
+        description: A short, human-readable summary of the problem type.
+      detail:
+        type: string
+        description: A human-readable explanation specific to this occurrence of the problem
+      status:
+        type: string
+        description: The HTTP status code generated for this occurrence of the problem
+      type:
+        type: string
+        description: >
+          A URI reference that identifies the problem type. When dereferenced it should provide
+          human-readable documentation for the problem type.
+        default: 'about:blank'
+      instance:
+        type: string
+        description: >
+          A URI reference that identifies the specific occurrence of the problem. It may or may
+          not yield further information if dereferenced.
+
+  AvailableSubscriptions:
+    type: object
+    required: [type, events]
+    description: The events which can be subscribed to for an execution element
+    properties:
+      type:
+        description: The type of execution element
+        type: string
+        example: Condition
+        enum: [controller, playbook, workflow, action, branch, condition, transform]
+      events:
+        description: Events which can be subscribed to
+        type: array
+        items:
+          type: string
+        example: [Event1, Event_2, 'Event 3']
+
+  Uuid:
+    type: string
+    description: A 32-bit hexadecimal string representing a globally unique identifier
+    format: uuid
+
+  AppApi:
+    type: object
+    description: Api used for an app
+    required: [name]
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: A unique and precise title of the API
+        example: Splunk
+      walkoff_version:
+        type: string
+        description: A semantic version number of the API
+      app_version:
+        type: string
+        description: A semantic version number of the API
+      description:
+        type: string
+        description: A longer description of the API. Should be different from the title.
+      contact_info:
+        $ref: '#/definitions/ApiContact'
+      license_info:
+        $ref: '#/definitions/ApiLicense'
+      actions:
+        description: Actions associated with this app
+        type: array
+        items:
+          $ref: '#/definitions/ActionApi'
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/ApiTag'
+        uniqueItems: true
+      external_docs:
+        type: array
+        items:
+          $ref: '#/definitions/ExternalDoc'
+
+
+  ApiContact:
+    type: object
+    description: Contact information for the owners of this API
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: The name of the contact person or organization
+      url:
+        type: string
+        description: The URL pointing to the contact information
+        format: uri
+      email:
+        type: string
+        description: The email address of the contact person/organization
+        format: email
+
+  ApiLicense:
+    type: object
+    description: License information for this API
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: The name of the license type
+      url:
+        type: string
+        description: The URL pointing to the license
+        format: uri
+
+  ActionApi:
+    type: object
+    description: The api of an app's action
+    required: [name]
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: Unique name of the action
+      node_type:
+        default: ACTION
+        enum: [ACTION, CONDITION, TRANSFORM, TRIGGER]
+        description: The node type this action represents
+      returns:
+        $ref: '#/definitions/ReturnApi'
+      parameters:
+        type: array
+        items:
+          $ref: '#/definitions/ParameterApi'
+        description: The parameters needed by this action
+      deprecated:
+        type: boolean
+        default: false
+        description: Is this action deprecated?
+      description:
+        type: string
+        description: A longer description of the operation
+      external_docs:
+        type: array
+        items:
+          $ref: '#/definitions/ExternalDoc'
+
+  ParameterApi:
+    type: object
+    description: A parameter using for actions
+    required: [name, schema]
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+        description: Description of the parameter
+      placeholder:
+        description: Brief description of the field to be used to prompt a user
+      parallelizable:
+        type: boolean
+        default: false
+        description: Is this parameter parallelizable
+      required:
+        type: boolean
+        default: false
+        description: Is this parameter required
+      schema:
+        $ref: '#/definitions/ParameterSchema'
+
+  ReturnApi:
+    type: object
+    description: A specification of what an action returns
+    additionalProperties: false
+    properties:
+      description:
+        type: string
+        description: Description of the return type
+      schema:
+        $ref: '#/definitions/ParameterSchema'
+      example:
+        description: An example of the returned type
+
+  ExternalDoc:
+    type: object
+    description: information about external documentation
+    additionalProperties: false
+    properties:
+      description:
+        type: string
+        description: Description of the documentation
+      url:
+        type: string
+        description: Points to the external documentation
+        format: uri
+
+  ApiTag:
+    type: object
+    description: A tag for a class of actions/conditions/transforms in this app
+    required: [name]
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: The name of the tag
+      description:
+        type: string
+        description: Description of the tag
+      external_docs:
+        type: array
+        items:
+          $ref: '#/definitions/ExternalDoc'
+
+  ParameterSchema:
+    type: object
+    description: Fields used to validate parameter against a JSON schema (Draft 4)
+    required: [type]
+    properties:
+      type:
+        type: string
+        enum: [string, boolean, integer, number, object, array]
+
+  Authentication:
+    type: object
+    required: [username, password]
+    additionalProperties: false
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+
+  Token:
+    type: object
+    required: [access_token]
+    properties:
+      access_token:
+        type: string
+        description: Short-lived JWT used to provide access
+      refresh_token:
+        type: string
+        description: Long-lived JWT used to refresh a token
+
+  Configuration:
+    type: object
+    description: The configuration
+    additionalProperties: false
+    properties:
+      db_path:
+        type: string
+        description: The path to the primary WALKOFF database
+      logging_config_path:
+        type: string
+        description: The path to the logging configuration
+      host:
+        type: string
+        description: The server's host URL
+      port:
+        type: integer
+        description: The server's port
+        minimum: 0
+        maximum: 65535
+        default: 5000
+      walkoff_db_type:
+        type: string
+        description: The type of database used by the primary WALKOFF database
+        enum: [sqlite, mysql, postgresql, oracle, mssql]
+        default: sqlite
+      number_processes:
+        type: integer
+        minimum: 1
+        description: Number of worker processes which can execute workflows
+        default: 4
+      access_token_duration:
+        type: number
+        minimum: 1
+        description: Time (in minutes) to allow an access token to persist. Should greater than the duration of the refresh token
+      refresh_token_duration:
+        type: number
+        minimum: 1
+        description: Time (in days) to allow a refresh token to persist. Should greater than the duration of the refresh token
+      zmq_results_address:
+        type: string
+        description: The IP address and port of the ZMQ results server. Do not change unless necessary.
+        default: 'tcp://127.0.0.1:5556'
+      zmq_communication_address:
+        type: string
+        description: The IP address and port of the ZMQ communication server. Do not change unless necessary.
+        default: 'tcp://127.0.0.1:5557'
+      number_threads_per_process:
+        type: number
+        description: The number of threads per worker process for executing workflows.
+        default: 3
+      cache:
+        $ref: '#/definitions/CacheConfig'
+
+  CacheConfig:
+    type: object
+    required: [type]
+    properties:
+      type:
+        description: The type of cache that should be used
+        type: string
+        enum: [redis, disk]
+      directory:
+        description: The directory to hold the cache database (DiskCache only)
+        type: string
+        format: uri
+      shards:
+        description: Number of shards to distribute the cache database to (DiskCache only)
+        type: integer
+        minimum: 1
+      timeout:
+        description: Cache timeout
+        type: number
+        minimum: 0.0
+      retry:
+        description: Should this connection retry timed out connections?
+        type: boolean
+        default: True
+      host:
+        description: Host url for the cache (Redis cache only)
+        type: string
+        default: localhost
+      port:
+        description: Port for the cache (Redis cache only)
+        type: integer
+        minimum: 0
+        maximum: 65535
+        default: 6379
+      unix_socket_path:
+        description: Path to Unix socket to use for the cache instead of host-port. (Redis cache only)
+        type: string
+
+  Dashboard:
+    type: object
+    required: [name]
+    description: A dashboard containing widgets for visualization
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+      name:
+        type: string
+        description: Name of the dashboard
+      widgets:
+        type: array
+        description: List of widgets contained in the dashboard
+        items:
+          $ref: '#/definitions/Widget'
+  Widget:
+    type: object
+    required: [name, x, y, cols, rows, options]
+    description: A widget for a dashboard containing a visualization
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+      dashboard_id:
+        $ref: '#/definitions/Uuid'
+      name:
+        type: string
+        description: Name of the widget
+      type_:
+        type: string
+        description: Type of widget
+      x:
+        type: integer
+        description: x position of the widget
+      y:
+        type: integer
+        description: y position of the widget
+      cols:
+        type: integer
+        description: width of the widget
+      rows:
+        type: integer
+        description: height of the widget
+      options: # ToDo: define widget types and contents
+        type: object
+#      properties:
+#        workflow:
+#          $ref: '#/definitions/Uuid'
+#        execution:
+#          type: string
+#          description: Execution of the workflow to get data from (latest or uuid)
+#        action:
+#          $ref: '#/definitions/Uuid'
+
+  GlobalVariable:
+    type: object
+    required: [name, value]
+    description: An global variable object, which is a type of parameter in an Action
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+      name:
+        type: string
+        description: The name of the global variable
+      value:
+        type: string
+        #      oneOf:
+        #        - type: "string"
+        #        - type: "number"
+        #        - type: "object"
+        #        - type: "array"
+        #        - type: "boolean"
+        description: The value of the global variable
+      description:
+        type: string
+        description: Description of the global variable
+
+
+  GlobalVariableTemplate:
+    type: object
+    required: [name, schema]
+    description: An global variable template object, which is used to optionally validate global variables
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+      name:
+        type: string
+        description: The name of the global template
+      schema:
+        type: object
+        description: The schema for the global template
+      description:
+        type: string
+        description: Description of the global template
+
+  JSONPatch:
+    description: A JSON-Patch document as defined by RFC 6902
+    required:
+      - "op"
+      - "path"
+    properties:
+      op:
+        type: string
+        description: The operation to be performed
+        enum:
+          - "add"
+          - "remove"
+          - "replace"
+          - "move"
+          - "copy"
+          - "test"
+      path:
+        type: string
+        description: A JSON-Pointer
+        example: "#/level1/level2/level3"
+      value:
+        type: string
+        description: The value to be used within the operations.
+      from:
+        type: string
+        description: A string containing a JSON Pointer value.
+
+  AddRole:
+    type: object
+    required: [name]
+    properties:
+      name:
+        description: Name of the role
+        type: string
+        example: administrative_role
+      description:
+        description: Description of the role
+        type: string
+        example: A user with this role can access any resource and has administrative-level privileges.
+      resources:
+        description: A list of resources that a user with this role can access
+        type: array
+        items:
+          $ref: '#/definitions/AddResource'
+
+  AddResource:
+    type: object
+    required: [name]
+    properties:
+      name:
+        description: Name of the resource
+        type: string
+        example: playbooks, cases
+      permissions:
+        description: A list of permissions associated with this resource
+        example: [create, read, update, delete, execute]
+        type: array
+        items:
+          type: string
+
+  Role:
+    type: object
+    required: [id]
+    properties:
+      id:
+        type: integer
+        minimum: 1
+        description: id of the object
+      name:
+        description: Name of the role
+        type: string
+        example: administrative_role
+      description:
+        description: Description of the role
+        type: string
+        example: A user with this role can access any resource and has administrative-level privileges.
+      resources:
+        description: A list of resources that a user with this role can access
+        example: [/users, /cases, /playbooks]
+        type: array
+        items:
+          $ref: '#/definitions/Resource'
+
+  Resource:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+        description: ID of the object
+      name:
+        description: Name of the resource
+        type: string
+        example: playbooks, cases
+      permissions:
+        description: A list of permissions associated with this resource
+        example: [create, read, update, delete, execute]
+        type: array
+        items:
+          type: string
+
+  AvailableResourceAction:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the resource
+        example: playbooks, cases
+      actions:
+        description: A list of actions or permissions available for this resource
+        example: [create, read, update, delete]
+        type: array
+        items:
+          type: string
+      app_name:
+        type: string
+        description: The name of the app associated with this resource, if applicable
+        example: HelloWorld, DailyQuote
+
+  Scheduler:
+    type: object
+    required: [status]
+    properties:
+      status:
+        description: State of trigger
+        type: string
+        example: 0 for stopped, 1 for running, 2 for paused, or a warning string
+
+  AddScheduledTask:
+    type: object
+    required: [name]
+    additionalProperties: false
+    properties:
+      workflows:
+        description: List if IDs of workflows attached to this task
+        type: array
+        items:
+          $ref: '#/definitions/Uuid'
+      name:
+        type: string
+        description: Name of this task
+      description:
+        type: string
+        description: description of this task
+      status:
+        type: string
+        description: Status of the task
+        enum: [running, stopped]
+      task_trigger:
+        $ref: '#/definitions/TaskTrigger'
+
+  ScheduledTask:
+    type: object
+    required: [id]
+    additionalProperties: false
+    properties:
+      id:
+        type: integer
+        description: ID of the object
+      workflows:
+        description: List if IDs of workflows attached to this task
+        type: array
+        items:
+          $ref: '#/definitions/Uuid'
+      name:
+        type: string
+        description: Name of this task
+      description:
+        type: string
+        description: description of this task
+      status:
+        type: string
+        description: Status of the task
+        enum: [running, stopped]
+      task_trigger:
+        $ref: '#/definitions/TaskTrigger'
+      action:
+        type: string
+        enum: [start, stop]
+
+  TaskTrigger:
+    type: object
+    description: Scheduler to use.
+    required: [args, type]
+    properties:
+      type:
+        description: Type of scheduler trigger to use for this task
+        type: string
+        enum: [date, interval, cron]
+        example: date
+      args:
+        type: object
+        description: Arguments for the trigger.
+
+  AddUser:
+    type: object
+    required: [username, password]
+    properties:
+      username:
+        description: Username or email of the user
+        type: string
+        example: administrator
+      password:
+        description: Password for the user
+        type: string
+        example: password123
+      roles:
+        description: A list of role IDs that this user possesses. Roles can only be assigned to a User by an admin.
+        $ref: '#/definitions/RoleIdList'
+      active:
+        description: activate/deactive a user. Active can only be changed by an admin.
+        type: boolean
+
+  EditUser:
+    type: object
+    required: [id]
+    properties:
+      id:
+        description: Database id of the user
+        type: integer
+        example: 123
+      username:
+        description: New username or email of the user
+        type: string
+        example: administrator
+      old_password:
+        description: Previous password for the user
+        type: string
+        example: password123
+      password:
+        description: New password for the user
+        type: string
+        example: password321
+      active:
+        description: activate/deactive a user. Active can only be changed by an admin.
+        type: boolean
+      roles:
+        description: A new list of role IDs that this user will possess. Roles can only be assigned by an admin.
+        $ref: '#/definitions/RoleIdList'
+
+  DisplayUser:
+    type: object
+    properties:
+      id:
+        description: Database id of the user
+        type: integer
+        example: 123
+        readOnly: true
+      username:
+        description: Username or email of the user
+        type: string
+        example: administrator
+      active:
+        description: activate/deactive a user
+        type: boolean
+      roles:
+        description: List of role object IDs that this user possesses
+        type: array
+        items:
+          type: integer
+
+  RoleIdList:
+    type: array
+    items:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+          description: The ID of a role the user posesses
+
+  Workflow:
+    type: object
+    required: [name]
+    description: A workflow object
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+      name:
+        description: The name of the workflow.
+        type: string
+        example: HelloWorldWorkflow
+      description:
+        type: string
+        description: Description of the workflow
+      tags:
+        description: Tag for workflow
+        type: array
+        items:
+          type: string
+      is_valid:
+        description: Is this workflow able to be run?
+        type: boolean
+      errors:
+        $ref: '#/definitions/ExecutionElementErrors'
+      execution_id:
+        $ref: '#/definitions/Uuid'
+      start:
+        description: ID of the starting action
+        $ref: '#/definitions/Uuid'
+      actions:
+        description: Action nodes in workflow
+        type: array
+        items:
+          $ref: "#/definitions/Action"
+      branches:
+        description: Edges connecting nodes in workflow
+        type: array
+        items:
+          $ref: '#/definitions/Branch'
+      conditions:
+        description: Condition nodes in workflow
+        type: array
+        items:
+          $ref: '#/definitions/Condition'
+      transforms:
+        description: Transform nodes in workflow
+        type: array
+        items:
+          $ref: '#/definitions/Transform'
+      triggers:
+        description: Trigger nodes in workflow
+        type: array
+        items:
+          $ref: '#/definitions/Trigger'
+      workflow_variables:
+        description: The environment variables for this workflow
+        type: array
+        items:
+          $ref: '#/definitions/WorkflowVariable'
+
+
+  WorkflowMetaData:
+    type: object
+    required: [id_, name]
+    description: A workflow  metadata object
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+      name:
+        description: The name of the workflow.
+        type: string
+        example: HelloWorldWorkflow
+      description:
+        type: string
+        description: Description of the workflow
+      tags:
+        description: Tag for workflow
+        type: array
+        items:
+          type: string
+      is_valid:
+        description: Is this workflow able to be run?
+        type: boolean
+      errors:
+        $ref: '#/definitions/ExecutionElementErrors'
+
+  Action:
+    type: object
+    required: [app_name, app_version, label, name, position]
+    description: Encapsulation of executing an action in an app.
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+        description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
+      parallelized:
+        type: boolean
+        default: false
+      app_name:
+        description: The app to which the action belongs
+        type: string
+        example: CyberAnalytics
+      app_version:
+        description: The version of the app to which the action belongs
+        type: string
+        example: 1.0.0
+      name:
+        description: The name of the function this Action will take
+        type: string
+        example: pause
+      label:
+        description: User-specified label for the action
+        type: string
+        example: action1
+        minLength: 1
+      is_valid:
+        description: are the parameters of this action valid?
+        type: boolean
+      errors:
+        $ref: '#/definitions/ExecutionElementErrors'
+      parallel_parameter:
+        description: Alternative parameter to parallelize the action on
+        $ref: '#/definitions/Parameter'
+      parameters:
+        description: The input parameters to the action
+        type: array
+        items:
+          $ref: '#/definitions/Parameter'
+      priority:
+        description: The priority for this Action, which will be compared to other Actions with the same parent Action, descending, i.e. 5 is the highest priority.
+        type: integer
+        minimum: 1
+        maximum: 5
+        default: 3
+      position:
+        description: Position object representing various fields of the position of the Action in the playbook editor.
+        $ref: '#/definitions/Position'
+
+  Branch:
+    type: object
+    required: [source_id, destination_id]
+    description: Object representing an edge connecting two nodes in a Workflow
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+      source_id:
+        description: The source node ID for this Branch
+        $ref: '#/definitions/Uuid'
+      errors:
+        $ref: '#/definitions/ExecutionElementErrors'
+      destination_id:
+        description: The destination node ID for this Branch, if the conditions evaluate to True
+        $ref: '#/definitions/Uuid'
+
+  Parameter:
+    type: object
+    nullable: true
+    required: [name, variant]
+    description: Object used for passing parameters into actions. The variety of parameter must be provided.
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+      name:
+        type: string
+        example: regex
+      errors:
+        $ref: '#/definitions/ExecutionElementErrors'
+      parallelized:
+        type: boolean
+        default: false
+      value:
+        description: The value of the argument OR The ID of the action whose output should be used
+      variant:
+        type: string
+        enum: [STATIC_VALUE, ACTION_RESULT, WORKFLOW_VARIABLE, GLOBAL]
+
+  Condition:
+    type: object
+    required: [label, conditional]
+    description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+        description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
+      app_name:
+        type: string
+        enum: [Builtin]
+      app_version:
+        description: The version of the app to which the action belongs
+        type: string
+        example: 1.0.0
+      name:
+        type: string
+        enum: [Condition]
+      label:
+        description: User-specified label for the condition
+        type: string
+        example: condition1
+      is_valid:
+        description: are the contents of this condition valid?
+        type: boolean
+      errors:
+        $ref: '#/definitions/ExecutionElementErrors'
+      conditional:
+        type: string
+        example: "if Pre_Hello_World_Action == 5: return Hello_World_Action"
+      position:
+        description: Position object representing various fields of the position of the Action in the playbook editor.
+        $ref: '#/definitions/Position'
+
+  Transform:
+    type: object
+    required: [label, transform]
+    description: Filters or otherwise transforms the data given to it
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+        description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
+      app_name:
+        type: string
+        enum: [Builtin]
+      app_version:
+        description: The version of the app to which the action belongs
+        type: string
+        example: 1.0.0
+      name:
+        type: string
+        enum: [Transform]
+      label:
+        description: The user defined name of the transform
+        type: string
+        example: split string
+      is_valid:
+        description: are the contents of this transform valid?
+        type: boolean
+      errors:
+        $ref: '#/definitions/ExecutionElementErrors'
+      transform:
+        description: The transform to apply to the result of its parent Action
+        type: string
+        enum: [get_value_at_index, get_value_at_key, split_string_to_array]
+      parameter:
+        description: The parameter to pass to the chosen transform
+      position:
+        description: Position object representing various fields of the position of the Action in the playbook editor.
+        $ref: '#/definitions/Position'
+
+  Trigger:
+    type: object
+    required: [label]
+    description: Halts execution of workflow pending an external trigger
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+        description: The ID of the object. If updating a workflow and the trigger object already exists, ID is required. Otherwise, do not include it.
+      app_name:
+        type: string
+        enum: [Builtin]
+      app_version:
+        description: The version of the app to which the action belongs
+        type: string
+        example: 1.0.0
+      name:
+        type: string
+        enum: [Trigger]
+      label:
+        description: The user defined name of the trigger
+        type: string
+        example: Wait for Approval
+      is_valid:
+        description: are the contents of this trigger valid?
+        type: boolean
+      errors:
+        $ref: '#/definitions/ExecutionElementErrors'
+      trigger_schema:
+        description: Schema to validate sent data with
+        type: object
+      position:
+        description: Position object representing various fields of the position of the Action in the playbook editor.
+        $ref: '#/definitions/Position'
+
+  Position:
+    type: object
+    required: [x, y]
+    description: Various specifications for how the Action is displayed in the playbook editor
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+      x:
+        type: number
+        description: The X coordinate for the Action
+      y:
+        type: number
+        description: The Y coordinate for the Action
+
+  WorkflowVariable:
+    type: object
+    required: [name, value]
+    description: A workflow variable object that is available in the workflow scope
+    additionalProperties: false
+    properties:
+      id_:
+        $ref: '#/definitions/Uuid'
+      name:
+        type: string
+        description: The name of the workflow variable
+      value:
+        type: string
+        description: The value of the workflow variable
+      description:
+        type: string
+        description: Description of the workflow variable
+
+  CopyWorkflow:
+    type: object
+    properties:
+      playbook_id:
+        $ref: '#/definitions/Uuid'
+      workflow_name:
+        type: string
+
+  ExecutionElementErrors:
+    description: Errors attached to this ExecutionElement
+    type: array
+    items:
+      type: string
+
+  WorkflowStatusSummary:
+    type: object
+    required: [execution_id, workflow_id, name, status]
+    properties:
+      execution_id:
+        $ref: '#/definitions/Uuid'
+      workflow_id:
+        $ref: '#/definitions/Uuid'
+      name:
+        description: The name of the workflow.
+        type: string
+        example: WorkflowName
+        readOnly: true
+      status:
+        description: The current status of the workflow
+        type: string
+        enum: ['PENDING', 'EXECUTING', 'PAUSED', 'AWAITING_DATA', 'COMPLETED', 'ABORTED']
+        readOnly: true
+      started_at:
+        description: The timestamp of the start of workflow execution
+        type: string
+        format: date-time
+        example: '2017-05-24T00:42:22.934058Z'
+        readOnly: true
+      completed_at:
+        description: The timestamp of the end of workflow execution
+        type: string
+        format: date-time
+        example: '2017-05-24T00:42:22.934058Z'
+      user:
+        description: The user that executed the workflow
+        type: string
+      node_status:
+        description: The currently executing node
+        $ref: '#/definitions/NodeStatusSummary'
+
+  WorkflowStatus:
+    type: object
+    required: [node_statuses, execution_id, workflow_id, name, status]
+    properties:
+      execution_id:
+        $ref: '#/definitions/Uuid'
+      workflow_id:
+        $ref: '#/definitions/Uuid'
+      name:
+        description: The name of the workflow.
+        type: string
+        example: WorkflowName
+        readOnly: true
+      status:
+        description: The current status of the workflow
+        type: string
+        enum: ['PENDING', 'EXECUTING', 'PAUSED', 'AWAITING_DATA', 'COMPLETED', 'ABORTED']
+        readOnly: true
+      started_at:
+        description: The timestamp of the start of workflow execution
+        type: string
+        format: date-time
+        example: '2017-05-24T00:42:22.934058Z'
+        readOnly: true
+      completed_at:
+        description: The timestamp of the end of workflow execution
+        type: string
+        format: date-time
+        example: '2017-05-24T00:42:22.934058Z'
+      user:
+        description: The user that executed the workflow
+        type: string
+      node_statuses:
+        description: The statuses of the workflow nodes
+        type: array
+        items:
+          $ref: '#/definitions/NodeStatus'
+
+  NodeStatus:
+    type: object
+    description: The status of an node execution
+    required: [node_id, execution_id, label, name, app_name, status, started_at]
+    properties:
+      execution_id:
+        $ref: '#/definitions/Uuid'
+      node_id:
+        $ref: '#/definitions/Uuid'
+      label:
+        description: The name of the node
+        type: string
+        example: 'This One node'
+        readOnly: true
+      app_name:
+        description: The name of the app associated with the node
+        type: string
+        example: ThingGetter
+        readOnly: true
+      name:
+        description: The name of the node take by the node
+        type: string
+        example: get that thing
+        readOnly: true
+      status:
+        description: The status of the node
+        type: string
+        enum: ['EXECUTING', 'SUCCESS', 'FAILURE']
+        readOnly: true
+      result:
+        description: The result of the node
+        type: object
+        readOnly: true
+      started_at:
+        description: The timestamp of when the node started
+        type: string
+        format: date-time
+        example: '2017-05-24T00:42:22.934058Z'
+        readOnly: true
+      completed_at:
+        description: The timestamp of when the node completed
+        type: string
+        format: date-time
+        example: '2017-05-24T00:43:26.930892Z'
+        readOnly: true
+
+  NodeStatusSummary:
+    type: object
+    description: The descriptive identification of an node
+    required: [node_id, execution_id, label, name, app_name]
+    properties:
+      execution_id:
+        $ref: '#/definitions/Uuid'
+      node_id:
+        $ref: '#/definitions/Uuid'
+      label:
+        description: The name of the node
+        type: string
+        example: 'This One node'
+        readOnly: true
+      app_name:
+        description: The name of the app associated with the node
+        type: string
+        example: ThingGetter
+        readOnly: true
+      name:
+        description: The name of the node take by the node
+        type: string
+        example: get that thing
+        readOnly: true
+
+  ExecuteWorkflow:
+    type: object
+    required: [workflow_id]
+    properties:
+      workflow_id:
+        $ref: '#/definitions/Uuid'
+      execution_id:
+        $ref: '#/definitions/Uuid'
+      start:
+        description: The ID of the starting node
+        $ref: '#/definitions/Uuid'
+      parameters:
+        type: array
+        items:
+          $ref: '#/definitions/Parameter'
+      workflow_variables:
+        type: array
+        items:
+          $ref: '#/definitions/WorkflowVariable'
+
+  ControlWorkflow:
+    type: object
+    required: [status]
+    properties:
+      status:
+        description: The action to take on the executing workflow
+        type: string
+        enum: ['trigger', 'abort']
+      trigger_id:
+        description: The ID of the trigger node
+        $ref: '#/definitions/Uuid'
+      trigger_data:
+        description: The data that will be sent to the trigger
+        type: string
+
