@@ -62,14 +62,13 @@ class Action(Base):
     app_version = Column(String(80), nullable=False)
     name = Column(String(255), nullable=False)
     label = Column(String(80), nullable=False)
-    position = Column(JSON, default={"x": 0, "y": 0})
+    position = Column(JSON, default={"x": 0, "y": 0, "_walkoff_type": "position"})
     workflow_id = Column(UUID(as_uuid=True), ForeignKey('workflow.id_', ondelete='CASCADE'))
 
     # Columns specific to Actions
     priority = Column(Integer, default=3)
     parallelized = Column(Boolean(), nullable=False, default=False)
-    # parallel_parameter = relationship('Parameter', cascade='all, delete, delete-orphan',
-    #                                   uselist=False, foreign_keys=[Parameter.parallel_action_id], passive_deletes=True)
+    _walkoff_type = Column(String(80), default=__tablename__)
     parameters = relationship('Parameter', cascade='all, delete, delete-orphan', foreign_keys=[Parameter.action_id],
                               passive_deletes=True)
 
@@ -77,6 +76,8 @@ class Action(Base):
 
     def __init__(self, **kwargs):
         super(Action, self).__init__(**kwargs)
+        self.position["_walkoff_type"] = "position"
+        self._walkoff_type = self.__tablename__
         self.validate()
 
     def validate(self):

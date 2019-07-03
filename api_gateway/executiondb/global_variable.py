@@ -28,6 +28,7 @@ class GlobalVariableTemplate(Base):
     name = Column(String(), nullable=False)
     schema = Column(JSON, default={}, nullable=False)
     description = Column(String(255), default="")
+    _walkoff_type = Column(String(80), default="variable")
 
 
 class GlobalVariable(Base):

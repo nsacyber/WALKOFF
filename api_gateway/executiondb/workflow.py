@@ -39,6 +39,7 @@ class Workflow(Base):
     start = Column(UUID(as_uuid=True))
     description = Column(String(), default="")
     tags = Column(JSON, default="")
+    _walkoff_type = Column(String(80), default=__tablename__)
 
     actions = relationship("Action", cascade="all, delete-orphan", passive_deletes=True)
     branches = relationship("Branch", cascade="all, delete-orphan", passive_deletes=True)
@@ -51,6 +52,7 @@ class Workflow(Base):
 
     def __init__(self, **kwargs):
         super(Workflow, self).__init__(**kwargs)
+        self._walkoff_type = self.__tablename__
         self.validate()
 
     def validate(self):

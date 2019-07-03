@@ -27,8 +27,9 @@ class Trigger(Base):
     app_version = Column(String(80), nullable=False)
     name = Column(String(255), nullable=False)
     label = Column(String(80), nullable=False)
-    position = Column(JSON, default={"x": 0, "y": 0})
+    position = Column(JSON, default={"x": 0, "y": 0, "_walkoff_type": "position"})
     workflow_id = Column(UUID(as_uuid=True), ForeignKey('workflow.id_', ondelete='CASCADE'))
+    _walkoff_type = Column(String(80), default=__tablename__)
     children = []
 
     # Columns specific to Trigger
@@ -36,6 +37,8 @@ class Trigger(Base):
 
     def __init__(self, **kwargs):
         super(Trigger, self).__init__(**kwargs)
+        self.position["_walkoff_type"] = "position"
+        self._walkoff_type = self.__tablename__
         self.validate()
 
     def validate(self):
