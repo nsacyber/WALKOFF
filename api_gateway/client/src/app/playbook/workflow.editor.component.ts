@@ -295,7 +295,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.addClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
-						incomingEdges.addClass('success-highlight');
+						incomingEdges.addClass(['success-highlight', 'transitioning']);
+						setTimeout(() => incomingEdges.removeClass('transitioning'), 500)
 						break;
 					case NodeStatuses.SUCCESS:
 						matchingNode.addClass('success-highlight');
@@ -305,7 +306,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 						//incomingEdges.addClass('success-highlight');
 						//incomingEdges.removeClass('executing-highlight');
 						if (nodeType != ActionType.CONDITION) {
-							outgoingEdges.addClass('success-highlight');
+							outgoingEdges.addClass(['success-highlight', 'transitioning']);
+							setTimeout(() => outgoingEdges.removeClass('transitioning'), 500)
 						}
 						break;
 					case NodeStatuses.FAILURE:
@@ -379,6 +381,13 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					.then(() => location.reload(true))
 			}
 		}, 5 * 1000)
+	}
+
+	get selectedActionResults(): any {
+		if (this.selectedAction) {
+			const nodeStatus = this.nodeStatuses.find(n => n.node_id == this.selectedAction.id);
+			if (nodeStatus && nodeStatus.status == NodeStatuses.SUCCESS) return nodeStatus.result;
+		}
 	}
 
 	/**
@@ -583,13 +592,18 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					},
 				},
 				{
+					selector: 'edge.transitioning',
+					css: {
+						'transition-property': 'line-color, width',
+						'transition-duration': '0.5s',
+					},
+				},
+				{
 					selector: 'edge.executing-highlight',
 					css: {
 						'width': '5px',
 						'target-arrow-color': '#ffef47',
 						'line-color': '#ffef47',
-						'transition-property': 'line-color, width',
-						'transition-duration': '0.25s',
 					},
 				},
 				{
@@ -598,8 +612,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 						'width': '5px',
 						'target-arrow-color': '#399645',
 						'line-color': '#399645',
-						'transition-property': 'line-color, width',
-						'transition-duration': '0.5s',
 					},
 				},
 				{
@@ -832,10 +844,10 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		const elements = [].concat(nodes, edges);
 		const oldElements = (this.cy) ? this.cy.elements().jsons() : [];
-		oldElements.forEach(old => {
+		oldElements.filter(old => old.classes).forEach(old => {
 			elements
 				.filter(el => el.data.id == old.data.id)
-				.forEach(el => el.classes = old.classes)
+				.forEach(el => el.classes = old.classes.replace('transitioning', ''))
 		})
 
 		return elements;
@@ -907,6 +919,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				this.router.navigateByUrl(`/workflows/${ savedWorkflow.id }`);
 			}).catch(e => this.toastrService.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
 		}
+
+		this.clearExecutionResults();
 	}
 
 	/**
@@ -1363,7 +1377,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Clears the red/green highlighting in the cytoscape graph.
 	 */
 	clearExecutionHighlighting(): void {
-		this.cy.elements().removeClass('success-highlight failure-highlight executing-highlight');
+		this.cy.elements().removeClass('success-highlight failure-highlight executing-highlight transitioning');
 	}
 
 	/**
