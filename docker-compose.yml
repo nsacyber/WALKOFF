@@ -11,7 +11,7 @@ services:
 #          memory: 8M
 #    restart: on-failure
   umpire:
-    command: python -m umpire.umpire --disable-worker-autoscale --disable-worker-autoheal # --log-level=debug
+    command: python -m umpire.umpire # --log-level=debug
     image: 127.0.0.1:5000/umpire:latest
     build:
      context: ./
@@ -175,6 +175,7 @@ services:
     image: 'bitnami/nginx:latest'
     ports:
       - '8080:8080'
+#      - '8081:8081' # Uncomment for unsecure HTTP access to API Gateway
     volumes:
       - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
       - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro

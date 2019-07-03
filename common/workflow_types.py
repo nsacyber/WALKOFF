@@ -53,14 +53,14 @@ class WorkflowJSONDecoder(json.JSONDecoder):
                 o.pop("_walkoff_type")
                 return Point(**o)
 
-            elif o["_walkoff_type"] == "actions":
+            elif o["_walkoff_type"] == "action":
                 # "parameters" in o and "priority" in o:
                 o.pop("_walkoff_type")
                 node = Action(**o)
                 self.nodes[node.id_] = node
                 return node
 
-            elif o["_walkoff_type"] == "parameters":
+            elif o["_walkoff_type"] == "parameter":
                 # "variant" in o
                 o.pop("_walkoff_type")
                 o["variant"] = ParameterVariant[o["variant"]]
@@ -71,21 +71,21 @@ class WorkflowJSONDecoder(json.JSONDecoder):
                 o.pop("_walkoff_type")
                 self.branches.add(Branch(source_id=o["source_id"], destination_id=o["destination_id"], id_=o["id_"]))
 
-            elif o["_walkoff_type"] == "conditions":
+            elif o["_walkoff_type"] == "condition":
                 # "conditional" in o
                 o.pop("_walkoff_type")
                 node = Condition(**o)
                 self.nodes[node.id_] = node
                 return node
 
-            elif o["_walkoff_type"] == "transforms":
+            elif o["_walkoff_type"] == "transform":
                 # "transform" in o
                 o.pop("_walkoff_type")
                 node = Transform(**o)
                 self.nodes[node.id_] = node
                 return node
 
-            elif o["_walkoff_type"] == "triggers":
+            elif o["_walkoff_type"] == "trigger":
                 # "trigger_schema" in o
                 o.pop("_walkoff_type")
                 node = Trigger(**o)
@@ -149,31 +149,33 @@ class WorkflowJSONEncoder(json.JSONEncoder):
             position = {"x": o.position.x, "y": o.position.y, "_walkoff_type": "position"}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
                     "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
-                    "execution_id": o.execution_id}
+                    "execution_id": o.execution_id, "_walkoff_type": "action"}
 
         elif isinstance(o, Condition):
             position = {"x": o.position.x, "y": o.position.y, "_walkoff_type": "position"}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
-                    "label": o.label, "position": position, "conditional": o.conditional}
+                    "label": o.label, "position": position, "conditional": o.conditional, "_walkoff_type": "condition"}
 
         elif isinstance(o, Transform):
             position = {"x": o.position.x, "y": o.position.y, "_walkoff_type": "position"}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
-                    "label": o.label, "position": position, "transform": o.transform}
+                    "label": o.label, "position": position, "transform": o.transform, "_walkoff_type": "transform"}
 
         elif isinstance(o, Trigger):
             position = {"x": o.position.x, "y": o.position.y, "_walkoff_type": "position"}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
-                    "label": o.label, "position": position, "trigger_schema": o.trigger_schema}
+                    "label": o.label, "position": position, "trigger_schema": o.trigger_schema,
+                    "_walkoff_type": "trigger"}
 
         elif isinstance(o, Parameter):
-            return {"name": o.name, "variant": o.variant, "value": o.value, "id_": o.id_}
+            return {"name": o.name, "variant": o.variant, "value": o.value, "id_": o.id_, "_walkoff_type": "parameter"}
 
         elif isinstance(o, ParameterVariant):
             return o.value
 
         elif isinstance(o, Variable):
-            return {"description": o.description, "id_": o.id_, "name": o.name, "value": o.value}
+            return {"description": o.description, "id_": o.id_, "name": o.name, "value": o.value,
+                    "_walkoff_type": "variable"}
 
         else:
             return o

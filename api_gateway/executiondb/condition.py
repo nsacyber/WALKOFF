@@ -28,7 +28,7 @@ class Condition(Base):
     label = Column(String(80), nullable=False)
     position = Column(JSON, default={"x": 0, "y": 0, "_walkoff_type": "position"})
     workflow_id = Column(UUID(as_uuid=True), ForeignKey('workflow.id_', ondelete='CASCADE'))
-    _walkoff_type = Column(String(80), default="conditions")
+    _walkoff_type = Column(String(80), default="condition")
 
 
     # Columns specific to Condition model

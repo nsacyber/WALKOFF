@@ -32,7 +32,6 @@ class ParameterApi(Base):
     placeholder = Column(JSON, default="")
     schema = Column(JSON, default={})
     action_api_id = Column(UUID(as_uuid=True), ForeignKey('action_api.id_', ondelete='CASCADE'))
-    _walkoff_type = Column(String(80), default="parameters")
 
 
 class ParameterApiSchema(BaseSchema):
@@ -67,6 +66,7 @@ class Parameter(Base):
     parallelized = Column(Boolean(), nullable=False, default=False)
     # parallel_action_id = Column(UUID(as_uuid=True), ForeignKey('action.id_', ondelete='CASCADE'))
     variant = Column(Enum(ParameterVariant), nullable=False)
+    _walkoff_type = Column(String(80), default="parameter")
 
 
 class ParameterSchema(BaseSchema):
