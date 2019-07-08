@@ -2,65 +2,19 @@ import json
 import logging
 import logging.config
 import os
-import sys
 import warnings
 from os.path import isfile, join, abspath
 
-import yaml
-
+from common.config import Config
 from api_gateway.helpers import format_db_path
 
 logger = logging.getLogger(__name__)
 
 
-def setup_logger():
-    log_config = None
-    logging.basicConfig()
-    if isfile(Config.LOGGING_CONFIG_PATH):
-        try:
-            with open(Config.LOGGING_CONFIG_PATH, 'r') as log_config_file:
-                log_config = json.loads(log_config_file.read())
-        except (IOError, OSError):
-            logger.info(f"Could not read logging config file: {Config.LOGGING_CONFIG_PATH}")
-        except ValueError:
-            logger.info(f"Invalid JSON in logging config file: {Config.LOGGING_CONFIG_PATH}")
-    else:
-        logger.info(f"Could not find logging config file: {Config.LOGGING_CONFIG_PATH}")
-
-    if log_config is not None:
-        logging.config.dictConfig(log_config)
-    else:
-        logger.info("Using basic logging config.")
-
-    def send_warnings_to_log(message, category, filename, lineno, file=None, *args):
-        logging.warning(
-            '%s:%s: %s:%s' %
-            (filename, lineno, category.__name__, message))
-        return
-
-    warnings.showwarning = send_warnings_to_log
-
-
-class Config(object):
+class FlaskConfig(object):
     from common.config import config as common_config
     # TODO: Merge triple-play config with this old config and replace the hack below
     common_config = common_config
-    # CONFIG VALUES
-
-    # IP and port for the webserver
-    IP = "127.0.0.1"
-    PORT = 5000
-
-    # IP addresses and ports for IPC (inter-process communication). Do not change these unless necessary. There must
-    # not be conflicts.
-    ZMQ_RESULTS_ADDRESS = 'tcp://127.0.0.1:5556'
-    ZMQ_COMMUNICATION_ADDRESS = 'tcp://127.0.0.1:5557'
-
-    # Specify the number of worker processes, and the number of threads for each worker process. Multiplying these
-    # numbers together specifies the max number of workflows that may be executing at the same time.
-    NUMBER_PROCESSES = 4
-    NUMBER_THREADS_PER_PROCESS = 3
-
     # Database types
     WALKOFF_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
@@ -77,17 +31,10 @@ class Config(object):
     CLIENT_PATH = join("api_gateway", "client")
     CONFIG_PATH = join(DATA_PATH, 'api_gateway.config')
     DB_PATH = abspath(join(DATA_PATH, 'api_gateway.db'))
-    DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
     EXECUTION_DB_PATH = abspath(join(DATA_PATH, 'execution.db'))
 
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
 
-    WALKOFF_SCHEMA_PATH = join(DATA_PATH, 'walkoff_schema.json')
-    WORKFLOWS_PATH = join(DATA_PATH, 'workflows')
-
-    KEYS_PATH = join("api_gateway", '.certificates')
-    CERTIFICATE_PATH = join(KEYS_PATH, 'api_gateway.crt')
-    PRIVATE_KEY_PATH = join(KEYS_PATH, 'api_gateway.key')
 
     # AppConfig
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -101,11 +48,7 @@ class Config(object):
     JWT_BLACKLIST_PRUNE_FREQUENCY = 1000
     MAX_STREAM_RESULTS_SIZE_KB = 156
 
-    SEPARATE_WORKERS = False
-    SEPARATE_RECEIVER = False
-    SEPARATE_INTERFACES = False
     ITEMS_PER_PAGE = 20
-    ACTION_EXECUTION_STRATEGY = 'local'
 
     EXECUTION_DB_USERNAME = ''
     EXECUTION_DB_PASSWORD = ''
@@ -117,24 +60,11 @@ class Config(object):
     SERVER_PRIVATE_KEY = ''
     CLIENT_PUBLIC_KEY = ''
     CLIENT_PRIVATE_KEY = ''
-    ACCUMULATOR_TYPE = 'external'
 
     SECRET_KEY = "SHORTSTOPKEY"
 
     __passwords = ['EXECUTION_DB_PASSWORD', 'WALKOFF_DB_PASSWORD', 'SERVER_PRIVATE_KEY',
                    'CLIENT_PRIVATE_KEY', 'SERVER_PUBLIC_KEY', 'CLIENT_PUBLIC_KEY', 'SECRET_KEY']
-
-    WORKFLOW_RESULTS_HANDLER = 'zmq'
-    WORKFLOW_RESULTS_PROTOCOL = 'protobuf'
-    WORKFLOW_RESULTS_KAFKA_CONFIG = {'bootstrap.servers': 'localhost:9092', 'group.id': 'results'}
-    WORKFLOW_RESULTS_KAFKA_TOPIC = 'results'
-
-    WORKFLOW_COMMUNICATION_HANDLER = 'zmq'
-    WORKFLOW_COMMUNICATION_PROTOCOL = 'protobuf'
-    WORKFLOW_COMMUNICATION_KAFKA_CONFIG = {'bootstrap.servers': 'localhost:9092', 'group.id': 'comm'}
-    WORKFLOW_COMMUNICATION_KAFKA_TOPIC = 'comm'
-
-    SEPARATE_PROMETHEUS = False
 
     ALEMBIC_CONFIG = join('.', 'alembic.ini')
 

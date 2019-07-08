@@ -27,9 +27,13 @@ def sfloat(value, default):
 
 
 class Config:
+    # Common options
+    API_GATEWAY_URI = os.environ.get("API_GATEWAY_URI", "http://api_gateway:8080")
+    REDIS_URI = os.getenv("REDIS_URI", "redis://redis:6379")
+
+
     # Worker options
     WORKER_TIMEOUT = os.environ.get("WORKER_TIMEOUT", "30")
-    API_GATEWAY_URI = os.environ.get("API_GATEWAY_URI", "http://api_gateway:8080")
     WALKOFF_USERNAME = os.environ.get("WALKOFF_USERNAME", '')
     WALKOFF_PASSWORD = os.environ.get("WALKOFF_PASSWORD", '')
 
@@ -43,7 +47,6 @@ class Config:
     UMPIRE_HEARTBEAT = os.getenv("UMPIRE_HEARTBEAT", "1")
 
     # Redis options
-    REDIS_URI = os.getenv("REDIS_URI", "redis://redis:6379")
     REDIS_EXECUTING_WORKFLOWS = os.getenv("REDIS_EXECUTING_WORKFLOWS", "executing-workflows")
     REDIS_PENDING_WORKFLOWS = os.getenv("REDIS_PENDING_WORKFLOWS", "pending-workflows")
     REDIS_ABORTING_WORKFLOWS = os.getenv("REDIS_ABORTING_WORKFLOWS", "aborting-workflows")
@@ -55,6 +58,13 @@ class Config:
     REDIS_WORKFLOW_TRIGGERS_GROUP = os.getenv("REDIS_WORKFLOW_TRIGGERS_GROUP", "workflow-triggers-group")
     REDIS_WORKFLOW_CONTROL = os.getenv("REDIS_WORKFLOW_CONTROL", "workflow-control")
     REDIS_WORKFLOW_CONTROL_GROUP = os.getenv("REDIS_WORKFLOW_CONTROL_GROUP", "workflow-control-group")
+
+    # API Gateway options
+    DB_TYPE = os.getenv("DB_TYPE", "postgres")
+    DB_HOST = os.getenv("DB_HOST", "postgres")
+    SERVER_DB = os.getenv("SERVER_DB", "walkoff")
+    EXECUTION_DB = os.getenv("EXECUTION_DB", "execution")
+
 
     # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
     # See: https://docs.docker.com/compose/reference/envvars/ for more information.
