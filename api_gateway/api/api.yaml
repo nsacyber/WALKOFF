@@ -17,8 +17,8 @@ tags:
     description: Authorization Operations
   - name: Apps
     description: App Management Operations
-  - name: Configuration
-    description: System Configuration Operations
+  - name: Settings
+    description: System Settings Operations
   - name: GlobalVariables
     description: GlobalVariable Operations
   - name: Users
@@ -48,7 +48,7 @@ servers:
 paths:
   $ref: ./apps.yaml
   $ref: ./auth.yaml
-  $ref: ./configuration.yaml
+  $ref: ./settings.yaml
   $ref: ./global_variables.yaml
   $ref: ./roles.yaml
   $ref: ./scheduler.yaml
@@ -65,7 +65,7 @@ components:
   schemas:
     $ref: ./objects/appapi.yaml
     $ref: ./objects/auth.yaml
-    $ref: ./objects/configuration.yaml
+    $ref: ./objects/settings.yaml
     $ref: ./objects/global_variables.yaml
     $ref: ./objects/objects.yaml
     $ref: ./objects/roles.yaml

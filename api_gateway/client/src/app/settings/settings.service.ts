@@ -15,14 +15,14 @@ export class SettingsService {
 	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 
 	getConfiguration(): Promise<Configuration> {
-		return this.http.get('/api/configuration')
+		return this.http.get('/api/settings')
 			.toPromise()
 			.then((data: object) => plainToClass(Configuration, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	updateConfiguration(configuration: Configuration): Promise<Configuration> {
-		return this.http.put('/api/configuration', configuration)
+		return this.http.put('/api/settings', configuration)
 			.toPromise()
 			.then((data: object) => plainToClass(Configuration, data))
 			.catch(this.utils.handleResponseError);
@@ -47,7 +47,7 @@ export class SettingsService {
 	}
 
 	editUser(user: User): Promise<User> {
-		return this.http.put('/api/users', user)
+		return this.http.put(`/api/users/${user.id}`, user)
 			.toPromise()
 			.then((data: object) => plainToClass(User, data))
 			.catch(this.utils.handleResponseError);
@@ -75,7 +75,7 @@ export class SettingsService {
 	}
 
 	editRole(role: Role): Promise<Role> {
-		return this.http.put('/api/roles', role)
+		return this.http.put(`/api/roles/${role.id}`, role)
 			.toPromise()
 			.then((data: object) => plainToClass(Role, data))
 			.catch(this.utils.handleResponseError);

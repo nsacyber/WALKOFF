@@ -1,0 +1,46 @@
+/settings:
+  get:
+    tags:
+      - Settings
+    summary: Reads the settings
+    operationId: api_gateway.server.endpoints.settings.read_settings
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Settings'
+      401:
+        description: Unauthorized access
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  put:
+    tags:
+      - Settings
+    summary: Updates the settings
+    operationId: api_gateway.server.endpoints.settings.update_settings
+    requestBody:
+      required: true
+      description: The settings object
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Settings'
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized access
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      515:
+        description: Could not write settings to file
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
