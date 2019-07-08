@@ -62,8 +62,8 @@ services:
     deploy:
       placement:
         constraints: [node.role==manager]
-#    ports:
-#      - 5000:5000
+    ports:
+      - 5000:5000
     networks:
       - walkoff_default
     # The commented lines are needed to enable auth on the custom registry
