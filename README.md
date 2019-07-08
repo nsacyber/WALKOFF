@@ -13,6 +13,9 @@ WALKOFF is a flexible, easy to use, automation framework allowing users to integ
  - *Modular:* Plug and play integration of almost anything with easy-to-develop applications.
  - *Visual Analytics:* Send workflow data to custom dashboards (and soon, Elasticsearch & Kibana!)
 
+Documentation
+------------------------
+https://walkoff.readthedocs.io/en/latest/
 
 Deploying WALKOFF
 ------------------------
