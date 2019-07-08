@@ -109,15 +109,15 @@ def sse_format(data, event_id, event=None, retry=None):
 #     return {}
 
 
-def format_db_path(db_type, path, username_env_key=None, password_env_key=None, host="localhost"):
+def format_db_path(db_type, path, username=None, password=None, host=None):
     """
     Formats the path to the database
 
     Args:
         db_type (str): Type of database being used
         path (str): Path to the database
-        username_env_key (str): The name of the username environment variable for this db
-        password_env_key (str): The name of the password environment variable for this db
+        username (str): Username for this db
+        password (str): Password for this db
         host (str): The hostname where the database is hosted
     Returns:
         (str): The path of the database formatted for SqlAlchemy
@@ -131,15 +131,12 @@ def format_db_path(db_type, path, username_env_key=None, password_env_key=None, 
         sqlalchemy_path = f"{db_type}:///{path}"
 
     elif db_type in supported_dbs:
-        username = os.environ.get(username_env_key, None)
-        password = os.environ.get(password_env_key, None)
-
         if username and password:
             sqlalchemy_path = f"{db_type}://{username}:{password}@{host}/{path}"
         elif username:
             sqlalchemy_path = f"{db_type}://{username}@{host}/{path}"
         else:
-            logger.error(f"Database type was set to {db_type}, but no login was found in system environment variables.")
+            logger.error(f"Database type was set to {db_type}, but no login was provided.")
 
     else:
         logger.error(f"Database type {db_type} not supported for database {path}")

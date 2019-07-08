@@ -22,7 +22,7 @@ from api_gateway.server.decorators import with_resource_factory, validate_resour
 from api_gateway.server.problem import dne_problem, invalid_input_problem, improper_json_problem
 from api_gateway.server.endpoints.results import push_to_workflow_stream_queue
 from http import HTTPStatus
-from api_gateway.config import Config
+from api_gateway.flask_config import Config
 
 logger = logging.getLogger(__name__)
 

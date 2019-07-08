@@ -2,6 +2,7 @@ import logging
 from common.config import config
 
 import aiohttp
+from cryptography.fernet import Fernet
 
 from common.message_types import(message_dumps, NodeStatusMessage, WorkflowStatusMessage,
                                  StatusEnum, JSONPatch, JSONPatchOps)
@@ -124,3 +125,11 @@ async def send_status_update(session, execution_id, message, headers=None):
         logger.error(f"Could not send status message to {url}: {e!r}")
     except Exception as e:
         logger.error(f"Unknown error while sending message to {url}: {e!r}")
+
+
+def fernet_encrypt(key, string):
+    return Fernet(key).encrypt(string.encode()).decode()
+
+
+def fernet_decrypt(key, string):
+    return Fernet(key).decrypt(string.encode()).decode()

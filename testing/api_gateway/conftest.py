@@ -1,7 +1,7 @@
 from os import environ
 import pytest
 
-from api_gateway.config import Config
+from api_gateway.flask_config import Config
 from api_gateway.helpers import format_db_path
 
 environ["REDIS_OPTIONS"] = "{\"host\": \"redis\", \"port\": 6379}"

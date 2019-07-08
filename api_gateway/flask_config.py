@@ -29,5 +29,3 @@ class FlaskConfig(object):
     SECRET_KEY = "SHORTSTOPKEY"
 
     ALEMBIC_CONFIG = join('.', 'alembic.ini')
-
-    SWAGGER_URL = '/api/docs'
