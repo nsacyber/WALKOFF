@@ -37,7 +37,7 @@ services:
       - DOCKER_REGISTRY=127.0.0.1:5000
 
       # Redis options
-      - REDIS_URI=redis://redis:6379
+      - REDIS_URI=redis://walkoff_redis:6379
       - REDIS_ACTIONS_IN_PROCESS=actions-in-process
       - REDIS_WORKFLOW_QUEUE=workflow-queue
       - REDIS_WORKFLOWS_IN_PROCESS=workflows-in-process
@@ -52,7 +52,7 @@ services:
       placement:
         constraints: [node.role==manager]
     depends_on:
-      - redis
+     - walkoff_redis
     secrets:
       - encryption_key
 
@@ -62,8 +62,8 @@ services:
     deploy:
       placement:
         constraints: [node.role==manager]
-    ports:
-      - 5000:5000
+#    ports:
+#      - 5000:5000
     networks:
       - walkoff_default
     # The commented lines are needed to enable auth on the custom registry
@@ -89,7 +89,7 @@ services:
     networks:
       - walkoff_default
     environment:
-      - "REDIS_OPTIONS={\"host\": \"redis\", \"port\": 6379}"
+      - "REDIS_OPTIONS={\"host\": \"walkoff_redis\", \"port\": 6379}"
       - "IP=0.0.0.0"
       - "PORT=8080"
       - "WALKOFF_DB_TYPE=postgresql"
@@ -109,11 +109,11 @@ services:
   #    volumes:
   #      - ./api_gateway/client/:/app/api_gateway/client
 
-  redis:
-    container_name: redis
+  walkoff_redis:
+    container_name: walkoff_redis
     image: "redis"
-    ports:
-      - 6379:6379
+#    ports:
+#      - 6379:6379
     networks:
       - walkoff_default
     command: redis-server --port 6379
@@ -126,8 +126,8 @@ services:
     environment:
       - "POSTGRES_USER=walkoff"
       - "POSTGRES_PASSWORD=walkoff"
-    ports:
-      - 5432:5432
+#    ports:
+#      - 5432:5432
     deploy:
       placement:
         constraints: [node.role==manager]
@@ -152,8 +152,8 @@ services:
   portainer:
     container_name: portainer_data
     image: "portainer/portainer"
-    ports:
-      - 9020:9000
+# ports:
+    ##      - 9020:9000
     networks:
       - walkoff_default
     deploy:
