@@ -15,7 +15,7 @@ services:
       - SWARM_NETWORK=walkoff_default
       - APP_PREFIX=walkoff_app
       - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=localhost:5000
+      - DOCKER_REGISTRY=127.0.0.1:5000
 
       # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
       # See: https://docs.docker.com/compose/reference/envvars/ for more information.

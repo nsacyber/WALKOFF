@@ -66,7 +66,7 @@ def compose_from_app(path: pathlib.Path, name):
     return compose
 
 
-def log_proc_output(proc):
+async def log_proc_output(proc):
     stdout, stderr = await proc.communicate()
     if proc.returncode:
         for line in stderr.decode().split('\n'):
@@ -115,15 +115,16 @@ async def deploy_compose(compose):
 
     proc = await asyncio.create_subprocess_exec("docker", "stack", "deploy", "--compose-file", compose, "walkoff",
                                                 stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-    log_proc_output(proc)
+    await log_proc_output(proc)
 
     return proc.returncode
 
 
-async def build_image(service):
-    proc = await asyncio.create_subprocess_exec("docker", "build", repo,
+async def build_image(repo, dockerfile, context):
+    proc = await asyncio.create_subprocess_exec("docker", "build", "-t", repo,
+                                                "-f", dockerfile, context,
                                                 stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-    log_proc_output(proc)
+    await log_proc_output(proc)
 
     return proc.returncode
 
@@ -131,7 +132,7 @@ async def build_image(service):
 async def push_image(repo):
     proc = await asyncio.create_subprocess_exec("docker", "push", repo,
                                                 stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-    log_proc_output(proc)
+    await log_proc_output(proc)
 
     return proc.returncode
 
@@ -186,11 +187,6 @@ class Bootloader:
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
 
-        if args.build:
-            #TODO: call docker-compose build here from the compose package or better yet, call our async build functions
-            # and build it all asynchronously
-            pass
-
         # Bring up the base compose with the registry
         base_compose = parse_yaml(Config.BASE_COMPOSE)
         return_code = await deploy_compose(base_compose)
@@ -199,22 +195,31 @@ class Bootloader:
         # Merge the base, walkoff, and app composes
         app_composes = generate_app_composes()
         walkoff_compose = parse_yaml(Config.WALKOFF_COMPOSE)
-        merged_compose = merge_composes(base_compose, app_composes + [walkoff_compose])
-        return_code = await deploy_compose(merged_compose)
+        merged_compose = merge_composes(walkoff_compose, app_composes)
 
+        builders = []
+        if args.build:
+            for service_name, service in merged_compose["services"].items():
+                builders.append(build_image(service["image"],
+                                service["build"]["dockerfile"], service["build"]["context"]))
+
+        await asyncio.gather(*builders, return_exceptions=True)
+
+        pushers = []
         # The registry is up so lets push the images we need into it
-        for service in merged_compose["services"]:
-            tag_image("127.0.0.1:5000", service["image"])
-            push_image(service["image"])
+        for service_name, service in merged_compose["services"].items():
+            pushers.append(push_image(service["image"]))
 
+        await asyncio.gather(*pushers, return_exceptions=True)
 
+        return_code = await deploy_compose(merged_compose)
 
         return
 
     async def down(self):
         proc = await asyncio.create_subprocess_exec("docker", "stack", "rm", "walkoff", stderr=asyncio.subprocess.PIPE,
                                                     stdout=asyncio.subprocess.PIPE)
-        log_proc_output(proc)
+        await log_proc_output(proc)
 
         return
 

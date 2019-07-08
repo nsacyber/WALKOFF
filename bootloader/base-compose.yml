@@ -10,18 +10,18 @@ services:
       - 5000:5000
     networks:
       - walkoff_default
-    # The commented lines are needed to enable auth on the custom registry
-    #    environment:
-    #      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
-    #      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
-    #      REGISTRY_AUTH: htpasswd
-    #      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
-    #      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+#    The commented lines are needed to enable auth on the custom registry
+#    environment:
+#      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
+#      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+#      REGISTRY_AUTH: htpasswd
+#      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+#      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
 #    volumes:
-      #      - ./data/config.yml:/etc/docker/registry/config.yml
+#      - ./data/config.yml:/etc/docker/registry/config.yml
 #      - ./data/registry:/var/lib/registry
-  #      - /var/lib/boot2docker:/certs
-  #      - /var/lib/boot2docker/auth:/auth
+#      - /var/lib/boot2docker:/certs
+#      - /var/lib/boot2docker/auth:/auth
 
   redis:
     container_name: redis
@@ -30,8 +30,8 @@ services:
       - 6379:6379
     networks:
       - walkoff_default
-    #    volumes:
-    #      - /var/lib/boot2docker/redis:/data
+#    volumes:
+#      - /var/lib/boot2docker/redis:/data
 
   postgres:
     container_name: postgres
@@ -48,6 +48,29 @@ services:
       - walkoff_default
 #    volumes:
 #      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data
+
+  nginx:
+    image: 'bitnami/nginx:latest'
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
+      - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
+      - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
+
+  portainer:
+    container_name: portainer_data
+    image: "portainer/portainer"
+    ports:
+      - 9020:9000
+    networks:
+      - walkoff_default
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+#      - portainer_data:/data portainer/portainer
 
 secrets:
   encryption_key:

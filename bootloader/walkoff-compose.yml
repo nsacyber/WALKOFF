@@ -1,19 +1,19 @@
 version: '3.5'
 services:
-  dockerhost:
-    image: qoomon/docker-host
-    networks:
-      - walkoff_default
-    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
-    deploy:
-      resources:
-        limits:
-          memory: 8M
-    restart: on-failure
+#  dockerhost:
+#    image: qoomon/docker-host
+#    networks:
+#      - walkoff_default
+#    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 8M
+#    restart: on-failure
 
   umpire:
 #    command: python -m umpire.umpire --log-level=debug --disable-worker-autoscale
-    image: localhost:5000/umpire:latest
+    image: 127.0.0.1:5000/umpire:latest
     build:
      context: ./
      dockerfile: umpire/Dockerfile
@@ -35,7 +35,7 @@ services:
       - SWARM_NETWORK=walkoff_default
       - APP_PREFIX=walkoff_app
       - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=localhost:5000
+      - DOCKER_REGISTRY=127.0.0.1:5000
 
       # Redis options
       - REDIS_URI=redis://redis:6379
@@ -60,7 +60,7 @@ services:
   api_gateway:
     ports:
     - "8080:8080"
-    image: "localhost:5000/api_gateway:latest"
+    image: "127.0.0.1:5000/api_gateway:latest"
     build:
       context: ./
       dockerfile: ./api_gateway/Dockerfile
@@ -102,7 +102,7 @@ services:
       - SWARM_NETWORK=walkoff_default
       - APP_PREFIX=walkoff_app
       - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=localhost:5000
+      - DOCKER_REGISTRY=127.0.0.1:5000
 
       # Redis options
       - REDIS_URI=redis://redis:6379
@@ -139,7 +139,7 @@ services:
       - SWARM_NETWORK=walkoff_default
       - APP_PREFIX=walkoff_app
       - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=localhost:5000
+      - DOCKER_REGISTRY=127.0.0.1:5000
 
       # Redis options
       - REDIS_URI=redis://redis:6379
