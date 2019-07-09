@@ -24,37 +24,36 @@ The minimal directory structure for a WALKOFF application is as follows:
 
 Development Instructions
 -------------------------
-*For a complete example of a WALKOFF application, please refer to the hello_world skeleton application in the WALKOFF/apps directory.*
-
 **1. Write Python Functions in a Standalone Script**
     * Start by developing your app and its functions in a standalone script outside of WALKOFF – this way you can get basic functionality down before dealing with WALKOFF.
     * **Note:** all functions that you expect to turn into actions must be written asynchronously (i.e. ``async def function_name()``)
 
-**2. Create a Package in the Apps directory of WALKOFF**
+**2. Copy the hello_world application folder from the WALKOFF/apps directory**
+    * Rename the copied package to the name of your desired application
     *  **Note:** The package name must be in ``snake_case`` and should have the same name as the app you want to create
-    * Within the new application package, store all files within a version number folder (i.e. "1.0.0")
-    * Place your developed app script into a ``src`` folder within the version folder.
-    * Only files under ``src`` will be copied into the application's Docker container.
+    
+**3. Copy your developed python functions into the** ``app.py`` **file in the** ``1.0.0/src`` **directory**
+    * Ensure that your new functions are included *under* the HelloWorld class declaration
+    **Note:** Only files under ``src`` will be copied into the application's Docker container.
 
-**3. Create an** ``api.yaml`` **metadata file to describe your app and its actions**
+**4. Change the HelloWorld class name in** ``app.py`` **to match the desired class name of your new application**
+    * Ensure that this class name matches the asyncio ``__main__`` call at the bottom of ``app.py``
+    
+**5. Change the** ``api.yaml`` **metadata file to describe your app and its actions**
     * For WALKOFF to recognize a function as an action, it must have a corresponding entry in the apps's ``api.yaml`` file
-    * Place this file at the same level as the ``src`` directory
-    * Note:
-        * The action names in this file must exactly match your function names in code.
-        * You must include at least ``name``, ``app_version``, and ``actions`` in this file.
+    * The action names in this file must exactly match your function names in code.
+    * You must include at least ``name``, ``app_version``, and ``actions`` in this file.
 
-**4. Include a** ``requirements.txt``
+**6. Change the** ``requirements.txt`` **to match your applications needs**
     * This file should include any Python package dependencies your app contains
-    * Place this file at the same level as the ``src`` directory
     * The Dockerfile will use this to pip install dependencies
 
-**5. Create a** ``docker-compose`` **YAML file**
+**7. Change the** ``docker-compose`` **YAML file**
     * This will control how your app’s Docker container will run.
-    * Place this file at the same level as the ``src`` directory
     * At a minimum, utilize the ``hello_world`` application's ``docker-compose.yml`` and simply change the service name to match that of your new application.
         * **Note:** If you want directories on your host to be available in the container, you can add volume mounts here.
 
-**6. Create a** ``Dockerfile``
+**Optional:** ``Dockerfile`` **Customization**
     * This will control how your app will be built.
     * See ``hello_world’s Dockerfile`` for a detailed, step-by-step example on how to create your own ``Dockerfile``
     * If your application's Python dependencies require any OS libraries to build, or if your application requires any OS packages to run, include them in this file.
