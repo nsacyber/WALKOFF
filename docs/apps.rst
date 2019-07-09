@@ -65,7 +65,7 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
     * Ensure that this class name matches the asyncio ``__main__`` call at the bottom of ``app.py``
     * **EXAMPLE:** For this step we will change the name of the HelloWorld class to VirusTotal, then below that, change the "app_name" value to be "virus_total" instead of "hello_world". Finally at the end of the file change HelloWorld.run() to be VirusTotal.run(). By the end of all of these actions, your app.py file should look like this: 
     
-    IMAGE HEREEEEE
+    .. image:: ../docs/images/vt.png
     
 **5. Change the** ``api.yaml`` **metadata file to describe your app and its actions**
     * For WALKOFF to recognize a function as an action, it must have a corresponding entry in the apps's ``api.yaml`` file
