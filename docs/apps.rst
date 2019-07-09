@@ -59,16 +59,17 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
 **3. Copy your developed python functions into the** ``app.py`` **file in the** ``1.0.0/src`` **directory**
     * Ensure that your new functions are included *under* the HelloWorld class declaration. 
     * **Note:** Only files under ``src`` will be copied into the application's Docker container.
-    * **EXAMPLE:** Delete everything after "def __init__()" but before if __name__ == "__main__", then paste your standalone script into the gap that has been cleared for your code. One line above the pretty print script, add "@staticmethod" to the same column start as def _pretty_print. This is because _pretty_print is a helper function and we won't define it in the api.yaml later on.
+    * **EXAMPLE:** Delete everything after ``def __init__()`` but before ``if __name__ == "__main__",`` then paste your standalone script into the gap that has been cleared for your code. One line above the pretty print script, add ``@staticmethod`` to the same column start as ``def _pretty_print``. This is because ``_pretty_print`` is a *helper function* and we won't define it in the api.yaml later on.
 
 **4. Change the HelloWorld class name in** ``app.py`` **to match the class name of your new app**
     * Ensure that this class name matches the asyncio ``__main__`` call at the bottom of ``app.py``
+    * Likewise, also change the app_name value to reflect your new application name
     * **EXAMPLE:** For this step we will change the name of the HelloWorld class to VirusTotal, then below that, change the "app_name" value to be "virus_total" instead of "hello_world". Finally at the end of the file change HelloWorld.run() to be VirusTotal.run(). By the end of all of these actions, your app.py file should look like this: 
     
     .. image:: ../docs/images/vt.png
     
 **5. Change the** ``api.yaml`` **metadata file to describe your app and its actions**
-    * For WALKOFF to recognize a function as an action, it must have a corresponding entry in the apps's ``api.yaml`` file
+    * For WALKOFF to recognize a function as an action, it must have a corresponding entry in the app's ``api.yaml`` file
     * The action names in this file must exactly match your function names in code.
     * You must include at least ``name``, ``app_version``, and ``actions`` in this file.
     * **EXAMPLE:** 
