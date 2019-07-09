@@ -31,7 +31,7 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
     * **Note:** all functions that you expect to turn into actions must be written asynchronously (i.e. ``async def function_name()``)
     * **EXAMPLE:** Below is example code that can be used to interact with VirusTotal's Api as a standalone script
  
- 	.. code-block:: console
+ 	.. code-block:: python
 	
 	    def _pretty_print(some_dict):
         	pretty = json.dumps(some_dict, sort_keys=False, indent=4)
@@ -73,7 +73,7 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
     * The action names in this file must exactly match your function names in code.
     * You must include at least ``name``, ``app_version``, and ``actions`` in this file.
     * **EXAMPLE:** 
-    	.. code-block:: console
+    	.. code-block:: html
 	
 		walkoff_version: 1.0.0
 		app_version: 1.0.0
@@ -108,7 +108,7 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
     * This file should include any Python package dependencies your app contains
     * The Dockerfile will use this to pip install dependencies
     * **EXAMPLE:** 
-    	.. code-block:: console
+    	.. code-block:: python
 		
 		requests
 
@@ -118,7 +118,7 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
         * **Note:** If you want directories on your host to be available in the container, you can add volume mounts here.
     * **EXAMPLE:**
     
-	    .. code-block:: console
+	    .. code-block:: html
 	    
 		version: '3.4'
 		services:
