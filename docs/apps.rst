@@ -24,7 +24,7 @@ The minimal directory structure for a WALKOFF application is as follows:
 
 Development Instructions
 -------------------------
-If you would like to follow along by adding a VirusTotal app to your Walkoff instance, follow the **EXAMPLE** bullets at the end of **most** steps.
+If you would like to follow along by adding a VirusTotal app to your Walkoff instance, follow the **EXAMPLE** bullets at the end of most steps.
 
 **1. Write Python Functions in a Standalone Script**
     * Start by developing your app and its functions in a standalone script outside of WALKOFF – this way you can get basic functionality down before dealing with WALKOFF.
