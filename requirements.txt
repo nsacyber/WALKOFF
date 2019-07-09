@@ -7,3 +7,5 @@ docker
 docker-compose
 pyyaml
 sqlalchemy
+sphinxcontrib-openapi
+m2r
