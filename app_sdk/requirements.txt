@@ -1,4 +1,4 @@
 aiohttp
 pyyaml
 asteval
-pycrypto
+cryptography

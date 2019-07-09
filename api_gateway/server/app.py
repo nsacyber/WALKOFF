@@ -12,7 +12,7 @@ from yaml import Loader, load
 from sqlalchemy import event
 from api_gateway.executiondb.workflow import Workflow
 
-from common.config import config
+from common.config import config, static
 from api_gateway.flask_config import FlaskConfig
 from api_gateway.extensions import db, jwt
 from api_gateway.server import context
@@ -48,11 +48,11 @@ def __register_blueprint(flaskapp, blueprint, url_prefix):
 
 def register_swagger_blueprint(flaskapp):
     # register swagger API docs location
-    swagger_path = os.path.join(config.API_PATH, 'composed_api.yaml')
+    swagger_path = os.path.join(static.API_PATH, 'composed_api.yaml')
     swagger_yaml = load(open(swagger_path), Loader=Loader)
-    swaggerui_blueprint = get_swaggerui_blueprint(config.SWAGGER_URL, swagger_yaml,
+    swaggerui_blueprint = get_swaggerui_blueprint(static.SWAGGER_URL, swagger_yaml,
                                                   config={'spec': swagger_yaml})
-    flaskapp.register_blueprint(swaggerui_blueprint, url_prefix=config.SWAGGER_URL)
+    flaskapp.register_blueprint(swaggerui_blueprint, url_prefix=static.SWAGGER_URL)
     flaskapp.logger.info("Registered blueprint for swagger API docs at url prefix /api/docs")
 
 
@@ -79,7 +79,7 @@ except Exception as e:
     sys.exit(1)
 
 jwt.init_app(_app)
-compose_api(config)
+compose_api(static)
 connexion_app.add_api('composed_api.yaml')
 _app.running_context = context.Context(app=_app)
 register_blueprints(_app)

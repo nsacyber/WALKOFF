@@ -33,11 +33,17 @@ class Context(object):
         if init_all:
             exp = re.compile(r"redis://(.*):(\d+)")
             r = re.match(exp, config.REDIS_URI)
+
+            if not r:
+                logger.error(f"REDIS_URI not set correctly, got {config.REDIS_URI} "
+                             f"but expected URI of form 'redis://hostname:6379'")
+                os._exit(1)
+
             host = r.group(1)
             try:
                 port = r.group(2)
             except IndexError:
                 port = 6379
 
-            self.cache = Redis({"host": host, "port": port})
+            self.cache = Redis(host=host, port=port)
             self.scheduler = api_gateway.scheduler.Scheduler(app)

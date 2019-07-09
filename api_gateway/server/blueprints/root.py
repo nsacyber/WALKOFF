@@ -9,7 +9,7 @@ from flask import current_app
 from flask import render_template, send_from_directory, Blueprint
 from sqlalchemy.exc import SQLAlchemyError
 
-from common.config import config
+from common.config import static
 from api_gateway.extensions import db
 from api_gateway.server.problem import Problem
 
@@ -21,14 +21,14 @@ root_page = Blueprint('root_page', __name__, template_folder="api_gateway/client
 # Custom static data
 @root_page.route('client/<path:filename>')
 def client_app_folder(filename):
-    return send_from_directory(os.path.abspath(config.CLIENT_PATH), filename)
+    return send_from_directory(os.path.abspath(static.CLIENT_PATH), filename)
 
 
 # Default route to angular application
 @root_page.route('/', defaults={'path': ''})
 @root_page.route('/<path:path>')
 def default(path):
-    return send_from_directory(os.path.abspath(config.CLIENT_PATH), "dist/index.html")
+    return send_from_directory(os.path.abspath(static.CLIENT_PATH), "dist/index.html")
 
 
 # Route to login page

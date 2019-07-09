@@ -36,6 +36,9 @@ services:
       restart_policy:
         condition: none
     restart: "no"
+    configs:
+      - source: walkoff_common_env.yml
+        target: /common_env.yml
 
   walkoff_app_sdk:
     build:
@@ -66,3 +69,10 @@ services:
       # - DOCKER_HOST=tcp://ip_of_docker_swarm_manager:2376
       # - DOCKER_TLS_VERIFY=1
       # - DOCKER_CERT_PATH=/Path/to/certs/for/remote/docker/daemon
+    configs:
+      - source: walkoff_common_env.yml
+        target: /common_env.yml
+
+configs:
+  walkoff_common_env.yml:
+    external: true

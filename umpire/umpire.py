@@ -15,7 +15,7 @@ from compose.cli.command import get_project
 from docker.types.services import SecretReference
 
 
-from common.config import config
+from common.config import config, static
 from common.helpers import send_status_update, UUID_GLOB
 from common.redis_helpers import connect_to_redis_pool, xlen, xdel
 from common.message_types import WorkflowStatusMessage
@@ -53,7 +53,7 @@ class Umpire:
         self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
 
         try:
-            await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
+            await self.redis.xgroup_create(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP, mkstream=True)
         except aioredis.errors.BusyGroupError:
             logger.info("Workflow Queue stream already exists, not creating new one.")
 
@@ -99,9 +99,9 @@ class Umpire:
         logger.info("Shutting down Umpire...")
 
         # Clean up redis streams
-        action_queues = set(await self.redis.keys(pattern="*:*", encoding="utf-8")).union({config.REDIS_WORKFLOW_QUEUE})
-        await self.redis.xgroup_destroy(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP)
-        [await self.redis.xgroup_destroy(q, config.REDIS_ACTION_RESULTS_GROUP) for q in action_queues]
+        action_queues = set(await self.redis.keys(pattern="*:*", encoding="utf-8")).union({static.REDIS_WORKFLOW_QUEUE})
+        await self.redis.xgroup_destroy(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP)
+        [await self.redis.xgroup_destroy(q, static.REDIS_ACTION_RESULTS_GROUP) for q in action_queues]
         mask = [await self.redis.delete(q) for q in action_queues]
         removed_qs = list(compress(action_queues, mask))
         logger.debug(f"Removed redis streams: {removed_qs}")
@@ -249,9 +249,9 @@ class Umpire:
             image_name = full_tag
 
         try:
-            encryption_secret_id = await get_secret(self.docker_client, "encryption_key")
+            encryption_secret_id = await get_secret(self.docker_client, "walkoff_encryption_key")
             secrets = await load_secrets(self.docker_client, project=self.app_repo.apps[app][version])
-            secrets.append(SecretReference(secret_id=encryption_secret_id, secret_name="encryption_key"))
+            secrets.append(SecretReference(secret_id=encryption_secret_id, secret_name="walkoff_encryption_key"))
             mode = {"replicated": {'Replicas': replicas}}
             mounts = await load_volumes(project=self.app_repo.apps[app][version])
             # TODO: change to environmental variable abs path + data/shared
@@ -342,8 +342,8 @@ class Umpire:
             return
 
     async def scale_worker(self):
-        total_workflows = await xlen(self.redis, config.REDIS_WORKFLOW_QUEUE)
-        executing_workflows = (await self.redis.xpending(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP))[0]
+        total_workflows = await xlen(self.redis, static.REDIS_WORKFLOW_QUEUE)
+        executing_workflows = (await self.redis.xpending(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP))[0]
         queued_workflows = total_workflows - executing_workflows
 
         logger.debug(f"Queued Workflows: {queued_workflows}")
@@ -469,13 +469,13 @@ class Umpire:
         while True:
             try:
                 with await self.redis as redis:
-                    msg = await redis.xread_group(config.REDIS_WORKFLOW_CONTROL_GROUP, CONTAINER_ID,
-                                                  streams=[config.REDIS_WORKFLOW_CONTROL], count=1, latest_ids=['>'])
+                    msg = await redis.xread_group(static.REDIS_WORKFLOW_CONTROL_GROUP, CONTAINER_ID,
+                                                  streams=[static.REDIS_WORKFLOW_CONTROL], count=1, latest_ids=['>'])
             except aioredis.errors.ReplyError:
-                logger.debug(f"Stream {config.REDIS_WORKFLOW_CONTROL} doesn't exist. Attempting to create it...")
-                await self.redis.xgroup_create(config.REDIS_WORKFLOW_CONTROL, config.REDIS_WORKFLOW_CONTROL_GROUP,
+                logger.debug(f"Stream {static.REDIS_WORKFLOW_CONTROL} doesn't exist. Attempting to create it...")
+                await self.redis.xgroup_create(static.REDIS_WORKFLOW_CONTROL, static.REDIS_WORKFLOW_CONTROL_GROUP,
                                                mkstream=True)
-                logger.debug(f"Created stream {config.REDIS_WORKFLOW_CONTROL}.")
+                logger.debug(f"Created stream {static.REDIS_WORKFLOW_CONTROL}.")
                 continue
 
             if len(msg) < 1:
@@ -488,7 +488,7 @@ class Umpire:
             execution_id = msg[0][2][b"execution_id"].decode()
             workflow = workflow_loads(msg[0][2][b"workflow"])
 
-            executing_workflows = await self.redis.xpending(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP)
+            executing_workflows = await self.redis.xpending(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP)
 
             if executing_workflows[0] < 1:
                 status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
@@ -516,7 +516,7 @@ class Umpire:
                         await container.kill(signal="SIGKILL")
                     await self.redis.delete(stream)
                 await self.redis.delete(f"{execution_id}:results")
-            await self.redis.xack(stream=stream, group_name=config.REDIS_WORKFLOW_CONTROL_GROUP, id=id_)
+            await self.redis.xack(stream=stream, group_name=static.REDIS_WORKFLOW_CONTROL_GROUP, id=id_)
             await xdel(self.redis, stream=stream, id_=id_)
 
 

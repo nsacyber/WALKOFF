@@ -2,11 +2,10 @@ import logging
 from pathlib import Path
 import os
 
-import yaml
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WALKOFF")
-CONFIG_PATH = os.getenv("CONFIG_PATH", "/common_env.yml")
+CONFIG_PATH = (Path(__file__).parent / "config.ini").resolve()
 
 
 def sint(value, default):
@@ -27,36 +26,7 @@ def sfloat(value, default):
         return default
 
 
-class Static:
-    """Common location for static values"""
-
-    # Redis options
-    REDIS_EXECUTING_WORKFLOWS = "executing-workflows"
-    REDIS_PENDING_WORKFLOWS = "pending-workflows"
-    REDIS_ABORTING_WORKFLOWS = "aborting-workflows"
-    REDIS_ACTIONS_IN_PROCESS = "actions-in-process"
-    REDIS_WORKFLOW_QUEUE = "workflow-queue"
-    REDIS_WORKFLOWS_IN_PROCESS = "workflows-in-process"
-    REDIS_WORKFLOW_GROUP = "workflow-group"
-    REDIS_ACTION_RESULTS_GROUP = "action-results-group"
-    REDIS_WORKFLOW_TRIGGERS_GROUP = "workflow-triggers-group"
-    REDIS_WORKFLOW_CONTROL = "workflow-control"
-    REDIS_WORKFLOW_CONTROL_GROUP = "workflow-control-group"
-
-    # API Gateway paths
-    API_PATH = Path("api_gateway") / "api"
-    CLIENT_PATH = Path("api_gateway") / "client"
-    SWAGGER_URL = "/api/docs"
-
-
 class Config:
-    """Common location for configurable values.
-    Precedence:
-    1. Environment Variables
-    2. Config File
-    3. Defaults defined here
-    """
-
     # Common options
     API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "http://api_gateway:8080")
     REDIS_URI = os.getenv("REDIS_URI", "redis://redis:6379")
@@ -76,6 +46,19 @@ class Config:
     DOCKER_REGISTRY = os.getenv("DOCKER_REGISTRY", "127.0.0.1:5000")
     UMPIRE_HEARTBEAT = os.getenv("UMPIRE_HEARTBEAT", "1")
 
+    # Redis options
+    REDIS_EXECUTING_WORKFLOWS = "executing-workflows"
+    REDIS_PENDING_WORKFLOWS = "pending-workflows"
+    REDIS_ABORTING_WORKFLOWS = "aborting-workflows"
+    REDIS_ACTIONS_IN_PROCESS = "actions-in-process"
+    REDIS_WORKFLOW_QUEUE = "workflow-queue"
+    REDIS_WORKFLOWS_IN_PROCESS = "workflows-in-process"
+    REDIS_WORKFLOW_GROUP = "workflow-group"
+    REDIS_ACTION_RESULTS_GROUP = "action-results-group"
+    REDIS_WORKFLOW_TRIGGERS_GROUP = "workflow-triggers-group"
+    REDIS_WORKFLOW_CONTROL = "workflow-control"
+    REDIS_WORKFLOW_CONTROL_GROUP = "workflow-control-group"
+
     # API Gateway options
     DB_TYPE = os.getenv("DB_TYPE", "postgres")
     DB_HOST = os.getenv("DB_HOST", "postgres")
@@ -83,6 +66,9 @@ class Config:
     EXECUTION_DB_NAME = os.getenv("EXECUTION_DB", "execution")
     DB_USERNAME = os.getenv("DB_USERNAME", "")
     DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+    API_PATH = Path("api_gateway") / "api"
+    CLIENT_PATH = Path("api_gateway") / "client"
+    SWAGGER_URL = "/api/docs"
 
     # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
     # See: https://docs.docker.com/compose/reference/envvars/ for more information.
@@ -97,16 +83,5 @@ class Config:
     def get_float(self, key, default):
         return sfloat(getattr(self, key), default)
 
-    def load_config(self):
-        with open(CONFIG_PATH) as f:
-            y = yaml.safe_load(f)
-
-        for key, value in y.items():
-            if hasattr(self, key.upper()) and not os.getenv(key.upper()):
-                setattr(self, key.upper(), value)
-
 
 config = Config()
-config.load_config()
-
-static = Static()

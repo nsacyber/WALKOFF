@@ -10,8 +10,7 @@ from walkoff_app_sdk.common.workflow_types import workflow_loads, Action, Parame
 from walkoff_app_sdk.common.async_logger import AsyncLogger, AsyncHandler
 from walkoff_app_sdk.common.helpers import UUID_GLOB
 from walkoff_app_sdk.common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
-from walkoff_app_sdk.common.global_cipher import GlobalCipher
-
+from walkoff_app_sdk.common.config import config
 
 # get app environment vars
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
@@ -130,7 +129,7 @@ class AppBase:
                         params = {}
                         for p in action.parameters:
                             if p.variant == ParameterVariant.GLOBAL:
-                                f = open('/run/secrets/encryption_key')
+                                f = open('/run/secrets/walkoff_encryption_key')
                                 key = f.read()
                                 my_cipher = GlobalCipher(key)
                                 temp = my_cipher.decrypt(p.value)

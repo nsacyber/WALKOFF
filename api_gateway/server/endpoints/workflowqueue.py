@@ -13,6 +13,7 @@ import gevent
 
 from marshmallow import ValidationError
 
+from common.config import config, static
 from common.message_types import StatusEnum, message_dumps
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusSchema
@@ -22,7 +23,6 @@ from api_gateway.server.decorators import with_resource_factory, validate_resour
 from api_gateway.server.problem import dne_problem, invalid_input_problem, improper_json_problem
 from api_gateway.server.endpoints.results import push_to_workflow_stream_queue
 from http import HTTPStatus
-from api_gateway.flask_config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -146,8 +146,8 @@ def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
     # Assign the execution id to the workflow so the worker knows it
     workflow["execution_id"] = execution_id
     # ToDo: self.__box.encrypt(message))
-    current_app.running_context.cache.sadd(Config.common_config.REDIS_PENDING_WORKFLOWS, execution_id)
-    current_app.running_context.cache.xadd(Config.common_config.REDIS_WORKFLOW_QUEUE,
+    current_app.running_context.cache.sadd(static.REDIS_PENDING_WORKFLOWS, execution_id)
+    current_app.running_context.cache.xadd(static.REDIS_WORKFLOW_QUEUE,
                                            {execution_id: json.dumps(workflow)})
     gevent.spawn(push_to_workflow_stream_queue, workflow_status_json, "PENDING")
     current_app.logger.info(f"Created Workflow Status {workflow['name']} ({execution_id})")
@@ -170,9 +170,9 @@ def control_workflow(execution):
     if status == 'abort':
         logger.info(f"User '{get_jwt_claims().get('username', None)}' aborting workflow: {execution_id}")
         message = {"execution_id": execution_id, "status": status, "workflow": workflow_schema.dumps(workflow)}
-        current_app.running_context.cache.smove(Config.common_config.REDIS_PENDING_WORKFLOWS,
-                                                Config.common_config.REDIS_ABORTING_WORKFLOWS, execution_id)
-        current_app.running_context.cache.xadd(Config.common_config.REDIS_WORKFLOW_CONTROL, message)
+        current_app.running_context.cache.smove(static.REDIS_PENDING_WORKFLOWS,
+                                                static.REDIS_ABORTING_WORKFLOWS, execution_id)
+        current_app.running_context.cache.xadd(static.REDIS_WORKFLOW_CONTROL, message)
 
         return None, HTTPStatus.NO_CONTENT
     elif status == 'trigger':

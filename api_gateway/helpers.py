@@ -319,8 +319,8 @@ def validate_uuid(id_, stringify=False):
         return None
 
 
-def compose_api(config):
-    with open(os.path.join(config.API_PATH, 'api.yaml'), 'r') as api_yaml:
+def compose_api(static):
+    with open(os.path.join(static.API_PATH, 'api.yaml'), 'r') as api_yaml:
         final_yaml = []
         for line_num, line in enumerate(api_yaml):
             if line.lstrip().startswith('$ref:'):
@@ -329,13 +329,13 @@ def compose_api(config):
                 indentation = split_line[0].count('  ')
                 try:
                     final_yaml.extend(
-                        read_and_indent(os.path.join(config.API_PATH, reference), indentation))
+                        read_and_indent(os.path.join(static.API_PATH, reference), indentation))
                     final_yaml.append(os.linesep)
                 except (IOError, OSError):
                     logger.error(f"Could not find or open {reference} on line {line_num}")
             else:
                 final_yaml.append(line)
-    with open(os.path.join(config.API_PATH, 'composed_api.yaml'), 'w') as composed_yaml:
+    with open(os.path.join(static.API_PATH, 'composed_api.yaml'), 'w') as composed_yaml:
         composed_yaml.writelines(final_yaml)
         logger.info("Wrote composed_api.yaml")
 

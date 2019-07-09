@@ -1,11 +1,6 @@
-import json
 import logging
-import logging.config
-import os
-import warnings
-from os.path import isfile, join, abspath
 
-from common.config import Config
+from common.config import config
 from api_gateway.helpers import format_db_path
 
 logger = logging.getLogger(__name__)
@@ -13,9 +8,9 @@ logger = logging.getLogger(__name__)
 
 class FlaskConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = format_db_path(Config.DB_TYPE, Config.SERVER_DB_NAME,
-                                             Config.DB_USERNAME, Config.DB_PASSWORD,
-                                             Config.DB_HOST)
+    SQLALCHEMY_DATABASE_URI = format_db_path(config.DB_TYPE, config.SERVER_DB_NAME,
+                                             config.DB_USERNAME, config.DB_PASSWORD,
+                                             config.DB_HOST)
 
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
@@ -26,6 +21,7 @@ class FlaskConfig(object):
 
     ITEMS_PER_PAGE = 20
 
-    SECRET_KEY = "SHORTSTOPKEY"
+    with open(config.ENCRYPTION_KEY_PATH) as f:
+        SECRET_KEY = f.read()
 
-    ALEMBIC_CONFIG = join('.', 'alembic.ini')
+    # ALEMBIC_CONFIG = join('.', 'alembic.ini')
