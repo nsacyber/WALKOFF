@@ -34,9 +34,9 @@ Development Instructions
     
 **3. Copy your developed python functions into the** ``app.py`` **file in the** ``1.0.0/src`` **directory**
     * Ensure that your new functions are included *under* the HelloWorld class declaration
-    **Note:** Only files under ``src`` will be copied into the application's Docker container.
+    * **Note:** Only files under ``src`` will be copied into the application's Docker container.
 
-**4. Change the HelloWorld class name in** ``app.py`` **to match the desired class name of your new application**
+**4. Change the HelloWorld class name in** ``app.py`` **to match the class name of your new app**
     * Ensure that this class name matches the asyncio ``__main__`` call at the bottom of ``app.py``
     
 **5. Change the** ``api.yaml`` **metadata file to describe your app and its actions**
