@@ -1,3 +1,5 @@
+# This config file manages paths and values that can be adjusted to adapt Walkoff to your environment.
+
 # Common options
 API_GATEWAY_URI: "http://api_gateway:8080"
 REDIS_URI: "redis://redis:6379"
@@ -18,7 +20,6 @@ DOCKER_REGISTRY: "127.0.0.1:5000"
 UMPIRE_HEARTBEAT: "1"
 
 # API Gateway options
-
 DB_TYPE: "postgresql"
 DB_HOST: "postgres"
 SERVER_DB_NAME: "walkoff"
