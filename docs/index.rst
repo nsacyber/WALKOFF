@@ -72,9 +72,6 @@ Deploying WALKOFF
             https://localhost:8080
 
 
-or
-
-
     .. code-block:: console
 
             https://127.0.0.1:8080
