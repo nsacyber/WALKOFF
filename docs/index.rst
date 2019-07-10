@@ -69,11 +69,6 @@ Deploying WALKOFF
 
     .. code-block:: console
 
-            https://localhost:8080
-
-
-    .. code-block:: console
-
             https://127.0.0.1:8080
 
 #. Once navigated to the login page, the default username is "admin" and password is "admin." These can and should be changed upon initial login.
