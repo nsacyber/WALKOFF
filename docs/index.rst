@@ -72,7 +72,7 @@ Deploying WALKOFF
             https://localhost:8080
 
 
-	or
+or
 
 
     .. code-block:: console
