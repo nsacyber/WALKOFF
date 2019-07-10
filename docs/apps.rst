@@ -156,7 +156,7 @@ If your application Docker service is already running and you would like to upda
 .. code-block:: console
 
 	app_dir=apps/hello_world/1.0.0
-	app_tag=localhost:5000/walkoff_app_hello_world:1.0.0
+	app_tag=127.0.0.1:5000/walkoff_app_hello_world:1.0.0
 	docker build -f $app_dir/Dockerfile -t $app_tag $app_dir
 	docker push $app_tag
 	docker service rm walkoff_app_hello_world
