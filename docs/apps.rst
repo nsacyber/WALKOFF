@@ -33,19 +33,20 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
  
  	.. code-block:: python
 	
-	    def _pretty_print(some_dict):
-        	pretty = json.dumps(some_dict, sort_keys=False, indent=4)
-        	print(pretty)
-        	return pretty
+		@staticmethod
+		def _pretty_print(some_dict):
+			pretty = json.dumps(some_dict, sort_keys=False, indent=4)
+			print(pretty)
+			return pretty
 
-	    async def ip_lookup(self, ip, apikey):
-		url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
-		parameters = {'ip': ip, 'apikey': apikey}
-		response = requests.get(url, params=parameters)
-		response_dict = response.json()
-		pretty = self._pretty_print(response_dict)
-		await self.console_logger.info(pretty)
-		return pretty
+		async def ip_lookup(self, ip, apikey):
+			url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
+			parameters = {'ip': ip, 'apikey': apikey}
+			response = requests.get(url, params=parameters)
+			response_dict = response.json()
+			pretty = self._pretty_print(response_dict)
+			await self.console_logger.info(pretty)
+			return pretty
 
 **2. Copy the hello_world application folder from the WALKOFF/apps directory**
     * Rename the copied package to the name of your desired application
@@ -156,7 +157,7 @@ If your application Docker service is already running and you would like to upda
 .. code-block:: console
 
 	app_dir=apps/hello_world/1.0.0
-	app_tag=localhost:5000/walkoff_app_hello_world:1.0.0
+	app_tag=127.0.0.1:5000/walkoff_app_hello_world:1.0.0
 	docker build -f $app_dir/Dockerfile -t $app_tag $app_dir
 	docker push $app_tag
 	docker service rm walkoff_app_hello_world

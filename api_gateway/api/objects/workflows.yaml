@@ -1,4 +1,4 @@
-Workflow:
+WorkflowJSON:
   type: object
   required: [name]
   description: A workflow object

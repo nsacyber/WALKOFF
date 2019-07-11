@@ -21,6 +21,7 @@ data/*.db
 data/*.db-journal
 npm-debug.log
 api_gateway/api/composed_api.yaml
+api_gateway/api/client_api.yaml
 api_gateway/client/node_modules/
 api_gateway/client/build/
 api_gateway/client/coverage/
