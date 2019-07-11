@@ -71,7 +71,7 @@ class SSH(AppBase):
                         async with conn.start_sftp_client() as sftp:
                             await sftp.mget(src_path, temp_dir, recurse=True)
                     except Exception as e2:
-                        return e2
+                        return String(e2)
 
                 spliced_path = src_path.split('/')
                 file_name = spliced_path[len(spliced_path) - 1]
@@ -85,7 +85,7 @@ class SSH(AppBase):
                         async with tunneled_conn.start_sftp_client() as sftp2:
                             await sftp2.mput(temp_dir + "/" + file_name, dest_path, recurse=True)
                     except Exception as e2:
-                        return e2
+                        return String(e2)
 
         # cleaning up temp file
         try:
