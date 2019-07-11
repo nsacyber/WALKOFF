@@ -32,7 +32,7 @@ Deploying WALKOFF
 
 3.  Perform the following command to launch WALKOFF in swarm mode
 
-       docker swarm init
+        docker swarm init
 
        **Note:** If you have multiple NICs you will need to use --advertise-addr to pick an address from which the swarm will be accessible.
 
@@ -46,8 +46,8 @@ Deploying WALKOFF
 
 6.  Perform the following command to launch WALKOFF with stack mode
 
-       docker-compose build
-       docker stack deploy --compose-file docker-compose.yml walkoff
+        docker-compose build
+        docker stack deploy --compose-file docker-compose.yml walkoff
 
 7. Navigate to the default IP and port. The default IP and the port can be changed in the server. Configuration settings will be saved in the ``common/config.py`` file. Walkoff now uses HTTPS by default through NGINX.
 

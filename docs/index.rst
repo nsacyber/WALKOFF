@@ -64,12 +64,12 @@ Deploying WALKOFF
                 docker-compose build
                 docker stack deploy --compose-file docker-compose.yml walkoff
 
-#. Navigate to the default IP and port. The default IP and the port can be changed in the server. Configuration settings will be saved in the ``common/config.py`` file. Walkoff now uses HTTPS by default through NGINX.
+#. Navigate to the default IP and port. The default IP and the port can be changed in the server. Configuration settings will be saved in the ``common/config.py`` file. Walkoff now uses **HTTPS** by default through NGINX.
 
 
     .. code-block:: console
 
-            https://localhost:8080
+            https://127.0.0.1:8080
 
 #. Once navigated to the login page, the default username is "admin" and password is "admin." These can and should be changed upon initial login.
 
