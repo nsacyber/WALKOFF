@@ -48,14 +48,14 @@
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Workflow'
+            $ref: '#/components/schemas/WorkflowJSON'
     responses:
       201:
         description: Workflow created.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Workflow'
+              $ref: '#/components/schemas/WorkflowJSON'
 
       400:
         description: Workflow already exists.
@@ -89,7 +89,7 @@
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Workflow'
+              $ref: '#/components/schemas/WorkflowJSON'
       404:
         description: Workflow does not exist.
         content:
@@ -108,7 +108,7 @@
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Workflow'
+            $ref: '#/components/schemas/WorkflowJSON'
     parameters:
       - name: workflow
         in: path
@@ -126,7 +126,7 @@
               required: [workflow]
               properties:
                 workflow:
-                  $ref: '#/components/schemas/Workflow'
+                  $ref: '#/components/schemas/WorkflowJSON'
       404:
         description: Workflow does not exist.
         content:

@@ -77,7 +77,7 @@
               required: [dashboard]
               properties:
                 dashboard:
-                  $ref: '#/components/schemas/Workflow'
+                  $ref: '#/components/schemas/Dashboard'
       404:
         description: Dashboard does not exist.
         content:
