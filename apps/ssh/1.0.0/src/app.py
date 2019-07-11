@@ -102,21 +102,7 @@ class SSH(AppBase):
         # os.rmdir(temp_dir)
 
         return "Successfully Copied File(s)."
-    #
-    # async def sftp_copy_folder(self, src_path, dest_path, src_host, src_port, src_username, src_password, dest_host, dest_port,
-    #                     dest_username, dest_password):
-    #
-    #     curr_dir = os.getcwd()
-    #     temp_dir = os.path.join(curr_dir, r'temp_data')
-    #     os.makedirs(temp_dir, exist_ok=True)
-    #
-    #     async with asyncssh.connect(host=src_host, port=src_port, username=src_username, password=src_password,
-    #                                 known_hosts=None) as conn:
-    #         async with asyncssh.connect(host=dest_host, port=dest_port, username=dest_username, password=dest_password,
-    #                                     tunnel=conn, known_hosts=None) as tunneled_conn:
-    #             # grab remote folder, place in container
-    #             async with conn.start_sftp_client() as sftp:
-    #                 results = await sftp.get(src_path, temp_dir)
+
 
     async def sftp_copy_from_json(self, input):
         try:

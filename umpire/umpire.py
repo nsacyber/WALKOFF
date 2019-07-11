@@ -230,6 +230,8 @@ class Umpire:
         image_name = service.image_name
         image = None
 
+         # TODO: Ensure that image_name == app_name
+
         if app_name in self.running_apps:
             logger.info(f"Service {app} already exists. Trying 'update_app' instead.")
             await self.update_app(app, version, replicas)
