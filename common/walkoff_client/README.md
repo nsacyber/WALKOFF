@@ -14,38 +14,25 @@ Python 2.7 and 3.4+
 ## Installation & Usage
 ### pip install
 
-If the python package is hosted on Github, you can install directly from Github
-
+Clone the Repo, then cd to the client and pip install it
 ```sh
-pip install git+https://github.com/GIT_USER_ID/GIT_REPO_ID.git
+git clone https://github.com/nsacyber/WALKOFF.git
+cd WALKOFF/common/walkoff_client
+pip install .
 ```
-(you may need to run `pip` with root permission: `sudo pip install git+https://github.com/GIT_USER_ID/GIT_REPO_ID.git`)
 
 Then import the package:
 ```python
 import walkoff_client 
 ```
 
-### Setuptools
-
-Install via [Setuptools](http://pypi.python.org/pypi/setuptools).
-
-```sh
-python setup.py install --user
-```
-(or `sudo python setup.py install` to install the package for all users)
-
-Then import the package:
-```python
-import walkoff_client
-```
-
 ## Getting Started
 
-Please follow the [installation procedure](#installation--usage) and then run the following:
+Please follow the [installation procedure](#installation--usage) and then try the following to create an example workflow and run it:
 
 ```python
 import urllib3
+from time import sleep
 
 import walkoff_client as walkoff
 
@@ -72,7 +59,6 @@ def main():
     # Create a workflow API client and perform your desired actions
     workflow_api = walkoff.WorkflowsApi(api_client)
     r = workflow_api.read_all_workflows()
-
     print(r)
 
     workflow = {
@@ -82,19 +68,33 @@ def main():
                 "_walkoff_type": "action",
                 "app_name": "hello_world",
                 "app_version": "1.0.0",
-                "id_": "c6280949-bfa3-690b-aaf4-d8d9faaceecc",
-                "label": "hello_world",
-                "name": "hello_world",
+                "errors": [],
+                "id_": "0871a04e-9caf-6ebe-8c18-3efd016fd304",
+                "is_valid": True,
+                "label": "repeat_back_to_me",
+                "name": "repeat_back_to_me",
+                "parallelized": False,
+                "parameters": [
+                    {
+                        "_walkoff_type": "parameter",
+                        "id_": "0becfa01-5e1a-49c1-981f-2d94b7e839bd",
+                        "name": "call",
+                        "parallelized": False,
+                        "value": "examplevalue",
+                        "variant": "STATIC_VALUE"
+                    }
+                ],
                 "position": {
                     "_walkoff_type": "position",
-                    "x": 400,
-                    "y": 400
-                }
+                    "x": 290,
+                    "y": 390
+                },
+                "priority": 3
             }
         ],
         "id_": "abad0f4b-5965-fc5d-b3d5-dcf0c1f61a8d",
         "name": "ExampleWorkflow",
-        "start": "c6280949-bfa3-690b-aaf4-d8d9faaceecc",
+        "start": "0871a04e-9caf-6ebe-8c18-3efd016fd304",
     }
 
     r2 = workflow_api.create_workflow(workflow)
@@ -103,10 +103,22 @@ def main():
 
     assert len(workflow_api.read_all_workflows()) == 1
 
+    wfq_task = walkoff.ExecuteWorkflow(parameters=[{
+        "_walkoff_type": "parameter",
+        "id_": "0becfa01-5e1a-49c1-981f-2d94b7e839bd",
+        "name": "call",
+        "parallelized": False,
+        "value": "overriding value",
+        "variant": "STATIC_VALUE"
+    }], workflow_id=workflow["id_"])
+
+    workflowqueue_api = walkoff.WorkflowQueueApi(api_client)
+
+    workflowqueue_api.execute_workflow(wfq_task)
+
 
 if __name__ == "__main__":
     main()
-
 
 ```
 
