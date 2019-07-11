@@ -7,7 +7,7 @@ from Crypto.Cipher import AES
 from flask import current_app
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 
-from sqlalchemy import Column, String, JSON, ForeignKey
+from sqlalchemy import Column, String, JSON, ForeignKey, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 
@@ -54,6 +54,8 @@ class GlobalVariable(Base):
     # Columns specific to GlobalVariables
     description = Column(String(255), default="")
     schema_id = Column(UUID(as_uuid=True), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
+    # update_permission = Column(ARRAY(String(255)), default=["admin"])
+    # delete_permission = Column(ARRAY(String(255)), default=["admin"])
 
 
 class GlobalVariableTemplateSchema(BaseSchema):
@@ -70,6 +72,7 @@ class GlobalVariableTemplateSchema(BaseSchema):
             Draft4Validator.check_schema(data["schema"])
         except (SchemaError, JSONSchemaValidationError) as e:
             raise MarshmallowValidationError(str(e))
+
 
 class GlobalVariableSchema(BaseSchema):
     """Schema for global variables

@@ -9,7 +9,7 @@ class Resource(db.Model, TrackModificationsMixIn):
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     permissions = db.relationship('Permission', backref=db.backref('resource'), cascade='all, delete-orphan')
 
-    def __init__(self, name, permissions):
+    def __init__(self, name, permissions, resource_ids=None):
         """Initializes a new Resource object, which is a type of Resource that a Role may have access to.
 
         Args:
@@ -18,6 +18,7 @@ class Resource(db.Model, TrackModificationsMixIn):
                 for the Resource
         """
         self.name = name
+        self.resource_ids = resource_ids
         self.set_permissions(permissions)
 
     def set_permissions(self, new_permissions):

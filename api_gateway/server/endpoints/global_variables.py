@@ -6,6 +6,10 @@ from copy import deepcopy
 from api_gateway import helpers
 from api_gateway.executiondb.global_variable import (GlobalVariable, GlobalVariableSchema,
                                                      GlobalVariableTemplate, GlobalVariableTemplateSchema)
+from api_gateway.serverdb.role import Role
+from api_gateway.serverdb.user import User
+from api_gateway.serverdb.resource import Permission
+from api_gateway.extensions import db
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, paginate
 from api_gateway.server.problem import unique_constraint_problem
@@ -95,6 +99,34 @@ def delete_global(global_var):
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["create"]))
 def create_global():
     data = request.get_json()
+    global_id = data['id_']
+
+    # update role permissions
+    for role in db.session.query(Role):
+        if role.name == "guest": # data["update_permission"]:
+            for resource in role.resources:
+                if resource.name == "global_variables":
+                    if resource.resource_ids:
+                        resource.resource_ids.append(global_id)
+                        db.session.commit()
+                    else:
+                        resource.resource_ids = [global_id]
+                        db.session.commit()
+        logger.error(f"ROLE: {role}")
+
+    # update current users
+    for user in db.session.query(User):
+        if user.roles[0].name == "guest": # data["update_permission"]:
+            for resource in user.roles[0].resources:
+                if resource.name == "global_variables":
+                    if resource.resource_ids:
+                        resource.resource_ids.append(global_id)
+                        db.session.commit()
+                    else:
+                        resource.resource_ids = "global_id"
+                        db.session.commit()
+        logger.error(f"USER: {user}")
+
     try:
         global_variable = global_variable_schema.load(data)
         current_app.running_context.execution_db.session.add(global_variable)
@@ -110,6 +142,7 @@ def create_global():
 @with_global_variable("update", "global_var")
 def update_global(global_var):
     data = request.get_json()
+
     try:
         global_variable_schema.load(data, instance=global_var)
         current_app.running_context.execution_db.session.commit()
@@ -152,6 +185,7 @@ def delete_global_templates(global_template):
 @permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["create"]))
 def create_global_templates():
     data = request.get_json()
+
     try:
         global_variable_template = global_variable_template_schema.load(data)
         current_app.running_context.execution_db.session.add(global_variable_template)
