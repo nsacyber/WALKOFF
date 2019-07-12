@@ -46,7 +46,6 @@ class WorkflowJSONDecoder(json.JSONDecoder):
             if o.get("x") is not None and o.get("y") is not None:
                 return Point(**o)
             else:
-                print("Hello")
                 return o
         else:
             if o["_walkoff_type"] == "position":
