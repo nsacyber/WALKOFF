@@ -26,7 +26,7 @@ COMPOSE_BASE = {"version": "3.5",
                 "networks": {"walkoff_default": {"driver": "overlay", "name": "walkoff_default"}},
                 "secrets": {"encryption_key": {"external": True}}}
 
-APP_NAME_PREFIX = "walkoff_app_"
+APP_NAME_PREFIX = "walkoff_"
 
 
 def parse_yaml(path):
@@ -59,7 +59,7 @@ def compose_from_app(path: pathlib.Path, name):
         env_file = {"environment": parse_env_file(env_txt)}
     compose = copy.deepcopy(COMPOSE_BASE)
     build = {"build": {"context": str(path), "dockerfile": str(path / "Dockerfile")}}
-    image = {"image": f"{Config.DOCKER_REGISTRY}/{APP_NAME_PREFIX}{name}"}
+    image = {"image": f"{Config.DOCKER_REGISTRY}/{APP_NAME_PREFIX}{name}:{path.name}"}
     deploy = {"deploy": {"mode": "replicated", "replicas": 0, "restart_policy": {"condition": "none"}}}
     restart = {"restart": "no"}
     compose["services"] = {name: {**build, **image, **deploy, **restart, **env_file}}
@@ -99,9 +99,19 @@ def generate_app_composes():
             for version in app.iterdir():
                 # grabs all valid version directories of form "v0.12.3.45..."
                 if re.fullmatch(r"((\d\.?)+)", version.name):
-                    composes.append(compose_from_app(version, app.name))
+                    composes.append(compose_from_app(version, f"app_{app.name}"))
                 logger.info(f"Generated compose for {app.name} version: {version.name}")
     return composes
+
+
+async def create_encryption_key():
+    cmd = 'docker run python:3.7-alpine python -c "import os; print(os.urandom(16).hex())" | ' \
+          'docker secret create encryption_key -'
+
+    proc = await asyncio.create_subprocess_shell(cmd,
+                                            stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+    await log_proc_output(proc)
+    return proc.returncode
 
 
 async def deploy_compose(compose):
@@ -181,6 +191,7 @@ class Bootloader:
 
     async def up(self):
         # Set up a subcommand parser
+        return_code = await create_encryption_key()
         parser = argparse.ArgumentParser(description="Bring the WALKOFF stack up and initialize it")
         parser.add_argument("--build", action="store_true")
 
@@ -200,21 +211,20 @@ class Bootloader:
         builders = []
         if args.build:
             for service_name, service in merged_compose["services"].items():
-                builders.append(build_image(service["image"],
-                                service["build"]["dockerfile"], service["build"]["context"]))
+                builders.append(asyncio.create_task(build_image(service["image"],
+                                service["build"]["dockerfile"], service["build"]["context"])))
 
         await asyncio.gather(*builders, return_exceptions=True)
 
         pushers = []
         # The registry is up so lets push the images we need into it
         for service_name, service in merged_compose["services"].items():
-            pushers.append(push_image(service["image"]))
+            pushers.append(asyncio.create_task(push_image(service["image"])))
 
         await asyncio.gather(*pushers, return_exceptions=True)
 
         return_code = await deploy_compose(merged_compose)
-
-        return
+        return return_code
 
     async def down(self):
         proc = await asyncio.create_subprocess_exec("docker", "stack", "rm", "walkoff", stderr=asyncio.subprocess.PIPE,

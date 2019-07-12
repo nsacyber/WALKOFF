@@ -12,7 +12,7 @@ services:
 #    restart: on-failure
 
   umpire:
-#    command: python -m umpire.umpire --log-level=debug --disable-worker-autoscale
+    command: python -m umpire.umpire --log-level=debug --disable-worker-autoscale --disable-worker-autoheal
     image: 127.0.0.1:5000/umpire:latest
     build:
      context: ./
@@ -25,7 +25,7 @@ services:
     environment:
       # Worker options
       - WORKER_TIMEOUT=30
-      - API_GATEWAY_URI=http://dockerhost:8080
+      - API_GATEWAY_URI=http://api_gateway:8080
       - WALKOFF_USERNAME=admin
       - WALKOFF_PASSWORD=admin
 
@@ -58,8 +58,8 @@ services:
       - encryption_key
 
   api_gateway:
-    ports:
-    - "8080:8080"
+#    ports:
+#    - "8080:8080"
     image: "127.0.0.1:5000/api_gateway:latest"
     build:
       context: ./
@@ -126,6 +126,11 @@ services:
       context: ../app_sdk
       dockerfile: ./Dockerfile
     image: walkoff_app_sdk
+    deploy:
+      mode: replicated
+      replicas: 0
+      restart_policy:
+        condition: none
     environment:
       # Worker options
       - WORKER_TIMEOUT=30
@@ -150,3 +155,12 @@ services:
       # - DOCKER_HOST=tcp://ip_of_docker_swarm_manager:2376
       # - DOCKER_TLS_VERIFY=1
       # - DOCKER_CERT_PATH=/Path/to/certs/for/remote/docker/daemon
+
+secrets:
+  encryption_key:
+    external: true
+
+networks:
+  walkoff_default:
+    driver: overlay
+    name: walkoff_default

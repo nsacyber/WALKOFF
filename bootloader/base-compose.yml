@@ -23,6 +23,7 @@ services:
 #      - /var/lib/boot2docker:/certs
 #      - /var/lib/boot2docker/auth:/auth
 
+
   redis:
     container_name: redis
     image: "redis"
@@ -39,8 +40,8 @@ services:
     environment:
       - "POSTGRES_USER=walkoff"
       - "POSTGRES_PASSWORD=walkoff"
-    ports:
-      - 5432:5432
+#    ports:
+#      - 5432:5432
     deploy:
       placement:
         constraints: [node.role==manager]
@@ -53,6 +54,7 @@ services:
     image: 'bitnami/nginx:latest'
     ports:
       - '8080:8080'
+      - '8081:8081'
     volumes:
       - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
       - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
@@ -61,8 +63,8 @@ services:
   portainer:
     container_name: portainer_data
     image: "portainer/portainer"
-    ports:
-      - 9020:9000
+#    ports:
+#      - 9020:9000
     networks:
       - walkoff_default
     deploy:

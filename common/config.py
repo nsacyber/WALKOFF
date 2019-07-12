@@ -59,7 +59,7 @@ class Config:
     # Bootloader options
     BASE_COMPOSE = "./bootloader/base-compose.yml"
     WALKOFF_COMPOSE = "./bootloader/walkoff-compose.yml"
-    TMP_COMPOSE = "./data/tmp-compose.yml"
+    TMP_COMPOSE = "./tmp-compose.yml"
 
     # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
     # See: https://docs.docker.com/compose/reference/envvars/ for more information.
