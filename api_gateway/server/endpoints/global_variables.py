@@ -1,5 +1,5 @@
 from flask import current_app, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_claims
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
 
@@ -45,7 +45,6 @@ with_global_variable_template = with_resource_factory("global_variable_template"
 global_variable_template_schema = GlobalVariableTemplateSchema()
 
 
-#TODO: only allow decrypted read for permissible users
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["read"]))
 @paginate(global_variable_schema)
@@ -67,7 +66,6 @@ def read_all_globals():
 
         return ret, HTTPStatus.OK
 
-#TODO: only allow decrypted read for permissible users
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["read"]))
 @with_global_variable("read", "global_var")
@@ -100,32 +98,23 @@ def delete_global(global_var):
 def create_global():
     data = request.get_json()
     global_id = data['id_']
+    update_permission = ["guest"] #data['update_permission']
 
-    # update role permissions
-    for role in db.session.query(Role):
-        if role.name == "guest": # data["update_permission"]:
-            for resource in role.resources:
-                if resource.name == "global_variables":
-                    if resource.resource_ids:
-                        resource.resource_ids.append(global_id)
-                        db.session.commit()
-                    else:
-                        resource.resource_ids = [global_id]
-                        db.session.commit()
-        logger.error(f"ROLE: {role}")
-
-    # update current users
-    for user in db.session.query(User):
-        if user.roles[0].name == "guest": # data["update_permission"]:
-            for resource in user.roles[0].resources:
-                if resource.name == "global_variables":
-                    if resource.resource_ids:
-                        resource.resource_ids.append(global_id)
-                        db.session.commit()
-                    else:
-                        resource.resource_ids = "global_id"
-                        db.session.commit()
-        logger.error(f"USER: {user}")
+    for role_elem in update_permission:
+        # update role permission
+        for resource in db.session.query(Role).filter(Role.name == role_elem).first().resources:
+            if resource.name == "global_variables":
+                if "update" not in [elem.name for elem in resource.permissions]:
+                    resource.permissions.append(Permission("update"))
+                if resource.needed_ids:
+                    final = [global_id] + resource.needed_ids
+                    setattr(resource, "needed_ids", final)
+                    db.session.commit()
+                else:
+                    resource.needed_ids = [global_id]
+                    db.session.commit()
+                logger.info(f" Updated global variable {global_id} permissions for role type {role_elem}")
+                logger.info(f" New needed ids {role_elem} -> {resource.needed_ids}")
 
     try:
         global_variable = global_variable_schema.load(data)
@@ -142,14 +131,25 @@ def create_global():
 @with_global_variable("update", "global_var")
 def update_global(global_var):
     data = request.get_json()
+    global_id = data["id_"]
+    to_update = True
 
-    try:
-        global_variable_schema.load(data, instance=global_var)
-        current_app.running_context.execution_db.session.commit()
-        return global_variable_schema.dump(global_var), HTTPStatus.OK
-    except (IntegrityError, StatementError):
-        current_app.running_context.execution_db.session.rollback()
-        return unique_constraint_problem("global_variable", "update", data["name"])
+    username = get_jwt_claims().get('username', None)
+    curr_user = db.session.query(User).filter(User.username == username).first()
+    for resource in curr_user.roles[0].resources:
+        if resource.name == "global_variables":
+            if resource.needed_ids:
+                if global_id not in resource.needed_ids:
+                    to_update = False
+
+    if to_update:
+        try:
+            global_variable_schema.load(data, instance=global_var)
+            current_app.running_context.execution_db.session.commit()
+            return global_variable_schema.dump(global_var), HTTPStatus.OK
+        except (IntegrityError, StatementError):
+            current_app.running_context.execution_db.session.rollback()
+            return unique_constraint_problem("global_variable", "update", data["name"])
 
 
 # Templates

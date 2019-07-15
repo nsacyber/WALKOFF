@@ -54,8 +54,7 @@ class GlobalVariable(Base):
     # Columns specific to GlobalVariables
     description = Column(String(255), default="")
     schema_id = Column(UUID(as_uuid=True), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
-    # update_permission = Column(ARRAY(String(255)), default=["admin"])
-    # delete_permission = Column(ARRAY(String(255)), default=["admin"])
+    update_permission = Column(ARRAY(String(255)))
 
 
 class GlobalVariableTemplateSchema(BaseSchema):

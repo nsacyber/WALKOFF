@@ -1,15 +1,17 @@
 from api_gateway.extensions import db
 from api_gateway.serverdb.mixins import TrackModificationsMixIn
+from sqlalchemy.types import ARRAY
 
 
 class Resource(db.Model, TrackModificationsMixIn):
     __tablename__ = 'resource'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
+    needed_ids = db.Column(ARRAY(db.String(255)))
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     permissions = db.relationship('Permission', backref=db.backref('resource'), cascade='all, delete-orphan')
 
-    def __init__(self, name, permissions, resource_ids=None):
+    def __init__(self, name, permissions, needed_ids=None):
         """Initializes a new Resource object, which is a type of Resource that a Role may have access to.
 
         Args:
@@ -18,7 +20,7 @@ class Resource(db.Model, TrackModificationsMixIn):
                 for the Resource
         """
         self.name = name
-        self.resource_ids = resource_ids
+        self.needed_ids = needed_ids
         self.set_permissions(permissions)
 
     def set_permissions(self, new_permissions):
@@ -39,7 +41,8 @@ class Resource(db.Model, TrackModificationsMixIn):
             with_roles (bool, optional): Boolean to determine whether or not to include Role objects associated with the
                 Resource in the JSON representation. Defaults to False.
         """
-        out = {'id': self.id, 'name': self.name, 'permissions': [permission.name for permission in self.permissions]}
+        out = {'id': self.id, 'name': self.name, 'needed_ids': self.needed_ids,
+               'permissions': [permission.name for permission in self.permissions]}
         if with_roles:
             out["role"] = self.role.name
         return out
