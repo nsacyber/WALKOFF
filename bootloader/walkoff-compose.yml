@@ -116,7 +116,7 @@ services:
 
     deploy:
       mode: replicated
-      replicas: 10
+      replicas: 0
       restart_policy:
         condition: none
     restart: "no"

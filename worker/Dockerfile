@@ -11,7 +11,7 @@ RUN mkdir /install
 WORKDIR /install
 
 COPY ./worker/requirements.txt /requirements.txt
-RUN pip install --no-warn-script-location git+https://github.com/aio-libs/aioredis.git
+RUN pip install --no-warn-script-location --prefix="/install" git+https://github.com/aio-libs/aioredis.git
 RUN pip install --no-warn-script-location --prefix="/install" --no-deps asteval
 RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.txt
 

@@ -62,8 +62,8 @@ class Worker:
                 message = await redis.xread_group(config.REDIS_WORKFLOW_GROUP, CONTAINER_ID,
                                                   streams=[config.REDIS_WORKFLOW_QUEUE], latest_ids=['>'],
                                                   timeout=config.get_int("WORKER_TIMEOUT", 30) * 1000, count=1)
-            except aioredis.ReplyError:
-                logger.error("Error reading from workflow queue.")
+            except aioredis.ReplyError as e:
+                logger.error(f"Error reading from workflow queue: {e}.")
                 sys.exit(-1)
 
             if len(message) < 1:  # We've timed out with no work. Guess we'll die now...

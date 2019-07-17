@@ -177,7 +177,7 @@ def load_docker_env():
 async def get_service(docker_client, service_id):
     try:
         s = await docker_client.services.inspect(service_id)
-        return {'id': s["ID"], 'version': s['Version']['Index']}
+        return {'id': s["ID"], 'version': s['Version']['Index'], 'image': s['Spec']['Labels']['com.docker.stack.image']}
     except DockerError:
         return {}
 

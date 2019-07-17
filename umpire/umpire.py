@@ -6,14 +6,10 @@ from pathlib import Path
 from itertools import compress
 import uuid
 
-
 import aiodocker
 import aiohttp
 import aioredis
 from aiodocker.exceptions import DockerError
-from compose.cli.command import get_project
-from docker.types.services import SecretReference
-
 
 from common.config import config
 from common.helpers import send_status_update, UUID_GLOB
@@ -54,24 +50,10 @@ class Umpire:
 
         try:
             await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
+            logger.info(f"Created {config.REDIS_WORKFLOW_QUEUE} stream and {config.REDIS_WORKFLOW_GROUP} group.")
+
         except aioredis.errors.BusyGroupError:
-            logger.info("Workflow Queue stream already exists, not creating new one.")
-
-        # await self.build_app_sdk()
-        # await self.build_worker()
-
-        # for app_name, app in self.app_repo.apps.items():
-        #     for version_name, version in app.items():
-        #         image_name = version.services[0].image_name
-        #         image = None
-        #         try:
-        #             image = await self.docker_client.images.pull(image_name)
-        #         except DockerError:
-        #             logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
-
-                # if we didn't find the image, try to build it
-                # if image is None:
-                #     await self.build_app(app_name, version_name)
+            logger.info(f"{config.REDIS_WORKFLOW_QUEUE} stream already exists.")
 
         if len(self.app_repo.apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
@@ -123,7 +105,7 @@ class Umpire:
     async def get_running_apps(self):
         func = lambda s: s['Spec']['Name'].count(config.APP_PREFIX) > 0
         services = filter(func, (await self.docker_client.services.list()))
-        return {s['Spec']['Name']:  {'id': s["ID"], 'version': s['Version']['Index']} for s in services}
+        return {s['Spec']['Name']: {'id': s["ID"], 'version': s['Version']['Index']} for s in services}
 
     async def launch_workers(self, replicas=1):
         worker_name = "walkoff_worker"
@@ -133,221 +115,12 @@ class Umpire:
             if self.worker == {}:
                 raise DockerError
             await update_service(self.docker_client, service_id=self.worker["id"], version=self.worker["version"],
-                                 image=worker_name, mode={"replicated": {"Replicas": replicas}})
+                                 image=self.worker["image"], mode={"replicated": {"Replicas": replicas}})
             self.worker = await get_service(self.docker_client, self.worker["id"])
             return
         except DockerError:
             logger.exception(f"Service walkoff_worker failed to update")
             return
-        # see if the image provided by the docker-compose file can be pulled
-        # try:
-        #     await self.docker_client.images.pull(repo)
-        # except DockerError as e:
-        #     logger.debug(f"Could not pull {repo}. Trying to build local instead.")
-        #     await self.build_worker()
-        #
-        # try:
-        #     # secrets = await load_secrets(self.docker_client, project=project)
-        #     mode = {"replicated": {'Replicas': replicas}}
-        #     service_kwargs = ServiceKwargs.configure(image=worker.image_name, service=worker, secrets=secrets,
-        #                                              mode=mode, mounts=[])
-        #     await self.docker_client.services.create(name=worker.name, **service_kwargs)
-        #     self.worker = await get_service(self.docker_client, worker.name)
-        #
-        # except DockerError:
-        #     try:
-        #         self.worker = await get_service(self.docker_client, "walkoff_worker")
-        #         if self.worker == {}:
-        #             raise DockerError
-        #         await update_service(self.docker_client, service_id=self.worker["id"], version=self.worker["version"],
-        #                              image=worker.image_name, mode={"replicated": {"Replicas": replicas}})
-        #         self.worker = await get_service(self.docker_client, self.worker["id"])
-        #         return
-        #     except DockerError:
-        #         logger.exception(f"Service {worker.name} failed to update")
-        #         return
-
-    # async def build_worker(self):
-    #     try:
-    #         logger.info(f"Building worker")
-    #         worker_name = "walkoff_worker"
-    #         repo = f"{config.DOCKER_REGISTRY}/{worker_name}"
-    #         project = get_project(project_dir=Path(__file__).parent, project_name=config.APP_PREFIX)
-    #         worker = [service for service in project.services if service.name == "walkoff_worker"][0]
-    #         build_opts = worker.options.get('build', {})
-    #         self.max_workers = worker.options.get("deploy", {}).get("replicas", 1)
-    #
-    #         with docker_context(Path(build_opts["context"]).parent, dirs=["common", "walkoff_worker"]) as context:
-    #             log_stream = await self.docker_client.images.build(fileobj=context, tag=worker.image_name, rm=True,
-    #                                                                forcerm=True, pull=True, stream=True,
-    #                                                                path_dockerfile=build_opts["dockerfile"],
-    #                                                                encoding="application/x-tar")
-    #         await stream_docker_log(log_stream)
-    #
-    #         # Tag the image so it can be pushed to the repo
-    #         await self.docker_client.images.tag(worker.image_name, repo)
-    #
-    #     except DockerBuildError:
-    #         logger.exception(f"Error during worker build")
-    #         return
-    #
-    #     try:
-    #         logger.info(f"Pushing worker")
-    #         log_stream = await self.docker_client.images.push(repo, stream=True)
-    #          await stream_docker_log(log_stream)
-    #
-    #     except DockerBuildError:
-    #         logger.exception(f"Error during worker push")
-    #         return
-    #
-    # async def build_app_sdk(self):
-    #     try:
-    #         logger.info(f"Building walkoff_app_sdk")
-    #         sdk_name = "walkoff_walkoff_app_sdk"
-    #         repo = f"{config.DOCKER_REGISTRY}/{sdk_name}"
-    #         project = get_project(project_dir=Path(__file__).parent, project_name=sdk_name)
-    #         sdk = [service for service in project.services if service.name == sdk_name][0]
-    #         build_opts = sdk.options.get('build', {})
-    #
-    #         with docker_context(Path(build_opts["context"])) as context:
-    #             log_stream = await self.docker_client.images.build(fileobj=context, tag=sdk.image_name, rm=True,
-    #                                                                forcerm=True, pull=True, stream=True,
-    #                                                                path_dockerfile=build_opts["dockerfile"],
-    #                                                                encoding="application/x-tar")
-    #         await stream_docker_log(log_stream)
-    #
-    #         # Tag the image so it can be pushed to the repo
-    #         await self.docker_client.images.tag(sdk.image_name, repo)
-    #     except DockerBuildError:
-    #         logger.exception(f"Error during walkoff_app_sdk build")
-    #         return
-    #
-    #     try:
-    #         logger.info(f"Pushing walkoff_app_sdk")
-    #         log_stream = await self.docker_client.images.push(repo, stream=True)
-    #         await stream_docker_log(log_stream)
-    #     except DockerBuildError:
-    #         logger.exception(f"Error during walkoff_app_sdk push")
-    #         return
-
-    # async def launch_app(self, app, version, replicas=1):
-    #     app_name = f"{config.APP_PREFIX}_{app}"
-    #     repo = f"{config.DOCKER_REGISTRY}/{app_name}"
-    #     full_tag = f"{repo}:{version}"
-    #     service = self.app_repo.apps[app][version].services[0]
-    #     image_name = service.image_name
-    #     image = None
-    #
-    #     if app_name in self.running_apps:
-    #         logger.info(f"Service {app} already exists. Trying 'update_app' instead.")
-    #         await self.update_app(app, version, replicas)
-    #         return
-    #
-    #     logger.debug(f"Launching {app}...")
-    #
-    #     # see if the image provided by the docker-compose file can be pulled
-    #     try:
-    #         image = await self.docker_client.images.pull(image_name)
-    #     except DockerError:
-    #         logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
-    #
-    #     # if we didn't find the image, try to build it
-    #     if image is None:
-    #         await self.build_app(app, version)
-    #         image_name = full_tag
-    #
-    #     try:
-    #         encryption_secret_id = await get_secret(self.docker_client, "encryption_key")
-    #         secrets = await load_secrets(self.docker_client, project=self.app_repo.apps[app][version])
-    #         secrets.append(SecretReference(secret_id=encryption_secret_id, secret_name="encryption_key"))
-    #         mode = {"replicated": {'Replicas': replicas}}
-    #         mounts = await load_volumes(project=self.app_repo.apps[app][version])
-    #         # TODO: change to environmental variable abs path + data/shared
-    #         # shared_path = "/home/osboxes/Desktop/WALKOFF/data/shared:/app/shared:rw"
-    #         # mounts.append(shared_path)
-    #         service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode,
-    #                                                  mounts=mounts)
-    #         await self.docker_client.services.create(name=app_name, **service_kwargs)
-    #         self.running_apps[app_name] = await get_service(self.docker_client, app_name)
-    #
-    #     except DockerError:
-    #         logger.exception(f"Service {app_name} failed to launch")
-    #         return
-    #
-    #     logger.info(f"Launched {app}")
-
-    # async def update_app(self, app, version, replicas=1):
-    #     app_name = f"{config.APP_PREFIX}_{app}"
-    #     repo = f"{config.DOCKER_REGISTRY}/{app_name}"
-    #     full_tag = f"{repo}:{version}"
-    #     service = self.app_repo.apps[app][version].services[0]
-    #     image_name = service.image_name
-    #     image = None
-    #
-    #     if app_name not in self.running_apps:
-    #         logger.info(f"Service {app} does not exists. Trying 'launch_app' instead.")
-    #         await self.launch_app(app, version, replicas)
-    #         return
-    #
-    #     logger.debug(f"Updating {app}...")
-    #
-    #     # see if the image provided by the docker-compose file can be pulled
-    #     try:
-    #         image = await self.docker_client.images.pull(full_tag)
-    #     except DockerError as e:
-    #         logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
-    #
-    #     # if we didn't find the image, try to build it
-    #     if image is None:
-    #         await self.build_app(app, version)
-    #         image_name = full_tag
-    #
-    #     try:
-    #         mode = {"replicated": {'Replicas': replicas}}
-    #         self.running_apps[app_name] = await get_service(self.docker_client, app_name)
-    #         await update_service(self.docker_client, service_id=self.running_apps[app_name]["id"],
-    #                              version=self.running_apps[app_name]["version"], image=image_name, mode=mode)
-    #         self.running_apps[app_name] = await get_service(self.docker_client, app_name)
-    #
-    #     except DockerError:
-    #         logger.exception(f"Service {app_name} failed to update")
-    #         return
-    #
-    #     logger.info(f"Updated {app}")
-
-    # async def build_app(self, app, version):
-    #     app_name = f"{config.APP_PREFIX}_{app}"
-    #     repo = f"{config.DOCKER_REGISTRY}/{app_name}"
-    #     full_tag = f"{repo}:{version}"
-    #     service = self.app_repo.apps[app][version].services[0]
-    #     build_opts = service.options.get('build', {})
-    #
-    #     if build_opts.get("context", None) is None:
-    #         logger.error(f"App {app}:{version} must specify docker build context in docker-compose.yaml.")
-    #         return
-    #
-    #     try:
-    #         logger.info(f"Building {app}:{version}")
-    #         with docker_context(build_opts["context"]) as context:
-    #             log_stream = await self.docker_client.images.build(fileobj=context, tag=app_name, rm=True, forcerm=True,
-    #                                                                path_dockerfile="Dockerfile", stream=True,
-    #                                                                encoding="application/x-tar")
-    #         await stream_docker_log(log_stream)
-    #
-    #         # Tag the image so it can be pushed to the repo
-    #         await self.docker_client.images.tag(app_name, repo, tag=version)
-    #     except DockerBuildError:
-    #         logger.exception(f"Error during {app}:{version} build")
-    #         return
-    #
-    #     try:
-    #         logger.info(f"Pushing {app}:{version}")
-    #         log_stream = await self.docker_client.images.push(full_tag, stream=True)
-    #         await stream_docker_log(log_stream)
-    #
-    #     except DockerBuildError:
-    #         logger.exception(f"Error during {app}:{version} push")
-    #         return
 
     async def scale_worker(self):
         total_workflows = await xlen(self.redis, config.REDIS_WORKFLOW_QUEUE)
@@ -367,11 +140,10 @@ class Umpire:
             await self.launch_workers(0)
             await self.launch_workers(workers_needed)
 
-
-
     async def scale_app(self):
         self.running_apps = await self.get_running_apps()
-        logger.debug(f"Running apps: {[{s: self.service_replicas.get(s)['running']} for s in self.running_apps.keys()]}")
+        logger.debug(
+            f"Running apps: {[{s: self.service_replicas.get(s)['running']} for s in self.running_apps.keys()]}")
 
         streams = [key.split(':') for key in await self.redis.keys(pattern=UUID_GLOB + ":*:*", encoding="utf-8")]
 
@@ -409,20 +181,22 @@ class Umpire:
                 #     continue
                 try:
                     mode = {"replicated": {'Replicas': replicas_needed}}
-                    self.running_apps[app_name] = await get_service(self.docker_client, app_name)
-                    await update_service(self.docker_client, service_id=self.running_apps[app_name]["id"],
-                                             version=self.running_apps[app_name]["version"], image=app_name, mode=mode)
-                    self.running_apps[app_name] = await get_service(self.docker_client, app_name)
+                    self.running_apps[service_name] = await get_service(self.docker_client, service_name)
+                    logger.info(self.running_apps)
+                    logger.info(service_name)
+                    await update_service(self.docker_client, service_id=self.running_apps[service_name]["id"],
+                                         version=self.running_apps[service_name]["version"],
+                                         image=self.running_apps[service_name]["image"], mode=mode)
+                    self.running_apps[service_name] = await get_service(self.docker_client, service_name)
 
                 except DockerError:
-                    logger.exception(f"Service {app_name} failed to update")
+                    logger.exception(f"Service {service_name} failed to update")
 
+                logger.info(f"Launched {':'.join([service_name, version])}")
 
-                logger.info(f"Launched {':'.join([app_name, version])}")
-
-            for app_name, workload in workloads.items():
-                logger.debug(f"Queued actions for {app_name}: {workload['queued']}")
-                logger.debug(f"Executing actions for {app_name}: {workload['executing']}")
+            for service_name, workload in workloads.items():
+                logger.debug(f"Queued actions for {service_name}: {workload['queued']}")
+                logger.debug(f"Executing actions for {service_name}: {workload['executing']}")
 
     async def check_pending_actions(self):
         self.running_apps = await self.get_running_apps()
