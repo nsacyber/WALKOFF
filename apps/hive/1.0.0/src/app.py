@@ -42,7 +42,7 @@ class Hive(AppBase):
     def __init__(self, redis, logger, console_logger=None):
         super().__init__(redis, logger, console_logger)
 
-    async def create_case(self, log_data, url, api_key):
+    async def create_case(self, log_data, url, api_key, title, description="", tlp=1, severity=1, tags=[], tasks=[]):
         self.logger.info('Creating a case in TheHive')
         self.logger.info('TheHive URL: {}'.format(url))
         self.logger.info('TheHive API key: {}'.format(api_key))
@@ -83,17 +83,12 @@ class Hive(AppBase):
         except:
             self.logger.debug('No user ID')
 
-        case = Case(title='Walkoff',
-                    description="A walkoff hive case",
-                    tlp=1,
-                    severity=1,
+        case = Case(title=title,
+                    description=description,
+                    tlp=tlp,
+                    severity=severity,
                     tags=tags,
-                    tasks=[{"description": "Mark as true positive and leave the user account locked, or mark as false "
-                                           "positive and unlock the user account. Perform this task using the Walkoff "
-                                           "Responder. ",
-                            "title": "Lock/Unlock User Account",
-                            "order": 0,
-                            "group":"default"}])
+                    tasks=tasks)
         # case = api.case.create(title='From TheHive4Py', description='N/A', tlp=3, flag=True,
         #                        tags=['TheHive4Py', 'sample'], tasks=[])
         response = api.create_case(case)
@@ -148,7 +143,6 @@ class Hive(AppBase):
         response = api.update_case(hive_case)
 
         if response.status_code == 200:
-            # self.logger.info(json.dumps(response.json(), indent=4, sort_keys=True))
             case_id = response.json()['id']
             self.logger.info('Updated case: {}'.format(case_id))
         else:
@@ -183,7 +177,6 @@ class Hive(AppBase):
         response = api.update_case(hive_case, ['status', 'resolutionStatus', 'impactStatus', 'tags', 'summary'])
 
         if response.status_code == 200:
-            # self.logger.info(json.dumps(response.json(), indent=4, sort_keys=True))
             self.logger.info('closed case: {}'.format(case_id))
         else:
             self.logger.info('failed to close case: {}'.format(case_id))

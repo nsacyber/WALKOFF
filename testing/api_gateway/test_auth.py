@@ -35,7 +35,6 @@ def test_login_has_valid_access_token(api_gateway, serverdb):
     response = api_gateway.post('/api/auth',
                                 data=json.dumps(dict(username='admin', password='admin')), headers=header)
     keys = json.loads(response.get_data(as_text=True))
-    print(keys['access_token'])
     with app.app_context():
         token = decode_token(keys['access_token'])
         uid = serverdb.session.query(User).filter_by(username='admin').first().id

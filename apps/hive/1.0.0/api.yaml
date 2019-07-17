@@ -28,6 +28,33 @@ actions:
         schema:
           type: string
         required: true
+      - name: title
+        description: log data to generate custom fields
+        schema:
+          type: string
+        required: true
+      - name: description
+        description: log data to generate custom fields
+        schema:
+          type: string
+      - name: tlp
+        description: API key to access TheHive
+        schema:
+          type: integer
+      - name: severity
+        description: log data to generate custom fields
+        schema:
+          type: integer
+      - name: tags
+        description: log data to generate custom fields
+        schema:
+          type: array
+        required: true
+      - name: tasks
+        description: log data to generate custom fields
+        schema:
+          type: array
+        required: true
     returns:
       schema:
         type: object

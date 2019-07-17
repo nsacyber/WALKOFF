@@ -230,6 +230,8 @@ class Umpire:
         image_name = service.image_name
         image = None
 
+         # TODO: Ensure that image_name == app_name
+
         if app_name in self.running_apps:
             logger.info(f"Service {app} already exists. Trying 'update_app' instead.")
             await self.update_app(app, version, replicas)
@@ -426,8 +428,6 @@ class Umpire:
                             # Umpire claims the message in the name of the UMPIRE!
                             msg = await self.redis.xclaim(key, app_group, "UMPIRE", 1,
                                                           dead_pending[0][0].decode())
-                            print(msg)
-                            print(dead_pending)
                             # Dereference the stuff we need. This may change as redis solidifies their plan
                             execution_id, action = msg[0][-1].popitem()
                             id_ = msg[0][0]
