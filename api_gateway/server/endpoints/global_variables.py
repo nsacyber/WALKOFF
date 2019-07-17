@@ -1,5 +1,5 @@
 from flask import current_app, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_claims
+from flask_jwt_extended import jwt_required
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
 
@@ -7,7 +7,6 @@ from api_gateway import helpers
 from api_gateway.executiondb.global_variable import (GlobalVariable, GlobalVariableSchema,
                                                      GlobalVariableTemplate, GlobalVariableTemplateSchema)
 from api_gateway.serverdb.role import Role
-from api_gateway.serverdb.user import User
 from api_gateway.serverdb.resource import Permission
 from api_gateway.serverdb.resource import Operation
 from api_gateway.extensions import db
@@ -16,6 +15,7 @@ from api_gateway.server.decorators import with_resource_factory, paginate
 from api_gateway.server.problem import unique_constraint_problem
 from http import HTTPStatus
 from api_gateway.executiondb.global_variable import GlobalCipher
+from common.roles_helpers import auth_check
 
 import logging
 logger = logging.getLogger(__name__)
@@ -89,9 +89,9 @@ def read_global(global_var):
 @with_global_variable("delete", "global_var")
 def delete_global(global_var):
     global_id = str(global_var.id_)
-    logger.info(f"global_id {global_id}")
-    logger.info(f"{type(global_id)}")
-    to_delete = auth_check(global_id, "delete")
+    to_delete = auth_check(global_id, "delete", "global_variables")
+
+    # update roles
 
     if to_delete:
         current_app.running_context.execution_db.session.delete(global_var)
@@ -100,6 +100,7 @@ def delete_global(global_var):
         return None, HTTPStatus.NO_CONTENT
     else:
         return None, HTTPStatus.FORBIDDEN
+
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["create"]))
@@ -146,7 +147,7 @@ def update_global(global_var):
     data = request.get_json()
     global_id = data["id_"]
 
-    to_update = auth_check(global_id, "update")
+    to_update = auth_check(global_id, "update", "global_variables")
     if to_update:
         try:
             global_variable_schema.load(data, instance=global_var)
@@ -157,25 +158,6 @@ def update_global(global_var):
             return unique_constraint_problem("global_variable", "update", data["name"])
     else:
         return None, HTTPStatus.FORBIDDEN
-
-
-def auth_check(global_id, permission):
-    username = get_jwt_claims().get('username', None)
-    curr_user = db.session.query(User).filter(User.username == username).first()
-
-    for resource in curr_user.roles[0].resources:
-        if resource.name == "global_variables":
-            if resource.operations:
-                if global_id not in [elem.operation_id for elem in resource.operations]:
-                    return False
-                else:
-                    for elem in resource.operations:
-                        if elem.operation_id == global_id:
-                            if permission not in elem.permissions_list:
-                                return False
-                            else:
-                                return True
-    return True
 
 # Templates
 

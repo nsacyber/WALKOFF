@@ -19,6 +19,7 @@ from api_gateway.security import permissions_accepted_for_resources, ResourcePer
 from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
     paginate
 from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_input_problem
+from common.roles_helpers import auth_check
 from http import HTTPStatus
 
 
@@ -63,15 +64,16 @@ def create_workflow():
                 if "delete" not in [elem.name for elem in resource.permissions]:
                     resource.permissions.append(Permission("delete"))
                 if resource.operations:
-                    final = [Operation(workflow_id, role_permissions)] + resource.operations
+                    final = [Operation(workflow_name, role_permissions)] + resource.operations
                     setattr(resource, "operations", final)
-                    logger.info(f" Newly added operation for workflow --> ({workflow_id},{role_permissions})")
+                    logger.info(f" Newly added operation for workflow --> ({workflow_name},{role_permissions})")
                     db.session.commit()
                 else:
-                    resource.operations = [Operation(workflow_id, role_permissions)]
-                    logger.info(f" Newly added operation for workflow --> ({workflow_id},{role_permissions})")
+                    resource.operations = [Operation(workflow_name, role_permissions)]
+                    logger.info(vars(resource))
+                    logger.info(f" Newly added operation for workflow --> ({workflow_name},{role_permissions})")
                     db.session.commit()
-                logger.info(f" Updated workflow {workflow_id} permissions for role type {role_name}")
+                logger.info(f" Updated workflow {workflow_name} permissions for role type {role_name}")
 
     if workflow_id:
         return copy_workflow(workflow_id=workflow_id)
@@ -142,25 +144,36 @@ def read_workflow(workflow):
 @with_workflow('update', 'workflow')
 def update_workflow(workflow):
     data = request.get_json()
+    workflow_name = data["name"]
 
-    try:
-        workflow_schema.load(data, instance=workflow)
-        current_app.running_context.execution_db.session.commit()
-        current_app.logger.info(f"Updated workflow {workflow.name} ({workflow.id_})")
-        return workflow_schema.dump(workflow), HTTPStatus.OK
-    except ValidationError as e:
-        current_app.running_context.execution_db.session.rollback()
-        return improper_json_problem('workflow', 'update', workflow.id_, e.messages)
-    except IntegrityError:  # ToDo: Make sure this fires on duplicate
-        current_app.running_context.execution_db.session.rollback()
-        return unique_constraint_problem('workflow', 'update', workflow.id_)
+    to_update = auth_check(workflow_name, "update", "workflows")
+    if to_update:
+        try:
+            workflow_schema.load(data, instance=workflow)
+            current_app.running_context.execution_db.session.commit()
+            current_app.logger.info(f"Updated workflow {workflow.name} ({workflow.id_})")
+            return workflow_schema.dump(workflow), HTTPStatus.OK
+        except ValidationError as e:
+            current_app.running_context.execution_db.session.rollback()
+            return improper_json_problem('workflow', 'update', workflow.id_, e.messages)
+        except IntegrityError:  # ToDo: Make sure this fires on duplicate
+            current_app.running_context.execution_db.session.rollback()
+            return unique_constraint_problem('workflow', 'update', workflow.id_)
+    else:
+        return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['delete']))
 @with_workflow('delete', 'workflow')
 def delete_workflow(workflow):
-    current_app.running_context.execution_db.session.delete(workflow)
-    current_app.logger.info(f"Removed workflow {workflow.name} ({workflow.id_})")
-    current_app.running_context.execution_db.session.commit()
-    return None, HTTPStatus.NO_CONTENT
+    workflow_name = workflow.name
+
+    to_delete = auth_check(workflow_name, "delete", "workflows")
+    if to_delete:
+        current_app.running_context.execution_db.session.delete(workflow)
+        current_app.logger.info(f"Removed workflow {workflow.name} ({workflow.id_})")
+        current_app.running_context.execution_db.session.commit()
+        return None, HTTPStatus.NO_CONTENT
+    else:
+        return None, HTTPStatus.FORBIDDEN
