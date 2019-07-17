@@ -1,0 +1,2751 @@
+components:
+  schemas:
+    Action:
+      description: Encapsulation of executing an action in an app.
+      properties:
+        _walkoff_type:
+          description: Workflow type for json decoder
+          type: string
+        app_name:
+          description: The app to which the action belongs
+          example: CyberAnalytics
+          type: string
+        app_version:
+          description: The version of the app to which the action belongs
+          example: 1.0.0
+          type: string
+        errors:
+          $ref: '#/components/schemas/ExecutionElementErrors'
+        id_:
+          $ref: '#/components/schemas/Uuid'
+          description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
+        is_valid:
+          description: are the parameters of this action valid?
+          type: boolean
+        label:
+          description: User-specified label for the action
+          example: action1
+          minLength: 1
+          type: string
+        name:
+          description: The name of the function this Action will take
+          example: pause
+          type: string
+        parallel_parameter:
+          $ref: '#/components/schemas/Parameter'
+          description: Alternative parameter to parallelize the action on
+        parallelized:
+          default: false
+          type: boolean
+        parameters:
+          description: The input parameters to the action
+          items:
+            $ref: '#/components/schemas/Parameter'
+          type: array
+        position:
+          $ref: '#/components/schemas/Position'
+          description: Position object representing various fields of the position of the Action in the playbook editor.
+        priority:
+          default: 3
+          description: The priority for this Action, which will be compared to other Actions with the same parent Action, descending, i.e. 5 is the highest priority.
+          maximum: 5
+          minimum: 1
+          type: integer
+      required:
+      - app_name
+      - app_version
+      - label
+      - name
+      - position
+      type: object
+    ActionApi:
+      description: The api of an app's action
+      properties:
+        deprecated:
+          default: false
+          description: Is this action deprecated?
+          type: boolean
+        description:
+          description: A longer description of the operation
+          type: string
+        external_docs:
+          items:
+            $ref: '#/components/schemas/ExternalDoc'
+          type: array
+        name:
+          description: Unique name of the action
+          type: string
+        node_type:
+          default: ACTION
+          description: The node type this action represents
+          enum:
+          - ACTION
+          - CONDITION
+          - TRANSFORM
+          - TRIGGER
+        parameters:
+          description: The parameters needed by this action
+          items:
+            $ref: '#/components/schemas/ParameterApi'
+          type: array
+        returns:
+          $ref: '#/components/schemas/ReturnApi'
+      required:
+      - name
+      type: object
+    AddResource:
+      properties:
+        name:
+          description: Name of the resource
+          example: playbooks, cases
+          type: string
+        permissions:
+          description: A list of permissions associated with this resource
+          example:
+          - create
+          - read
+          - update
+          - delete
+          - execute
+          items:
+            type: string
+          type: array
+      required:
+      - name
+      type: object
+    AddRole:
+      properties:
+        description:
+          description: Description of the role
+          example: A user with this role can access any resource and has administrative-level privileges.
+          type: string
+        name:
+          description: Name of the role
+          example: administrative_role
+          type: string
+        resources:
+          description: A list of resources that a user with this role can access
+          items:
+            $ref: '#/components/schemas/AddResource'
+          type: array
+      required:
+      - name
+      type: object
+    AddScheduledTask:
+      properties:
+        description:
+          description: description of this task
+          type: string
+        name:
+          description: Name of this task
+          type: string
+        status:
+          description: Status of the task
+          enum:
+          - running
+          - stopped
+          type: string
+        task_trigger:
+          $ref: '#/components/schemas/TaskTrigger'
+        workflows:
+          description: List if IDs of workflows attached to this task
+          items:
+            $ref: '#/components/schemas/Uuid'
+          type: array
+      required:
+      - name
+      type: object
+    AddUser:
+      properties:
+        active:
+          description: activate/deactive a user. Active can only be changed by an admin.
+          type: boolean
+        password:
+          description: Password for the user
+          example: password123
+          type: string
+        roles:
+          $ref: '#/components/schemas/RoleIdList'
+          description: A list of role IDs that this user possesses. Roles can only be assigned to a User by an admin.
+        username:
+          description: Username or email of the user
+          example: administrator
+          type: string
+      required:
+      - username
+      - password
+      type: object
+    ApiContact:
+      description: Contact information for the owners of this API
+      properties:
+        email:
+          description: The email address of the contact person/organization
+          format: email
+          type: string
+        name:
+          description: The name of the contact person or organization
+          type: string
+        url:
+          description: The URL pointing to the contact information
+          format: uri
+          type: string
+      type: object
+    ApiLicense:
+      description: License information for this API
+      properties:
+        name:
+          description: The name of the license type
+          type: string
+        url:
+          description: The URL pointing to the license
+          format: uri
+          type: string
+      type: object
+    ApiTag:
+      description: A tag for a class of actions/conditions/transforms in this app
+      properties:
+        description:
+          description: Description of the tag
+          type: string
+        external_docs:
+          items:
+            $ref: '#/components/schemas/ExternalDoc'
+          type: array
+        name:
+          description: The name of the tag
+          type: string
+      required:
+      - name
+      type: object
+    AppApi:
+      description: Api used for an app
+      properties:
+        actions:
+          description: Actions associated with this app
+          items:
+            $ref: '#/components/schemas/ActionApi'
+          type: array
+        app_version:
+          description: A semantic version number of the API
+          type: string
+        contact_info:
+          $ref: '#/components/schemas/ApiContact'
+        description:
+          description: A longer description of the API. Should be different from the title.
+          type: string
+        external_docs:
+          items:
+            $ref: '#/components/schemas/ExternalDoc'
+          type: array
+        license_info:
+          $ref: '#/components/schemas/ApiLicense'
+        name:
+          description: A unique and precise title of the API
+          example: Splunk
+          type: string
+        tags:
+          items:
+            $ref: '#/components/schemas/ApiTag'
+          type: array
+          uniqueItems: true
+        walkoff_version:
+          description: A semantic version number of the API
+          type: string
+      required:
+      - name
+      type: object
+    Authentication:
+      properties:
+        password:
+          type: string
+        username:
+          type: string
+      required:
+      - username
+      - password
+      type: object
+    AvailableResourceAction:
+      properties:
+        actions:
+          description: A list of actions or permissions available for this resource
+          example:
+          - create
+          - read
+          - update
+          - delete
+          items:
+            type: string
+          type: array
+        app_name:
+          description: The name of the app associated with this resource, if applicable
+          example: HelloWorld, DailyQuote
+          type: string
+        name:
+          description: Name of the resource
+          example: playbooks, cases
+          type: string
+      type: object
+    AvailableSubscriptions:
+      description: The events which can be subscribed to for an execution element
+      properties:
+        events:
+          description: Events which can be subscribed to
+          example:
+          - Event1
+          - Event_2
+          - Event 3
+          items:
+            type: string
+          type: array
+        type:
+          description: The type of execution element
+          enum:
+          - controller
+          - playbook
+          - workflow
+          - action
+          - branch
+          - condition
+          - transform
+          example: Condition
+          type: string
+      required:
+      - type
+      - events
+      type: object
+    Branch:
+      description: Object representing an edge connecting two nodes in a Workflow
+      properties:
+        _walkoff_type:
+          description: Workflow type for json decoder
+          type: string
+        destination_id:
+          $ref: '#/components/schemas/Uuid'
+          description: The destination node ID for this Branch, if the conditions evaluate to True
+        errors:
+          $ref: '#/components/schemas/ExecutionElementErrors'
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        source_id:
+          $ref: '#/components/schemas/Uuid'
+          description: The source node ID for this Branch
+      required:
+      - source_id
+      - destination_id
+      type: object
+    Condition:
+      description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
+      properties:
+        _walkoff_type:
+          description: Workflow type for json decoder
+          type: string
+        app_name:
+          enum:
+          - Builtin
+          type: string
+        app_version:
+          description: The version of the app to which the action belongs
+          example: 1.0.0
+          type: string
+        conditional:
+          example: 'if Pre_Hello_World_Action == 5: return Hello_World_Action'
+          type: string
+        errors:
+          $ref: '#/components/schemas/ExecutionElementErrors'
+        id_:
+          $ref: '#/components/schemas/Uuid'
+          description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
+        is_valid:
+          description: are the contents of this condition valid?
+          type: boolean
+        label:
+          description: User-specified label for the condition
+          example: condition1
+          type: string
+        name:
+          enum:
+          - Condition
+          type: string
+        position:
+          $ref: '#/components/schemas/Position'
+          description: Position object representing various fields of the position of the Action in the playbook editor.
+      required:
+      - label
+      - conditional
+      type: object
+    ControlWorkflow:
+      properties:
+        status:
+          description: The action to take on the executing workflow
+          enum:
+          - trigger
+          - abort
+          type: string
+        trigger_data:
+          description: The data that will be sent to the trigger
+          type: string
+        trigger_id:
+          $ref: '#/components/schemas/Uuid'
+          description: The ID of the trigger node
+      required:
+      - status
+      type: object
+    CopyWorkflow:
+      properties:
+        playbook_id:
+          $ref: '#/components/schemas/Uuid'
+        workflow_name:
+          type: string
+      type: object
+    Dashboard:
+      description: A dashboard containing widgets for visualization
+      properties:
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          description: Name of the dashboard
+          type: string
+        widgets:
+          description: List of widgets contained in the dashboard
+          items:
+            $ref: '#/components/schemas/Widget'
+          type: array
+      required:
+      - name
+      type: object
+    DisplayUser:
+      properties:
+        active:
+          description: activate/deactive a user
+          type: boolean
+        id:
+          description: Database id of the user
+          example: 123
+          readOnly: true
+          type: integer
+        roles:
+          description: List of role object IDs that this user possesses
+          items:
+            type: integer
+          type: array
+        username:
+          description: Username or email of the user
+          example: administrator
+          type: string
+      type: object
+    EditUser:
+      properties:
+        active:
+          description: activate/deactive a user. Active can only be changed by an admin.
+          type: boolean
+        id:
+          description: Database id of the user
+          example: 123
+          type: integer
+        old_password:
+          description: Previous password for the user
+          example: password123
+          type: string
+        password:
+          description: New password for the user
+          example: password321
+          type: string
+        roles:
+          $ref: '#/components/schemas/RoleIdList'
+          description: A new list of role IDs that this user will possess. Roles can only be assigned by an admin.
+        username:
+          description: New username or email of the user
+          example: administrator
+          type: string
+      required:
+      - id
+      type: object
+    Error:
+      description: An error in RFC 7807 format
+      properties:
+        detail:
+          description: A human-readable explanation specific to this occurrence of the problem
+          type: string
+        instance:
+          description: 'A URI reference that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced.
+
+            '
+          type: string
+        status:
+          description: The HTTP status code generated for this occurrence of the problem
+          type: string
+        title:
+          description: A short, human-readable summary of the problem type.
+          type: string
+        type:
+          default: about:blank
+          description: 'A URI reference that identifies the problem type. When dereferenced it should provide human-readable documentation for the problem type.
+
+            '
+          type: string
+      required:
+      - title
+      - detail
+      - status
+      - type
+      type: object
+    ExecuteWorkflow:
+      properties:
+        execution_id:
+          $ref: '#/components/schemas/Uuid'
+        parameters:
+          items:
+            $ref: '#/components/schemas/Parameter'
+          type: array
+        start:
+          $ref: '#/components/schemas/Uuid'
+          description: The ID of the starting node
+        workflow_id:
+          $ref: '#/components/schemas/Uuid'
+        workflow_variables:
+          items:
+            $ref: '#/components/schemas/WorkflowVariable'
+          type: array
+      required:
+      - workflow_id
+      type: object
+    ExecutionElementErrors:
+      description: Errors attached to this ExecutionElement
+      items:
+        type: string
+      type: array
+    ExternalDoc:
+      description: information about external documentation
+      properties:
+        description:
+          description: Description of the documentation
+          type: string
+        url:
+          description: Points to the external documentation
+          format: uri
+          type: string
+      type: object
+    GlobalVariable:
+      description: An global variable object, which is a type of parameter in an Action
+      properties:
+        description:
+          description: Description of the global variable
+          type: string
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          description: The name of the global variable
+          type: string
+        value:
+          description: The value of the global variable
+          type: string
+      required:
+      - name
+      - value
+      type: object
+    GlobalVariableTemplate:
+      description: An global variable template object, which is used to optionally validate global variables
+      properties:
+        description:
+          description: Description of the global template
+          type: string
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          description: The name of the global template
+          type: string
+        schema:
+          description: The schema for the global template
+          type: object
+      required:
+      - name
+      - schema
+      type: object
+    JSONPatch:
+      description: A JSON-Patch document as defined by RFC 6902
+      properties:
+        from:
+          description: A string containing a JSON Pointer value.
+          type: string
+        op:
+          description: The operation to be performed
+          enum:
+          - add
+          - remove
+          - replace
+          - move
+          - copy
+          - test
+          type: string
+        path:
+          description: A JSON-Pointer
+          example: '#/level1/level2/level3'
+          type: string
+        value:
+          description: The value to be used within the operations.
+          type: string
+      required:
+      - op
+      - path
+    NodeStatus:
+      description: The status of an node execution
+      properties:
+        app_name:
+          description: The name of the app associated with the node
+          example: ThingGetter
+          readOnly: true
+          type: string
+        completed_at:
+          description: The timestamp of when the node completed
+          example: '2017-05-24T00:43:26.930892Z'
+          format: date-time
+          readOnly: true
+          type: string
+        execution_id:
+          $ref: '#/components/schemas/Uuid'
+        label:
+          description: The name of the node
+          example: This One node
+          readOnly: true
+          type: string
+        name:
+          description: The name of the node take by the node
+          example: get that thing
+          readOnly: true
+          type: string
+        node_id:
+          $ref: '#/components/schemas/Uuid'
+        result:
+          description: The result of the node
+          readOnly: true
+          type: object
+        started_at:
+          description: The timestamp of when the node started
+          example: '2017-05-24T00:42:22.934058Z'
+          format: date-time
+          readOnly: true
+          type: string
+        status:
+          description: The status of the node
+          enum:
+          - EXECUTING
+          - SUCCESS
+          - FAILURE
+          readOnly: true
+          type: string
+      required:
+      - node_id
+      - execution_id
+      - label
+      - name
+      - app_name
+      - status
+      - started_at
+      type: object
+    NodeStatusSummary:
+      description: The descriptive identification of an node
+      properties:
+        app_name:
+          description: The name of the app associated with the node
+          example: ThingGetter
+          readOnly: true
+          type: string
+        execution_id:
+          $ref: '#/components/schemas/Uuid'
+        label:
+          description: The name of the node
+          example: This One node
+          readOnly: true
+          type: string
+        name:
+          description: The name of the node take by the node
+          example: get that thing
+          readOnly: true
+          type: string
+        node_id:
+          $ref: '#/components/schemas/Uuid'
+      required:
+      - node_id
+      - execution_id
+      - label
+      - name
+      - app_name
+      type: object
+    Parameter:
+      description: Object used for passing parameters into actions. The variety of parameter must be provided.
+      nullable: true
+      properties:
+        _walkoff_type:
+          description: Workflow type for json decoder
+          type: string
+        errors:
+          $ref: '#/components/schemas/ExecutionElementErrors'
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          example: regex
+          type: string
+        parallelized:
+          default: false
+          type: boolean
+        value:
+          description: The value of the argument OR The ID of the action whose output should be used
+        variant:
+          enum:
+          - STATIC_VALUE
+          - ACTION_RESULT
+          - WORKFLOW_VARIABLE
+          - GLOBAL
+          type: string
+      required:
+      - name
+      - variant
+      type: object
+    ParameterApi:
+      description: A parameter using for actions
+      properties:
+        description:
+          description: Description of the parameter
+          type: string
+        name:
+          type: string
+        parallelizable:
+          default: false
+          description: Is this parameter parallelizable
+          type: boolean
+        placeholder:
+          description: Brief description of the field to be used to prompt a user
+        required:
+          default: false
+          description: Is this parameter required
+          type: boolean
+        schema:
+          $ref: '#/components/schemas/ParameterSchema'
+      required:
+      - name
+      - schema
+      type: object
+    ParameterSchema:
+      description: Fields used to validate parameter against a JSON schema (Draft 4)
+      properties:
+        type:
+          enum:
+          - string
+          - boolean
+          - integer
+          - number
+          - object
+          - array
+          type: string
+      required:
+      - type
+      type: object
+    Position:
+      description: Various specifications for how the Action is displayed in the playbook editor
+      properties:
+        _walkoff_type:
+          description: Workflow type for json decoder
+          type: string
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        x:
+          description: The X coordinate for the Action
+          type: number
+        y:
+          description: The Y coordinate for the Action
+          type: number
+      required:
+      - x
+      - y
+      type: object
+    Resource:
+      properties:
+        id:
+          description: ID of the object
+          minimum: 1
+          type: integer
+        name:
+          description: Name of the resource
+          example: playbooks, cases
+          type: string
+        permissions:
+          description: A list of permissions associated with this resource
+          example:
+          - create
+          - read
+          - update
+          - delete
+          - execute
+          items:
+            type: string
+          type: array
+      type: object
+    ReturnApi:
+      description: A specification of what an action returns
+      properties:
+        description:
+          description: Description of the return type
+          type: string
+        example:
+          description: An example of the returned type
+        schema:
+          $ref: '#/components/schemas/ParameterSchema'
+      type: object
+    Role:
+      properties:
+        description:
+          description: Description of the role
+          example: A user with this role can access any resource and has administrative-level privileges.
+          type: string
+        id:
+          description: id of the object
+          minimum: 1
+          type: integer
+        name:
+          description: Name of the role
+          example: administrative_role
+          type: string
+        resources:
+          description: A list of resources that a user with this role can access
+          example:
+          - /users
+          - /cases
+          - /playbooks
+          items:
+            $ref: '#/components/schemas/Resource'
+          type: array
+      required:
+      - id
+      type: object
+    RoleIdList:
+      items:
+        properties:
+          id:
+            description: The ID of a role the user posesses
+            type: integer
+        required:
+        - id
+        type: object
+      type: array
+    ScheduledTask:
+      properties:
+        action:
+          enum:
+          - start
+          - stop
+          type: string
+        description:
+          description: description of this task
+          type: string
+        id:
+          description: ID of the object
+          type: integer
+        name:
+          description: Name of this task
+          type: string
+        status:
+          description: Status of the task
+          enum:
+          - running
+          - stopped
+          type: string
+        task_trigger:
+          $ref: '#/components/schemas/TaskTrigger'
+        workflows:
+          description: List if IDs of workflows attached to this task
+          items:
+            $ref: '#/components/schemas/Uuid'
+          type: array
+      required:
+      - id
+      type: object
+    Scheduler:
+      properties:
+        status:
+          description: State of trigger
+          example: 0 for stopped, 1 for running, 2 for paused, or a warning string
+          type: string
+      required:
+      - status
+      type: object
+    Settings:
+      description: Walkoff Settings
+      properties:
+        access_token_duration:
+          description: Time (in minutes) to allow an access token to persist. Should greater than the duration of the refresh token
+          minimum: 1
+          type: number
+        refresh_token_duration:
+          description: Time (in days) to allow a refresh token to persist. Should greater than the duration of the refresh token
+          minimum: 1
+          type: number
+      type: object
+    TaskTrigger:
+      description: Scheduler to use.
+      properties:
+        args:
+          description: Arguments for the trigger.
+          type: object
+        type:
+          description: Type of scheduler trigger to use for this task
+          enum:
+          - date
+          - interval
+          - cron
+          example: date
+          type: string
+      required:
+      - args
+      - type
+      type: object
+    Token:
+      properties:
+        access_token:
+          description: Short-lived JWT used to provide access
+          type: string
+        refresh_token:
+          description: Long-lived JWT used to refresh a token
+          type: string
+      required:
+      - access_token
+      type: object
+    Transform:
+      description: Filters or otherwise transforms the data given to it
+      properties:
+        _walkoff_type:
+          description: Workflow type for json decoder
+          type: string
+        app_name:
+          enum:
+          - Builtin
+          type: string
+        app_version:
+          description: The version of the app to which the action belongs
+          example: 1.0.0
+          type: string
+        errors:
+          $ref: '#/components/schemas/ExecutionElementErrors'
+        id_:
+          $ref: '#/components/schemas/Uuid'
+          description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
+        is_valid:
+          description: are the contents of this transform valid?
+          type: boolean
+        label:
+          description: The user defined name of the transform
+          example: transform
+          type: string
+        name:
+          enum:
+          - Transform
+          type: string
+        position:
+          $ref: '#/components/schemas/Position'
+          description: Position object representing various fields of the position of the Action in the playbook editor.
+        transform:
+          description: The transform to apply to the result of its parent Action
+          example: result = input.get('Walkoff')
+          type: string
+      required:
+      - label
+      - transform
+      type: object
+    Trigger:
+      description: Halts execution of workflow pending an external trigger
+      properties:
+        _walkoff_type:
+          description: Workflow type for json decoder
+          type: string
+        app_name:
+          enum:
+          - Builtin
+          type: string
+        app_version:
+          description: The version of the app to which the action belongs
+          example: 1.0.0
+          type: string
+        errors:
+          $ref: '#/components/schemas/ExecutionElementErrors'
+        id_:
+          $ref: '#/components/schemas/Uuid'
+          description: The ID of the object. If updating a workflow and the trigger object already exists, ID is required. Otherwise, do not include it.
+        is_valid:
+          description: are the contents of this trigger valid?
+          type: boolean
+        label:
+          description: The user defined name of the trigger
+          example: Wait for Approval
+          type: string
+        name:
+          enum:
+          - Trigger
+          type: string
+        position:
+          $ref: '#/components/schemas/Position'
+          description: Position object representing various fields of the position of the Action in the playbook editor.
+        trigger_schema:
+          description: Schema to validate sent data with
+          type: object
+      required:
+      - label
+      type: object
+    Uuid:
+      description: A 32-bit hexadecimal string representing a globally unique identifier
+      format: uuid
+      type: string
+    Widget:
+      description: A widget for a dashboard containing a visualization
+      properties:
+        cols:
+          description: width of the widget
+          type: integer
+        dashboard_id:
+          $ref: '#/components/schemas/Uuid'
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          description: Name of the widget
+          type: string
+        options:
+          type: object
+        rows:
+          description: height of the widget
+          type: integer
+        type_:
+          description: Type of widget
+          type: string
+        x:
+          description: x position of the widget
+          type: integer
+        y:
+          description: y position of the widget
+          type: integer
+      required:
+      - name
+      - x
+      - y
+      - cols
+      - rows
+      - options
+      type: object
+    WorkflowJSON:
+      description: A workflow object
+      properties:
+        _walkoff_type:
+          description: Workflow type for json decoder
+          type: string
+        actions:
+          description: Action nodes in workflow
+          items:
+            $ref: '#/components/schemas/Action'
+          type: array
+        branches:
+          description: Edges connecting nodes in workflow
+          items:
+            $ref: '#/components/schemas/Branch'
+          type: array
+        conditions:
+          description: Condition nodes in workflow
+          items:
+            $ref: '#/components/schemas/Condition'
+          type: array
+        description:
+          description: Description of the workflow
+          type: string
+        errors:
+          $ref: '#/components/schemas/ExecutionElementErrors'
+        execution_id:
+          $ref: '#/components/schemas/Uuid'
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        is_valid:
+          description: Is this workflow able to be run?
+          type: boolean
+        name:
+          description: The name of the workflow.
+          example: HelloWorldWorkflow
+          type: string
+        start:
+          $ref: '#/components/schemas/Uuid'
+          description: ID of the starting action
+        tags:
+          description: Tag for workflow
+          items:
+            type: string
+          type: array
+        transforms:
+          description: Transform nodes in workflow
+          items:
+            $ref: '#/components/schemas/Transform'
+          type: array
+        triggers:
+          description: Trigger nodes in workflow
+          items:
+            $ref: '#/components/schemas/Trigger'
+          type: array
+        workflow_variables:
+          description: The environment variables for this workflow
+          items:
+            $ref: '#/components/schemas/WorkflowVariable'
+          type: array
+      required:
+      - name
+      type: object
+    WorkflowMetaData:
+      description: A workflow  metadata object
+      properties:
+        description:
+          description: Description of the workflow
+          type: string
+        errors:
+          $ref: '#/components/schemas/ExecutionElementErrors'
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        is_valid:
+          description: Is this workflow able to be run?
+          type: boolean
+        name:
+          description: The name of the workflow.
+          example: HelloWorldWorkflow
+          type: string
+        tags:
+          description: Tag for workflow
+          items:
+            type: string
+          type: array
+      required:
+      - id_
+      - name
+      type: object
+    WorkflowStatus:
+      properties:
+        completed_at:
+          description: The timestamp of the end of workflow execution
+          example: '2017-05-24T00:42:22.934058Z'
+          format: date-time
+          type: string
+        execution_id:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          description: The name of the workflow.
+          example: WorkflowName
+          readOnly: true
+          type: string
+        node_statuses:
+          description: The statuses of the workflow nodes
+          items:
+            $ref: '#/components/schemas/NodeStatus'
+          type: array
+        started_at:
+          description: The timestamp of the start of workflow execution
+          example: '2017-05-24T00:42:22.934058Z'
+          format: date-time
+          readOnly: true
+          type: string
+        status:
+          description: The current status of the workflow
+          enum:
+          - PENDING
+          - EXECUTING
+          - PAUSED
+          - AWAITING_DATA
+          - COMPLETED
+          - ABORTED
+          readOnly: true
+          type: string
+        user:
+          description: The user that executed the workflow
+          type: string
+        workflow_id:
+          $ref: '#/components/schemas/Uuid'
+      required:
+      - node_statuses
+      - execution_id
+      - workflow_id
+      - name
+      - status
+      type: object
+    WorkflowStatusSummary:
+      properties:
+        completed_at:
+          description: The timestamp of the end of workflow execution
+          example: '2017-05-24T00:42:22.934058Z'
+          format: date-time
+          type: string
+        execution_id:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          description: The name of the workflow.
+          example: WorkflowName
+          readOnly: true
+          type: string
+        node_status:
+          $ref: '#/components/schemas/NodeStatusSummary'
+          description: The currently executing node
+        started_at:
+          description: The timestamp of the start of workflow execution
+          example: '2017-05-24T00:42:22.934058Z'
+          format: date-time
+          readOnly: true
+          type: string
+        status:
+          description: The current status of the workflow
+          enum:
+          - PENDING
+          - EXECUTING
+          - PAUSED
+          - AWAITING_DATA
+          - COMPLETED
+          - ABORTED
+          readOnly: true
+          type: string
+        user:
+          description: The user that executed the workflow
+          type: string
+        workflow_id:
+          $ref: '#/components/schemas/Uuid'
+      required:
+      - execution_id
+      - workflow_id
+      - name
+      - status
+      type: object
+    WorkflowVariable:
+      description: A workflow variable object that is available in the workflow scope
+      properties:
+        _walkoff_type:
+          description: Workflow type for json decoder
+          type: string
+        description:
+          description: Description of the workflow variable
+          type: string
+        id_:
+          $ref: '#/components/schemas/Uuid'
+        name:
+          description: The name of the workflow variable
+          type: string
+        value:
+          description: The value of the workflow variable
+          type: string
+      required:
+      - name
+      - value
+      type: object
+  securitySchemes:
+    AuthenticationToken:
+      bearerFormat: JWT
+      description: 'We use a JWT authorization workflow. Use the /api/auth endpoint to get JWT access and refresh tokens. Then use the access token in the header "Authorization: Bearer accesstoken.goes.here".  That token will expire in 15 minutes by default. When it expires, you''ll receive a 401 response code. At that point, use the /api/auth/refresh with the header "Authorization: Bearer refreshtoken.goes.here" to receive a fresh access token. When you''re done, please use the /api/auth/logout endpoint to log out.  See the implementation in the Walkoff App for an example implementation.
+
+        '
+      scheme: bearer
+      type: http
+      x-bearerInfoFunc: api_gateway.security.decode_token
+info:
+  contact:
+    email: walkoff@nsa.gov
+  description: An active cyber defense development framework enabling orchestration capabilities to be written once and deployed across WALKOFF-enabled orchestration tools. https://nsacyber.github.io/WALKOFF/
+  license:
+    name: Creative-Commons
+    url: http://creativecommons.org/licenses/by/4.0/
+  title: WALKOFF
+  version: 0.9.1
+openapi: 3.0.0
+paths:
+  /apps:
+    get:
+      description: ''
+      operationId: read_all_app_names
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                description: List of app names
+                items:
+                  example:
+                  - PhillipsHue
+                  - OpenDaylight
+                  - PaloAlto
+                  type: string
+                type: array
+          description: Success
+      summary: Gets all apps
+      tags:
+      - System
+  /apps/apis:
+    get:
+      description: ''
+      operationId: read_all_app_apis
+      parameters:
+      - description: page of data to get
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/AppApi'
+                type: array
+          description: Success
+      summary: Get all app apis
+      tags:
+      - Apps
+    post:
+      description: ''
+      operationId: create_app_api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppApi'
+        description: The app api object to be created
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppApi'
+          description: Success
+      summary: Create app api
+      tags:
+      - Apps
+  /apps/apis/{app}:
+    delete:
+      description: ''
+      operationId: delete_app_api
+      parameters:
+      - description: Name OR ID of the app to get
+        in: path
+        name: app
+        required: true
+        schema:
+          type: string
+      responses:
+        204:
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: AppApi does not exist.
+      summary: Delete app api
+      tags:
+      - Apps
+    get:
+      description: ''
+      operationId: read_app_api
+      parameters:
+      - description: Name OR ID of the app to get
+        in: path
+        name: app
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppApi'
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: App does not exist
+      summary: Get and app's api
+      tags:
+      - Apps
+    put:
+      description: ''
+      operationId: update_app_api
+      parameters:
+      - description: Name OR ID of the app to get
+        in: path
+        name: app
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppApi'
+        description: The app api object to be updated
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppApi'
+          description: Success
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: AppApi already exists.
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: AppApi does not exist.
+      summary: Replace app api
+      tags:
+      - Apps
+  /auth:
+    post:
+      description: ''
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Authentication'
+        description: The username and password
+        required: true
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+          description: Success
+        401:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+      security: []
+      summary: Login and get access and refresh tokens
+      tags:
+      - Authorization
+  /auth/logout:
+    post:
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                refresh_token:
+                  description: the refresh token to be revoked
+                  type: string
+              required:
+              - refresh_token
+              type: object
+        description: The refresh token to be revoked
+        required: true
+      responses:
+        204:
+          description: Success
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid refresh token
+      summary: Logout of walkoff
+      tags:
+      - Authorization
+  /auth/refresh:
+    post:
+      description: ''
+      operationId: refresh
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+          description: Success
+        401:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized
+      summary: Get a fresh access token
+      tags:
+      - Authorization
+  /availableresourceactions:
+    get:
+      description: ''
+      operationId: read_available_resource_actions
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                description: List of available resource actions
+                items:
+                  $ref: '#/components/schemas/AvailableResourceAction'
+                type: array
+          description: Success
+      summary: Read all available resource actions
+      tags:
+      - Roles
+  /dashboards:
+    get:
+      description: Retrieves all dashboards currently stored in the database.
+      operationId: read_all_dashboards
+      parameters:
+      - description: page of data to get
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                description: A list of the full representation of all dashboards
+                items:
+                  $ref: '#/components/schemas/Dashboard'
+                type: array
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: No dashboards exist.
+      summary: Read all dashboards
+      tags:
+      - Dashboards
+    post:
+      description: Creates a dashboard from the JSON in request body
+      operationId: create_dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dashboard'
+        description: The dashboard object to be created
+        required: true
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+          description: Workflow created.
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Workflow already exists.
+      summary: Create a dashboard
+      tags:
+      - Dashboards
+    put:
+      description: Updates a whole dashboard using the JSON request body
+      operationId: update_dashboard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dashboard'
+        description: The dashboard object to be updated
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                properties:
+                  dashboard:
+                    $ref: '#/components/schemas/Dashboard'
+                required:
+                - dashboard
+                type: object
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Dashboard does not exist.
+      summary: Update a dashboard
+      tags:
+      - Dashboards
+  /dashboards/{dashboard}:
+    delete:
+      description: Deletes a dashboard by ID
+      operationId: delete_dashboard
+      parameters:
+      - description: ID of the global to be fetched
+        in: path
+        name: dashboard
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+          description: Workflow updated.
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Dashboard does not exist.
+      summary: Delete a dashboard
+      tags:
+      - Dashboards
+    get:
+      description: Retrieve a single dashboard from database by ID.
+      operationId: read_dashboard
+      parameters:
+      - description: ID of the global to be fetched
+        in: path
+        name: dashboard
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: No dashboard with that ID exist.
+      summary: Get a dashboard by id
+      tags:
+      - Dashboards
+  /globals:
+    get:
+      description: ''
+      operationId: read_all_globals
+      parameters:
+      - description: page of data to get
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      - description: Determine whether or not to decrypt global variable
+        in: query
+        name: to_decrypt
+        schema:
+          enum:
+          - 'false'
+          type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                description: A list of globals
+                items:
+                  $ref: '#/components/schemas/GlobalVariable'
+                type: array
+          description: Success
+      summary: Get all globals
+      tags:
+      - GlobalVariables
+    post:
+      description: ''
+      operationId: create_global
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalVariable'
+        required: true
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalVariable'
+          description: Object created
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: GlobalVariable already exists
+      summary: Add a global
+      tags:
+      - GlobalVariables
+  /globals/templates:
+    get:
+      description: ''
+      operationId: read_all_global_templates
+      parameters:
+      - description: page of data to get
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                description: A list of globals
+                items:
+                  $ref: '#/components/schemas/GlobalVariableTemplate'
+                type: array
+          description: Success
+      summary: Get all global templates
+      tags:
+      - GlobalVariables
+    post:
+      description: ''
+      operationId: create_global_templates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalVariableTemplate'
+        required: true
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalVariableTemplate'
+          description: Object created
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: GlobalVariable already exists
+      summary: Add a global
+      tags:
+      - GlobalVariables
+  /globals/templates/{global_template}:
+    delete:
+      description: ''
+      operationId: delete_global_templates
+      parameters:
+      - description: ID of the global template to be fetched
+        in: path
+        name: global_template
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        204:
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: GlobalVariableTemplate does not exist
+      summary: Remove a global
+      tags:
+      - GlobalVariables
+    get:
+      description: ''
+      operationId: read_global_templates
+      parameters:
+      - description: ID of the global template to be fetched
+        in: path
+        name: global_template
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalVariableTemplate'
+          description: Success
+        404:
+          description: GlobalVariableTemplate does not exist.
+      summary: Read a global template
+      tags:
+      - GlobalVariables
+    put:
+      description: ''
+      operationId: update_global_templates
+      parameters:
+      - description: ID of the global template to be fetched
+        in: path
+        name: global_template
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalVariableTemplate'
+        description: The new global template to be updated
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalVariableTemplate'
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: GlobalVariableTemplate does not exist
+      summary: Update a global template
+      tags:
+      - GlobalVariables
+  /globals/{global_var}:
+    delete:
+      description: ''
+      operationId: delete_global
+      parameters:
+      - description: ID of the global to be fetched
+        in: path
+        name: global_var
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        204:
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: GlobalVariable does not exist
+      summary: Remove a global
+      tags:
+      - GlobalVariables
+    get:
+      description: ''
+      operationId: read_global
+      parameters:
+      - description: ID of the global to be fetched
+        in: path
+        name: global_var
+        required: true
+        schema:
+          format: uuid
+          type: string
+      - description: Determine whether or not to decrypt global variable
+        in: query
+        name: to_decrypt
+        schema:
+          enum:
+          - 'false'
+          type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalVariable'
+          description: Success
+        404:
+          description: GlobalVariable does not exist.
+      summary: Read a global
+      tags:
+      - GlobalVariables
+    put:
+      description: ''
+      operationId: update_global
+      parameters:
+      - description: ID of the global to be fetched
+        in: path
+        name: global_var
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GlobalVariable'
+        description: The new global object to be updated
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GlobalVariable'
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: GlobalVariable does not exist
+      summary: Update a global
+      tags:
+      - GlobalVariables
+  /internal/workflowstatus/{execution_id}:
+    patch:
+      description: For internal use only. This endpoint should only be available to the docker network.
+      operationId: update_workflow_status
+      parameters:
+      - description: execution_id of workflow status to update
+        in: path
+        name: execution_id
+        required: true
+        schema:
+          type: string
+      - description: The event type that is being submitted
+        in: query
+        name: event
+        required: true
+        schema:
+          enum:
+          - PENDING
+          - COMPLETED
+          - ABORTED
+          - EXECUTING
+          - SUCCESS
+          - FAILURE
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JSONPatch'
+        required: true
+      responses:
+        202:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowStatus'
+          description: Updated WorkflowStatusMessage entry
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid input error.
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: WorkflowStatusMessage does not exist.
+      security: []
+      summary: Patch parts of a WorkflowStatusMessage object
+      tags:
+      - TempInternal
+  /roles:
+    get:
+      description: ''
+      operationId: read_all_roles
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                description: A list of roles
+                items:
+                  $ref: '#/components/schemas/Role'
+                type: array
+          description: Success
+      summary: Read all roles
+      tags:
+      - Roles
+    post:
+      description: ''
+      operationId: create_role
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddRole'
+        description: The role object to be created
+        required: true
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: Object created.
+        400:
+          description: Object exists.
+      summary: Create a role
+      tags:
+      - Roles
+  /roles/{role_id}:
+    delete:
+      description: ''
+      operationId: delete_role
+      parameters:
+      - description: The name that needs to be fetched.
+        in: path
+        name: role_id
+        required: true
+        schema:
+          type: string
+      responses:
+        204:
+          description: Success
+        404:
+          description: Object does not exist.
+      summary: Delete a role
+      tags:
+      - Roles
+    get:
+      description: ''
+      operationId: read_role
+      parameters:
+      - description: The name that needs to be fetched.
+        in: path
+        name: role_id
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: Success
+        404:
+          description: Object does not exist.
+      summary: Read a role
+      tags:
+      - Roles
+    put:
+      description: ''
+      operationId: update_role
+      parameters:
+      - description: The name that needs to be fetched.
+        in: path
+        name: role_id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+        description: Updated fields for the role object
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: Success
+        404:
+          description: Object does not exist.
+      summary: Update a role
+      tags:
+      - Roles
+  /scheduledtasks:
+    get:
+      operationId: read_all_scheduled_tasks
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                description: A list of Scheduled Task objects
+                items:
+                  $ref: '#/components/schemas/ScheduledTask'
+                type: array
+          description: Success
+      summary: Get all the scheduled tasks
+      tags:
+      - Scheduler
+    post:
+      operationId: create_scheduled_task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddScheduledTask'
+        description: The new Scheduled Task object
+        required: true
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                description: A list of Scheduled Task objects
+                items:
+                  $ref: '#/components/schemas/ScheduledTask'
+                type: array
+          description: Success
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Scheduled task already exists
+      summary: Create a new Scheduled Task
+      tags:
+      - Scheduler
+  /scheduledtasks/{scheduled_task_id}:
+    delete:
+      operationId: delete_scheduled_task
+      responses:
+        204:
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Scheduled task does not exist
+      summary: Delete the scheduled task
+      tags:
+      - Scheduler
+    get:
+      operationId: read_scheduled_task
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduledTask'
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Scheduled task does not exist
+      summary: Get the scheduled task
+      tags:
+      - Scheduler
+    parameters:
+    - description: The ID of the scheduled task.
+      in: path
+      name: scheduled_task_id
+      required: true
+      schema:
+        type: string
+    put:
+      operationId: update_scheduled_task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduledTask'
+        description: The updated Scheduled Task object
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduledTask'
+          description: Success
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Scheduled task name already exists
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Scheduled task does not exist
+      summary: Update a new Scheduled Task
+      tags:
+      - Scheduler
+  /scheduler:
+    get:
+      description: ''
+      operationId: get_scheduler_status
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scheduler'
+          description: Success
+      summary: Get the current scheduler status.
+      tags:
+      - Scheduler
+    put:
+      description: ''
+      operationId: update_scheduler_status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                status:
+                  description: Requested status of the scheduler
+                  enum:
+                  - start
+                  - stop
+                  - pause
+                  - resume
+                  type: string
+              required:
+              - status
+              type: object
+        description: The new Scheduled Task object
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    description: The current status of the scheduler
+                    type: string
+                required:
+                - status
+                type: object
+          description: Success
+      summary: Update the status of the scheduler
+      tags:
+      - Scheduler
+  /settings:
+    get:
+      operationId: read_settings
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+          description: Success
+        401:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+      summary: Reads the settings
+      tags:
+      - Settings
+    put:
+      operationId: update_settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Settings'
+        description: The settings object
+        required: true
+      responses:
+        200:
+          description: Success
+        401:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        515:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Could not write settings to file
+      summary: Updates the settings
+      tags:
+      - Settings
+  /users:
+    get:
+      description: ''
+      operationId: read_all_users
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                description: A list of users
+                items:
+                  $ref: '#/components/schemas/DisplayUser'
+                type: array
+          description: Success
+      summary: Read all users
+      tags:
+      - Users
+    post:
+      description: ''
+      operationId: create_user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddUser'
+        description: The new user object to be created
+        required: true
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisplayUser'
+                description: The newly created user.
+          description: User created.
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Could not create user <username>. User already exists.
+      summary: Create a user
+      tags:
+      - Users
+  /users/{user_id}:
+    delete:
+      description: ''
+      operationId: delete_user
+      responses:
+        204:
+          description: Success
+        401:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Could not delete user <username>. User is current user.
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Could not delete user <username>. User does not exist.
+      summary: Delete a user
+      tags:
+      - Users
+    get:
+      description: ''
+      operationId: read_user
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisplayUser'
+                description: The user object matching the user id inputted
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Could not display user <username>. User does not exist.
+      summary: Get a user
+      tags:
+      - Users
+    parameters:
+    - description: The id of the user to be fetched
+      in: path
+      name: user_id
+      required: true
+      schema:
+        type: integer
+    put:
+      description: ''
+      operationId: update_user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditUser'
+        description: Updated fields for the user object
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DisplayUser'
+                description: The updated user.
+          description: Success
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid password
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Could not edit user <username>. User does not exist.
+      summary: Update a user
+      tags:
+      - Users
+  /workflowqueue:
+    get:
+      description: ''
+      operationId: get_all_workflow_status
+      parameters:
+      - description: page of data to get
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/WorkflowStatusSummary'
+                type: array
+          description: Success
+      summary: Get status information on the workflows currently executing
+      tags:
+      - WorkflowQueue
+    post:
+      description: ''
+      operationId: execute_workflow
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteWorkflow'
+        required: true
+      responses:
+        202:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Uuid'
+          description: Success asynchronous.
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid input error.
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Workflow does not exist.
+      summary: Execute a workflow
+      tags:
+      - WorkflowQueue
+  /workflowqueue/cleardb:
+    delete:
+      description: ''
+      operationId: clear_workflow_status
+      responses:
+        204:
+          description: Success
+      summary: Removes workflow statuses from the execution database. It will delete all of them or ones older than a certain number of days
+      tags:
+      - WorkflowQueue
+    parameters:
+    - description: Whether or not to delete all workflow statuses, defaults to false
+      in: query
+      name: all_
+      required: false
+      schema:
+        type: boolean
+    - description: The number of days of workflow statuses to keep
+      in: query
+      name: days
+      required: false
+      schema:
+        type: integer
+  /workflowqueue/{execution}:
+    get:
+      description: ''
+      operationId: get_workflow_status
+      parameters:
+      - description: The ID of the execution to get.
+        in: path
+        name: execution
+        required: true
+        schema:
+          format: uuid
+          type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowStatus'
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Object does not exist.
+      summary: Get status information on a currently executing workflow
+      tags:
+      - WorkflowQueue
+    patch:
+      description: ''
+      operationId: control_workflow
+      parameters:
+      - description: The ID of the execution to get.
+        in: path
+        name: execution
+        required: true
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControlWorkflow'
+        required: true
+      responses:
+        204:
+          description: Success.
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Invalid input error.
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Workflow does not exist.
+      summary: Abort or trigger a workflow
+      tags:
+      - WorkflowQueue
+  /workflows:
+    get:
+      description: ''
+      operationId: read_all_workflows
+      parameters:
+      - description: page of data to get
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                description: The JSON representation of all the workflows meta data
+                items:
+                  $ref: '#/components/schemas/WorkflowMetaData'
+                type: array
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: No workflows exist.
+      summary: Read all workflows in playbook
+      tags:
+      - Workflows
+    post:
+      description: ''
+      operationId: create_workflow
+      parameters:
+      - description: The ID of the workflow to clone
+        in: query
+        name: source
+        required: false
+        schema:
+          format: uuid
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowJSON'
+        description: The workflow object to be created
+        required: true
+      responses:
+        201:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowJSON'
+          description: Workflow created.
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Workflow already exists.
+      summary: Create a workflow
+      tags:
+      - Workflows
+  /workflows/{workflow}:
+    delete:
+      description: ''
+      operationId: delete_workflow
+      parameters:
+      - description: The name or ID of the workflow to get.
+        in: path
+        name: workflow
+        required: true
+        schema:
+          type: string
+      responses:
+        204:
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Workflow does not exist.
+      summary: Delete a workflow
+      tags:
+      - Workflows
+    get:
+      description: ''
+      operationId: read_workflow
+      parameters:
+      - description: The name or ID of the workflow to get.
+        in: path
+        name: workflow
+        required: true
+        schema:
+          type: string
+      - description: Set to export to send as file.
+        in: query
+        name: mode
+        schema:
+          enum:
+          - export
+          type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowJSON'
+          description: Success
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Workflow does not exist.
+      summary: Read a workflow
+      tags:
+      - Workflows
+    put:
+      description: ''
+      operationId: update_workflow
+      parameters:
+      - description: The name or ID of the workflow to get.
+        in: path
+        name: workflow
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowJSON'
+        description: The fields of the workflow object to be updated
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                properties:
+                  workflow:
+                    $ref: '#/components/schemas/WorkflowJSON'
+                required:
+                - workflow
+                type: object
+          description: Success
+        400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Workflow already exists.
+        404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Workflow does not exist.
+      summary: Update a workflow
+      tags:
+      - Workflows
+security:
+- AuthenticationToken: []
+servers:
+- url: /api
+tags:
+- description: Authorization Operations
+  name: Authorization
+- description: App Management Operations
+  name: Apps
+- description: System Settings Operations
+  name: Settings
+- description: GlobalVariable Operations
+  name: GlobalVariables
+- description: User operations
+  name: Users
+- description: Role Operations
+  name: Roles
+- description: Workflow Operations
+  name: Workflows
+- description: Workflow Control Operations
+  name: WorkflowQueue
+- description: Event Operations
+  name: Events
+- description: Scheduler Operations
+  name: Scheduler
+- description: Trigger Operations
+  name: Triggers
+- description: Serves up client pages
+  name: Client
+- description: System Resources
+  name: System
+- description: TempInternal
+  name: TempInternal

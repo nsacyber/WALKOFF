@@ -9,7 +9,6 @@ import { SettingsService } from './settings.service';
 import { SettingsUserModalComponent } from './settings.user.modal.component';
 
 import { Configuration } from '../models/configuration';
-import { CacheConfig } from '../models/cacheConfig';
 import { User } from '../models/user';
 import { WorkingUser } from '../models/workingUser';
 import { Role } from '../models/role';
@@ -26,9 +25,6 @@ import { UtilitiesService } from '../utilities.service';
 })
 export class SettingsComponent {
 	configuration: Configuration = new Configuration();
-	cacheTypes: string[] = ['disk', 'redis'];
-	dbTypes: string[] = ['sqlite', 'mysql', 'postgresql', 'oracle', 'mssql'];
-	tlsVersions: string[] = ['1.1', '1.2', '1.3'];
 
 	//User Data Table params
 	users: User[] = [];
@@ -66,7 +62,6 @@ export class SettingsComponent {
 			.getConfiguration()
 			.then(configuration => {
 				Object.assign(this.configuration, configuration);
-				if (! this.configuration.cache) this.configuration.cache = new CacheConfig();
 			})
 			.catch(e => this.toastrService.error(e.message));
 	}
@@ -76,7 +71,6 @@ export class SettingsComponent {
 			.updateConfiguration(this.configuration)
 			.then((configuration) => {
 				Object.assign(this.configuration, configuration);
-				if (! this.configuration.cache) this.configuration.cache = new CacheConfig();
 				this.toastrService.success('Configuration successfully updated.');
 			})
 			.catch(e => this.toastrService.error(e.message));

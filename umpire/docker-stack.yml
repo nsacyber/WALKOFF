@@ -21,7 +21,7 @@ services:
       - DOCKER_REGISTRY=127.0.0.1:5000
 
       # Redis options
-      - REDIS_URI=redis://redis:6379
+      - REDIS_URI=redis://walkoff_redis:6379
 
       # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
       # See: https://docs.docker.com/compose/reference/envvars/ for more information.
@@ -58,7 +58,7 @@ services:
       - DOCKER_REGISTRY=127.0.0.1:5000
 
       # Redis options
-      - REDIS_URI=redis://redis:6379
+      - REDIS_URI=redis://walkoff_redis:6379
 
       # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
       # See: https://docs.docker.com/compose/reference/envvars/ for more information.

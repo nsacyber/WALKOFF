@@ -1,4 +1,4 @@
-Workflow:
+WorkflowJSON:
   type: object
   required: [name]
   description: A workflow object
@@ -58,6 +58,9 @@ Workflow:
       type: array
       items:
         $ref: '#/components/schemas/WorkflowVariable'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
 
 
 WorkflowMetaData:
@@ -137,6 +140,9 @@ Action:
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
       $ref: '#/components/schemas/Position'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
 
 Branch:
   type: object
@@ -154,6 +160,9 @@ Branch:
     destination_id:
       description: The destination node ID for this Branch, if the conditions evaluate to True
       $ref: '#/components/schemas/Uuid'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
 
 Parameter:
   type: object
@@ -177,6 +186,9 @@ Parameter:
     variant:
       type: string
       enum: [STATIC_VALUE, ACTION_RESULT, WORKFLOW_VARIABLE, GLOBAL]
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
 
 Condition:
   type: object
@@ -212,6 +224,9 @@ Condition:
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
       $ref: '#/components/schemas/Position'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
 
 Transform:
   type: object
@@ -248,6 +263,9 @@ Transform:
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
       $ref: '#/components/schemas/Position'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
 
 Trigger:
   type: object
@@ -283,6 +301,9 @@ Trigger:
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
       $ref: '#/components/schemas/Position'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
 
 Position:
   type: object
@@ -298,6 +319,9 @@ Position:
     y:
       type: number
       description: The Y coordinate for the Action
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
 
 WorkflowVariable:
   type: object
@@ -316,6 +340,9 @@ WorkflowVariable:
    description:
      type: string
      description: Description of the workflow variable
+   _walkoff_type:
+     type: string
+     description: Workflow type for json decoder
 
 CopyWorkflow:
     type: object

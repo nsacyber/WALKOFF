@@ -149,7 +149,8 @@
 
         <!-- Actual cytoscape graph editor -->
         <div class="col-md-7 graphEditorColumn graphArea">
-            <div id="cy" #cyRef dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow" tabindex="0"></div>
+            <div id="cy" #cyRef dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow"
+                tabindex="0"></div>
         </div>
 
         <!-- Parameter editors -->
@@ -198,7 +199,8 @@
                 </div>
 
                 <div class="form-group mt-3">
-                    <label class="h5" for="name">Name<i class="fa fa-asterisk required" title="This field is required."></i></label>
+                    <label class="h5" for="name">Name<i class="fa fa-asterisk required"
+                            title="This field is required."></i></label>
                     <input type="text" class="form-control" [(ngModel)]="selectedAction.name" name="name" required>
                 </div>
                 <!-- <div *ngIf="!selectedActionApi.global" class="form-group globalArgument">
@@ -267,19 +269,37 @@ else:
                     </div>
                 </div>
 
-                <div *ngIf="selectedActionApi?.returns?.schema?.type || selectedActionApi?.returns?.example">
+                <div *ngIf="selectedActionApi?.returns?.schema?.type || selectedActionApi?.returns?.example || selectedActionResults">
                     <div class="form-group mt-3">
                         <label class="h5">
                             Returns: <span
                                 *ngIf="selectedActionApi?.returns?.schema?.type">({{ selectedActionApi?.returns?.schema?.type }})</span>
                         </label>
-                        <div class="d-flex" *ngIf="selectedActionApi?.returns?.example">
-                            <div class="card bg-light flex-grow-1">
-                                <div class="card-body">
-                                    <pre class="card-text">{{ selectedActionApi.returns.example }}</pre>
-                                </div>
-                            </div>
-                        </div>
+                        <ngb-tabset justify="fill" [activeId]="selectedActionResults ? 'returns-results-tab' : 'returns-example-tab'">
+                            <ngb-tab id="returns-example-tab" title="Example" [disabled]="!selectedActionApi?.returns?.example">
+                                <ng-template ngbTabContent>
+                                    <div class="d-flex m-2" *ngIf="selectedActionApi?.returns?.example">
+                                        <div class="card bg-light flex-grow-1">
+                                            <div class="card-body">
+                                                <pre class="card-text">{{ selectedActionApi.returns.example }}</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </ngb-tab>
+                            <ngb-tab id="returns-results-tab" title="Execution Result" [disabled]="!selectedActionResults">
+                                <ng-template ngbTabContent>
+                                    <div class="d-flex m-2" *ngIf="selectedActionResults">
+                                        <div class="card bg-light flex-grow-1">
+                                            <div class="card-body">
+                                                <!-- <pre class="card-text">{{ selectedActionResults }}</pre> -->
+                                                {{ getFriendlyJSON(selectedActionResults) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </ngb-tab>
+                        </ngb-tabset>
                     </div>
                 </div>
                 <!-- Triggers -->
@@ -358,8 +378,9 @@ else:
         <ngb-tabset destoryOnHide="false" (tabChange)="switchConsoleTabs($event)">
             <ngb-tab id="console-tab">
                 <ng-template ngbTabTitle>
-                    <div (click)="toggleConsole()">Console
-                        <span *ngIf="consoleLog.length > 0"class="badge badge-pill badge-primary">{{ consoleLog.length }}</span>
+                    <div class="console-tab" (click)="toggleConsole()">Console
+                        <span *ngIf="consoleLog.length > 0"
+                            class="badge badge-pill badge-primary">{{ consoleLog.length }}</span>
                     </div>
                 </ng-template>
                 <ng-template ngbTabContent>
@@ -374,8 +395,9 @@ else:
 
             <ngb-tab *ngIf="loadedWorkflow?.id && !loadedWorkflow?.has_errors" id="execution-tab">
                 <ng-template ngbTabTitle>
-                    <div (click)="toggleConsole()">Execution Results 
-                            <span *ngIf="nodeStatuses.length > 0"class="badge badge-pill badge-primary">{{ nodeStatuses.length }}</span>
+                    <div class="console-tab" (click)="toggleConsole()">Execution Results
+                        <span *ngIf="nodeStatuses.length > 0"
+                            class="badge badge-pill badge-primary">{{ nodeStatuses.length }}</span>
                     </div>
                 </ng-template>
                 <ng-template ngbTabContent>
@@ -424,7 +446,7 @@ else:
 
             <ngb-tab *ngIf="loadedWorkflow?.environment_variables?.length > 0" id="variable-tab">
                 <ng-template ngbTabTitle>
-                    <div (click)="toggleConsole()">Workflow Variables</div>
+                    <div class="console-tab" (click)="toggleConsole()">Workflow Variables</div>
                 </ng-template>
                 <ng-template ngbTabContent>
                     <ngx-datatable #environmentVariableTable class='material expandable' [columnMode]="'flex'"
@@ -453,7 +475,9 @@ else:
 
             <ngb-tab *ngIf="loadedWorkflow?.has_errors" id="error-tab">
                 <ng-template ngbTabTitle>
-                    <div (click)="toggleConsole()">Workflow Errors <span class="badge badge-pill badge-secondary">{{ loadedWorkflow?.all_errors.length }}</span></div>
+                    <div class="console-tab" (click)="toggleConsole()">Workflow Errors <span
+                            class="badge badge-pill badge-secondary">{{ loadedWorkflow?.all_errors.length }}</span>
+                    </div>
                 </ng-template>
                 <ng-template ngbTabContent>
                     <ngx-datatable #errorLogTable class='material expandable' [columnMode]="'flex'" [rows]="getErrors()"

@@ -51,23 +51,23 @@ actions:
         required: true
         schema:
           type: string
-        description: source path of the file to copy
+        description: ssh command to run on local WALKOFF app container
     returns:
       schema:
         type: string
   - name: sftp_copy
-    description: Copy remote file to remote host using sftp
+    description: Copy remote directory or files to remote host using sftp
     parameters:
       - name: src_path
         required: true
         schema:
           type: string
-        description: source path of the file to copy from
+        description: source path of the file(s) or directory to copy from. You may specify a specific pattern of files or directories to copy using glob pattern match.
       - name: dest_path
         required: true
         schema:
           type: string
-        description: remote path of the file's destination
+        description: remote path of the file(s) or directory destination
       - name: src_host
         schema:
           type: string

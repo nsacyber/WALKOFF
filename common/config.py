@@ -43,7 +43,7 @@ class Config:
     UMPIRE_HEARTBEAT = os.getenv("UMPIRE_HEARTBEAT", "1")
 
     # Redis options
-    REDIS_URI = os.getenv("REDIS_URI", "redis://redis:6379")
+    REDIS_URI = os.getenv("REDIS_URI", "redis://walkoff_redis:6379")
     REDIS_EXECUTING_WORKFLOWS = os.getenv("REDIS_EXECUTING_WORKFLOWS", "executing-workflows")
     REDIS_PENDING_WORKFLOWS = os.getenv("REDIS_PENDING_WORKFLOWS", "pending-workflows")
     REDIS_ABORTING_WORKFLOWS = os.getenv("REDIS_ABORTING_WORKFLOWS", "aborting-workflows")

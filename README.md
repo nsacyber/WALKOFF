@@ -1,50 +1,63 @@
-## 1.0 Update Overview
+Welcome to WALKOFF's documentation!
+===================================
+This documentation is intended as a reference for app and workflow developers as well as project contributors and operators.
+Here you will find walkthroughs, tutorials and other useful information about applications that are shipped with Walkoff, our changelog, and how to interact with Walkoff using its RESTful API.
 
-WALKOFF 1.0 is intended to present a more robust and scalable implementation of Apps and Workers. 
-Due to the scale of the changes, this should be considered an alpha version of WALKOFF 1.0, and is for testing and 
-evaluation only. **There is much work to be done, and it is not stable, feature-complete or production-ready.**
+What is WALKOFF?
+------------------
+WALKOFF is a flexible, easy to use, automation framework allowing users to integrate their capabilities and devices to cut through the repetitive, tedious tasks slowing them down,
 
-In the coming weeks, we will be continually releasing bugfixes, documentation, and tests to bring this to a stable 
-state and begin adding non-core functionality. See [our roadmap](ROADMAP.md) for more details. You can also follow [the changelog](CHANGELOG.md) to keep up with the latest changes.
+**WHAT WE OFFER**
+ - *Easy-to-use:* Drag-and-drop workflow editor. Sharable apps and workflows.
+ - *Flexbility:* Deployable on Windows or Linux.
+ - *Modular:* Plug and play integration of almost anything with easy-to-develop applications.
+ - *Visual Analytics:* Send workflow data to custom dashboards (and soon, Elasticsearch & Kibana!)
 
-If you do test this out, please submit issues here when you encounter any bugs or have any suggestions so we can 
-continue to improve the WALKOFF platform. 
+Documentation
+------------------------
+https://walkoff.readthedocs.io/en/latest/
 
-For app development instructions, see [the app SDK](app_sdk/README.md).
+Deploying WALKOFF
+------------------------
+**Ensure that Docker, Docker-Compose 3+, and git are installed**
 
-If you would like to view version 0.9.4, see [the master branch](https://github.com/nsacyber/WALKOFF/tree/master). 
+1. Open a terminal on Linux or a command prompt on Windows, and clone the Walkoff project.
 
-For general documentation for the latest version of WALKOFF, see our [ReadTheDocs](https://walkoff.readthedocs.io/en/latest/) page.
+       git clone https://github.com/nsacyber/WALKOFF.git
 
-## Requirements
+2. Change directories to the WALKOFF directory
 
-* Docker 18.06.0+: https://docs.docker.com/install/
-* Docker Compose 3+ (on Linux): https://docs.docker.com/compose/install/
-    * Docker Desktop for Mac and Windows are already bundled with Docker Compose.
+       cd WALKOFF
+
+
+3.  Perform the following command to launch WALKOFF in swarm mode
+
+        docker swarm init
+
+       **Note:** If you have multiple NICs you will need to use --advertise-addr to pick an address from which the swarm will be accessible.
+
+4. Create an encryption key
+
+       docker run python:3.7-alpine python -c "import os; print(os.urandom(16).hex())" | docker secret create encryption_key -
+
+5. Create data/registry directory
     
+       mkdir data/registry
 
-## Installation
+6.  Perform the following command to launch WALKOFF with stack mode
 
-Ensure that you have Docker and Docker Compose installed.
+        docker-compose build
+        docker stack deploy --compose-file docker-compose.yml walkoff
 
-Ensure that ports 6379 (Redis), 5432 (PostgreSQL), 5000 (Docker Registry), and 8080 (WALKOFF UI) are available, 
-or configuration will be needed.
+7. Navigate to the default IP and port. The default IP and the port can be changed in the server. Configuration settings will be saved in the ``common/config.py`` file. Walkoff now uses HTTPS by default through NGINX.
 
-```
-# Clone this repo & branch:
-git clone -b 1.0.0-alpha.1 https://github.com/nsacyber/WALKOFF.git
+       https://localhost:8080
 
-# Navigate to where the docker-compose.yml is:
-cd WALKOFF
+8. Once navigated to the login page, the default username is "admin" and password is "admin." These can and should be changed upon initial login.
 
-# Walkoff 1.0 makes use of Docker Swarm - initialize one now:
-docker swarm init
 
-# Build and launch the docker-compose (this will take a while):
-docker-compose up -d --build
+9. To shutdown WALKOFF, run the following two commands. The first command may not remove all services; as the Umpire container exits, it will try to clean up the rest. Run the command again after a few seconds; if it does not fully clean up, you will have to manually remove services.
 
-# Follow logs for services (append service names from the docker-compose.yml to follow specific services):
-docker-compose logs -f api_gateway
-
-# UI is viewable at https://localhost:8080
-```
+       docker stack rm walkoff
+       # Some seconds later
+       docker stack rm walkoff

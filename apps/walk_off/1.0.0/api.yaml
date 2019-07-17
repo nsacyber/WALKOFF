@@ -1,7 +1,7 @@
 walkoff_version: 1.0.0
 app_version: 1.0.0
 name: walk_off
-description: An example of a Walkoff App specification
+description: A meta application that utilizes several endpoints of WALKOFF's API
 contact_info:
   name: Walkoff Team
   url: https://github.com/nsacyber/walkoff

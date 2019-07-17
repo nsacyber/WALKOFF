@@ -66,6 +66,11 @@ class Parameter(Base):
     parallelized = Column(Boolean(), nullable=False, default=False)
     # parallel_action_id = Column(UUID(as_uuid=True), ForeignKey('action.id_', ondelete='CASCADE'))
     variant = Column(Enum(ParameterVariant), nullable=False)
+    _walkoff_type = Column(String(80), default=__tablename__)
+
+    def __init__(self, **kwargs):
+        super(Parameter, self).__init__(**kwargs)
+        self._walkoff_type = self.__tablename__
 
 
 class ParameterSchema(BaseSchema):

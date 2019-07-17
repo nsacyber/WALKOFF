@@ -28,6 +28,7 @@ class GlobalVariableTemplate(Base):
     name = Column(String(), nullable=False)
     schema = Column(JSON, default={}, nullable=False)
     description = Column(String(255), default="")
+    _walkoff_type = Column(String(80), default="variable")
 
 
 class GlobalVariable(Base):
@@ -53,6 +54,7 @@ class GlobalVariable(Base):
     # Columns specific to GlobalVariables
     description = Column(String(255), default="")
     schema_id = Column(UUID(as_uuid=True), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
+    _walkoff_type = Column(String(80), default="variable")
 
 
 class GlobalVariableTemplateSchema(BaseSchema):
