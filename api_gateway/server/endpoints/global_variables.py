@@ -9,6 +9,7 @@ from api_gateway.executiondb.global_variable import (GlobalVariable, GlobalVaria
 from api_gateway.serverdb.role import Role
 from api_gateway.serverdb.user import User
 from api_gateway.serverdb.resource import Permission
+from api_gateway.serverdb.resource import Operation
 from api_gateway.extensions import db
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, paginate
@@ -87,34 +88,45 @@ def read_global(global_var):
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["delete"]))
 @with_global_variable("delete", "global_var")
 def delete_global(global_var):
-    current_app.running_context.execution_db.session.delete(global_var)
-    current_app.logger.info(f"Global_variable removed {global_var.name}")
-    current_app.running_context.execution_db.session.commit()
-    return None, HTTPStatus.NO_CONTENT
+    global_id = str(global_var.id_)
+    logger.info(f"global_id {global_id}")
+    logger.info(f"{type(global_id)}")
+    to_delete = auth_check(global_id, "delete")
 
+    if to_delete:
+        current_app.running_context.execution_db.session.delete(global_var)
+        current_app.logger.info(f"Global_variable removed {global_var.name}")
+        current_app.running_context.execution_db.session.commit()
+        return None, HTTPStatus.NO_CONTENT
+    else:
+        return None, HTTPStatus.FORBIDDEN
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["create"]))
 def create_global():
     data = request.get_json()
     global_id = data['id_']
-    update_permission = ["guest"] #data['update_permission']
+    update_permissions = [("guest", ["update", "delete"])]  # data['update_permission']
 
-    for role_elem in update_permission:
-        # update role permission
-        for resource in db.session.query(Role).filter(Role.name == role_elem).first().resources:
+    for role_elem in update_permissions:
+        role_name = role_elem[0]
+        role_permissions = role_elem[1]
+        for resource in db.session.query(Role).filter(Role.name == role_name).first().resources:
             if resource.name == "global_variables":
                 if "update" not in [elem.name for elem in resource.permissions]:
                     resource.permissions.append(Permission("update"))
-                if resource.needed_ids:
-                    final = [global_id] + resource.needed_ids
-                    setattr(resource, "needed_ids", final)
+                if "delete" not in [elem.name for elem in resource.permissions]:
+                    resource.permissions.append(Permission("delete"))
+                if resource.operations:
+                    final = [Operation(global_id, role_permissions)] + resource.operations
+                    setattr(resource, "operations", final)
+                    logger.info(f" Newly added operation for global --> ({global_id},{role_permissions})")
                     db.session.commit()
                 else:
-                    resource.needed_ids = [global_id]
+                    resource.operations = [Operation(global_id, role_permissions)]
+                    logger.info(f" Newly added operation for global --> ({global_id},{role_permissions})")
                     db.session.commit()
-                logger.info(f" Updated global variable {global_id} permissions for role type {role_elem}")
-                logger.info(f" New needed ids {role_elem} -> {resource.needed_ids}")
+                logger.info(f" Updated global variable {global_id} permissions for role type {role_name}")
 
     try:
         global_variable = global_variable_schema.load(data)
@@ -130,18 +142,11 @@ def create_global():
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["update"]))
 @with_global_variable("update", "global_var")
 def update_global(global_var):
+    # todo: ONCE UI ELEMENT IS BUILT OUT, DO CHECK FOR UPDATED PERMISSIONS
     data = request.get_json()
     global_id = data["id_"]
-    to_update = True
 
-    username = get_jwt_claims().get('username', None)
-    curr_user = db.session.query(User).filter(User.username == username).first()
-    for resource in curr_user.roles[0].resources:
-        if resource.name == "global_variables":
-            if resource.needed_ids:
-                if global_id not in resource.needed_ids:
-                    to_update = False
-
+    to_update = auth_check(global_id, "update")
     if to_update:
         try:
             global_variable_schema.load(data, instance=global_var)
@@ -150,9 +155,30 @@ def update_global(global_var):
         except (IntegrityError, StatementError):
             current_app.running_context.execution_db.session.rollback()
             return unique_constraint_problem("global_variable", "update", data["name"])
+    else:
+        return None, HTTPStatus.FORBIDDEN
 
+
+def auth_check(global_id, permission):
+    username = get_jwt_claims().get('username', None)
+    curr_user = db.session.query(User).filter(User.username == username).first()
+
+    for resource in curr_user.roles[0].resources:
+        if resource.name == "global_variables":
+            if resource.operations:
+                if global_id not in [elem.operation_id for elem in resource.operations]:
+                    return False
+                else:
+                    for elem in resource.operations:
+                        if elem.operation_id == global_id:
+                            if permission not in elem.permissions_list:
+                                return False
+                            else:
+                                return True
+    return True
 
 # Templates
+
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["read"]))

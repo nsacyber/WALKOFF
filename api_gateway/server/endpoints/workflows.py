@@ -10,12 +10,20 @@ from sqlalchemy.exc import IntegrityError
 from api_gateway import helpers
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.helpers import regenerate_workflow_ids
+from api_gateway.serverdb.role import Role
+from api_gateway.serverdb.resource import Permission
+from api_gateway.serverdb.resource import Operation
+from api_gateway.extensions import db
 # from api_gateway.helpers import strip_device_ids, strip_argument_ids
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
     paginate
 from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_input_problem
 from http import HTTPStatus
+
+
+import logging
+logger = logging.getLogger(__name__)
 
 workflow_schema = WorkflowSchema()
 
@@ -43,6 +51,27 @@ def create_workflow():
     data = request.get_json()
     workflow_id = request.args.get("source")
     workflow_name = data['name']
+    update_permissions = [("guest", ["update", "delete"])]  # data['update_permission']
+
+    for role_elem in update_permissions:
+        role_name = role_elem[0]
+        role_permissions = role_elem[1]
+        for resource in db.session.query(Role).filter(Role.name == role_name).first().resources:
+            if resource.name == "workflows":
+                if "update" not in [elem.name for elem in resource.permissions]:
+                    resource.permissions.append(Permission("update"))
+                if "delete" not in [elem.name for elem in resource.permissions]:
+                    resource.permissions.append(Permission("delete"))
+                if resource.operations:
+                    final = [Operation(workflow_id, role_permissions)] + resource.operations
+                    setattr(resource, "operations", final)
+                    logger.info(f" Newly added operation for workflow --> ({workflow_id},{role_permissions})")
+                    db.session.commit()
+                else:
+                    resource.operations = [Operation(workflow_id, role_permissions)]
+                    logger.info(f" Newly added operation for workflow --> ({workflow_id},{role_permissions})")
+                    db.session.commit()
+                logger.info(f" Updated workflow {workflow_id} permissions for role type {role_name}")
 
     if workflow_id:
         return copy_workflow(workflow_id=workflow_id)

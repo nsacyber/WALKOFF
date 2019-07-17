@@ -18,10 +18,6 @@ GlobalVariable:
 #        - type: "array"
 #        - type: "boolean"
       description: The value of the global variable
-    update_permission:
-      type: array
-      items:
-        type: string
     description:
       type: string
       description: Description of the global variable
