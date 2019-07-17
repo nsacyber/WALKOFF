@@ -1,1 +1,1 @@
-# No extra requirements needed
+# Hello World has no external Python dependencies

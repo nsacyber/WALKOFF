@@ -1,8 +1,8 @@
 # This config file manages paths and values that can be adjusted to adapt Walkoff to your environment.
 
 # Common options
-API_GATEWAY_URI: "http://api_gateway:8080"
-REDIS_URI: "redis://redis:6379"
+API_GATEWAY_URI: "http://core_api_gateway:8080"
+REDIS_URI: "redis://resource_redis:6379"
 ENCRYPTION_KEY_PATH: "/run/secrets/walkoff_encryption_key"
 
 # Worker options
@@ -21,7 +21,7 @@ UMPIRE_HEARTBEAT: "1"
 
 # API Gateway options
 DB_TYPE: "postgresql"
-DB_HOST: "postgres"
+DB_HOST: "resource_postgres"
 SERVER_DB_NAME: "walkoff"
 EXECUTION_DB_NAME: "execution"
 DB_USERNAME: "walkoff"

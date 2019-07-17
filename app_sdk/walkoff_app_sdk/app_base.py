@@ -8,17 +8,9 @@ import aiohttp
 from walkoff_app_sdk.common.message_types import NodeStatusMessage, message_dumps
 from walkoff_app_sdk.common.workflow_types import workflow_loads, Action, ParameterVariant
 from walkoff_app_sdk.common.async_logger import AsyncLogger, AsyncHandler
-from walkoff_app_sdk.common.helpers import UUID_GLOB
+from walkoff_app_sdk.common.helpers import UUID_GLOB, fernet_encrypt, fernet_decrypt
 from walkoff_app_sdk.common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
-from walkoff_app_sdk.common.config import config
-
-# get app environment vars
-REDIS_URI = os.getenv("REDIS_URI", "redis://localhost")
-REDIS_ACTION_RESULTS_GROUP = os.getenv("REDIS_ACTION_RESULTS_GROUP", "actions-in-process")
-REDIS_ABORTING_WORKFLOWS = os.getenv("REDIS_ABORTING_WORKFLOWS", "aborting-workflows")
-API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "http://api_gateway:8080")
-APP_TIMEOUT = os.getenv("APP_TIMEOUT", 30)
-CONTAINER_ID = os.getenv("HOSTNAME")
+from walkoff_app_sdk.common.config import config, static
 
 
 class HTTPStream:
@@ -37,7 +29,7 @@ class HTTPStream:
     async def write(self, message):
         data = {"message": message}
         params = {"workflow_execution_id": self.execution_id}
-        url = f"{API_GATEWAY_URI}/api/streams/console/logger"
+        url = f"{config.API_GATEWAY_URI}/api/streams/console/logger"
 
         await self.session.post(url, json=data, params=params)
 
@@ -55,12 +47,12 @@ class AppBase:
             logger.error(("App name or version not set. Please ensure self.app_name is set to match the "
                           "docker-compose service name and self.__version__ is set to match the api.yaml."))
             sys.exit(1)
-
-        if CONTAINER_ID is None:
-            logger.error(("CONTAINER_ID not not available. Please ensure 'HOSTNAME' environment variable is set to "
-                          "match the docker container id. This should be handled automatically by docker but in this "
-                          "case something must have gone wrong..."))
-            sys.exit(1)
+        #
+        # if CONTAINER_ID is None:
+        #     logger.error(("CONTAINER_ID not not available. Please ensure 'HOSTNAME' environment variable is set to "
+        #                   "match the docker container id. This should be handled automatically by docker but in this "
+        #                   "case something must have gone wrong..."))
+        #     sys.exit(1)
 
         # Creates redis keys of format "{AppName}:{Version}:{Priority}"
         self.redis: aioredis.Redis = redis
@@ -75,7 +67,7 @@ class AppBase:
 
         while True:
             streams = await self.redis.keys(f"{UUID_GLOB}:{app_group}", encoding='utf-8')
-            aborted = await self.redis.smembers(REDIS_ABORTING_WORKFLOWS, encoding="utf-8")
+            aborted = await self.redis.smembers(static.REDIS_ABORTING_WORKFLOWS, encoding="utf-8")
             streams = [s for s in streams if s.split(':')[0] not in aborted]
             num_streams = len(streams)
 
@@ -84,11 +76,11 @@ class AppBase:
 
             try:
                 # See if we have any pending messages first
-                message = await self.redis.xread_group(app_group, CONTAINER_ID, streams=streams, count=1,
+                message = await self.redis.xread_group(app_group, static.CONTAINER_ID, streams=streams, count=1,
                                                        latest_ids=list('0' * num_streams), timeout=None)
 
                 if len(message) < 1:  # We don't have any pending so lets get a new one
-                    message = await self.redis.xread_group(app_group, CONTAINER_ID, streams=streams, count=1,
+                    message = await self.redis.xread_group(app_group, static.CONTAINER_ID, streams=streams, count=1,
                                                            latest_ids=list('>' * num_streams), timeout=None)
 
                 if len(message) < 1:  # We didn't get any messages, start over with new streams
@@ -129,11 +121,8 @@ class AppBase:
                         params = {}
                         for p in action.parameters:
                             if p.variant == ParameterVariant.GLOBAL:
-                                f = open('/run/secrets/walkoff_encryption_key')
-                                key = f.read()
-                                my_cipher = GlobalCipher(key)
-                                temp = my_cipher.decrypt(p.value)
-                                params[p.name] = temp
+                                with open(config.ENCRYPTION_KEY_PATH) as f:
+                                    params[p.name] = fernet_decrypt(f.read(), p.value)
                             else:
                                 params[p.name] = p.value
                         result = await func(**params)
@@ -159,7 +148,7 @@ class AppBase:
     @classmethod
     async def run(cls):
         """ Connect to Redis and HTTP session, await actions """
-        async with connect_to_redis_pool(REDIS_URI) as redis, aiohttp.ClientSession() as session:
+        async with connect_to_redis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session:
             # TODO: Migrate to the common log config
             logging.basicConfig(format="{asctime} - {name} - {levelname}:{message}", style='{')
             logger = logging.getLogger(f"{cls.__name__}")

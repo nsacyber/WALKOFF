@@ -20,7 +20,7 @@ from compose.cli.command import get_project as get_compose_project
 from compose.utils import timeparse, parse_bytes
 from compose.config.environment import Environment
 
-from common.config import config
+from common.config import config, static
 from common.helpers import sint, sfloat
 
 logger = logging.getLogger("UMPIRE")
@@ -162,7 +162,7 @@ def normalize_name(name, delimiter=''):
 
 
 def get_project(path):
-    project = get_compose_project(path, environment=load_docker_env(), project_name=config.APP_PREFIX)
+    project = get_compose_project(path, environment=load_docker_env(), project_name=static.APP_PREFIX)
     project.path = path  # we'll add this in to refresh the project later
     return project
 

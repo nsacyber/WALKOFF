@@ -1,15 +1,15 @@
 version: '3.5'
 services:
-  registry:
-    restart: always
+  resource_registry:
     image: registry:2
+    networks:
+      - walkoff_default
 #    deploy:
 #      placement:
 #        constraints: [node.role==manager]
     ports:
       - 5000:5000
-    networks:
-      - walkoff_default
+
 #    The commented lines are needed to enable auth on the custom registry
 #    environment:
 #      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
@@ -23,48 +23,29 @@ services:
 #      - /var/lib/boot2docker:/certs
 #      - /var/lib/boot2docker/auth:/auth
 
-
-  redis:
-    container_name: redis
+  resource_redis:
     image: "redis"
-    ports:
-      - 6379:6379
     networks:
       - walkoff_default
+    command: redis-server --port 6379
 #    volumes:
-#      - /var/lib/boot2docker/redis:/data
+#      - /path/to/persistent/dir/redis:/data
 
-  postgres:
-    container_name: postgres
+  resource_postgres:
     image: "postgres"
+    networks:
+      - walkoff_default
     environment:
       - "POSTGRES_USER=walkoff"
       - "POSTGRES_PASSWORD=walkoff"
-#    ports:
-#      - 5432:5432
     deploy:
       placement:
         constraints: [node.role==manager]
-    networks:
-      - walkoff_default
 #    volumes:
-#      - /var/lib/boot2docker/postgresql/data:/var/lib/postgresql/data
+#      - /path/to/persistent/dir/postgresql/data:/var/lib/postgresql/data
 
-  nginx:
-    image: 'bitnami/nginx:latest'
-    ports:
-      - '8080:8080'
-      - '8081:8081'
-    volumes:
-      - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
-      - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
-      - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
-
-  portainer:
-    container_name: portainer_data
+  resource_portainer:
     image: "portainer/portainer"
-#    ports:
-#      - 9020:9000
     networks:
       - walkoff_default
     deploy:
@@ -73,6 +54,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 #      - portainer_data:/data portainer/portainer
+
+configs:
+  common_env.yml:
+    file: ./data/config.yml
 
 secrets:
   encryption_key:

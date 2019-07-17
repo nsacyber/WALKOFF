@@ -8,19 +8,16 @@ import os
 import re
 import shutil
 
-import aioredis
-import aiodocker
 import aiohttp
 import yaml
 import yaml.scanner
 
-from common import docker_helpers, helpers, redis_helpers
-from common.config import Config
+from common.config import config, static
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("BOOTLOADER")
+static.set_local_hostname("local_bootloader")
 
-CONTAINER_ID = os.getenv("HOSTNAME", "local_bootloader")
 
 COMPOSE_BASE = {"version": "3.5",
                 "services": {},
@@ -78,10 +75,10 @@ def compose_from_app(path: pathlib.Path, name):
         env_file = {"environment": parse_env_file(env_txt)}
     compose = copy.deepcopy(COMPOSE_BASE)
     build = {"build": {"context": str(path), "dockerfile": str(path / "Dockerfile")}}
-    image = {"image": f"{Config.DOCKER_REGISTRY}/{APP_NAME_PREFIX}{name}:{path.name}"}
+    image = {"image": f"{config.DOCKER_REGISTRY}/{APP_NAME_PREFIX}{name}:{path.name}"}
     deploy = {"deploy": {"mode": "replicated", "replicas": 0, "restart_policy": {"condition": "none"}}}
-    restart = {"restart": "no"}
-    compose["services"] = {name: {**build, **image, **deploy, **restart, **env_file}}
+    config_mount = {"configs": ["common_env.yml"]}
+    compose["services"] = {name: {**build, **image, **deploy, **config_mount, **env_file}}
     return compose
 
 
@@ -112,7 +109,7 @@ def merge_composes(base, others):
 def generate_app_composes():
     # TODO: Probably find a way to incorporate the app repo in here as well to eliminate mounting files to umpire
     composes = []
-    for app in pathlib.Path(Config.APPS_PATH).iterdir():
+    for app in pathlib.Path(config.APPS_PATH).iterdir():
         #  grabs only directories and ignores all __* directories i.e. __pycache__
         if app.is_dir() and not re.fullmatch(r"(__.*)", app.name):
             for version in app.iterdir():
@@ -129,8 +126,8 @@ async def create_encryption_key():
 
     logger.info("Creating encryption key secret.")
 
-    proc = await asyncio.create_subprocess_shell(cmd,
-                                                 stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+    proc = await asyncio.create_subprocess_shell(cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+
     await log_proc_output(proc)
 
     return proc.returncode
@@ -142,8 +139,8 @@ async def deploy_compose(compose):
 
     # Dump the compose to a temporary compose file and launch that. This is so we can amend the compose and update the
     # the stack without launching a new one
-    dump_yaml(Config.TMP_COMPOSE, compose)
-    compose = Config.TMP_COMPOSE
+    dump_yaml(config.TMP_COMPOSE, compose)
+    compose = config.TMP_COMPOSE
 
     proc = await asyncio.create_subprocess_exec("docker", "stack", "deploy", "--compose-file", compose, "walkoff",
                                                 stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
@@ -220,7 +217,7 @@ class Bootloader:
 
     async def _wait_for_registry(self):
         try:
-            async with self.session.get("http://" + Config.DOCKER_REGISTRY) as resp:
+            async with self.session.get("http://" + config.DOCKER_REGISTRY) as resp:
                 if resp.status == 200:
                     return False
         except aiohttp.ClientConnectionError:
@@ -237,7 +234,7 @@ class Bootloader:
 
         # Bring up the base compose with the registry
         logger.info("Deploying base services (Docker Registry, Portainer, Postgres, Redis...")
-        base_compose = parse_yaml(Config.BASE_COMPOSE)
+        base_compose = parse_yaml(config.BASE_COMPOSE)
 
         await exponential_wait(deploy_compose, [base_compose], "Deployment failed")
 
@@ -245,14 +242,15 @@ class Bootloader:
 
         # Merge the base, walkoff, and app composes
         app_composes = generate_app_composes()
-        walkoff_compose = parse_yaml(Config.WALKOFF_COMPOSE)
+        walkoff_compose = parse_yaml(config.WALKOFF_COMPOSE)
         merged_compose = merge_composes(walkoff_compose, app_composes)
 
         if args.build:
             for service_name, service in walkoff_compose["services"].items():
-                r = await build_image(service["image"], service["build"]["dockerfile"], service["build"]["context"])
-                if r != 0:
-                    os._exit(r)
+                if "build" in service:
+                    r = await build_image(service["image"], service["build"]["dockerfile"], service["build"]["context"])
+                    if r != 0:
+                        os._exit(r)
 
         # builders = []
         # if args.build:
@@ -275,7 +273,8 @@ class Bootloader:
         pushers = []
         # The registry is up so lets push the images we need into it
         for service_name, service in merged_compose["services"].items():
-            pushers.append(asyncio.create_task(push_image(service["image"])))
+            if "build" in service:
+                pushers.append(asyncio.create_task(push_image(service["image"])))
 
         await asyncio.gather(*pushers, return_exceptions=True)
 

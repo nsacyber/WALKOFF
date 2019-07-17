@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 import os
+import socket
 
 import yaml
 
@@ -30,6 +31,24 @@ def sfloat(value, default):
 class Static:
     """Common location for static values"""
 
+    # Common statics
+    CONTAINER_ID = os.getenv("HOSTNAME")
+
+    # Service names
+    CORE_PREFIX = "walkoff_core"
+    RESOURCE_PREFIX = "walkoff_resource"
+    APP_PREFIX = "walkoff_app"
+
+    API_GATEWAY_SERVICE = f"{CORE_PREFIX}_api_gateway"
+    UMPIRE_SERVICE = f"{CORE_PREFIX}_umpire"
+    WORKER_SERVICE = f"{CORE_PREFIX}_worker"
+
+    REDIS_SERVICE = f"{RESOURCE_PREFIX}_redis"
+    POSTGRES_SERVICE = f"{RESOURCE_PREFIX}_postgres"
+    NGINX_SERVICE = f"{RESOURCE_PREFIX}_nginx"
+    PORTAINER_SERVICE = f"{RESOURCE_PREFIX}_portainer"
+    REGISTRY_SERVICE = f"{RESOURCE_PREFIX}_registry"
+
     # Redis options
     REDIS_EXECUTING_WORKFLOWS = "executing-workflows"
     REDIS_PENDING_WORKFLOWS = "pending-workflows"
@@ -48,6 +67,10 @@ class Static:
     CLIENT_PATH = Path("api_gateway") / "client"
     SWAGGER_URL = "/api/docs"
 
+    def set_local_hostname(self, hostname):
+        if not self.CONTAINER_ID:
+            self.CONTAINER_ID = hostname
+
 
 class Config:
     """Common location for configurable values.
@@ -58,8 +81,8 @@ class Config:
     """
 
     # Common options
-    API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", "http://api_gateway:8080")
-    REDIS_URI = os.getenv("REDIS_URI", "redis://walkoff_redis:6379")
+    API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", f"http://{Static.API_GATEWAY_SERVICE}:8080")
+    REDIS_URI = os.getenv("REDIS_URI", f"redis://{Static.REDIS_SERVICE}:6379")
     ENCRYPTION_KEY_PATH = os.getenv("ENCRYPTION_KEY_PATH", "/run/secrets/walkoff_encryption_key")
 
     # Worker options
@@ -70,15 +93,12 @@ class Config:
     # Umpire options
     APPS_PATH = os.getenv("APPS_PATH", "./apps")
     APP_REFRESH = os.getenv("APP_REFRESH", "60")
-    SWARM_NETWORK = os.getenv("SWARM_NETWORK", "walkoff_default")
-    APP_PREFIX = os.getenv("APP_PREFIX", "walkoff_app")
-    STACK_PREFIX = os.getenv("STACK_PREFIX", "walkoff")
     DOCKER_REGISTRY = os.getenv("DOCKER_REGISTRY", "127.0.0.1:5000")
     UMPIRE_HEARTBEAT = os.getenv("UMPIRE_HEARTBEAT", "1")
 
     # API Gateway options
     DB_TYPE = os.getenv("DB_TYPE", "postgres")
-    DB_HOST = os.getenv("DB_HOST", "postgres")
+    DB_HOST = os.getenv("DB_HOST", Static.POSTGRES_SERVICE)
     SERVER_DB_NAME = os.getenv("SERVER_DB", "walkoff")
     EXECUTION_DB_NAME = os.getenv("EXECUTION_DB", "execution")
     DB_USERNAME = os.getenv("DB_USERNAME", "")
@@ -88,6 +108,9 @@ class Config:
     BASE_COMPOSE = "./bootloader/base-compose.yml"
     WALKOFF_COMPOSE = "./bootloader/walkoff-compose.yml"
     TMP_COMPOSE = "./tmp-compose.yml"
+
+    # App options
+    APP_TIMEOUT = os.getenv("APP_TIMEOUT", "30")  # ??
 
     # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
     # See: https://docs.docker.com/compose/reference/envvars/ for more information.

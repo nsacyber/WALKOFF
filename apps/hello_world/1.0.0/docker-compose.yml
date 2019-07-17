@@ -7,6 +7,8 @@ services:
     image: 127.0.0.1:5000/walkoff_app_hello_world:1.0.0
     env_file:
       - env.txt
+    configs:
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 10
@@ -15,6 +17,7 @@ services:
     restart: "no"
     secrets:
       - secret1
+
 secrets:
   secret1:
     file: ./secret_data

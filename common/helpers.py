@@ -1,4 +1,5 @@
 import logging
+
 from common.config import config
 from common.message_types import(message_dumps, NodeStatusMessage, WorkflowStatusMessage,
                                  StatusEnum, JSONPatch, JSONPatchOps)
@@ -29,7 +30,6 @@ def sfloat(value, default):
 
 
 async def get_walkoff_auth_header(session, token=None, timeout=5*60):
-
     url = config.API_GATEWAY_URI.rstrip('/') + '/api'
 
     # TODO: make this secure and don't use default admin user

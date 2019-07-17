@@ -19,10 +19,7 @@ from common.workflow_types import (Node, Action, Condition, Transform, Parameter
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WORKER")
-# logging.getLogger("asyncio").setLevel(logging.DEBUG)
-# logger.setLevel(logging.DEBUG)
-
-CONTAINER_ID = os.getenv("HOSTNAME")
+static.set_local_hostname("local_worker")
 
 
 class Worker:
@@ -54,12 +51,12 @@ class Worker:
         """
         while True:
             logger.info("Waiting for workflows...")
-            if CONTAINER_ID is None:
-                logger.exception("Environment variable 'HOSTNAME' does not exist in worker container.")
-                sys.exit(-1)
+            # if static.CONTAINER_ID is None:
+            #     logger.exception("Environment variable 'HOSTNAME' does not exist in worker container.")
+            #     sys.exit(-1)
 
             try:
-                message = await redis.xread_group(static.REDIS_WORKFLOW_GROUP, CONTAINER_ID,
+                message = await redis.xread_group(static.REDIS_WORKFLOW_GROUP, static.CONTAINER_ID,
                                                   streams=[static.REDIS_WORKFLOW_QUEUE], latest_ids=['>'],
                                                   timeout=config.get_int("WORKER_TIMEOUT", 30) * 1000, count=1)
             except aioredis.ReplyError as e:
@@ -466,7 +463,7 @@ class Worker:
             while not msg:
                 try:
                     with await self.redis as redis:
-                        msg = await redis.xread_group(static.REDIS_WORKFLOW_TRIGGERS_GROUP, CONTAINER_ID,
+                        msg = await redis.xread_group(static.REDIS_WORKFLOW_TRIGGERS_GROUP, static.CONTAINER_ID,
                                                       streams=[trigger_stream], count=1, latest_ids=['>'])
 
                     logger.debug(f"Trigger satisfied in {self.workflow.execution_id} ({self.workflow.name}) at "
@@ -499,7 +496,7 @@ class Worker:
         while len(self.in_process) > 0 or len(self.parallel_in_process) > 0:
             try:
                 with await self.redis as redis:
-                    msg = await redis.xread_group(static.REDIS_ACTION_RESULTS_GROUP, CONTAINER_ID,
+                    msg = await redis.xread_group(static.REDIS_ACTION_RESULTS_GROUP, static.CONTAINER_ID,
                                                   streams=[self.results_stream], count=1, latest_ids=['>'])
 
             except aioredis.errors.ReplyError:

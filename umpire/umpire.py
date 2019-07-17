@@ -23,8 +23,7 @@ from umpire.app_repo import AppRepo
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("UMPIRE")
-
-CONTAINER_ID = os.getenv("HOSTNAME", "local_umpire")
+static.set_local_hostname("local_umpire")
 
 
 class Umpire:
@@ -44,7 +43,7 @@ class Umpire:
         # await redis.flushall()  # TODO: do a more targeted cleanup of redis
         self.app_repo = await AppRepo.create(config.APPS_PATH, session)
         self.running_apps = await self.get_running_apps()
-        self.worker = await get_service(self.docker_client, "walkoff_worker")
+        self.worker = await get_service(self.docker_client, static.WORKER_SERVICE)
         services = await self.docker_client.services.list()
         self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
 
@@ -53,7 +52,7 @@ class Umpire:
             logger.info(f"Created {static.REDIS_WORKFLOW_QUEUE} stream and {static.REDIS_WORKFLOW_GROUP} group.")
 
         except aioredis.errors.BusyGroupError:
-            logger.info(f"{config.REDIS_WORKFLOW_QUEUE} stream already exists.")
+            logger.info(f"{static.REDIS_WORKFLOW_QUEUE} stream already exists.")
 
         if len(self.app_repo.apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
@@ -89,7 +88,7 @@ class Umpire:
         logger.debug(f"Removed redis streams: {removed_qs}")
 
         # # Clean up docker services
-        # services = [*(await self.get_running_apps()).keys(), "walkoff_worker"]
+        # services = [*(await self.get_running_apps()).keys(), static.WORKER_SERVICE]
         # mask = [await remove_service(self.docker_client, s) for s in services]
         # removed_apps = list(compress(self.running_apps, mask))
         # logger.debug(f"Removed apps: {removed_apps}")
@@ -103,15 +102,13 @@ class Umpire:
         logger.info("Successfully shutdown Umpire")
 
     async def get_running_apps(self):
-        func = lambda s: s['Spec']['Name'].count(config.APP_PREFIX) > 0
+        func = lambda s: s['Spec']['Name'].count(static.APP_PREFIX) > 0
         services = filter(func, (await self.docker_client.services.list()))
         return {s['Spec']['Name']: {'id': s["ID"], 'version': s['Version']['Index']} for s in services}
 
     async def launch_workers(self, replicas=1):
-        worker_name = "walkoff_worker"
-
         try:
-            self.worker = await get_service(self.docker_client, "walkoff_worker")
+            self.worker = await get_service(self.docker_client, "walkoff_core_worker")
             if self.worker == {}:
                 raise DockerError
             await update_service(self.docker_client, service_id=self.worker["id"], version=self.worker["version"],
@@ -130,7 +127,7 @@ class Umpire:
         logger.debug(f"Queued Workflows: {queued_workflows}")
         logger.debug(f"Executing Workflows: {executing_workflows}")
 
-        current_workers = self.service_replicas.get("walkoff_worker", {"running": 0, "desired": 0})["desired"]
+        current_workers = self.service_replicas.get(static.WORKER_SERVICE, {"running": 0, "desired": 0})["desired"]
         workers_needed = min(total_workflows, self.max_workers)
         logger.debug(f"Running Workers: {current_workers}")
 
@@ -167,7 +164,7 @@ class Umpire:
                 workloads[group]["queued"] += queued_work
                 workloads[group]["total"] += total_work
 
-                service_name = f"{config.APP_PREFIX}_{app_name}"
+                service_name = f"{static.APP_PREFIX}_{app_name}"
                 curr_replicas = self.service_replicas.get(service_name, {"running": 0, "desired": 0})["desired"]
                 max_replicas = self.app_repo.apps[app_name][version].services[0].options["deploy"]["replicas"]
                 replicas_needed = min(total_work, max_replicas)
@@ -204,7 +201,7 @@ class Umpire:
         if len(action_queues) > 0:
             for key in action_queues:
                 execution_id, app_name, version = key.split(':')
-                service_name = f"{config.APP_PREFIX}_{app_name}"
+                service_name = f"{static.APP_PREFIX}_{app_name}"
                 app_group = f"{app_name}:{version}"
                 pending = (await self.redis.xpending(key, app_group))
                 if pending[0] > 0:
@@ -262,7 +259,7 @@ class Umpire:
         while True:
             try:
                 with await self.redis as redis:
-                    msg = await redis.xread_group(static.REDIS_WORKFLOW_CONTROL_GROUP, CONTAINER_ID,
+                    msg = await redis.xread_group(static.REDIS_WORKFLOW_CONTROL_GROUP, static.CONTAINER_ID,
                                                   streams=[static.REDIS_WORKFLOW_CONTROL], count=1, latest_ids=['>'])
             except aioredis.errors.ReplyError:
                 logger.debug(f"Stream {static.REDIS_WORKFLOW_CONTROL} doesn't exist. Attempting to create it...")

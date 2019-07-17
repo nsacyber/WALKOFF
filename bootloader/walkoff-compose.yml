@@ -1,166 +1,94 @@
 version: '3.5'
 services:
-#  dockerhost:
-#    image: qoomon/docker-host
-#    networks:
-#      - walkoff_default
-#    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 8M
-#    restart: on-failure
-
-  umpire:
-    command: python -m umpire.umpire --log-level=debug # --disable-worker-autoscale --disable-worker-autoheal
+  core_umpire:
     image: "127.0.0.1:5000/umpire:latest"
     build:
-     context: ./
-     dockerfile: umpire/Dockerfile
+      context: ./
+      dockerfile: umpire/Dockerfile
     networks:
-     - walkoff_default
+      - walkoff_default
     volumes:
-     - /var/run/docker.sock:/var/run/docker.sock
-     - ./apps:/app/apps
-    environment:
-      # Worker options
-      - WORKER_TIMEOUT=30
-      - API_GATEWAY_URI=http://api_gateway:8080
-      - WALKOFF_USERNAME=admin
-      - WALKOFF_PASSWORD=admin
-
-      # Umpire options
-      - APPS_PATH=./apps
-      - APP_REFRESH=60
-      - SWARM_NETWORK=walkoff_default
-      - APP_PREFIX=walkoff_app
-      - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=127.0.0.1:5000
-
-      # Redis options
-      - REDIS_URI=redis://redis:6379
-      - REDIS_ACTIONS_IN_PROCESS=actions-in-process
-      - REDIS_WORKFLOW_QUEUE=workflow-queue
-      - REDIS_WORKFLOWS_IN_PROCESS=workflows-in-process
-
-      # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
-      # See: https://docs.docker.com/compose/reference/envvars/ for more information.
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      # - DOCKER_HOST=tcp://ip_of_docker_swarm_manager:2376
-      # - DOCKER_TLS_VERIFY=1
-      # - DOCKER_CERT_PATH=/Path/to/certs/for/remote/docker/daemon
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./apps:/app/apps
     deploy:
-     placement:
-       constraints: [node.role==manager]
+      placement:
+        constraints: [node.role==manager]
     depends_on:
-     - redis
+      - walkoff_redis
+      - registry
     secrets:
-      - encryption_key
+      - walkoff_encryption_key
+    configs:
+      - common_env.yml
+    command: python -m umpire.umpire # --log-level=debug
 
-  api_gateway:
-#    ports:
-#    - "8080:8080"
+  core_api_gateway:
     image: "127.0.0.1:5000/api_gateway:latest"
     build:
       context: ./
       dockerfile: ./api_gateway/Dockerfile
     networks:
       - walkoff_default
-    environment:
-    - "REDIS_OPTIONS={\"host\": \"redis\", \"port\": 6379}"
-    - "IP=0.0.0.0"
-    - "PORT=8080"
-    - "WALKOFF_DB_TYPE=postgresql"
-    - "EXECUTION_DB_TYPE=postgresql"
-    - "DB_PATH=walkoff"
-    - "EXECUTION_DB_PATH=execution"
-    - "WALKOFF_DB_HOST=postgres"
-    - "EXECUTION_DB_HOST=postgres"
-    - "EXECUTION_DB_USERNAME=walkoff"
-    - "EXECUTION_DB_PASSWORD=walkoff"
-    - "WALKOFF_DB_USERNAME=walkoff"
-    - "WALKOFF_DB_PASSWORD=walkoff"
-    stop_signal: SIGINT
-    stop_grace_period: 30s
+#    stop_signal: SIGINT
+#    stop_grace_period: 30s
     secrets:
-      - encryption_key
-  worker:
+      - walkoff_encryption_key
+    configs:
+      - common_env.yml
+    depends_on:
+      - redis
+      - postgres
+#    volumes:
+#      - ./api_gateway/client/:/app/api_gateway/client
+
+  resource_nginx:
+    image: 'bitnami/nginx:latest'
+    ports:
+      - '8080:8080'
+#      - '8081:8081' # Uncomment for unsecure HTTP access to API Gateway
+    volumes:
+      - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
+      - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
+      - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
+    depends_on:
+      - api_gateway
+
+  core_worker:
     image: "127.0.0.1:5000/worker:latest"
     build:
       context: ./
       dockerfile: ./worker/Dockerfile
-    environment:
-      # Worker options
-      - WORKER_TIMEOUT=30
-      - API_GATEWAY_URI=http://api_gateway:8080
-      - WALKOFF_USERNAME=admin
-      - WALKOFF_PASSWORD=admin
-
-      # Umpire options
-      - APPS_PATH=./apps
-      - APP_REFRESH=60
-      - SWARM_NETWORK=walkoff_default
-      - APP_PREFIX=walkoff_app
-      - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=127.0.0.1:5000
-
-      # Redis options
-      - REDIS_URI=redis://redis:6379
-
-      # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
-      # See: https://docs.docker.com/compose/reference/envvars/ for more information.
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      # - DOCKER_HOST=tcp://ip_of_docker_swarm_manager:2376
-      # - DOCKER_TLS_VERIFY=1
-      # - DOCKER_CERT_PATH=/Path/to/certs/for/remote/docker/daemon
-
+    configs:
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 0
       restart_policy:
         condition: none
-    restart: "no"
 
-  walkoff_app_sdk:
+  app_sdk:
     build:
       context: ./app_sdk
       dockerfile: ./app_sdk/Dockerfile
     image: "127.0.0.1:5000/walkoff_app_sdk:latest"
+    configs:
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 0
       restart_policy:
         condition: none
-    environment:
-      # Worker options
-      - WORKER_TIMEOUT=30
-      - API_GATEWAY_URI=http://api_gateway:8080
-      - WALKOFF_USERNAME=admin
-      - WALKOFF_PASSWORD=admin
 
-      # Umpire options
-      - APPS_PATH=./apps
-      - APP_REFRESH=60
-      - SWARM_NETWORK=walkoff_default
-      - APP_PREFIX=walkoff_app
-      - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=127.0.0.1:5000
-
-      # Redis options
-      - REDIS_URI=redis://redis:6379
-
-      # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
-      # See: https://docs.docker.com/compose/reference/envvars/ for more information.
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      # - DOCKER_HOST=tcp://ip_of_docker_swarm_manager:2376
-      # - DOCKER_TLS_VERIFY=1
-      # - DOCKER_CERT_PATH=/Path/to/certs/for/remote/docker/daemon
+configs:
+  common_env.yml:
+    file: ./data/config.yml
 
 secrets:
-  encryption_key:
+  walkoff_encryption_key:
     external: true
 
 networks:
   walkoff_default:
     driver: overlay
     name: walkoff_default
+    attachable: true
