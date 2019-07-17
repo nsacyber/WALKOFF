@@ -21,4 +21,5 @@ COPY ./common /app/common
 COPY ./api_gateway /app/api_gateway
 WORKDIR /app
 
-CMD gunicorn -k gevent -b $IP:$PORT api_gateway.walkoff:app
+
+CMD gunicorn -k gevent -b 0.0.0.0:8080 api_gateway.server.app:app

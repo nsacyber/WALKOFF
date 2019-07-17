@@ -29,7 +29,6 @@ Deploying WALKOFF
 
        cd WALKOFF
 
-
 3.  Perform the following command to launch WALKOFF in swarm mode
 
         docker swarm init
@@ -38,7 +37,7 @@ Deploying WALKOFF
 
 4. Create an encryption key
 
-       docker run python:3.7-alpine python -c "import os; print(os.urandom(16).hex())" | docker secret create encryption_key -
+       docker run python:3.7-alpine python -c "import os, base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())" | docker secret create walkoff_encryption_key -
 
 5. Create data/registry directory
     
@@ -54,7 +53,6 @@ Deploying WALKOFF
        https://localhost:8080
 
 8. Once navigated to the login page, the default username is "admin" and password is "admin." These can and should be changed upon initial login.
-
 
 9. To shutdown WALKOFF, run the following two commands. The first command may not remove all services; as the Umpire container exits, it will try to clean up the rest. Run the command again after a few seconds; if it does not fully clean up, you will have to manually remove services.
 

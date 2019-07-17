@@ -49,7 +49,7 @@ Deploying WALKOFF
 
     .. code-block:: console
 
-            docker run --rm python:3.7-alpine python -c "import os; print(os.urandom(16).hex())" | docker secret create encryption_key -
+            docker run --rm python:3.7-alpine python -c "import os; print(os.urandom(16).hex())" | docker secret create walkoff_encryption_key -
 
 #. Create data/registry directory
 
