@@ -1,0 +1,5 @@
+api_gateway/client/node_modules
+data/registry
+data/redis
+data/postgres
+.git

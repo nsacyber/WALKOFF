@@ -2,3 +2,4 @@ aiohttp
 pyyaml
 asteval
 pycrypto
+six

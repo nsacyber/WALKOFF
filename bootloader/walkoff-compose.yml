@@ -12,8 +12,8 @@ services:
 #    restart: on-failure
 
   umpire:
-    command: python -m umpire.umpire --log-level=debug --disable-worker-autoscale --disable-worker-autoheal
-    image: 127.0.0.1:5000/umpire:latest
+    command: python -m umpire.umpire --log-level=debug # --disable-worker-autoscale --disable-worker-autoheal
+    image: "127.0.0.1:5000/umpire:latest"
     build:
      context: ./
      dockerfile: umpire/Dockerfile
@@ -85,7 +85,7 @@ services:
     secrets:
       - encryption_key
   worker:
-    image: worker
+    image: "127.0.0.1:5000/worker:latest"
     build:
       context: ./
       dockerfile: ./worker/Dockerfile
@@ -123,9 +123,9 @@ services:
 
   walkoff_app_sdk:
     build:
-      context: ../app_sdk
-      dockerfile: ./Dockerfile
-    image: walkoff_app_sdk
+      context: ./app_sdk
+      dockerfile: ./app_sdk/Dockerfile
+    image: "127.0.0.1:5000/walkoff_app_sdk:latest"
     deploy:
       mode: replicated
       replicas: 0

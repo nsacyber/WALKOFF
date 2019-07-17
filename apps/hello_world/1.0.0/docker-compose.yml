@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: walkoff_registry:5000/walkoff_app_hello_world
+    image: 127.0.0.1:5000/walkoff_app_hello_world:1.0.0
     env_file:
       - env.txt
     deploy:

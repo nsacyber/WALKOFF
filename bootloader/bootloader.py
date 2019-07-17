@@ -6,6 +6,7 @@ import copy
 import sys
 import os
 import re
+import shutil
 
 import aioredis
 import aiodocker
@@ -19,14 +20,32 @@ from common.config import Config
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("BOOTLOADER")
 
-CONTAINER_ID = os.getenv("HOSTNAME", "local_umpire")
+CONTAINER_ID = os.getenv("HOSTNAME", "local_bootloader")
 
 COMPOSE_BASE = {"version": "3.5",
                 "services": {},
-                "networks": {"walkoff_default": {"driver": "overlay", "name": "walkoff_default"}},
+                "networks": {"walkoff_default": {"driver": "overlay", "name": "walkoff_default", "attachable": True}},
                 "secrets": {"encryption_key": {"external": True}}}
 
 APP_NAME_PREFIX = "walkoff_"
+
+
+async def exponential_wait(func, args, msg):
+    wait = 0.5
+    return_code = 1
+    while return_code:
+        return_code = await asyncio.create_task(func(*args))
+        if return_code:
+            wait *= 2
+            logger.info(f"{msg} - Checking again in {wait} seconds...")
+            await asyncio.sleep(wait)
+
+
+def bannerize(text, fill='='):
+    columns = shutil.get_terminal_size().columns
+    border = "".center(columns, fill)
+    banner = f" {text} ".center(columns, fill)
+    print(f"\n\n{border}\n{banner}\n{border}\n")
 
 
 def parse_yaml(path):
@@ -105,12 +124,15 @@ def generate_app_composes():
 
 
 async def create_encryption_key():
-    cmd = 'docker run python:3.7-alpine python -c "import os; print(os.urandom(16).hex())" | ' \
+    cmd = 'docker run --rm python:3.7.4-slim-buster python -c "import os; print(os.urandom(16).hex())" | ' \
           'docker secret create encryption_key -'
 
+    logger.info("Creating encryption key secret.")
+
     proc = await asyncio.create_subprocess_shell(cmd,
-                                            stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+                                                 stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
     await log_proc_output(proc)
+
     return proc.returncode
 
 
@@ -131,17 +153,35 @@ async def deploy_compose(compose):
 
 
 async def build_image(repo, dockerfile, context):
-    proc = await asyncio.create_subprocess_exec("docker", "build", "-t", repo,
-                                                "-f", dockerfile, context,
-                                                stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-    await log_proc_output(proc)
 
-    return proc.returncode
+    from subprocess import Popen, PIPE, CalledProcessError
+
+    bannerize(f"Building {repo} from {dockerfile} in {context}")
+
+    with Popen(["docker", "build", "-t", repo, "-f", dockerfile, context],
+               stdout=PIPE, bufsize=1, universal_newlines=True) as p:
+        for line in p.stdout:
+            print(line, end='')  # process line here
+
+    return p.returncode
+
+    # proc = await asyncio.create_subprocess_exec("docker", "build", "-t", repo,
+    #                                             "-f", dockerfile, context,
+    #                                             stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+    #
+    # logger.info(f"Building image {repo}.")
+    #
+    # await log_proc_output(proc)
+    #
+    # return proc.returncode
 
 
 async def push_image(repo):
     proc = await asyncio.create_subprocess_exec("docker", "push", repo,
                                                 stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+
+    logger.info(f"Pushing image {repo}.")
+
     await log_proc_output(proc)
 
     return proc.returncode
@@ -152,6 +192,7 @@ class Bootloader:
         for calling actions in apps. The pattern as applied to the CLI follows close to this example:
         https://chase-seibert.github.io/blog/2014/03/21/python-multilevel-argparse.html#
     """
+
     def __init__(self, session=None):
         self.session: aiohttp.ClientSession = session
 
@@ -178,16 +219,12 @@ class Bootloader:
                 parser.print_help()
 
     async def _wait_for_registry(self):
-        time = 0.25
-        while True:
-            try:
-                async with self.session.get("http://" + Config.DOCKER_REGISTRY) as resp:
-                    if resp.status == 200:
-                        return
-            except aiohttp.ClientConnectionError:
-                logger.info(f"Registry not available yet. Checking again in {time} seconds.")
-                await asyncio.sleep(time)
-                time *= 2
+        try:
+            async with self.session.get("http://" + Config.DOCKER_REGISTRY) as resp:
+                if resp.status == 200:
+                    return False
+        except aiohttp.ClientConnectionError:
+            return True
 
     async def up(self):
         # Set up a subcommand parser
@@ -199,22 +236,41 @@ class Bootloader:
         args = parser.parse_args(sys.argv[2:])
 
         # Bring up the base compose with the registry
+        logger.info("Deploying base services (Docker Registry, Portainer, Postgres, Redis...")
         base_compose = parse_yaml(Config.BASE_COMPOSE)
-        return_code = await deploy_compose(base_compose)
-        await self._wait_for_registry()
+
+        await exponential_wait(deploy_compose, [base_compose], "Deployment failed")
+
+        await exponential_wait(self._wait_for_registry, {}, "Registry not available yet")
 
         # Merge the base, walkoff, and app composes
         app_composes = generate_app_composes()
         walkoff_compose = parse_yaml(Config.WALKOFF_COMPOSE)
         merged_compose = merge_composes(walkoff_compose, app_composes)
 
-        builders = []
         if args.build:
-            for service_name, service in merged_compose["services"].items():
-                builders.append(asyncio.create_task(build_image(service["image"],
-                                service["build"]["dockerfile"], service["build"]["context"])))
+            for service_name, service in walkoff_compose["services"].items():
+                r = await build_image(service["image"], service["build"]["dockerfile"], service["build"]["context"])
+                if r != 0:
+                    os._exit(r)
 
-        await asyncio.gather(*builders, return_exceptions=True)
+        # builders = []
+        # if args.build:
+        #     for service_name, service in walkoff_compose["services"].items():
+        #         builders.append(asyncio.create_task(build_image(service["image"],
+        #                                                         service["build"]["dockerfile"],
+        #                                                         service["build"]["context"])))
+        #
+        # await asyncio.gather(*builders, return_exceptions=True)
+        #
+        # builders = []
+        # if args.build:
+        #     for service_name, service in merged_compose["services"].items():
+        #         builders.append(asyncio.create_task(build_image(service["image"],
+        #                                                         service["build"]["dockerfile"],
+        #                                                         service["build"]["context"])))
+        #
+        # await asyncio.gather(*builders, return_exceptions=True)
 
         pushers = []
         # The registry is up so lets push the images we need into it
@@ -223,10 +279,15 @@ class Bootloader:
 
         await asyncio.gather(*pushers, return_exceptions=True)
 
+        logger.info("Deploying full Walkoff stack...")
+
         return_code = await deploy_compose(merged_compose)
         return return_code
 
     async def down(self):
+
+        logger.info("Removing Walkoff stack and related artifacts...")
+
         proc = await asyncio.create_subprocess_exec("docker", "stack", "rm", "walkoff", stderr=asyncio.subprocess.PIPE,
                                                     stdout=asyncio.subprocess.PIPE)
         await log_proc_output(proc)

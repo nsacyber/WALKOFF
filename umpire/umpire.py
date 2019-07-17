@@ -60,14 +60,14 @@ class Umpire:
         # await self.build_app_sdk()
         # await self.build_worker()
 
-        for app_name, app in self.app_repo.apps.items():
-            for version_name, version in app.items():
-                image_name = version.services[0].image_name
-                image = None
-                try:
-                    image = await self.docker_client.images.pull(image_name)
-                except DockerError:
-                    logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
+        # for app_name, app in self.app_repo.apps.items():
+        #     for version_name, version in app.items():
+        #         image_name = version.services[0].image_name
+        #         image = None
+        #         try:
+        #             image = await self.docker_client.images.pull(image_name)
+        #         except DockerError:
+        #             logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
 
                 # if we didn't find the image, try to build it
                 # if image is None:
@@ -106,11 +106,11 @@ class Umpire:
         removed_qs = list(compress(action_queues, mask))
         logger.debug(f"Removed redis streams: {removed_qs}")
 
-        # Clean up docker services
-        services = [*(await self.get_running_apps()).keys(), "walkoff_worker"]
-        mask = [await remove_service(self.docker_client, s) for s in services]
-        removed_apps = list(compress(self.running_apps, mask))
-        logger.debug(f"Removed apps: {removed_apps}")
+        # # Clean up docker services
+        # services = [*(await self.get_running_apps()).keys(), "walkoff_worker"]
+        # mask = [await remove_service(self.docker_client, s) for s in services]
+        # removed_apps = list(compress(self.running_apps, mask))
+        # logger.debug(f"Removed apps: {removed_apps}")
 
         # Clean up any unfinished tasks (shouldn't really be any though)
         tasks = [t for t in asyncio.all_tasks() if t is not
