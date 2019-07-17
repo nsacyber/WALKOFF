@@ -66,7 +66,7 @@ class Nmap(AppBase):
                             if host.os_match_probabilities()[0].osclasses[0].osfamily == "Linux":
                                 output.append(str(host.address))
                         except Exception as e:
-                            self.logger.info("Object is not a Linux machine")
+                            self.logger.info(f"Host {host.address} is not a Linux machine")
 
             except Exception as e:
                 return e
@@ -84,7 +84,7 @@ class Nmap(AppBase):
                             if host.os_match_probabilities()[0].osclasses[0].osfamily == "Windows":
                                 output.append(str(host.address))
                         except Exception as e:
-                            self.logger.info("Object is not a Windows machine")
+                            self.logger.info(f"Host {host.address} is not a Windows machine")
             except Exception as e:
                 return e
 
@@ -112,7 +112,7 @@ class Nmap(AppBase):
                     if host.os_match_probabilities()[0].osclasses[0].osfamily == "Linux":
                         output.append(str(host.address))
                 except Exception as e:
-                    self.logger.info("Object is not a Linux machine")
+                    self.logger.info(f"Host {host.address} is not a Linux machine")
         return output
 
     async def parse_xml_for_windows_from_file(self, nmap_file):
@@ -138,7 +138,7 @@ class Nmap(AppBase):
                     if host.os_match_probabilities()[0].osclasses[0].osfamily == "Windows":
                         output.append(str(host.address))
                 except Exception as e:
-                    self.logger.info("Object is not a Windows machine")
+                    self.logger.info(f"Host {host.address} is not a Windows machine")
         return output
 
     async def xml_to_json(self, nmap_out, is_file=False):

@@ -93,14 +93,6 @@ class SSH(AppBase):
         except:
             print("Error while deleting container directory.")
 
-        # for file in os.listdir(temp_dir):
-        #     file_path = os.path.join(temp_dir, file)
-        #     if os.path.isfile(file_path):
-        #         os.remove(file_path)
-        #     if os.path.isdir(file_path):
-        #         os.remove(file_path)
-        # os.rmdir(temp_dir)
-
         return "Successfully Copied File(s)."
 
 

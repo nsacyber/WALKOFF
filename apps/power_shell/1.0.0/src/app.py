@@ -55,7 +55,7 @@ class PowerShell(AppBase):
                     results[host] = {"stdout": process.stdout.decode(), "stderr": process.stderr.decode()}
                     process.signal(SignalCode.CTRL_C)
 
-                    self.logger.info("Done executing on {}".format(host))
+                    self.logger.info(f"Done executing on {host}")
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
 
@@ -120,7 +120,7 @@ class PowerShell(AppBase):
         local_file_path = os.path.join(curr_dir, local_file_name)
 
         for host in hosts:
-            self.logger.info("Executing on {}".format(host))
+            self.logger.info(f"Executing on {host}")
             results[host] = ""
 
             try:
@@ -161,7 +161,7 @@ class PowerShell(AppBase):
         results = {}
 
         for host in hosts:
-            self.logger.info("Executing on {}".format(host))
+            self.logger.info(f"Executing on {host}")
             results[host] = ""
 
             try:

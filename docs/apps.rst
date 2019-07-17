@@ -36,7 +36,6 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
 		@staticmethod
 		def _pretty_print(some_dict):
 			pretty = json.dumps(some_dict, sort_keys=False, indent=4)
-			print(pretty)
 			return pretty
 
 		async def ip_lookup(self, ip, apikey):
