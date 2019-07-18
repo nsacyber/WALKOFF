@@ -6,16 +6,13 @@ from copy import deepcopy
 from api_gateway import helpers
 from api_gateway.executiondb.global_variable import (GlobalVariable, GlobalVariableSchema,
                                                      GlobalVariableTemplate, GlobalVariableTemplateSchema)
-from api_gateway.serverdb.role import Role
-from api_gateway.serverdb.resource import Permission
-from api_gateway.serverdb.resource import Operation
-from api_gateway.extensions import db
+
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, paginate
 from api_gateway.server.problem import unique_constraint_problem
 from http import HTTPStatus
 from api_gateway.executiondb.global_variable import GlobalCipher
-from common.roles_helpers import auth_check
+from common.roles_helpers import auth_check, update_permissions
 
 import logging
 logger = logging.getLogger(__name__)
@@ -61,27 +58,34 @@ def read_all_globals():
         return query, HTTPStatus.OK
     else:
         for global_var in query:
-            temp_var = deepcopy(global_var)
-            temp_var.value = my_cipher.decrypt(global_var.value)
-            ret.append(temp_var)
-
+            to_read = auth_check(str(global_var.id_), "read", "global_variables")
+            if to_read:
+                temp_var = deepcopy(global_var)
+                temp_var.value = my_cipher.decrypt(global_var.value)
+                ret.append(temp_var)
         return ret, HTTPStatus.OK
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["read"]))
 @with_global_variable("read", "global_var")
 def read_global(global_var):
-    f = open('/run/secrets/encryption_key')
-    key = f.read()
-    my_cipher = GlobalCipher(key)
+    global_id = str(global_var.id_)
+    to_read = auth_check(global_id, "read", "global_variables")
 
-    global_json = global_variable_schema.dump(global_var)
+    if to_read:
+        f = open('/run/secrets/encryption_key')
+        key = f.read()
+        my_cipher = GlobalCipher(key)
 
-    if request.args.get('to_decrypt') == "false":
-        return jsonify(global_json), HTTPStatus.OK
+        global_json = global_variable_schema.dump(global_var)
+
+        if request.args.get('to_decrypt') == "false":
+            return jsonify(global_json), HTTPStatus.OK
+        else:
+            global_json['value'] = my_cipher.decrypt(global_json['value'])
+            return jsonify(global_json), HTTPStatus.OK
     else:
-        global_json['value'] = my_cipher.decrypt(global_json['value'])
-        return jsonify(global_json), HTTPStatus.OK
+        return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required
@@ -107,27 +111,9 @@ def delete_global(global_var):
 def create_global():
     data = request.get_json()
     global_id = data['id_']
-    update_permissions = [("guest", ["update", "delete"])]  # data['update_permission']
+    new_permissions = [("guest", ["update", "delete", "read"])]  # data['update_permission']
 
-    for role_elem in update_permissions:
-        role_name = role_elem[0]
-        role_permissions = role_elem[1]
-        for resource in db.session.query(Role).filter(Role.name == role_name).first().resources:
-            if resource.name == "global_variables":
-                if "update" not in [elem.name for elem in resource.permissions]:
-                    resource.permissions.append(Permission("update"))
-                if "delete" not in [elem.name for elem in resource.permissions]:
-                    resource.permissions.append(Permission("delete"))
-                if resource.operations:
-                    final = [Operation(global_id, role_permissions)] + resource.operations
-                    setattr(resource, "operations", final)
-                    logger.info(f" Newly added operation for global --> ({global_id},{role_permissions})")
-                    db.session.commit()
-                else:
-                    resource.operations = [Operation(global_id, role_permissions)]
-                    logger.info(f" Newly added operation for global --> ({global_id},{role_permissions})")
-                    db.session.commit()
-                logger.info(f" Updated global variable {global_id} permissions for role type {role_name}")
+    update_permissions("global_variables", global_id, new_permissions=new_permissions)
 
     try:
         global_variable = global_variable_schema.load(data)
