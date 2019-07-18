@@ -143,7 +143,6 @@ class Hive(AppBase):
         response = api.update_case(hive_case)
 
         if response.status_code == 200:
-            # self.logger.info(json.dumps(response.json(), indent=4, sort_keys=True))
             case_id = response.json()['id']
             self.logger.info('Updated case: {}'.format(case_id))
         else:
@@ -178,7 +177,6 @@ class Hive(AppBase):
         response = api.update_case(hive_case, ['status', 'resolutionStatus', 'impactStatus', 'tags', 'summary'])
 
         if response.status_code == 200:
-            # self.logger.info(json.dumps(response.json(), indent=4, sort_keys=True))
             self.logger.info('closed case: {}'.format(case_id))
         else:
             self.logger.info('failed to close case: {}'.format(case_id))

@@ -40,6 +40,7 @@ def update_settings():
             setattr(current_app.config, config.upper(), config_value)
 
     current_app.logger.info('Changed settings')
+    # TODO: Common config branch needs to reimplement this
     # try:
     #     api_gateway.config.Config.write_values_to_file()
     #     return __get_current_settings(), HTTPStatus.OK

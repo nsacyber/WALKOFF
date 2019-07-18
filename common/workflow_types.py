@@ -30,6 +30,9 @@ def attrs_equal(self, other):
     return all(attr_getter(self) == attr_getter(other) for attr_getter in attr_getters)
 
 
+class TransformException(Exception):
+    pass
+
 class ConditionException(Exception):
     pass
 
@@ -433,7 +436,7 @@ class Transform(Node):
         output = aeval.symtable.get("result", None)
 
         if len(aeval.error) > 0:
-            raise ConditionException
+            raise TransformException
 
         return output
 

@@ -13,7 +13,7 @@
 				<option *ngFor="let i of valueTypes" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 			</select>
 		</div>
-		<div class="col-8">
+		<div class="col-8 d-flex align-items-center">
 			<!-- Normal string text entries -->
 			<input *ngIf="isStringSelect" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value"
 				type="text" [attr.minlength]="parameterSchema.minLength > 0 ? parameterSchema.minLength : null" [attr.maxlength]="parameterSchema.maxLength > 0 ? parameterSchema.maxLength : null"
@@ -32,7 +32,13 @@
 				[attr.placeholder]="parameterApi.placeholder">
 
 			<!-- Checkbox for boolean values -->
-			<input *ngIf="isBooleanSelect" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value">
+			<div *ngIf="isBooleanSelect">  
+				<span class="switch">
+					<input type="checkbox" class="switch" [name]="argument.name" [(ngModel)]="argument.value" [id]="argument.id">
+					<label class="m-0" [for]="argument.id">{{ argument.value ? 'True' : 'False'}}</label>
+				</span>
+			</div>
+			<!-- <input *ngIf="isBooleanSelect" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value"> -->
 
 			<!-- User select -->
 			<select2 *ngIf="isStatic && isUserSelect" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"

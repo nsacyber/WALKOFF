@@ -71,7 +71,7 @@ class SSH(AppBase):
                         async with conn.start_sftp_client() as sftp:
                             await sftp.mget(src_path, temp_dir, recurse=True)
                     except Exception as e2:
-                        return "f{e2}"
+                        return f"{e2}"
 
                 spliced_path = src_path.split('/')
                 file_name = spliced_path[len(spliced_path) - 1]
@@ -85,21 +85,13 @@ class SSH(AppBase):
                         async with tunneled_conn.start_sftp_client() as sftp2:
                             await sftp2.mput(temp_dir + "/" + file_name, dest_path, recurse=True)
                     except Exception as e2:
-                        return "f{e2}"
+                        return f"{e2}"
 
         # cleaning up temp file
         try:
             shutil.rmtree(temp_dir)
         except:
             print("Error while deleting container directory.")
-
-        # for file in os.listdir(temp_dir):
-        #     file_path = os.path.join(temp_dir, file)
-        #     if os.path.isfile(file_path):
-        #         os.remove(file_path)
-        #     if os.path.isdir(file_path):
-        #         os.remove(file_path)
-        # os.rmdir(temp_dir)
 
         return "Successfully Copied File(s)."
 
