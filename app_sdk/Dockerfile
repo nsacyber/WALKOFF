@@ -10,7 +10,7 @@ RUN apt-get update \
 RUN mkdir /install
 WORKDIR /install
 
-COPY requirements.txt /requirements.txt
+COPY ./app_sdk/requirements.txt /requirements.txt
 RUN pip install --no-warn-script-location --prefix="/install" git+https://github.com/aio-libs/aioredis.git
 RUN pip install --no-warn-script-location --prefix="/install" --no-deps asteval
 RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.txt
@@ -19,8 +19,8 @@ RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.t
 FROM base
 
 COPY --from=builder /install /usr/local
-COPY walkoff_app_sdk/__init__.py /app/walkoff_app_sdk/__init__.py
-COPY walkoff_app_sdk/app_base.py /app/walkoff_app_sdk/app_base.py
-COPY walkoff_app_sdk/common /app/walkoff_app_sdk/common
+COPY ./app_sdk/walkoff_app_sdk/__init__.py /app/walkoff_app_sdk/__init__.py
+COPY ./app_sdk/walkoff_app_sdk/app_base.py /app/walkoff_app_sdk/app_base.py
+COPY ./app_sdk/walkoff_app_sdk/common /app/walkoff_app_sdk/common
 
 # No CMD/ENTRYPOINT because this image should never run alone

@@ -179,8 +179,6 @@ class Umpire:
                 try:
                     mode = {"replicated": {'Replicas': replicas_needed}}
                     self.running_apps[service_name] = await get_service(self.docker_client, service_name)
-                    logger.info(self.running_apps)
-                    logger.info(service_name)
                     await update_service(self.docker_client, service_id=self.running_apps[service_name]["id"],
                                          version=self.running_apps[service_name]["version"],
                                          image=self.running_apps[service_name]["image"], mode=mode)

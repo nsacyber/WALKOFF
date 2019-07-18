@@ -74,7 +74,7 @@ class Worker:
                     yield workflow_loads(workflow)
 
             except Exception as e:
-                print(e)
+                logger.exception(e)
             finally:  # Clean up workflow-queue
                 await redis.xack(stream=stream, group_name=static.REDIS_WORKFLOW_GROUP, id=id_)
                 await xdel(redis, stream=stream, id_=id_)

@@ -17,9 +17,9 @@ services:
 #      REGISTRY_AUTH: htpasswd
 #      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
 #      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
-#    volumes:
+    volumes:
+      - ./data/registry:/var/lib/registry
 #      - ./data/config.yml:/etc/docker/registry/config.yml
-#      - ./data/registry:/var/lib/registry
 #      - /var/lib/boot2docker:/certs
 #      - /var/lib/boot2docker/auth:/auth
 
@@ -41,8 +41,8 @@ services:
     deploy:
       placement:
         constraints: [node.role==manager]
-#    volumes:
-#      - /path/to/persistent/dir/postgresql/data:/var/lib/postgresql/data
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
 
   resource_portainer:
     image: "portainer/portainer"
@@ -53,7 +53,7 @@ services:
         constraints: [node.role==manager]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-#      - portainer_data:/data portainer/portainer
+        - ./data/portainer/data:/data
 
 configs:
   common_env.yml:
@@ -67,3 +67,4 @@ networks:
   walkoff_default:
     driver: overlay
     name: walkoff_default
+    attachable: true

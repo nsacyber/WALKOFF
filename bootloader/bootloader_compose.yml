@@ -1,25 +1,11 @@
 version: '3.5'
 services:
-  walkoff:
-    image: walkoff
+  walkoff_bootloader:
+    image: walkoff_bootloader
     build:
       context: ./
       dockerfile: Dockerfile
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./apps:/app/apps
-    environment:
-      # Umpire options
-      - APPS_PATH=./apps
-      - APP_REFRESH=60
-      - SWARM_NETWORK=walkoff_default
-      - APP_PREFIX=walkoff_app
-      - STACK_PREFIX=walkoff
-      - DOCKER_REGISTRY=127.0.0.1:5000
-
-      # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
-      # See: https://docs.docker.com/compose/reference/envvars/ for more information.
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      # - DOCKER_HOST=tcp://ip_of_docker_swarm_manager:2376
-      # - DOCKER_TLS_VERIFY=1
-      # - DOCKER_CERT_PATH=/Path/to/certs/for/remote/docker/daemon
+      - ./data:/app/data

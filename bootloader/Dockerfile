@@ -4,20 +4,33 @@ FROM python:3.7.4-slim-buster as base
 FROM base as builder
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends autoconf g++ \
+ && apt-get install -y --no-install-recommends \
+    autoconf g++ \
  && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /install
 WORKDIR /install
 
-COPY requirements.txt /requirements.txt
+COPY bootloader/requirements.txt /requirements.txt
 RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.txt
 
 # Stage - Copy pip packages and source files
 FROM base
 
-COPY --from=builder /install /usr/local
-COPY ./bootloader.py /app/bootloader.py
-WORKDIR /app
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    apt-transport-https ca-certificates curl gnupg2 software-properties-common \
+ && apt-key adv --fetch-keys https://download.docker.com/linux/debian/gpg \
+ && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends docker-ce-cli \
+ && rm -rf /var/lib/apt/lists/*
 
-ENTRYPOINT ["python", "bootloader.py"]
+COPY --from=builder /install /usr/local
+#COPY ./.dockerignore /app/.dockerignore
+#COPY ./bootloader/ /app/bootloader
+#COPY ./common /app/common
+#WORKDIR /app
+#
+ENTRYPOINT ["python", "-m", "bootloader.bootloader"]
+##
