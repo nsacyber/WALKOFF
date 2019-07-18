@@ -24,20 +24,20 @@ Deploying WALKOFF
 ------------------------
 **Ensure that Docker, Docker-Compose 3+, and git are installed**
 
-#. Open a terminal on Linux or a command prompt on Windows, and clone the Walkoff project.
+#. Open a terminal on Linux or a command prompt on Windows, and clone WALKOFF:
 
     .. code-block:: console
 
             git clone https://github.com/nsacyber/WALKOFF.git
 
-#. Change directories to the WALKOFF directory
+#. Change directories to the WALKOFF directory:
 
     .. code-block:: console
 
             cd WALKOFF
 
 
-#.  Perform the following command to launch WALKOFF in swarm mode
+#.  Perform the following command to create a Docker Swarm with your host as the manager:
 
         .. code-block:: console
 
@@ -45,26 +45,19 @@ Deploying WALKOFF
 
         **Note:** If you have multiple NICs you will need to use --advertise-addr to pick an address from which the swarm will be accessible.
 
-#. Create an encryption key
+#. Build WALKOFF's bootloader:
 
     .. code-block:: console
 
-            docker run --rm python:3.7-alpine python -c "import os; print(os.urandom(16).hex())" | docker secret create walkoff_encryption_key -
+            ./build_bootloader.sh
 
-#. Create data/registry directory
+#. Launch WALKOFF with the bootloader, building components as well:
 
     .. code-block:: console
     
-    	    mkdir data/registry
+    	    ./walkoff.sh up --build
 
-#.  Perform the following command to launch WALKOFF with stack mode
-
-        .. code-block:: console
-
-                docker-compose build
-                docker stack deploy --compose-file docker-compose.yml walkoff
-
-#. Navigate to the default IP and port. The default IP and the port can be changed in the server. Configuration settings will be saved in the ``common/config.py`` file. Walkoff now uses **HTTPS** by default through NGINX.
+#. Navigate to the default IP and port. The default IP and the port can be changed by altering the port NGINX is exposed on (the right-hand port) in the top-level `docker-compose.yml`.
 
 
     .. code-block:: console
@@ -74,13 +67,11 @@ Deploying WALKOFF
 #. Once navigated to the login page, the default username is "admin" and password is "admin." These can and should be changed upon initial login.
 
 
-#. To shutdown WALKOFF, run the following two commands. The first command may not remove all services; as the Umpire container exits, it will try to clean up the rest. Run the command again after a few seconds; if it does not fully clean up, you will have to manually remove services.
+#. To shutdown WALKOFF, use the bootloader:
 
     .. code-block:: console
 
-            docker stack rm walkoff
-            # Some seconds later
-            docker stack rm walkoff
+            ./walkoff.sh down
 
 
 
