@@ -4,6 +4,7 @@ api_gateway/client/node_modules
 data/registry
 data/redis
 data/postgres
+data/portainer
 docs
 testing
 __pycache__
