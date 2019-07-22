@@ -14,8 +14,8 @@ services:
       placement:
         constraints: [node.role==manager]
     depends_on:
-      - walkoff_redis
-      - registry
+      - resource_redis
+      - resource_registry
     secrets:
       - walkoff_encryption_key
     configs:
@@ -36,8 +36,8 @@ services:
     configs:
       - common_env.yml
     depends_on:
-      - redis
-      - postgres
+      - resource_redis
+      - resource_postgres
 #    volumes:
 #      - ./api_gateway/client/:/app/api_gateway/client
 
@@ -51,7 +51,7 @@ services:
       - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
       - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
     depends_on:
-      - api_gateway
+      - core_api_gateway
 
   core_worker:
     image: "127.0.0.1:5000/worker:latest"
