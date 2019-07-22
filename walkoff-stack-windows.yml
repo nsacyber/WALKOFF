@@ -122,6 +122,8 @@ services:
       dockerfile: ./worker/Dockerfile
     configs:
     - common_env.yml
+    secrets:
+    - walkoff_encryption_key
     deploy:
       mode: replicated
       replicas: 0
@@ -138,6 +140,8 @@ services:
       dockerfile: Dockerfile
     configs:
     - common_env.yml
+    secrets:
+    - walkoff_encryption_key
     deploy:
       mode: replicated
       replicas: 0
@@ -151,6 +155,8 @@ services:
       dockerfile: Dockerfile
     configs:
     - common_env.yml
+    secrets:
+    - walkoff_encryption_key
     deploy:
       mode: replicated
       replicas: 0
@@ -164,6 +170,8 @@ services:
       dockerfile: Dockerfile
     configs:
     - common_env.yml
+    secrets:
+    - walkoff_encryption_key
     deploy:
       mode: replicated
       replicas: 0
@@ -177,6 +185,8 @@ services:
       dockerfile: Dockerfile
     configs:
     - common_env.yml
+    secrets:
+    - walkoff_encryption_key
     deploy:
       mode: replicated
       replicas: 0
@@ -190,6 +200,8 @@ services:
       dockerfile: Dockerfile
     configs:
     - common_env.yml
+    secrets:
+    - walkoff_encryption_key
     deploy:
       mode: replicated
       replicas: 0
@@ -203,6 +215,8 @@ services:
       dockerfile: ./app_sdk/Dockerfile
     configs:
     - common_env.yml
+    secrets:
+    - walkoff_encryption_key
     deploy:
       mode: replicated
       replicas: 0
@@ -216,6 +230,8 @@ services:
       dockerfile: Dockerfile
     configs:
     - common_env.yml
+    secrets:
+    - walkoff_encryption_key
     deploy:
       mode: replicated
       replicas: 0
@@ -229,6 +245,8 @@ services:
       dockerfile: Dockerfile
     configs:
     - common_env.yml
+    secrets:
+    - walkoff_encryption_key
     deploy:
       mode: replicated
       replicas: 0
