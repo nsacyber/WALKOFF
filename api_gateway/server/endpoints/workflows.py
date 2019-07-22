@@ -47,7 +47,7 @@ def create_workflow():
     data = request.get_json()
     workflow_id = request.args.get("source")
     workflow_name = data['name']
-    new_permissions = [("guest", ["read", "update", "delete"])]  # data['update_permission']
+    new_permissions = [("workflow_operator", ["read", "update", "delete"])]  # TOREMOVE
 
     if request.files and 'file' in request.files:
         data = json.loads(request.files['file'].read().decode('utf-8'))
@@ -55,7 +55,16 @@ def create_workflow():
     if workflow_id:
         wf = current_app.running_context.execution_db.session.query(Workflow)\
             .filter(Workflow.id_ == workflow_id).first()
-        return copy_workflow(workflow=wf)
+        if wf.name == workflow_name:
+            return unique_constraint_problem('workflow', 'create', workflow_name)
+        return copy_workflow(workflow=wf, workflow_name=workflow_name)
+
+    wf = current_app.running_context.execution_db.session.query(Workflow) \
+        .filter(Workflow.id_ == workflow_id).first()
+    logger.info(f"OG ID: {wf.id_}")
+    logger.info(f"IMPORTED ID: {workflow_id}")
+    if wf:
+        return copy_workflow(copy_workflow(workflow=wf))
 
     update_permissions("workflows", workflow_name, new_permissions=new_permissions)
 
@@ -69,20 +78,24 @@ def create_workflow():
     except ValidationError as e:
         current_app.running_context.execution_db.session.rollback()
         return improper_json_problem('workflow', 'create', workflow_name, e.messages)
-    except IntegrityError:  # ToDo: Make sure this fires on duplicate
+    except IntegrityError:
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem('workflow', 'create', workflow_name)
 
 
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['create', 'update']))
-def copy_workflow(workflow):
-    new_permissions = [("guest", ["read", "update", "delete"])]
+def copy_workflow(workflow, workflow_name=None):
+    new_permissions = [("workflow_operator", ["read", "update", "delete"])] # TOREMOVE
 
     old_json = workflow_schema.dump(workflow)
-    old_name = old_json.get("name")
     workflow_json = deepcopy(old_json)
-    workflow_json['name'] = old_name + "_copy"
+
     regenerate_workflow_ids(workflow_json)
+
+    if workflow_name:
+        workflow_json['name'] = workflow_name
+    else:
+        workflow_json['name'] = old_json.get("name") + "." + workflow_json["id_"]
 
     update_permissions("workflows", workflow_json['name'], new_permissions=new_permissions)
     try:

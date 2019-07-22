@@ -65,6 +65,7 @@ def read_all_globals():
                 ret.append(temp_var)
         return ret, HTTPStatus.OK
 
+
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["read"]))
 @with_global_variable("read", "global_var")
@@ -111,7 +112,7 @@ def delete_global(global_var):
 def create_global():
     data = request.get_json()
     global_id = data['id_']
-    new_permissions = [("guest", ["update", "delete", "read"])]  # data['update_permission']
+    new_permissions = [("workflow_operator", ["update", "delete", "read"])]  # TOREMOVE
 
     update_permissions("global_variables", global_id, new_permissions=new_permissions)
 

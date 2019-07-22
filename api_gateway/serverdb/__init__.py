@@ -47,19 +47,6 @@ default_resource_permissions_workflow_operator = [
     {"name": "users", "permissions": ["read"]}
 ]
 
-default_resource_permissions_guest = [
-    {"name": "app_apis", "permissions": ["read"]},
-    {"name": "settings", "permissions": ["read"]},
-    {"name": "global_variables", "permissions": ["read"]},
-    {"name": "workflow_variables", "permissions": ["read"]},
-    {"name": "workflows", "permissions": ["read"]},
-    {"name": "dashboards", "permissions": ["read"]},
-    {"name": "workflowstatus", "permissions": ["read"]},
-    {"name": "roles", "permissions": ["read"]},
-    {"name": "scheduler", "permissions": ["read"]},
-    {"name": "users", "permissions": ["read"]}
-]
-
 default_resources = ['app_apis', 'settings', 'global_variables', 'workflows', 'roles', 'scheduler', 'users']
 
 
@@ -72,7 +59,6 @@ def initialize_default_resources_admin():
     else:
         admin.set_resources(default_resource_permissions_admin)
     db.session.commit()
-
 
 def initialize_default_resources_workflow_developer():
     """Initializes the default resources for a guest user"""
@@ -92,18 +78,7 @@ def initialize_default_resources_workflow_operator():
         workflow_operator = Role("workflow_operator", description="Placeholder description", resources=default_resource_permissions_workflow_operator)
         db.session.add(workflow_operator)
     else:
-        workflow_operator.set_resources(default_resource_permissions_guest)
-    db.session.commit()
-
-
-def initialize_default_resources_guest():
-    """Initializes the default resources for a guest user"""
-    guest = Role.query.filter(Role.name == "guest").first()
-    if not guest:
-        guest = Role("guest", description="Placeholder description", resources=default_resource_permissions_guest)
-        db.session.add(guest)
-    else:
-        guest.set_resources(default_resource_permissions_guest)
+        workflow_operator.set_resources(default_resource_permissions_workflow_operator)
     db.session.commit()
 
 

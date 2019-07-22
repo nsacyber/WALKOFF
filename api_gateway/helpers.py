@@ -215,6 +215,12 @@ def regenerate_workflow_ids(workflow):
         transform['id_'] = str(uuid4())
         id_mapping[prev_id] = transform['id_']
 
+    triggers = workflow.get('triggers', [])
+    for trigger in triggers:
+        prev_id = trigger['id_']
+        trigger['id_'] = str(uuid4())
+        id_mapping[prev_id] = trigger['id_']
+
     workflow_variables = workflow.get('workflow_variables', [])
     for workflow_variable in workflow_variables:
         prev_id = workflow_variable["id_"]

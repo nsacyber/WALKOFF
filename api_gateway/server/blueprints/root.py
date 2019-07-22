@@ -52,7 +52,7 @@ def handle_generic_server_error(e):
 @root_page.before_app_first_request
 def create_user():
     from api_gateway.serverdb import add_user, User, Role, initialize_default_resources_admin, \
-        initialize_default_resources_guest, initialize_default_resources_workflow_developer, \
+        initialize_default_resources_workflow_developer, \
         initialize_default_resources_workflow_operator
     from sqlalchemy_utils import database_exists, create_database
 
@@ -73,7 +73,6 @@ def create_user():
     initialize_default_resources_admin()
     initialize_default_resources_workflow_developer()
     initialize_default_resources_workflow_operator()
-    initialize_default_resources_guest()
 
     # Setup admin user
     admin_role = Role.query.filter_by(id=1).first()
