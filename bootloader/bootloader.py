@@ -87,7 +87,8 @@ def compose_from_app(path: pathlib.Path, name):
     image = {"image": f"{config.DOCKER_REGISTRY}/{APP_NAME_PREFIX}{name}:{path.name}"}
     deploy = {"deploy": {"mode": "replicated", "replicas": 0, "restart_policy": {"condition": "none"}}}
     config_mount = {"configs": ["common_env.yml"]}
-    compose["services"] = {name: {**build, **image, **deploy, **config_mount, **env_file}}
+    secret_mount = {"secrets": ["walkoff_encryption_key"]}
+    compose["services"] = {name: {**build, **image, **deploy, **config_mount, **secret_mount, **env_file}}
     return compose
 
 
@@ -153,7 +154,6 @@ async def check_for_network(docker_client):
         return True
     except aiodocker.exceptions.DockerError:
         return False
-
 
 
 async def delete_dir_contents(path):
@@ -266,7 +266,6 @@ class Bootloader:
                             help="Builds and pushes all WALKOFF components to local registry.")
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Set log level to debug.")
-
 
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
