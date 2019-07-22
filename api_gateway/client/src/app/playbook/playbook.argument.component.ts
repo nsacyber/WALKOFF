@@ -33,7 +33,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 	@Input() globals: Global[];
 	@Input() branchCounters: any[];
 
-	@ViewChild('jsonEditor') jsonEditor: JsonEditorComponent;
+	@ViewChild('jsonEditor', { static: false }) jsonEditor: JsonEditorComponent;
 
 	@Output() createVariable = new EventEmitter<Argument>();
 

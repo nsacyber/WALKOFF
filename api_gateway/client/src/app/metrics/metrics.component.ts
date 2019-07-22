@@ -28,8 +28,8 @@ export class MetricsComponent implements OnInit {
 	appSelectConfig: any;
 	recalculateTableCallback: any;
 
-	@ViewChild('appMetricsTable') appMetricsTable: DatatableComponent; 
-	@ViewChild('workflowMetricsTable') workflowMetricsTable: DatatableComponent; 
+	@ViewChild('appMetricsTable', { static: true }) appMetricsTable: DatatableComponent; 
+	@ViewChild('workflowMetricsTable', { static: true }) workflowMetricsTable: DatatableComponent; 
 
 	constructor(
         private metricsService: MetricsService, private toastrService: ToastrService, 

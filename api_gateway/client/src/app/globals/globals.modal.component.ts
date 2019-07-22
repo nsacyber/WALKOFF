@@ -25,7 +25,7 @@ export class GlobalsModalComponent implements OnInit, AfterViewInit {
 	@Input() submitText: string;
 	@Input() appNames: string[] = [];
 	@Input() appApis: AppApi[] = [];
-	@ViewChild('typeRef') typeRef: ElementRef;
+	@ViewChild('typeRef', { static: true }) typeRef: ElementRef;
 	// @ViewChild('globalForm') form: FormGroup
 
 	globalTypesForApp: DeviceApi[] = [];
