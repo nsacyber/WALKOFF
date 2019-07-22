@@ -246,10 +246,11 @@ class Bootloader:
 
     async def _wait_for_registry(self):
         try:
-            r = await self.docker_client.images.list()
-            return 0
+            async with self.session.get("http://" + config.DOCKER_REGISTRY) as resp:
+                if resp.status == 200:
+                    return False
         except aiohttp.ClientConnectionError:
-            return 1
+            return True
 
     async def up(self):
 
