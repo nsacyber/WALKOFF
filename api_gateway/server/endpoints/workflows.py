@@ -59,14 +59,12 @@ def create_workflow():
             return unique_constraint_problem('workflow', 'create', workflow_name)
         return copy_workflow(workflow=wf, workflow_name=workflow_name)
 
-    wf = current_app.running_context.execution_db.session.query(Workflow) \
-        .filter(Workflow.id_ == workflow_id).first()
-    logger.info(f"OG ID: {wf.id_}")
-    logger.info(f"IMPORTED ID: {workflow_id}")
-    if wf:
-        return copy_workflow(copy_workflow(workflow=wf))
-
-    update_permissions("workflows", workflow_name, new_permissions=new_permissions)
+    wf2 = current_app.running_context.execution_db.session.query(Workflow) \
+        .filter(Workflow.id_ == data['id_']).first()
+    if wf2:
+        return import_workflow(data)
+    else:
+        update_permissions("workflows", workflow_name, new_permissions=new_permissions)
 
     try:
         workflow = workflow_schema.load(data)
@@ -84,9 +82,27 @@ def create_workflow():
 
 
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['create', 'update']))
+def import_workflow(workflow_json):
+    new_permissions = [("workflow_operator", ["read", "update", "delete"])]  # TOREMOVE
+    regenerate_workflow_ids(workflow_json)
+    workflow_json['name'] = workflow_json.get("name") + "." + workflow_json["id_"]
+
+    update_permissions("workflows", workflow_json['name'], new_permissions=new_permissions)
+    try:
+        new_workflow = workflow_schema.load(workflow_json)
+        current_app.running_context.execution_db.session.add(new_workflow)
+        current_app.running_context.execution_db.session.commit()
+        logger.info(f" Workflow {new_workflow.id_} successfully imported -> {workflow_schema.dump(new_workflow)}")
+        return workflow_schema.dump(new_workflow), HTTPStatus.CREATED
+    except IntegrityError:
+        current_app.running_context.execution_db.session.rollback()
+        current_app.logger.error(f" Could not import workflow {workflow_json['name']}. Unique constraint failed")
+        return unique_constraint_problem('workflow', 'import', workflow_json['name'])
+
+
+@permissions_accepted_for_resources(ResourcePermissions('workflows', ['create', 'update']))
 def copy_workflow(workflow, workflow_name=None):
     new_permissions = [("workflow_operator", ["read", "update", "delete"])] # TOREMOVE
-
     old_json = workflow_schema.dump(workflow)
     workflow_json = deepcopy(old_json)
 
