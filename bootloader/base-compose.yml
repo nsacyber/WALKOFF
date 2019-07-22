@@ -53,7 +53,7 @@ services:
         constraints: [node.role==manager]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-        - ./data/portainer/data:/data
+      - ./data/portainer:/data
 
 configs:
   common_env.yml:

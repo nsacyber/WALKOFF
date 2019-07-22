@@ -155,6 +155,7 @@ async def check_for_network(docker_client):
         return False
 
 
+
 async def delete_dir_contents(path):
     for root, dirs, files in os.walk(path):
         for f in files:

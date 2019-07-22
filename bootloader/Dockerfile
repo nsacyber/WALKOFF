@@ -31,6 +31,6 @@ COPY --from=builder /install /usr/local
 #COPY ./bootloader/ /app/bootloader
 #COPY ./common /app/common
 #WORKDIR /app
-#
+
 ENTRYPOINT ["python", "-m", "bootloader.bootloader"]
-##
+
