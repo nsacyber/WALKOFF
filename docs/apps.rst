@@ -107,36 +107,35 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
 **6. Change the** ``requirements.txt`` **to match your applications needs**
     * This file should include any Python package dependencies your app contains
     * The Dockerfile will use this to pip install dependencies
-    * **EXAMPLE:** 
-    	.. code-block:: python
-		
-		requests
+    * **EXAMPLE:**
 
-**7. Change the** ``docker-compose`` **YAML file**
-    * This will control how your app’s Docker container will run.
-    * At a minimum, utilize the ``hello_world`` application's ``docker-compose.yml`` and simply change the service name to match that of your new application.
+    .. code-block:: python
+		
+       requests
+
+**7. Edit** ``docker-stack-windows.yml`` **(Windows only)**
+    * At the current time, the WALKOFF "Bootloader" for Windows is rather basic due to time constraints. It will be brought up to the same functionality as the Linux version once time allows.
+    * Copy an existing app service definition and change the service name to match your app's directory name.
         * **Note:** If you want directories on your host to be available in the container, you can add volume mounts here.
     * **EXAMPLE:**
-    
-	    .. code-block:: html
-	    
-		version: '3.4'
-		services:
-		  virus_total:
-		    build:
-		      context: .
-		      dockerfile: Dockerfile
-		#    image: walkoff_registry:5000/walkoff_app_HelloWorld-v1-0
-		    env_file:
-		      - env.txt
-		    deploy:
-		      mode: replicated
-		      replicas: 10
-		      restart_policy:
-			condition: none
-		      placement:
-			constraints: [node.role==manager]
-		    restart: "no"
+
+    .. code-block:: yaml
+
+       services:
+         <other service definitions>
+           app_virus_total:
+             build:
+               context: apps/walk_off/1.0.0
+               dockerfile: Dockerfile
+             configs:
+             - common_env.yml
+             deploy:
+               mode: replicated
+               replicas: 0
+               restart_policy:
+                 condition: none
+             image: 127.0.0.1:5000/walkoff_app_virus_total:1.0.0
+
 
 **Optional:** ``Dockerfile`` **Customization**
     * This will control how your app will be built.
@@ -152,6 +151,8 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
 Updating Your Application
 ''''''''''''''''''''''''''''
 If your application Docker service is already running and you would like to update your app in WALKOFF, run these following commands with the proper substitions for application name ``hello_world``
+
+Watch this space for updates - we're currently working on an app editor UI component that should make this much easier.
 
 .. code-block:: console
 
