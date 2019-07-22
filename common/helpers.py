@@ -1,8 +1,6 @@
 import logging
+
 from common.config import config
-
-import aiohttp
-
 from common.message_types import(message_dumps, NodeStatusMessage, WorkflowStatusMessage,
                                  StatusEnum, JSONPatch, JSONPatchOps)
 
@@ -99,6 +97,7 @@ def get_patches(message):
 
 
 async def send_status_update(session, execution_id, message, headers=None):
+    import aiohttp
     """ Forms and sends a JSONPatch message to the api_gateway to update the status of an action or workflow """
 
     if message is None:
@@ -124,3 +123,13 @@ async def send_status_update(session, execution_id, message, headers=None):
         logger.error(f"Could not send status message to {url}: {e!r}")
     except Exception as e:
         logger.error(f"Unknown error while sending message to {url}: {e!r}")
+
+
+def fernet_encrypt(key, string):
+    from cryptography.fernet import Fernet
+    return Fernet(key).encrypt(string.encode()).decode()
+
+
+def fernet_decrypt(key, string):
+    from cryptography.fernet import Fernet
+    return Fernet(key).decrypt(string.encode()).decode()

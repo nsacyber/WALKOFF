@@ -11,7 +11,7 @@ import aiohttp
 import aioredis
 
 from common.message_types import message_dumps, message_loads, NodeStatusMessage, WorkflowStatusMessage, StatusEnum
-from common.config import config
+from common.config import config, static
 from common.helpers import get_walkoff_auth_header, send_status_update
 from common.redis_helpers import connect_to_redis_pool, xdel, deref_stream_message
 from common.workflow_types import (Node, Action, Condition, Transform, Parameter, Trigger,
@@ -19,10 +19,7 @@ from common.workflow_types import (Node, Action, Condition, Transform, Parameter
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WORKER")
-# logging.getLogger("asyncio").setLevel(logging.DEBUG)
-# logger.setLevel(logging.DEBUG)
-
-CONTAINER_ID = os.getenv("HOSTNAME")
+static.set_local_hostname("local_worker")
 
 
 class Worker:
@@ -54,16 +51,16 @@ class Worker:
         """
         while True:
             logger.info("Waiting for workflows...")
-            if CONTAINER_ID is None:
-                logger.exception("Environment variable 'HOSTNAME' does not exist in worker container.")
-                sys.exit(-1)
+            # if static.CONTAINER_ID is None:
+            #     logger.exception("Environment variable 'HOSTNAME' does not exist in worker container.")
+            #     sys.exit(-1)
 
             try:
-                message = await redis.xread_group(config.REDIS_WORKFLOW_GROUP, CONTAINER_ID,
-                                                  streams=[config.REDIS_WORKFLOW_QUEUE], latest_ids=['>'],
+                message = await redis.xread_group(static.REDIS_WORKFLOW_GROUP, static.CONTAINER_ID,
+                                                  streams=[static.REDIS_WORKFLOW_QUEUE], latest_ids=['>'],
                                                   timeout=config.get_int("WORKER_TIMEOUT", 30) * 1000, count=1)
-            except aioredis.ReplyError:
-                logger.error("Error reading from workflow queue.")
+            except aioredis.ReplyError as e:
+                logger.error(f"Error reading from workflow queue: {e}.")
                 sys.exit(-1)
 
             if len(message) < 1:  # We've timed out with no work. Guess we'll die now...
@@ -72,14 +69,14 @@ class Worker:
             execution_id_workflow, stream, id_ = deref_stream_message(message)
             execution_id, workflow = execution_id_workflow
             try:
-                if not (await redis.sismember(config.REDIS_ABORTING_WORKFLOWS, execution_id)):
-                    await redis.sadd(config.REDIS_EXECUTING_WORKFLOWS, execution_id)
+                if not (await redis.sismember(static.REDIS_ABORTING_WORKFLOWS, execution_id)):
+                    await redis.sadd(static.REDIS_EXECUTING_WORKFLOWS, execution_id)
                     yield workflow_loads(workflow)
 
             except Exception as e:
-                print(e)
+                logger.exception(e)
             finally:  # Clean up workflow-queue
-                await redis.xack(stream=stream, group_name=config.REDIS_WORKFLOW_GROUP, id=id_)
+                await redis.xack(stream=stream, group_name=static.REDIS_WORKFLOW_GROUP, id=id_)
                 await xdel(redis, stream=stream, id_=id_)
 
     @staticmethod
@@ -100,7 +97,7 @@ class Worker:
                 # Attach our abort signal handler to a specific instance of the worker
                 loop.add_signal_handler(signal.SIGQUIT, lambda: asyncio.ensure_future(worker.abort()))
 
-                await redis.xgroup_create(worker.results_stream, config.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
+                await redis.xgroup_create(worker.results_stream, static.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
                 logger.info(f"Starting execution of workflow: {workflow.name}")
                 status = WorkflowStatusMessage.execution_started(worker.workflow.execution_id, worker.workflow.id_,
                                                                  worker.workflow.name)
@@ -466,7 +463,7 @@ class Worker:
             while not msg:
                 try:
                     with await self.redis as redis:
-                        msg = await redis.xread_group(config.REDIS_WORKFLOW_TRIGGERS_GROUP, CONTAINER_ID,
+                        msg = await redis.xread_group(static.REDIS_WORKFLOW_TRIGGERS_GROUP, static.CONTAINER_ID,
                                                       streams=[trigger_stream], count=1, latest_ids=['>'])
 
                     logger.debug(f"Trigger satisfied in {self.workflow.execution_id} ({self.workflow.name}) at "
@@ -484,7 +481,7 @@ class Worker:
                     await self.redis.delete(trigger_stream)
                 except aioredis.errors.ReplyError as e:
                     logger.debug(f"Stream {trigger_stream} doesn't exist. Attempting to create it...")
-                    await self.redis.xgroup_create(trigger_stream, config.REDIS_WORKFLOW_TRIGGERS_GROUP,
+                    await self.redis.xgroup_create(trigger_stream, static.REDIS_WORKFLOW_TRIGGERS_GROUP,
                                                    mkstream=True, latest_id='0')
 
         # TODO: decide if we want pending action messages and uncomment this line
@@ -499,12 +496,12 @@ class Worker:
         while len(self.in_process) > 0 or len(self.parallel_in_process) > 0:
             try:
                 with await self.redis as redis:
-                    msg = await redis.xread_group(config.REDIS_ACTION_RESULTS_GROUP, CONTAINER_ID,
+                    msg = await redis.xread_group(static.REDIS_ACTION_RESULTS_GROUP, static.CONTAINER_ID,
                                                   streams=[self.results_stream], count=1, latest_ids=['>'])
 
             except aioredis.errors.ReplyError:
                 logger.debug(f"Stream {self.workflow.execution_id} doesn't exist. Attempting to create it...")
-                await self.redis.xgroup_create(self.results_stream, config.REDIS_ACTION_RESULTS_GROUP,
+                await self.redis.xgroup_create(self.results_stream, static.REDIS_ACTION_RESULTS_GROUP,
                                                mkstream=True)
                 logger.debug(f"Created stream {self.results_stream}.")
                 continue
@@ -569,7 +566,7 @@ class Worker:
                 self.parallel_in_process.pop(node_message.node_id, None)
             elif node_message.status != StatusEnum.EXECUTING:
                 self.in_process.pop(node_message.node_id, None)
-            await self.redis.xack(stream=stream, group_name=config.REDIS_ACTION_RESULTS_GROUP, id=id_)
+            await self.redis.xack(stream=stream, group_name=static.REDIS_ACTION_RESULTS_GROUP, id=id_)
             await xdel(self.redis, stream=stream, id_=id_)
 
         # Remove the finished results stream and group

@@ -168,4 +168,4 @@ class AppRepo:
                         except Exception:
                             logger.exception(f"Error during {app.name}:{version.name} load.")
 
-                logger.info(f"Loaded {app.name} versions: {[k for k in self.apps[app.name].keys()]}")
+                logger.info(f"Loaded {app.name} versions: {list(self.apps[app.name].keys())}")

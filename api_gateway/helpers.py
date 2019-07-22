@@ -109,15 +109,15 @@ def sse_format(data, event_id, event=None, retry=None):
 #     return {}
 
 
-def format_db_path(db_type, path, username_env_key=None, password_env_key=None, host="localhost"):
+def format_db_path(db_type, path, username=None, password=None, host=None):
     """
     Formats the path to the database
 
     Args:
         db_type (str): Type of database being used
         path (str): Path to the database
-        username_env_key (str): The name of the username environment variable for this db
-        password_env_key (str): The name of the password environment variable for this db
+        username (str): Username for this db
+        password (str): Password for this db
         host (str): The hostname where the database is hosted
     Returns:
         (str): The path of the database formatted for SqlAlchemy
@@ -131,15 +131,12 @@ def format_db_path(db_type, path, username_env_key=None, password_env_key=None, 
         sqlalchemy_path = f"{db_type}:///{path}"
 
     elif db_type in supported_dbs:
-        username = os.environ.get(username_env_key, None)
-        password = os.environ.get(password_env_key, None)
-
         if username and password:
             sqlalchemy_path = f"{db_type}://{username}:{password}@{host}/{path}"
         elif username:
             sqlalchemy_path = f"{db_type}://{username}@{host}/{path}"
         else:
-            logger.error(f"Database type was set to {db_type}, but no login was found in system environment variables.")
+            logger.error(f"Database type was set to {db_type}, but no login was provided.")
 
     else:
         logger.error(f"Database type {db_type} not supported for database {path}")
@@ -322,8 +319,8 @@ def validate_uuid(id_, stringify=False):
         return None
 
 
-def compose_api(config):
-    with open(os.path.join(config.API_PATH, 'api.yaml'), 'r') as api_yaml:
+def compose_api(static):
+    with open(os.path.join(static.API_PATH, 'api.yaml'), 'r') as api_yaml:
         final_yaml = []
         for line_num, line in enumerate(api_yaml):
             if line.lstrip().startswith('$ref:'):
@@ -332,13 +329,13 @@ def compose_api(config):
                 indentation = split_line[0].count('  ')
                 try:
                     final_yaml.extend(
-                        read_and_indent(os.path.join(config.API_PATH, reference), indentation))
+                        read_and_indent(os.path.join(static.API_PATH, reference), indentation))
                     final_yaml.append(os.linesep)
                 except (IOError, OSError):
                     logger.error(f"Could not find or open {reference} on line {line_num}")
             else:
                 final_yaml.append(line)
-    with open(os.path.join(config.API_PATH, 'composed_api.yaml'), 'w') as composed_yaml:
+    with open(os.path.join(static.API_PATH, 'composed_api.yaml'), 'w') as composed_yaml:
         composed_yaml.writelines(final_yaml)
         logger.info("Wrote composed_api.yaml")
 

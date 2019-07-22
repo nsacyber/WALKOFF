@@ -12,7 +12,8 @@ from yaml import Loader, load
 from sqlalchemy import event
 from api_gateway.executiondb.workflow import Workflow
 
-import api_gateway.config
+from common.config import config, static
+from api_gateway.flask_config import FlaskConfig
 from api_gateway.extensions import db, jwt
 from api_gateway.server import context
 from api_gateway.helpers import compose_api
@@ -47,11 +48,11 @@ def __register_blueprint(flaskapp, blueprint, url_prefix):
 
 def register_swagger_blueprint(flaskapp):
     # register swagger API docs location
-    swagger_path = os.path.join(api_gateway.config.Config.API_PATH, 'composed_api.yaml')
+    swagger_path = os.path.join(static.API_PATH, 'composed_api.yaml')
     swagger_yaml = load(open(swagger_path), Loader=Loader)
-    swaggerui_blueprint = get_swaggerui_blueprint(api_gateway.config.Config.SWAGGER_URL, swagger_yaml,
+    swaggerui_blueprint = get_swaggerui_blueprint(static.SWAGGER_URL, swagger_yaml,
                                                   config={'spec': swagger_yaml})
-    flaskapp.register_blueprint(swaggerui_blueprint, url_prefix=api_gateway.config.Config.SWAGGER_URL)
+    flaskapp.register_blueprint(swaggerui_blueprint, url_prefix=static.SWAGGER_URL)
     flaskapp.logger.info("Registered blueprint for swagger API docs at url prefix /api/docs")
 
 
@@ -67,7 +68,7 @@ connexion_app = connexion.App(__name__, specification_dir='../api/', options={'s
 _app = connexion_app.app
 
 _app.jinja_loader = FileSystemLoader([os.path.join("api_gateway", "templates")])
-_app.config.from_object(api_gateway.config.Config)
+_app.config.from_object(FlaskConfig)
 
 try:
     db.init_app(_app)
@@ -78,7 +79,7 @@ except Exception as e:
     sys.exit(1)
 
 jwt.init_app(_app)
-compose_api(api_gateway.config.Config)
+compose_api(static)
 connexion_app.add_api('composed_api.yaml')
 _app.running_context = context.Context(app=_app)
 register_blueprints(_app)
@@ -86,6 +87,7 @@ register_swagger_blueprint(_app)
 
 add_health_check(_app)
 
+_app.debug = True
 
 # Validate database models before saving them, here.
 # This is here to avoid circular imports.
