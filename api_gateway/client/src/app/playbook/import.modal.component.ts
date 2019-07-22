@@ -8,7 +8,7 @@ import { NgForm } from '@angular/forms';
     templateUrl: './import.modal.html',
 })
 export class ImportModalComponent {
-    @ViewChild('myForm')
+    @ViewChild('myForm', { static: true })
     myForm: NgForm;
     submitted: boolean = false;
     importFile: File;

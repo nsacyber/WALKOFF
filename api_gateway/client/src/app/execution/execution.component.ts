@@ -37,8 +37,8 @@ import * as moment from 'moment';
 	providers: [AuthService],
 })
 export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
-	@ViewChild('nodeStatusContainer') nodeStatusContainer: ElementRef;
-	@ViewChild('nodeStatusTable') nodeStatusTable: DatatableComponent;
+	@ViewChild('nodeStatusContainer', { static: false }) nodeStatusContainer: ElementRef;
+	@ViewChild('nodeStatusTable', { static: false }) nodeStatusTable: DatatableComponent;
 
 	schedulerStatus: string;
 	workflowStatuses: WorkflowStatus[] = [];
