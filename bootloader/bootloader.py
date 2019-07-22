@@ -31,6 +31,8 @@ COMPOSE_BASE = {"version": "3.5",
 
 APP_NAME_PREFIX = "walkoff_"
 
+DOCKER_HOST_IP = os.getenv("DOCKER_HOST_IP")
+
 
 async def exponential_wait(func, args, msg):
     wait = 0.5
@@ -246,7 +248,7 @@ class Bootloader:
 
     async def _wait_for_registry(self):
         try:
-            async with self.session.get("http://" + config.DOCKER_REGISTRY) as resp:
+            async with self.session.get("http://" + DOCKER_HOST_IP) as resp:
                 if resp.status == 200:
                     return False
         except aiohttp.ClientConnectionError:
