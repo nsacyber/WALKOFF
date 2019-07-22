@@ -246,11 +246,10 @@ class Bootloader:
 
     async def _wait_for_registry(self):
         try:
-            async with self.session.get("http://" + config.DOCKER_REGISTRY) as resp:
-                if resp.status == 200:
-                    return False
+            r = await self.docker_client.images.list()
+            return 0
         except aiohttp.ClientConnectionError:
-            return True
+            return 1
 
     async def up(self):
 
@@ -285,7 +284,7 @@ class Bootloader:
 
         await exponential_wait(deploy_compose, [base_compose], "Deployment failed")
 
-        # await exponential_wait(self._wait_for_registry, {}, "Registry not available yet")
+        await exponential_wait(self._wait_for_registry, {}, "Registry not available yet")
 
 
 
@@ -297,6 +296,13 @@ class Bootloader:
         dump_yaml(config.TMP_COMPOSE, merged_compose)
 
         if args.build:
+            walkoff_app_sdk = walkoff_compose["services"]["app_sdk"]
+            await build_image(self.docker_client, walkoff_app_sdk["image"],
+                              walkoff_app_sdk["build"]["dockerfile"],
+                              walkoff_app_sdk["build"]["context"],
+                              self.dockerignore)
+            await push_image(self.docker_client, walkoff_app_sdk["image"])
+
             for service_name, service in walkoff_compose["services"].items():
                 if "build" in service:
                     await build_image(self.docker_client, service["image"],
