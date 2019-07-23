@@ -144,6 +144,10 @@ async def delete_secret(client: aiodocker.Docker, secret_id):
     await client._query(f"secrets/{secret_id}", "DELETE")
 
 
+async def disconnect_from_network(client: aiodocker.Docker):
+    await client._query(f"networks/walkoff_default/disconnect", "POST")
+
+
 async def get_network(client: aiodocker.Docker, network_id):
     resp = await client._query(f"networks/{network_id}")
     return await resp.json()

@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import base64
+from minio import Minio
 from pathlib import Path
 
 import aiodocker
@@ -17,7 +18,7 @@ import yaml.scanner
 
 from common.config import config, static
 from common.docker_helpers import (create_secret, get_secret, delete_secret, get_network, connect_to_aiodocker,
-                                   docker_context, stream_docker_log, logger as docker_logger)
+                                   docker_context, stream_docker_log, logger as docker_logger, disconnect_from_network)
 
 logging.basicConfig(level=logging.DEBUG, format="{asctime} - {name} - {levelname}:{message}", style='{')
 
@@ -32,6 +33,7 @@ COMPOSE_BASE = {"version": "3.5",
 APP_NAME_PREFIX = "walkoff_"
 
 DOCKER_HOST_IP = os.getenv("DOCKER_HOST_IP")
+p = Path('./apps').glob('**/*')
 
 
 async def exponential_wait(func, args, msg):
@@ -87,13 +89,14 @@ def compose_from_app(path: pathlib.Path, name):
     compose = copy.deepcopy(COMPOSE_BASE)
     build = {"build": {"context": str(path), "dockerfile": "Dockerfile"}}
     image = {"image": f"{config.DOCKER_REGISTRY}/{APP_NAME_PREFIX}{name}:{path.name}"}
+    networks = {"networks": ["walkoff_default"]}
     deploy = {"deploy": {"mode": "replicated", "replicas": 0, "restart_policy": {"condition": "none"}}}
     config_mount = {"configs": ["common_env.yml"]}
     secret_mount = {"secrets": ["walkoff_encryption_key"]}
     shared_path = os.getcwd() + "/data/shared"
     final_mount = shared_path + ":/app/shared"
     volumes_mount = {"volumes": [final_mount]}
-    compose["services"] = {name: {**build, **image, **deploy, **config_mount,
+    compose["services"] = {name: {**build, **image, ** networks, **deploy, **config_mount,
                                   **secret_mount, **volumes_mount, **env_file}}
     return compose
 
@@ -258,6 +261,35 @@ class Bootloader:
         except aiohttp.ClientConnectionError:
             return True
 
+    async def _wait_for_minio(self):
+        try:
+            async with self.session.get("http://" + config.MINIO + "/minio/health/ready") as resp:
+                if resp.status == 200:
+                    return False
+        except aiohttp.ClientConnectionError:
+            return True
+
+    async def push_to_minio(self):
+        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        flag = False
+        try:
+            buckets = minio_client.list_buckets()
+            for bucket in buckets:
+                if bucket.name == "apps-bucket":
+                    flag = True
+        except:
+            logger.info("Bucket doesn't exist.")
+
+        if flag is False:
+            minio_client.make_bucket("apps-bucket", location="us-east-1")
+
+        files = [x for x in p if x.is_file()]
+        for file in files:
+            path_to_file = str(file)
+            with open(path_to_file, "rb") as file_data:
+                file_stat = os.stat(path_to_file)
+                minio_client.put_object("apps-bucket", path_to_file, file_data, file_stat.st_size)
+
     async def up(self):
 
         # Create Walkoff encryption key
@@ -293,7 +325,9 @@ class Bootloader:
 
         await exponential_wait(self._wait_for_registry, {}, "Registry not available yet")
 
+        await exponential_wait(self._wait_for_minio, {}, "Minio not available yet")
 
+        await self.push_to_minio()
 
         # Merge the base, walkoff, and app composes
         app_composes = generate_app_composes()
@@ -336,6 +370,7 @@ class Bootloader:
                             help="Skip network removal check. Use this if you have attached external services to it.")
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Set log level to debug.")
+        parser.add_argument("-n")
 
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
@@ -351,9 +386,9 @@ class Bootloader:
 
         await log_proc_output(proc)
 
-        if not args.skipnetwork:
-            logger.info("Waiting for containers to exit and network to be removed...")
-            await exponential_wait(check_for_network, [self.docker_client], "Network walkoff_default still exists")
+        # if not args.skipnetwork:
+        #     logger.info("Waiting for containers to exit and network to be removed...")
+        #     await exponential_wait(check_for_network, [self.docker_client], "Network walkoff_default still exists")
 
         if args.key:
             resp = input("Deleting encryption key will render database unreadable, and therefore it will be cleared. "

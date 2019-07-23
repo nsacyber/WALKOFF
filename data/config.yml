@@ -26,3 +26,6 @@ SERVER_DB_NAME: "walkoff"
 EXECUTION_DB_NAME: "execution"
 DB_USERNAME: "walkoff"
 DB_PASSWORD: "walkoff"
+
+# Minio Options
+MINIO: "resource_minio:9000"

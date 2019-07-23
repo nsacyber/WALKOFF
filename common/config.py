@@ -110,6 +110,7 @@ class Config:
 
     # App options
     APP_TIMEOUT = os.getenv("APP_TIMEOUT", "30")  # ??
+    MINIO = os.getenv("MINIO", "resource_minio:9000")
 
     # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
     # See: https://docs.docker.com/compose/reference/envvars/ for more information.
