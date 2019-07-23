@@ -28,7 +28,7 @@ def client_app_folder(filename):
 @root_page.route('/', defaults={'path': ''})
 @root_page.route('/<path:path>')
 def default(path):
-    return send_from_directory(os.path.abspath(static.CLIENT_PATH), "dist/index.html")
+    return send_from_directory(os.path.abspath(static.CLIENT_PATH), "dist/walkoff/index.html")
 
 
 # Route to login page

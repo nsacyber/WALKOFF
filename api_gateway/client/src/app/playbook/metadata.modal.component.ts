@@ -14,10 +14,10 @@ export class MetadataModalComponent {
     @Input() currentTags: string[] = [];
     @Input() existing: boolean = false;
 
-    @ViewChild('myForm')
+    @ViewChild('myForm', { static: true })
     myForm: NgForm;
 
-    @ViewChild('workflowName') 
+    @ViewChild('workflowName', { static: true }) 
     workflowNameModel: NgModel;
 
     tagSelectOptions = {
