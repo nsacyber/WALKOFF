@@ -22,8 +22,8 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist",
-            "deployUrl": "client/dist/",
+            "outputPath": "dist/walkoff",
+            "deployUrl": "client/dist/walkoff/",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",

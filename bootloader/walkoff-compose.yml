@@ -38,8 +38,8 @@ services:
     depends_on:
       - resource_redis
       - resource_postgres
-#    volumes:
-#      - ./api_gateway/client/:/app/api_gateway/client
+    volumes:
+      - ./api_gateway/client/dist:/app/api_gateway/client/dist
 
   resource_nginx:
     image: 'bitnami/nginx:latest'
