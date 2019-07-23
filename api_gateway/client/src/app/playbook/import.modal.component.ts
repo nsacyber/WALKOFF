@@ -20,7 +20,7 @@ export class ImportModalComponent {
 	 * @param event JS Event for the playbook file input
 	 */
 	onImportSelectChange(event: Event) {
-        this.importFile = (event.srcElement as any).files[0];
+        this.importFile = (event.srcElement || event.target  as any).files[0];
         console.log(this.importFile)
 	}
     
