@@ -90,7 +90,11 @@ def compose_from_app(path: pathlib.Path, name):
     deploy = {"deploy": {"mode": "replicated", "replicas": 0, "restart_policy": {"condition": "none"}}}
     config_mount = {"configs": ["common_env.yml"]}
     secret_mount = {"secrets": ["walkoff_encryption_key"]}
-    compose["services"] = {name: {**build, **image, **deploy, **config_mount, **secret_mount, **env_file}}
+    shared_path = os.getcwd() + "/data/shared"
+    final_mount = shared_path + ":/app/shared"
+    volumes_mount = {"volumes": [final_mount]}
+    compose["services"] = {name: {**build, **image, **deploy, **config_mount,
+                                  **secret_mount, **volumes_mount, **env_file}}
     return compose
 
 
