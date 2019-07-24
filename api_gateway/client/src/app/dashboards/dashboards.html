@@ -1,11 +1,11 @@
-<div id="main" class="dashboardsMain" [ngClass]="{ customDashboard: !dashboard }" #dashboardsMain>
-	<!-- dashboard iframe goes here -->
-	<div *ngIf="dashboard">
+<div id="main" class="reportsMain" [ngClass]="{ customReport: !report }" #reportsMain>
+	<!-- report iframe goes here -->
+	<div *ngIf="report">
 		<div class="pl-3">
 			<h1 class="mb-0">
-				{{ dashboard.name }}
+				{{ report.name }}
 				<div class="float-right d-print-none" data-html2canvas-ignore>
-					<a class="btn btn-primary btn-sm mr-1" [routerLink]="['/dashboard', dashboardId, 'edit']">Edit</a>
+					<a class="btn btn-primary btn-sm mr-1" [routerLink]="['/report', reportId, 'edit']">Edit</a>
 					<button class="btn btn-primary btn-sm" (click)="savePDF()">Save as PDF</button>
 				</div>
 			</h1>
@@ -14,7 +14,7 @@
 			<div class="col-12">
 				<div id="grid" class="gridster-container m-auto" [style.width]="getGridWidth()" [style.height]="getGridHeight()">
 					<gridster class="displayGrid" [options]="options">
-						<gridster-item [item]="item" *ngFor="let item of dashboard.widgets" class="p-3">
+						<gridster-item [item]="item" *ngFor="let item of report.widgets" class="p-3">
 							<!-- your content here -->
 							<div class="widget">
 								<div *ngIf="item.name" class="widget-header">

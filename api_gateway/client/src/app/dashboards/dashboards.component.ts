@@ -7,25 +7,25 @@ import { ToastrService } from 'ngx-toastr';
 
 import { AuthService } from '../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
-import { DashboardService } from './dashboard.service';
+import { ReportService } from './report.service';
 import { GridsterConfig, GridType, CompactType } from 'angular-gridster2';
-import { Dashboard } from '../models/dashboard/dashboard';
+import { Report } from '../models/report/report';
 
 @Component({
-	selector: 'dashboards-component',
-	templateUrl: './dashboards.html',
-	styleUrls: ['./dashboards.scss'],
+	selector: 'reports-component',
+	templateUrl: './reports.html',
+	styleUrls: ['./reports.scss'],
 	providers: [AuthService],
 })
-export class DashboardsComponent implements OnInit {
-	@ViewChild('dashboardsMain', { static: true }) main: ElementRef;
-	dashboardName: string;
-	dashboardId: string;
+export class ReportsComponent implements OnInit {
+	@ViewChild('reportsMain', { static: true }) main: ElementRef;
+	reportName: string;
+	reportId: string;
 	paramsSub: any;
 	activeIFrame: any;
 
 	options: GridsterConfig;
-	dashboard: Dashboard;
+	report: Report;
 
 	gridRows = 0;
 	gridColumns = 8;
@@ -35,22 +35,22 @@ export class DashboardsComponent implements OnInit {
 	
 	constructor(
 		private route: ActivatedRoute, private toastrService: ToastrService,
-		private http: HttpClient, private dashboardService: DashboardService
+		private http: HttpClient, private reportService: ReportService
 	) { }
 
 	/**
-	 * On init, get our dashboard name from the route params and grab the dashboard.
+	 * On init, get our report name from the route params and grab the report.
 	 */
 	ngOnInit() {
 		this.paramsSub = this.route.params.subscribe(params => {
-			this.dashboardId = params.dashboardId;
-			this.getDashboard().then(() => this.initGrid());
+			this.reportId = params.reportId;
+			this.getReport().then(() => this.initGrid());
 		});
 	}
 
 	initGrid() {
 		this.gridRows = 0;
-		this.dashboard.widgets.forEach(item => {
+		this.report.widgets.forEach(item => {
 			let widgetRows = item.y + item.rows;
 			if (widgetRows > this.gridRows) this.gridRows = widgetRows;
 		});
@@ -81,28 +81,28 @@ export class DashboardsComponent implements OnInit {
 	}
 
 	/**
-	 * Gets the dashboard by the name specified in the route params.
-	 * Loads the dashboard into an iframe currently.
+	 * Gets the report by the name specified in the route params.
+	 * Loads the report into an iframe currently.
 	 */
-	getDashboard() {
-		this.clearDashboard();
+	getReport() {
+		this.clearReport();
 
-		return this.dashboardService.getDashboardWithMetadata(this.dashboardId).then(savedDashboard => {
-			(savedDashboard) ? this.dashboard = savedDashboard : this.getCustomDashboard();
+		return this.reportService.getReportWithMetadata(this.reportId).then(savedReport => {
+			(savedReport) ? this.report = savedReport : this.getCustomReport();
 		})
 	}
 
-	clearDashboard() {
-		this.dashboard = null;
+	clearReport() {
+		this.report = null;
 		if (this.activeIFrame) {
 			this.main.nativeElement.removeChild(this.activeIFrame);
 			this.activeIFrame = null
 		}
 	}
 
-	getCustomDashboard() {
+	getCustomReport() {
 		this.http
-			.get(`customdashboards/${this.dashboardName}/`, { responseType: 'text' })
+			.get(`customreports/${this.reportName}/`, { responseType: 'text' })
 			.toPromise()
 			.then(data => {
 				this.activeIFrame = document.createElement('iframe');
@@ -111,7 +111,7 @@ export class DashboardsComponent implements OnInit {
 
 				this.main.nativeElement.appendChild(this.activeIFrame);
 			})
-			.catch(e => this.toastrService.error(`Error retrieving dashboard: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving report: ${e.message}`));
 	}
 
 	getGridWidth() {
@@ -160,7 +160,7 @@ export class DashboardsComponent implements OnInit {
 		// 	// var img = canvas.toDataURL("image/png");
 		// 	// var doc = new jsPDF();
 		// 	// doc.addImage(img, 'JPEG', 5, 20);
-		// 	// doc.save(`${ this.dashboardName } - report.pdf`);
+		// 	// doc.save(`${ this.reportName } - report.pdf`);
 
 		// 	// var width = canvas.width;
 		// 	// var height = canvas.height;
@@ -174,7 +174,7 @@ export class DashboardsComponent implements OnInit {
 		// 	// doc.deletePage(1);
 		// 	// doc.addPage(millimeters.width, millimeters.height);
 		// 	// doc.addImage(imgData, 'PNG', 0, 0);
-		// 	// doc.save(`${ this.dashboardName } - report.pdf`);
+		// 	// doc.save(`${ this.reportName } - report.pdf`);
 
 		// 	//! MAKE YOUR PDF
 		// 	var pdf = new jsPDF('p', 'pt', 'letter');
