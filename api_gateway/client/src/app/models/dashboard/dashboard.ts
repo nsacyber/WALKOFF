@@ -1,24 +1,24 @@
 import { Type, Expose } from 'class-transformer';
 
-import { DashboardWidget, 
+import { ReportWidget, 
          BarChartWidget, 
          PieChartWidget, 
          LineChartWidget,  
          TextWidget,
          TableWidget,
          KibanaWidget
-} from "./dashboardWidget";
+} from "./reportWidget";
 
 import { UUID } from 'angular2-uuid';
 
-export class Dashboard {
+export class Report {
 
     @Expose({ name: "id_" })
     id: string;
 
     name: string;
 
-    @Type(() => DashboardWidget, {
+    @Type(() => ReportWidget, {
         keepDiscriminatorProperty: true,
         discriminator: {
             property: "type_",
@@ -32,7 +32,7 @@ export class Dashboard {
             ]
         }
     })
-    widgets: DashboardWidget[] = []; 
+    widgets: ReportWidget[] = []; 
 
     constructor() { 
         this.id = UUID.UUID();

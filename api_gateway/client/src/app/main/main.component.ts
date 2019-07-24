@@ -13,8 +13,8 @@ import { MessageUpdate } from '../models/message/messageUpdate';
 import { MessageListing } from '../models/message/messageListing';
 // import { Message } from '../models/message/message';
 import { GenericObject } from '../models/genericObject';
-import { DashboardService } from '../dashboards/dashboard.service';
-import { Dashboard } from '../models/dashboard/dashboard';
+import { ReportService } from '../reports/report.service';
+import { Report } from '../models/report/report';
 
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
@@ -29,7 +29,7 @@ const MAX_TOTAL_MESSAGES = 20;
 })
 export class MainComponent implements OnInit, OnDestroy {
 	currentUser: string;
-	dashboards: Dashboard[] = [];
+	reports: Report[] = [];
 	messageListings: MessageListing[] = [];
 	messageModalRef: NgbModalRef;
 	newMessagesCount: number = 0;
@@ -39,7 +39,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	constructor(
 		private mainService: MainService, private authService: AuthService,
 		private modalService: NgbModal, private toastrService: ToastrService,
-		public utils: UtilitiesService, private dashboardService: DashboardService
+		public utils: UtilitiesService, private reportService: ReportService
 	) {
 		/* Hack along with styles.scss for modal animations in ng-bootstrap */
 		NgbModalRef.prototype['c'] = NgbModalRef.prototype.close;
@@ -68,7 +68,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	ngOnInit(): void {
 
 		this.currentUser = this.authService.getAndDecodeAccessToken().user_claims.username;
-		this.dashboardService.dashboardsChange.subscribe(dashboards => this.dashboards = dashboards);
+		this.reportService.reportsChange.subscribe(reports => this.reports = reports);
 		// this.getInitialNotifications();
 		// this.getNotificationsSSE();
 	}
