@@ -16,6 +16,7 @@ services:
     depends_on:
       - resource_redis
       - resource_registry
+      - resource_minio
     secrets:
       - walkoff_encryption_key
     configs:
@@ -43,6 +44,8 @@ services:
 
   resource_nginx:
     image: 'bitnami/nginx:latest'
+    networks:
+      - walkoff_default
     ports:
       - '8080:8080'
 #      - '8081:8081' # Uncomment for unsecure HTTP access to API Gateway
@@ -55,6 +58,8 @@ services:
 
   core_worker:
     image: "127.0.0.1:5000/worker:latest"
+    networks:
+      - walkoff_default
     build:
       context: ./
       dockerfile: ./worker/Dockerfile
@@ -67,6 +72,8 @@ services:
         condition: none
 
   app_sdk:
+    networks:
+      - walkoff_default
     build:
       context: ./
       dockerfile: ./app_sdk/Dockerfile
@@ -89,6 +96,7 @@ secrets:
 
 networks:
   walkoff_default:
-    driver: overlay
-    name: walkoff_default
-    attachable: true
+#    driver: overlay
+#    name: walkoff_default
+#    attachable: true
+    external: true
