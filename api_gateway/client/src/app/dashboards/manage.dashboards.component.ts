@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { GridsterConfig, GridType, CompactType } from 'angular-gridster2';
-import { DashboardWidget, BarChartWidget, PieChartWidget, LineChartWidget, TextWidget, KibanaWidget, TableWidget } from '../models/dashboard/dashboardWidget';
-import { Dashboard } from '../models/dashboard/dashboard';
-import { DashboardService } from './dashboard.service';
+import { ReportWidget, BarChartWidget, PieChartWidget, LineChartWidget, TextWidget, KibanaWidget, TableWidget } from '../models/report/reportWidget';
+import { Report } from '../models/report/report';
+import { ReportService } from './report.service';
 import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -10,16 +10,16 @@ import { WidgetModalComponent } from './widget.modal.component';
 import { UtilitiesService } from '../utilities.service';
 
 @Component({
-    selector: 'manage-dashboards-component',
-    templateUrl: './manage.dashboards.component.html',
-    styleUrls: ['./manage.dashboards.component.scss']
+    selector: 'manage-reports-component',
+    templateUrl: './manage.reports.component.html',
+    styleUrls: ['./manage.reports.component.scss']
 })
-export class ManageDashboardsComponent implements OnInit {
+export class ManageReportsComponent implements OnInit {
 
     options: GridsterConfig;
 
-    dashboard: Dashboard = new Dashboard();
-    existingDashboard = false;
+    report: Report = new Report();
+    existingReport = false;
     submitted = false;
 
     gridRows = 16;
@@ -38,7 +38,7 @@ export class ManageDashboardsComponent implements OnInit {
     ];
 
     constructor(
-        private dashboardService: DashboardService, 
+        private reportService: ReportService, 
         private toastrService: ToastrService,
         private activeRoute: ActivatedRoute,
         private router: Router,
@@ -48,10 +48,10 @@ export class ManageDashboardsComponent implements OnInit {
 
     ngOnInit() {
         this.activeRoute.params.subscribe(params => {
-            if (params.dashboardId) {
-                this.existingDashboard = true;
-                this.dashboardService.getDashboardWithMetadata(params.dashboardId).then(dashboard => {
-                    this.dashboard = dashboard;
+            if (params.reportId) {
+                this.existingReport = true;
+                this.reportService.getReportWithMetadata(params.reportId).then(report => {
+                    this.report = report;
                 });
             }
 
@@ -105,11 +105,11 @@ export class ManageDashboardsComponent implements OnInit {
 
     removeWidget($event: Event, widget) {
         $event.preventDefault();
-        this.dashboard.widgets.splice(this.dashboard.widgets.indexOf(widget), 1);
+        this.report.widgets.splice(this.report.widgets.indexOf(widget), 1);
     }
 
     addWidget(type: string): void {
-        let widget: DashboardWidget;
+        let widget: ReportWidget;
 
         switch (type) {
             case "bar":
@@ -136,25 +136,25 @@ export class ManageDashboardsComponent implements OnInit {
         modalRef.componentInstance.widget = widget;
         modalRef.componentInstance.typeLabel = this.widgets.find(w => w.name == type).label;
 		modalRef.result.then(addedWidget => {
-			this.dashboard.widgets.push(addedWidget);
+			this.report.widgets.push(addedWidget);
 		}).catch(() => null)
     }
     
     save() {
-        if (!this.dashboard.name) return this.submitted = true;
+        if (!this.report.name) return this.submitted = true;
 
-        (this.existingDashboard) ? this.dashboardService.updateDashboard(this.dashboard) : this.dashboardService.newDashboard(this.dashboard);
-        this.toastrService.success(`"${ this.dashboard.name }" Saved`);
+        (this.existingReport) ? this.reportService.updateReport(this.report) : this.reportService.newReport(this.report);
+        this.toastrService.success(`"${ this.report.name }" Saved`);
 
-        this.router.navigate(['/dashboard', this.dashboard.id]);
+        this.router.navigate(['/report', this.report.id]);
     }
 
     async delete() {
         await this.utils.confirm(`Are you sure you want to delete this report?`);
 
-        const dashboardName = this.dashboard.name;
-        this.dashboardService.deleteDashboard(this.dashboard);
-        this.toastrService.success(`"${ dashboardName }" Deleted`);
-        this.router.navigate(['/dashboard/new']);
+        const reportName = this.report.name;
+        this.reportService.deleteReport(this.report);
+        this.toastrService.success(`"${ reportName }" Deleted`);
+        this.router.navigate(['/report/new']);
     }
 }
