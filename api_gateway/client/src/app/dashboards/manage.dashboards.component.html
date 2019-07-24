@@ -1,5 +1,5 @@
 <div id="main" class="manageDashboardMain">
-    <h1>{{ (existingDashboard) ? 'Edit' : 'New' }} Dashboard
+    <h1>{{ (existingDashboard) ? 'Edit' : 'New' }} Report
         <!-- <input type="text" class="my-auto mr-3" [(ngModel)]="dashboard.name" name="dashboardName" placeholder="Dashboard Name" required> -->
         <button *ngIf="existingDashboard" class="btn btn-danger btn-lg float-right" (click)="delete()"><i
                 class="fa fa-trash"></i></button>
@@ -11,11 +11,11 @@
                     <form #myForm="ngForm" [class.was-validated]="submitted" novalidate>
                         <div class="d-flex">
                             <input type="text" class="form-control" [(ngModel)]="dashboard.name" name="dashboardName"
-                                placeholder="Dashboard Name" required>
+                                placeholder="Report Name" required>
                             <button class="btn btn-primary ml-3" (click)="save()">Save</button>
                         </div>
                         <div class="invalid-feedback" [class.d-block]="!myForm.form.valid && submitted">
-                            Please enter a name for the dashboard.
+                            Please enter a name for the report.
                         </div>
                     </form>
                 </div>

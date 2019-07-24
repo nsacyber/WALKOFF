@@ -150,7 +150,7 @@ export class ManageDashboardsComponent implements OnInit {
     }
 
     async delete() {
-        await this.utils.confirm(`Are you sure you want to delete this dashboard?`);
+        await this.utils.confirm(`Are you sure you want to delete this report?`);
 
         const dashboardName = this.dashboard.name;
         this.dashboardService.deleteDashboard(this.dashboard);

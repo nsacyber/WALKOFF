@@ -14,7 +14,7 @@
           </li>
           <li class="nav-item dropdown" routerLinkActive="active">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="fa fa-area-chart"></i><span class="navLink">Dashboards</span>
+              <i class="fa fa-area-chart"></i><span class="navLink">Reports</span>
             </a>
             <div class="dropdown-menu border-0" aria-labelledby="navbarDropdown">
               <a *ngFor="let dashboard of dashboards" class="dropdown-item installedDashboard" routerLink="/dashboard/{{dashboard.id}}">
@@ -22,7 +22,7 @@
               </a>
               <div *ngIf="dashboards && dashboards.length > 0" class="dropdown-divider"></div>
               <a class="dropdown-item installedDashboard" routerLink="/dashboard/new">
-                <span><i>Create New Dashboard...</i></span>
+                <span><i>Create New Report...</i></span>
               </a>
             </div>
           </li>
