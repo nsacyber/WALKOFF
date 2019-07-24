@@ -1,6 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
 
-export abstract class DashboardWidget {
+export abstract class ReportWidget {
 
     @Expose({ name: "id_" })
     id: string;
@@ -30,7 +30,7 @@ export abstract class DashboardWidget {
     }
 }
 
-export abstract class ChartWidget extends DashboardWidget {
+export abstract class ChartWidget extends ReportWidget {
     @Exclude()
     chartLabels: string[];
 
@@ -99,7 +99,7 @@ export class LineChartWidget  extends ChartWidget {
     ];
 }
 
-export class TableWidget extends DashboardWidget {
+export class TableWidget extends ReportWidget {
     type_ = 'table';
     
     setMetadata(results: any) {
@@ -112,10 +112,10 @@ export class TableWidget extends DashboardWidget {
     }
 }
 
-export class TextWidget  extends DashboardWidget {
+export class TextWidget  extends ReportWidget {
     type_ = 'text';
 }
 
-export class KibanaWidget  extends DashboardWidget {
+export class KibanaWidget  extends ReportWidget {
     type_ = 'kibana';
 }

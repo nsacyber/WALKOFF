@@ -17,11 +17,11 @@
               <i class="fa fa-area-chart"></i><span class="navLink">Reports</span>
             </a>
             <div class="dropdown-menu border-0" aria-labelledby="navbarDropdown">
-              <a *ngFor="let dashboard of dashboards" class="dropdown-item installedDashboard" routerLink="/dashboard/{{dashboard.id}}">
-                <span>{{ dashboard.name }}</span>
+              <a *ngFor="let report of reports" class="dropdown-item installedReport" routerLink="/report/{{report.id}}">
+                <span>{{ report.name }}</span>
               </a>
-              <div *ngIf="dashboards && dashboards.length > 0" class="dropdown-divider"></div>
-              <a class="dropdown-item installedDashboard" routerLink="/dashboard/new">
+              <div *ngIf="reports && reports.length > 0" class="dropdown-divider"></div>
+              <a class="dropdown-item installedReport" routerLink="/report/new">
                 <span><i>Create New Report...</i></span>
               </a>
             </div>
@@ -88,7 +88,7 @@
               <span class="userName">{{currentUser}}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-right border-0" aria-labelledby="navbarUserDropdown">
-              <a class="dropdown-item installedDashboard" href="/login" (click)="logout()">Sign Out</a>
+              <a class="dropdown-item installedReport" href="/login" (click)="logout()">Sign Out</a>
             </div>
           </li>
         </ul>
