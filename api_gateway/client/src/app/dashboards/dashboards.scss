@@ -1,4 +1,4 @@
-#main.customDashboard {
+#main.customReport {
 	position: absolute;
 	top: 50px;
 	left: 0;
@@ -7,7 +7,7 @@
 	overflow: hidden;
 }
 
-#main.customDashboard iframe {
+#main.customReport iframe {
 	position: absolute;
 	border: none;
 	top:0;
@@ -16,7 +16,7 @@
 	height: 100%;
 }
 
-#main.dashboardsMain {
+#main.reportsMain {
 	padding: 10px 15px;
 }
 
