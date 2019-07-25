@@ -16,7 +16,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { GridsterModule } from 'angular-gridster2';
 import { ChartsModule } from 'ng2-charts';
 
-import { NgJsonEditorModule } from 'ang-jsoneditor' 
+import { NgJsonEditorModule } from 'ang-jsoneditor'
 
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import 'codemirror/mode/shell/shell';
@@ -69,7 +69,7 @@ import { ImportModalComponent } from './playbook/import.modal.component';
 		JwtModule.forRoot({
 			config: {
 				tokenGetter: jwtTokenGetter,
-				blacklistedRoutes: ['/login', '/api/auth', '/api/auth/logout', '/api/auth/refresh']
+				blacklistedRoutes: ['login', 'api/auth', 'api/auth/logout', 'api/auth/refresh']
 			}
 		}),
 		NgbModule,

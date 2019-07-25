@@ -1,6 +1,6 @@
 # walkoff_client.GlobalVariablesApi
 
-All URIs are relative to *http://localhost/api*
+All URIs are relative to *http://localhost/walkoff/api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -34,8 +34,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.GlobalVariablesApi(walkoff_client.ApiClient(configuration))
 global_variable = walkoff_client.GlobalVariable() # GlobalVariable | 
@@ -93,8 +93,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.GlobalVariablesApi(walkoff_client.ApiClient(configuration))
 global_variable_template = walkoff_client.GlobalVariableTemplate() # GlobalVariableTemplate | 
@@ -152,8 +152,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.GlobalVariablesApi(walkoff_client.ApiClient(configuration))
 global_var = 'global_var_example' # str | ID of the global to be fetched
@@ -210,8 +210,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.GlobalVariablesApi(walkoff_client.ApiClient(configuration))
 global_template = 'global_template_example' # str | ID of the global template to be fetched
@@ -268,8 +268,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.GlobalVariablesApi(walkoff_client.ApiClient(configuration))
 page = 56 # int | page of data to get (optional)
@@ -326,8 +326,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.GlobalVariablesApi(walkoff_client.ApiClient(configuration))
 page = 56 # int | page of data to get (optional)
@@ -386,8 +386,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.GlobalVariablesApi(walkoff_client.ApiClient(configuration))
 global_var = 'global_var_example' # str | ID of the global to be fetched
@@ -447,8 +447,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.GlobalVariablesApi(walkoff_client.ApiClient(configuration))
 global_template = 'global_template_example' # str | ID of the global template to be fetched
@@ -506,8 +506,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.GlobalVariablesApi(walkoff_client.ApiClient(configuration))
 global_var = 'global_var_example' # str | ID of the global to be fetched
@@ -567,8 +567,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.GlobalVariablesApi(walkoff_client.ApiClient(configuration))
 global_template = 'global_template_example' # str | ID of the global template to be fetched

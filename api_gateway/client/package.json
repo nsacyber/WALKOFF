@@ -17,9 +17,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
-    "build:prod": "ng build --prod",
-    "watch": "ng build --watch",
+    "build": "ng build --baseHref=/walkoff/",
+    "build:prod": "ng build --baseHref=/walkoff/ --prod",
+    "watch": "ng build --baseHref=/walkoff/ --watch",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

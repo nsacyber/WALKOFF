@@ -51,7 +51,7 @@ export class PlaybookService {
 	 * Returns all playbooks and their child workflows in minimal form (id, name).
 	 */
 	getPlaybooks(): Promise<Playbook[]> {
-		return this.http.get('/api/playbooks')
+		return this.http.get('api/playbooks')
 			.toPromise()
 			.then((data) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
@@ -62,7 +62,7 @@ export class PlaybookService {
 	 * @param playbook New playbook to be saved
 	 */
 	newPlaybook(playbook: Playbook): Promise<Playbook> {
-		return this.http.post('/api/playbooks', classToPlain(playbook))
+		return this.http.post('api/playbooks', classToPlain(playbook))
 			.toPromise()
 			.then((data) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
@@ -74,7 +74,7 @@ export class PlaybookService {
 	 * @param newName New name for the updated playbook
 	 */
 	renamePlaybook(playbookId: string, newName: string): Promise<Playbook> {
-		return this.http.patch('/api/playbooks', { id: playbookId, name: newName })
+		return this.http.patch('api/playbooks', { id: playbookId, name: newName })
 			.toPromise()
 			.then((data: object) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
@@ -86,7 +86,7 @@ export class PlaybookService {
 	 * @param newName Name of the new copy to be saved
 	 */
 	duplicatePlaybook(playbookId: string, newName: string): Promise<Playbook> {
-		return this.http.post(`/api/playbooks?source=${playbookId}`, { name: newName })
+		return this.http.post(`api/playbooks?source=${playbookId}`, { name: newName })
 			.toPromise()
 			.then((data) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
@@ -97,7 +97,7 @@ export class PlaybookService {
 	 * @param playbookIdToDelete ID of playbook to be deleted.
 	 */
 	deletePlaybook(playbookIdToDelete: string): Promise<void> {
-		return this.http.delete(`/api/playbooks/${playbookIdToDelete}`)
+		return this.http.delete(`api/playbooks/${playbookIdToDelete}`)
 			.toPromise()
 			.catch(this.utils.handleResponseError);
 	}
@@ -107,7 +107,7 @@ export class PlaybookService {
 	 * @param playbookId: ID of playbook to export
 	 */
 	exportPlaybook(playbookId: string): Observable<Blob> {
-		return this.http.get(`/api/playbooks/${playbookId}?mode=export`, { responseType: 'blob' })
+		return this.http.get(`api/playbooks/${playbookId}?mode=export`, { responseType: 'blob' })
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -116,7 +116,7 @@ export class PlaybookService {
 	 * @param workflowId: ID of playbook to export
 	 */
 	exportWorkflow(workflowId: string): Promise<Blob> {
-		return this.http.get(`/api/workflows/${workflowId}?mode=export`, { responseType: 'blob' })
+		return this.http.get(`api/workflows/${workflowId}?mode=export`, { responseType: 'blob' })
 			.toPromise()
 			.catch(this.utils.handleResponseError);
 	}
@@ -131,7 +131,7 @@ export class PlaybookService {
 
 		const headers = { 'Accept': 'application/json' }
 
-		return this.http.post('/api/playbooks', formData, { headers })
+		return this.http.post('api/playbooks', formData, { headers })
 			.map(res => plainToClass(Playbook, res))
 			.catch(error => Observable.throw(error));
 	}
@@ -145,7 +145,7 @@ export class PlaybookService {
 		const body = JSON.parse(await this.utils.readUploadedFileAsText(fileToImport));
 		body.name = await this.nextWorkflowName(body.name);
 
-		return this.http.post('/api/workflows', body, { headers })
+		return this.http.post('api/workflows', body, { headers })
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(Workflow, data))
@@ -162,7 +162,7 @@ export class PlaybookService {
 	 * Returns all playbooks and their child workflows in minimal form (id, name).
 	 */
 	getWorkflows(): Promise<Workflow[]> {
-		return this.http.get('/api/workflows')
+		return this.http.get('api/workflows')
 			.toPromise()
 			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
@@ -177,7 +177,7 @@ export class PlaybookService {
 	duplicateWorkflow(
 		sourceWorkflowId: string, newName: string,
 	): Promise<Workflow> {
-		return this.http.post(`/api/workflows?source=${sourceWorkflowId}`,
+		return this.http.post(`api/workflows?source=${sourceWorkflowId}`,
 			{ name: newName })
 			.toPromise()
 			.then((data) => this.emitChange(data))
@@ -190,7 +190,7 @@ export class PlaybookService {
 	 * @param workflowIdToDelete ID of the workflow to be deleted
 	 */
 	deleteWorkflow(workflowIdToDelete: string): Promise<void> {
-		return this.http.delete(`/api/workflows/${workflowIdToDelete}`)
+		return this.http.delete(`api/workflows/${workflowIdToDelete}`)
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.catch(this.utils.handleResponseError);
@@ -203,7 +203,7 @@ export class PlaybookService {
 	 */
 	newWorkflow(workflow: Workflow): Promise<Workflow> {
 		workflow.id = UUID.UUID();
-		return this.http.post('/api/workflows', classToPlain(workflow))
+		return this.http.post('api/workflows', classToPlain(workflow))
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(Workflow, data))
@@ -215,7 +215,7 @@ export class PlaybookService {
 	 * @param workflow Data to be saved under the workflow (actions, etc.)
 	 */
 	saveWorkflow(workflow: Workflow): Promise<Workflow> {
-		return this.http.put(`/api/workflows/${workflow.id}`, classToPlain(workflow))
+		return this.http.put(`api/workflows/${workflow.id}`, classToPlain(workflow))
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(Workflow, data))
@@ -227,7 +227,7 @@ export class PlaybookService {
 	 * @param workflowId ID of the workflow to load
 	 */
 	loadWorkflow(workflowId: string): Promise<Workflow> {
-		return this.http.get(`/api/workflows/${workflowId}`)
+		return this.http.get(`api/workflows/${workflowId}`)
 			.toPromise()
 			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
@@ -266,7 +266,7 @@ export class PlaybookService {
 	 * Gets all app apis from the server.
 	 */
 	getApis(): Promise<AppApi[]> {
-		return this.http.get('/api/apps/apis')
+		return this.http.get('api/apps/apis')
 			.toPromise()
 			// .then((data: any[]) => {
 			// 	return [{

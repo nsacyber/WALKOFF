@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 
 def register_blueprints(flaskapp):
     flaskapp.logger.info('Registering builtin blueprints')
-    flaskapp.register_blueprint(results_stream, url_prefix='/api/streams/workflowqueue')
-    flaskapp.register_blueprint(console.console_stream, url_prefix='/api/streams/console')
+    flaskapp.register_blueprint(results_stream, url_prefix='/walkoff/api/streams/workflowqueue')
+    flaskapp.register_blueprint(console.console_stream, url_prefix='/walkoff/api/streams/console')
     flaskapp.register_blueprint(root.root_page, url_prefix='/')
     for blueprint in (results_stream, console.console_stream):
         blueprint.cache = flaskapp.running_context.cache

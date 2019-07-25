@@ -19,20 +19,21 @@ root_page = Blueprint('root_page', __name__, template_folder="api_gateway/client
 
 
 # Custom static data
-@root_page.route('client/<path:filename>')
+@root_page.route('/walkoff/client/<path:filename>')
 def client_app_folder(filename):
     return send_from_directory(os.path.abspath(static.CLIENT_PATH), filename)
 
 
 # Default route to angular application
 @root_page.route('/', defaults={'path': ''})
-@root_page.route('/<path:path>')
+@root_page.route('/walkoff', defaults={'path': ''})
+@root_page.route('/walkoff/<path:path>')
 def default(path):
     return send_from_directory(os.path.abspath(static.CLIENT_PATH), "dist/walkoff/index.html")
 
 
 # Route to login page
-@root_page.route('login')
+@root_page.route('/walkoff/login')
 def login_page():
     return render_template("login.html")
 
