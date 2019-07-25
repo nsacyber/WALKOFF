@@ -60,6 +60,7 @@ def initialize_default_resources_admin():
         admin.set_resources(default_resource_permissions_admin)
     db.session.commit()
 
+
 def initialize_default_resources_workflow_developer():
     """Initializes the default resources for a guest user"""
     workflow_developer = Role.query.filter(Role.name == "workflow_developer").first()

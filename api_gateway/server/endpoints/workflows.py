@@ -14,7 +14,7 @@ from api_gateway.security import permissions_accepted_for_resources, ResourcePer
 from api_gateway.server.decorators import with_resource_factory, is_valid_uid, \
     paginate
 from api_gateway.server.problem import unique_constraint_problem, improper_json_problem
-from common.roles_helpers import auth_check, update_permissions
+from common.roles_helpers import auth_check, update_permissions, default_permissions, get_permissions
 from http import HTTPStatus
 
 
@@ -47,7 +47,8 @@ def create_workflow():
     data = request.get_json()
     workflow_id = request.args.get("source")
     workflow_name = data['name']
-    new_permissions = [("workflow_operator", ["read", "update", "delete"])]  # TOREMOVE
+    # new_permissions = [("workflow_operator", ["read", "update", "delete"])]  # TOREMOVE
+    new_permissions = [("admin", ["read", "update", "delete"])]
 
     if request.files and 'file' in request.files:
         data = json.loads(request.files['file'].read().decode('utf-8'))
@@ -57,14 +58,19 @@ def create_workflow():
             .filter(Workflow.id_ == workflow_id).first()
         if wf.name == workflow_name:
             return unique_constraint_problem('workflow', 'create', workflow_name)
-        return copy_workflow(workflow=wf, workflow_name=workflow_name)
+
+        return copy_workflow(workflow=wf, workflow_name=workflow_name, permissions=new_permissions)
 
     wf2 = current_app.running_context.execution_db.session.query(Workflow) \
         .filter(Workflow.id_ == data['id_']).first()
     if wf2:
         return import_workflow(data)
+
     else:
-        update_permissions("workflows", workflow_name, new_permissions=new_permissions)
+        if new_permissions:
+            update_permissions("workflows", workflow_name, new_permissions=new_permissions)
+        else:
+            default_permissions("workflows", workflow_name)
 
     try:
         workflow = workflow_schema.load(data)
@@ -81,13 +87,16 @@ def create_workflow():
         return unique_constraint_problem('workflow', 'create', workflow_name)
 
 
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['create', 'update']))
 def import_workflow(workflow_json):
-    new_permissions = [("workflow_operator", ["read", "update", "delete"])]  # TOREMOVE
+    new_permissions = []  # TOREMOVE
     regenerate_workflow_ids(workflow_json)
-    workflow_json['name'] = workflow_json.get("name") + "." + workflow_json["id_"]
+    workflow_json['name'] = workflow_json.get("name")
 
-    update_permissions("workflows", workflow_json['name'], new_permissions=new_permissions)
+    if new_permissions:
+        update_permissions("workflows", workflow_json['name'], new_permissions=new_permissions)
+    else:
+        default_permissions("workflows", workflow_json['name'])
+
     try:
         new_workflow = workflow_schema.load(workflow_json)
         current_app.running_context.execution_db.session.add(new_workflow)
@@ -100,20 +109,24 @@ def import_workflow(workflow_json):
         return unique_constraint_problem('workflow', 'import', workflow_json['name'])
 
 
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['create', 'update']))
-def copy_workflow(workflow, workflow_name=None):
-    new_permissions = [("workflow_operator", ["read", "update", "delete"])] # TOREMOVE
+@permissions_accepted_for_resources(ResourcePermissions('workflows', ['create']))
+def copy_workflow(workflow, permissions, workflow_name=None):
     old_json = workflow_schema.dump(workflow)
     workflow_json = deepcopy(old_json)
+
+    update_check = auth_check(workflow_json["name"], "update", "workflows")
+    if not update_check:
+        return None, HTTPStatus.FORBIDDEN
 
     regenerate_workflow_ids(workflow_json)
 
     if workflow_name:
         workflow_json['name'] = workflow_name
     else:
-        workflow_json['name'] = old_json.get("name") + "." + workflow_json["id_"]
+        workflow_json['name'] = old_json.get("name")
 
-    update_permissions("workflows", workflow_json['name'], new_permissions=new_permissions)
+    update_permissions("workflows", workflow_json['name'], permissions)
+
     try:
         new_workflow = workflow_schema.load(workflow_json)
         current_app.running_context.execution_db.session.add(new_workflow)
@@ -128,7 +141,6 @@ def copy_workflow(workflow, workflow_name=None):
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
 @paginate(workflow_schema)
 def read_all_workflows():
     r = current_app.running_context.execution_db.session.query(Workflow).order_by(Workflow.name).all()
@@ -142,7 +154,6 @@ def read_all_workflows():
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
 @with_workflow('read', 'workflow')
 def read_workflow(workflow):
     workflow_name = workflow.name
@@ -163,13 +174,19 @@ def read_workflow(workflow):
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['update']))
 @with_workflow('update', 'workflow')
 def update_workflow(workflow):
     data = request.get_json()
-    workflow_name = workflow.name
+    old_name = workflow.name
+    new_name = data['name']
+    # new_roles = data['permissions']
+    new_roles = [
+        ('admin', ["create", "read", "update", "delete"]),
+        ('workflow_developer', ["create", "read", "update", "delete"]),
+        ('workflow_operator', ["create", "read", "update", "delete"])
+    ]
 
-    to_update = auth_check(workflow_name, "update", "workflows")
+    to_update = auth_check(old_name, "update", "workflows", new_name=new_name, updated_roles=new_roles)
     if to_update:
         try:
             workflow_schema.load(data, instance=workflow)
@@ -187,7 +204,6 @@ def update_workflow(workflow):
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['delete']))
 @with_workflow('delete', 'workflow')
 def delete_workflow(workflow):
     workflow_name = workflow.name

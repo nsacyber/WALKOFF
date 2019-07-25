@@ -12,7 +12,7 @@ from api_gateway.server.decorators import with_resource_factory, paginate
 from api_gateway.server.problem import unique_constraint_problem
 from http import HTTPStatus
 from api_gateway.executiondb.global_variable import GlobalCipher
-from common.roles_helpers import auth_check, update_permissions
+from common.roles_helpers import auth_check, update_permissions, default_permissions
 
 import logging
 logger = logging.getLogger(__name__)
@@ -44,7 +44,6 @@ global_variable_template_schema = GlobalVariableTemplateSchema()
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("global_variables", ["read"]))
 @paginate(global_variable_schema)
 def read_all_globals():
     f = open('/run/secrets/encryption_key')
@@ -67,7 +66,6 @@ def read_all_globals():
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("global_variables", ["read"]))
 @with_global_variable("read", "global_var")
 def read_global(global_var):
     global_id = str(global_var.id_)
@@ -90,7 +88,6 @@ def read_global(global_var):
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("global_variables", ["delete"]))
 @with_global_variable("delete", "global_var")
 def delete_global(global_var):
     global_id = str(global_var.id_)
@@ -112,9 +109,13 @@ def delete_global(global_var):
 def create_global():
     data = request.get_json()
     global_id = data['id_']
-    new_permissions = [("workflow_operator", ["update", "delete", "read"])]  # TOREMOVE
+    #new_permissions = [("workflow_operator", ["update", "delete", "read"])]  # TOREMOVE
+    new_permissions = []
 
-    update_permissions("global_variables", global_id, new_permissions=new_permissions)
+    if new_permissions:
+        update_permissions("global_variables", global_id, new_permissions=new_permissions)
+    else:
+        default_permissions("global_variables", global_id)
 
     try:
         global_variable = global_variable_schema.load(data)
@@ -127,7 +128,6 @@ def create_global():
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("global_variables", ["update"]))
 @with_global_variable("update", "global_var")
 def update_global(global_var):
     # todo: ONCE UI ELEMENT IS BUILT OUT, DO CHECK FOR UPDATED PERMISSIONS
