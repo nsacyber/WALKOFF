@@ -4,6 +4,7 @@ import sys
 
 import aioredis
 import aiohttp
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from walkoff_app_sdk.common.message_types import NodeStatusMessage, message_dumps
 from walkoff_app_sdk.common.workflow_types import workflow_loads, Action, ParameterVariant
@@ -26,6 +27,7 @@ class HTTPStream:
     async def flush(self):
         pass
 
+    @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
     async def write(self, message):
         data = {"message": message}
         params = {"workflow_execution_id": self.execution_id}
@@ -128,7 +130,8 @@ class AppBase:
                         result = await func(**params)
 
                     action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result=result)
-                    self.logger.debug(f"Executed {action.label}-{action.id_} with result: {result}")
+                    self.logger.debug(f"Executed {action.label}-{action.execution_id} "
+                                      f"with result: {result}")
 
                 else:
                     self.logger.error(f"App {self.__class__.__name__}.{action.name} is not callable")
@@ -136,7 +139,7 @@ class AppBase:
                                                                         result="Action not callable")
 
             except Exception as e:
-                self.logger.exception(f"Failed to execute {action.label}-{action.id_}")
+                self.logger.exception(f"Failed to execute {action.label}-{action.execution_id}")
                 action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
 
         else:

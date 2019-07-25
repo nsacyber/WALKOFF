@@ -1,5 +1,7 @@
 import logging
 
+from tenacity import retry, stop_after_attempt, wait_exponential
+
 from common.config import config
 from common.message_types import(message_dumps, NodeStatusMessage, WorkflowStatusMessage,
                                  StatusEnum, JSONPatch, JSONPatchOps)
@@ -28,7 +30,7 @@ def sfloat(value, default):
     except (TypeError, ValueError):
         return default
 
-
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
 async def get_walkoff_auth_header(session, token=None, timeout=5*60):
     url = config.API_GATEWAY_URI.rstrip('/') + '/api'
 

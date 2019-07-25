@@ -2,6 +2,7 @@ version: '3.5'
 services:
   core_umpire:
     image: "127.0.0.1:5000/umpire:latest"
+#    command: python -m umpire.umpire --log-level=debug
     build:
       context: ./
       dockerfile: umpire/Dockerfile
@@ -21,7 +22,6 @@ services:
       - walkoff_encryption_key
     configs:
       - common_env.yml
-    command: python -m umpire.umpire # --log-level=debug
 
   core_api_gateway:
     image: "127.0.0.1:5000/api_gateway:latest"
@@ -57,6 +57,7 @@ services:
       - core_api_gateway
 
   core_worker:
+#    command: python -m worker.worker --log-level=debug
     image: "127.0.0.1:5000/worker:latest"
     networks:
       - walkoff_default

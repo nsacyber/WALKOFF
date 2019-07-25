@@ -15,6 +15,7 @@ import aiodocker
 import aiohttp
 import yaml
 import yaml.scanner
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from common.config import config, static
 from common.docker_helpers import (create_secret, get_secret, delete_secret, get_network, connect_to_aiodocker,
@@ -34,21 +35,6 @@ APP_NAME_PREFIX = "walkoff_"
 
 DOCKER_HOST_IP = os.getenv("DOCKER_HOST_IP")
 p = Path('./apps').glob('**/*')
-
-
-async def exponential_wait(func, args, msg):
-    wait = 0.5
-    return_code = 1
-    while return_code:
-        if wait > 128:
-            logger.exception(f"{msg} - Too many attempts, exiting.")
-            os._exit(return_code)
-
-        return_code = await asyncio.create_task(func(*args))
-        if return_code:
-            wait *= 2
-            logger.info(f"{msg} - Checking again in {wait} seconds...")
-            await asyncio.sleep(wait)
 
 
 def bannerize(text, fill='='):
@@ -173,20 +159,30 @@ async def delete_dir_contents(path):
             shutil.rmtree(os.path.join(root, d))
 
 
+@retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
 async def deploy_compose(compose):
-    if not isinstance(compose, dict):
-        compose = parse_yaml(compose)
 
-    # Dump the compose to a temporary compose file and launch that. This is so we can amend the compose and update the
-    # the stack without launching a new one
-    dump_yaml(config.TMP_COMPOSE, compose)
-    compose = config.TMP_COMPOSE
+    try:
+        if not isinstance(compose, dict):
+            compose = parse_yaml(compose)
 
-    proc = await asyncio.create_subprocess_exec("docker", "stack", "deploy", "--compose-file", compose, "walkoff",
-                                                stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-    await log_proc_output(proc)
+        # Dump the compose to a temporary compose file and launch that. This is so we can amend the compose and update the
+        # the stack without launching a new one
+        dump_yaml(config.TMP_COMPOSE, compose)
+        compose = config.TMP_COMPOSE
 
-    return proc.returncode
+        proc = await asyncio.create_subprocess_exec("docker", "stack", "deploy", "--compose-file", compose, "walkoff",
+                                                    stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+        await log_proc_output(proc)
+
+        if proc.returncode:
+            raise OSError
+        else:
+            return True
+
+    except Exception as e:
+        logger.info("Failed deploying, waiting to try again...")
+        raise e
 
 
 async def build_image(docker_client, repo, dockerfile, context_dir, dockerignore):
@@ -253,24 +249,32 @@ class Bootloader:
                 # TODO: Pipe this through the logger. print_help() accepts a file kwarg that we can use to do this
                 parser.print_help()
 
-    async def _wait_for_registry(self):
+    @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
+    async def wait_for_registry(self):
         try:
             async with self.session.get("http://" + DOCKER_HOST_IP) as resp:
                 if resp.status == 200:
-                    return False
-        except aiohttp.ClientConnectionError:
-            return True
+                    return True
+                else:
+                    raise ConnectionError
+        except Exception as e:
+            logger.info("Registry not available yet, waiting to try again...")
+            raise e
 
-    async def _wait_for_minio(self):
+    @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
+    async def wait_for_minio(self):
         try:
-            async with self.session.get("http://" + config.MINIO + "/minio/health/ready") as resp:
+            async with self.session.get(f"http://{config.MINIO_URI}/minio/health/ready") as resp:
                 if resp.status == 200:
-                    return False
-        except aiohttp.ClientConnectionError:
-            return True
+                    return True
+                else:
+                    raise ConnectionError
+        except Exception as e:
+            logger.info("Minio not available yet, waiting to try again...")
+            raise e
 
     async def push_to_minio(self):
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO_URI, access_key='walkoff', secret_key='walkoff123', secure=False)
         flag = False
         try:
             buckets = minio_client.list_buckets()
@@ -321,13 +325,9 @@ class Bootloader:
         logger.info("Deploying base services (registry, postgres, portainer, redis)...")
         base_compose = parse_yaml(config.BASE_COMPOSE)
 
-        await exponential_wait(deploy_compose, [base_compose], "Deployment failed")
+        await deploy_compose(base_compose)
 
-        await exponential_wait(self._wait_for_registry, {}, "Registry not available yet")
-
-        await exponential_wait(self._wait_for_minio, {}, "Minio not available yet")
-
-        await self.push_to_minio()
+        await self.wait_for_registry()
 
         # Merge the base, walkoff, and app composes
         app_composes = generate_app_composes()
@@ -351,6 +351,9 @@ class Bootloader:
                                       service["build"]["context"],
                                       self.dockerignore)
                     await push_image(self.docker_client, service["image"])
+
+        await self.wait_for_minio()
+        await self.push_to_minio()
 
         logger.info("Deploying Walkoff stack...")
 

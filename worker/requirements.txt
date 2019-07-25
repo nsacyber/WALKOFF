@@ -8,3 +8,4 @@ pyyaml
 sqlalchemy
 asteval
 six
+tenacity

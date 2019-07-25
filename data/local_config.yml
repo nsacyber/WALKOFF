@@ -10,6 +10,7 @@ REDIS_URI: "redis://localhost:6379"
 ENCRYPTION_KEY_PATH: "data/local.key"
 
 # Worker options
+MAX_WORKER_REPLICAS: "10"
 WORKER_TIMEOUT: "30"
 WALKOFF_USERNAME: "admin"
 WALKOFF_PASSWORD: "admin"
@@ -21,7 +22,7 @@ SWARM_NETWORK: "walkoff_default"
 APP_PREFIX: "walkoff_app"
 STACK_PREFIX: "walkoff"
 DOCKER_REGISTRY: "127.0.0.1:5000"
-UMPIRE_HEARTBEAT: "1"
+UMPIRE_HEARTBEAT: "2"
 
 # API Gateway options
 DB_TYPE: "postgresql"
@@ -30,3 +31,6 @@ SERVER_DB_NAME: "walkoff"
 EXECUTION_DB_NAME: "execution"
 DB_USERNAME: "walkoff"
 DB_PASSWORD: "walkoff"
+
+# App options
+MAX_APP_REPLICAS: "2"

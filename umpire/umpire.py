@@ -27,7 +27,8 @@ static.set_local_hostname("local_umpire")
 
 
 class Umpire:
-    def __init__(self, docker_client=None, redis=None, session=None):
+    def __init__(self, docker_client=None, redis=None, session=None, autoscale_worker=True, autoscale_app=True,
+                 autoheal_worker=True, autoheal_apps=True):
         self.redis: aioredis.Redis = redis
         self.docker_client: aiodocker.Docker = docker_client
         self.session = session
@@ -37,15 +38,21 @@ class Umpire:
         self.max_workers = 1
         self.service_replicas = {}
 
+        self.autoscale_worker = autoscale_worker
+        self.autoscale_app = autoscale_app
+        self.autoheal_worker = autoheal_worker
+        self.autoheal_apps = autoheal_apps
+
     @classmethod
-    async def init(cls, docker_client, redis, session):
-        self = cls(docker_client, redis, session)
+    async def init(cls, docker_client, redis, session, autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps):
+        self = cls(docker_client, redis, session, autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps)
         # await redis.flushall()  # TODO: do a more targeted cleanup of redis
         self.app_repo = await AppRepo.create(config.APPS_PATH, session)
         self.running_apps = await self.get_running_apps()
         self.worker = await get_service(self.docker_client, static.WORKER_SERVICE)
         services = await self.docker_client.services.list()
         self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
+        self.max_workers = config.get_int("MAX_WORKER_REPLICAS", 10)
 
         try:
             await self.redis.xgroup_create(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP, mkstream=True)
@@ -63,7 +70,9 @@ class Umpire:
     async def run(autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps):
         async with connect_to_redis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session, \
                 connect_to_aiodocker() as docker_client:
-            ump = await Umpire.init(docker_client=docker_client, redis=redis, session=session)
+            ump = await Umpire.init(docker_client=docker_client, redis=redis, session=session,
+                                    autoscale_worker=autoscale_worker, autoscale_app=autoscale_app,
+                                    autoheal_worker=autoheal_worker, autoheal_apps=autoheal_apps)
 
             # Attach our signal handler to cleanly close services we've created
             loop = asyncio.get_running_loop()
@@ -72,8 +81,7 @@ class Umpire:
 
             logger.info("Umpire is ready!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),
-                                 asyncio.create_task(ump.monitor_queues(autoscale_worker, autoscale_app,
-                                                                        autoheal_worker, autoheal_apps)))
+                                 asyncio.create_task(ump.monitor_queues()))
         await ump.shutdown()
 
     async def shutdown(self):
@@ -88,8 +96,9 @@ class Umpire:
         logger.debug(f"Removed redis streams: {removed_qs}")
 
         # # Clean up docker services
-        # services = [*(await self.get_running_apps()).keys(), static.WORKER_SERVICE]
-        # mask = [await remove_service(self.docker_client, s) for s in services]
+        # services = [*(await self.get_running_apps()).keys()]
+        # await self.
+        # mask = [await self.launch_workers(0)]
         # removed_apps = list(compress(self.running_apps, mask))
         # logger.debug(f"Removed apps: {removed_apps}")
 
@@ -108,16 +117,28 @@ class Umpire:
 
     async def launch_workers(self, replicas=1):
         try:
-            self.worker = await get_service(self.docker_client, "walkoff_core_worker")
+            self.worker = await get_service(self.docker_client, static.WORKER_SERVICE)
             if self.worker == {}:
                 raise DockerError
             await update_service(self.docker_client, service_id=self.worker["id"], version=self.worker["version"],
                                  image=self.worker["image"], mode={"replicated": {"Replicas": replicas}})
             self.worker = await get_service(self.docker_client, self.worker["id"])
-            return
+            await asyncio.sleep(3)
         except DockerError:
-            logger.exception(f"Service walkoff_worker failed to update")
+            logger.exception(f"Service {static.WORKER_SERVICE} failed to update")
             return
+
+    async def launch_app(self, service_name, version, replicas=1):
+        try:
+            mode = {"replicated": {'Replicas': replicas}}
+            self.running_apps[service_name] = await get_service(self.docker_client, service_name)
+            await update_service(self.docker_client, service_id=self.running_apps[service_name]["id"],
+                                 version=self.running_apps[service_name]["version"],
+                                 image=self.running_apps[service_name]["image"], mode=mode)
+            self.running_apps[service_name] = await get_service(self.docker_client, service_name)
+            await asyncio.sleep(3)
+        except DockerError:
+            logger.exception(f"Service {service_name} failed to update")
 
     async def scale_worker(self):
         total_workflows = await xlen(self.redis, static.REDIS_WORKFLOW_QUEUE)
@@ -130,6 +151,7 @@ class Umpire:
         current_workers = self.service_replicas.get(static.WORKER_SERVICE, {"running": 0, "desired": 0})["desired"]
         workers_needed = min(total_workflows, self.max_workers)
         logger.debug(f"Running Workers: {current_workers}")
+        logger.debug(f"Needed Workers: {workers_needed}")
 
         if workers_needed > current_workers > 0:
             await self.launch_workers(workers_needed)
@@ -166,28 +188,24 @@ class Umpire:
 
                 service_name = f"{static.APP_PREFIX}_{app_name}"
                 curr_replicas = self.service_replicas.get(service_name, {"running": 0, "desired": 0})["desired"]
-                max_replicas = self.app_repo.apps[app_name][version].services[0].options["deploy"]["replicas"]
+                max_replicas = config.get_int("MAX_APP_REPLICAS", 10)
                 replicas_needed = min(total_work, max_replicas)
 
-                # if replicas_needed > curr_replicas > 0:
-                #     await self.update_app(app_name, version, replicas_needed)
-                # elif replicas_needed > curr_replicas == 0:  # scale to 0 and restart
-                #     await self.update_app(app_name, version, 0)
-                #     await self.update_app(app_name, version, replicas_needed)
-                # else:
-                #     continue
-                try:
-                    mode = {"replicated": {'Replicas': replicas_needed}}
-                    self.running_apps[service_name] = await get_service(self.docker_client, service_name)
-                    await update_service(self.docker_client, service_id=self.running_apps[service_name]["id"],
-                                         version=self.running_apps[service_name]["version"],
-                                         image=self.running_apps[service_name]["image"], mode=mode)
-                    self.running_apps[service_name] = await get_service(self.docker_client, service_name)
+                logger.debug(f"Total work: {total_work}")
+                logger.debug(f"queued: {total_work}")
 
-                except DockerError:
-                    logger.exception(f"Service {service_name} failed to update")
+                logger.debug(f"Needed replicas: {replicas_needed}")
+                logger.debug(f"Current replicas: {curr_replicas}")
 
-                logger.info(f"Launched {':'.join([service_name, version])}")
+                if replicas_needed > curr_replicas:
+                    logger.info(f"Launching {':'.join([service_name, version])}")
+
+                if replicas_needed > curr_replicas > 0:
+                    await self.launch_app(service_name, version, replicas_needed)
+                elif replicas_needed > curr_replicas == 0:  # scale to 0 and restart
+                    await self.launch_app(service_name, version, 0)
+                    await self.launch_app(service_name, version, replicas_needed)
+
 
             for service_name, workload in workloads.items():
                 logger.debug(f"Queued actions for {service_name}: {workload['queued']}")
@@ -210,6 +228,8 @@ class Umpire:
                     if sum(mask) < len(consumers):
                         dead_consumers = compress(consumers, (not _ for _ in mask))
                         for consumer in dead_consumers:
+                            logger.warning("Claiming stale messages.")
+
                             dead_pending = await self.redis.xpending(key, app_group, "-", "+", 1, consumer=consumer)
 
                             # Umpire claims the message in the name of the UMPIRE!
@@ -227,30 +247,30 @@ class Umpire:
                             await self.redis.xack(stream=key, group_name=app_group, id=id_)
                             await xdel(self.redis, stream=key, id_=id_)
 
-    async def monitor_queues(self, autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps):
-        count = 0
+    async def monitor_queues(self):
+        # count = 0
         while True:
             services = await self.docker_client.services.list()
             self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in
                                      services}
 
-            if autoscale_worker:
+            if self.autoscale_worker:
                 await self.scale_worker()
-            if autoscale_app:
+            if self.autoscale_app:
                 await self.scale_app()
-            if autoheal_apps:
+            if self.autoheal_apps:
                 await self.check_pending_actions()
 
             # Reload the app projects and apis every once in a while
-            if count * config.get_int("UMPIRE_HEARTBEAT", 1) >= config.get_int("APP_REFRESH", 60):
-                count = 0
-                logger.info("Refreshing apps.")
-                # TODO: maybe do this a bit more intelligently? Presently it throws uniqueness errors for db
-                await self.app_repo.load_apps_and_apis()
-                await self.app_repo.delete_unused_apps_and_apis()
-
+            # if count * config.get_int("UMPIRE_HEARTBEAT", 1) >= config.get_int("APP_REFRESH", 60):
+            #     count = 0
+            #     logger.info("Refreshing apps.")
+            #     # TODO: maybe do this a bit more intelligently? Presently it throws uniqueness errors for db
+            #     await self.app_repo.load_apps_and_apis()
+            #     await self.app_repo.delete_unused_apps_and_apis()
+            #
             await asyncio.sleep(config.get_int("UMPIRE_HEARTBEAT", 1))
-            count += 1
+            # count += 1
 
     async def workflow_control_listener(self):
         """ Continuously monitors the control stream for workflow abort messages """
@@ -284,9 +304,15 @@ class Umpire:
 
             else:
                 # Kill worker
-                worker_to_abort = executing_workflows[3][0][0].decode()
-                container = await self.docker_client.containers.get(worker_to_abort)
-                await container.kill(signal="SIGQUIT")
+                try:
+                    worker_to_abort = executing_workflows[3][0][0].decode()
+                    container = await self.docker_client.containers.get(worker_to_abort)
+                    await container.kill(signal="SIGQUIT")
+                except DockerError as e:
+                    if not self.autoscale_worker:
+                        logger.info("Need to kill worker to abort workflow, but worker is not being scaled by umpire.")
+                    else:
+                        logger.exception("Failed to kill worker after workflow abort. Unexpected behavior may result.")
 
                 # Kill apps
                 action_streams = await self.redis.keys(f"{execution_id}:*:*", encoding="utf-8")

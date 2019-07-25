@@ -127,7 +127,7 @@ async def update_service(client, service_id, version, *, image=None, rollback=No
     data = json.dumps(clean_map(spec))
 
     await client._query_json(
-        "services/{service_id}/update".format(service_id=service_id),
+        "services/{service_id}/update".format(service_id=service_id),  # Todo: fstring
         method="POST",
         data=data,
         params=params,
