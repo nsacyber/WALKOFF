@@ -264,7 +264,7 @@ class Bootloader:
     @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
     async def wait_for_minio(self):
         try:
-            async with self.session.get(f"http://{config.MINIO_URI}/minio/health/ready") as resp:
+            async with self.session.get(f"http://{config.MINIO}/minio/health/ready") as resp:
                 if resp.status == 200:
                     return True
                 else:
@@ -274,7 +274,7 @@ class Bootloader:
             raise e
 
     async def push_to_minio(self):
-        minio_client = Minio(config.MINIO_URI, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
         flag = False
         try:
             buckets = minio_client.list_buckets()
