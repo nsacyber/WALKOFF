@@ -401,7 +401,7 @@ class Worker:
         logger.info(f"Scheduling {node.label}-{self.workflow.execution_id}...")
 
         while not all(parent.id_ in self.accumulator for parent in parents.values()):
-            logger.info(f"Node {node.label}-{self.workflow.execution_id} waiting for parents: {parents.values()}. "
+            logger.debug(f"Node {node.label}-{self.workflow.execution_id} waiting for parents: {parents.values()}. "
                         f"Accumulator: {self.accumulator}")
             await asyncio.sleep(1)
 

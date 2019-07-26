@@ -17,13 +17,26 @@ down    Removes artifacts created for Walkoff by init
 
 function init {
     # Create volume for persisting workflows, globals, server config, etc.
-    # Regular bind mounts do not work on Windows due to permissions issues.
+    # Regular bind mounts do not work on Windows for Postgres due to permissions issues.
+    Write-Host -NoNewline "Creating walkoff_default network: "
+    docker network create --attachable --driver overlay walkoff_default
+
     Write-Host -NoNewline "Creating local volume for persisting Postgres data: "
     docker volume create --name walkoff_pgdata -d local
 
     # Create encryption key for encrypting globals, server data.
     Write-Host -NoNewline "Creating secret key for encrypting Walkoff data: "
     docker run --rm python:3.7.4-slim-buster python -c "import os, base64; print(base64.urlsafe_b64encode(os.urandom(32)))" | docker secret create walkoff_encryption_key -
+
+    if (-Not (Test-Path '.\data\portainer' -PathType Container)) {
+        Write-Host "Creating directory for persisting Portainer data: "
+        New-Item -Path '.\data\portainer' -ItemType Directory | Out-Null
+    }
+
+    if (-Not (Test-Path '.\data\registry' -PathType Container)) {
+        Write-Host "Creating directory for persisting Registry data: "
+        New-Item -Path '.\data\registry' -ItemType Directory | Out-Null
+    }
 }
 
 function build {
@@ -47,6 +60,8 @@ function build {
 function up {
     Write-Host "Deploying Walkoff stack..."
     docker stack deploy --compose-file walkoff-stack-windows.yml walkoff
+
+    Write-Host "Some services may take some time to be ready. Use .\walkoff.ps1 status to check on them."
 }
 
 function status {
@@ -74,6 +89,11 @@ function down {
 
     Write-Host "Removing contents of .\data\registry"
     Remove-Item -recurse ".\data\registry\*"
+
+    Write-Host "Removing contents of .\data\portainer"
+    Remove-Item -recurse ".\data\portainer\*"
+
+    Write-Host "Some services may take some time to stop."
 }
 
 if ($valid_modes | Where-Object {$mode -like $_}) {

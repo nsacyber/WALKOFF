@@ -17,6 +17,7 @@ services:
         constraints: [node.role==manager]
     ports:
       - 5000:5000
+
 #    The commented lines are needed to enable auth on the custom registry
 #    environment:
 #      - REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
@@ -25,7 +26,7 @@ services:
 #      - REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
 #      - REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
     volumes:
-      - ./data/registry:/var/lib/registry
+      - .\data\registry:/var/lib/registry
 #      - ./data/config.yml:/etc/docker/registry/config.yml
 #      - /var/lib/boot2docker:/certs
 #      - /var/lib/boot2docker/auth:/auth
@@ -34,9 +35,29 @@ services:
     image: "redis"
     networks:
       - walkoff_default
+#    ports:
+#      - "6379:6379"
     command: redis-server --port 6379
 #    volumes:
 #      - /path/to/persistent/dir/redis:/data
+
+  resource_minio:
+    image: minio/minio
+    networks:
+      - walkoff_default
+#    ports:
+#      - "9001:9000"
+    volumes:
+#      - data1:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .\apps:/app/apps
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    environment:
+      MINIO_ACCESS_KEY: walkoff
+      MINIO_SECRET_KEY: walkoff123
+    command: server /data
 
   resource_postgres:
     image: "postgres"
@@ -60,22 +81,23 @@ services:
         constraints: [node.role==manager]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/portainer:/data
+      - .\data\portainer:/data
+
+
+  # WALKOFF Core components
 
   resource_nginx:
     depends_on:
-      - core_api_gateway
+    - core_api_gateway
     image: bitnami/nginx:latest
+    networks:
+    - walkoff_default
     ports:
-      - 8080:8080
-    #    - 8081:8081 # Uncomment for unsecure HTTP access to core_api_gateway
+    - 8080:8080
     volumes:
-      - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
-      - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
-      - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
-
-
-  # WALKOFF Core components - application containers
+    - .\nginx\walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
+    - .\nginx\cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
+    - .\nginx\key.pem:/opt/bitnami/nginx/conf/key.pem:ro
 
   core_api_gateway:
     build:
@@ -91,18 +113,19 @@ services:
     - walkoff_default
     secrets:
     - walkoff_encryption_key
+#    volumes:
+#    - .\api_gateway\client\dist\walkoff:/app/api_gateway/client/dist/walkoff
 
   core_umpire:
     build:
       context: ./
       dockerfile: umpire/Dockerfile
-    command: python -m umpire.umpire
     configs:
     - common_env.yml
     depends_on:
     - resource_redis
     - resource_registry
-    - core_api_gateway
+    - resource_minio
     deploy:
       placement:
         constraints:
@@ -130,130 +153,166 @@ services:
       restart_policy:
         condition: none
     image: 127.0.0.1:5000/worker:latest
+    networks:
+    - walkoff_default
 
 
-  # Walkoff Apps - application containers
+  # WALKOFF App services
 
   app_hello_world:
     build:
       context: apps/hello_world/1.0.0
       dockerfile: Dockerfile
     configs:
-    - common_env.yml
-    secrets:
-    - walkoff_encryption_key
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 0
       restart_policy:
         condition: none
+    environment:
+      - APP_NAME=hello_world
     image: 127.0.0.1:5000/walkoff_app_hello_world:1.0.0
-
+    networks:
+      - walkoff_default
+    secrets:
+      - walkoff_encryption_key
+    volumes:
+      - .\data\shared:/app/shared
   app_hive:
     build:
       context: apps/hive/1.0.0
       dockerfile: Dockerfile
     configs:
-    - common_env.yml
-    secrets:
-    - walkoff_encryption_key
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 0
       restart_policy:
         condition: none
+    environment:
+      - APP_NAME=hive
     image: 127.0.0.1:5000/walkoff_app_hive:1.0.0
-
+    networks:
+      - walkoff_default
+    secrets:
+      - walkoff_encryption_key
+    volumes:
+      - .\data\shared:/app/shared
   app_ip_addr_utils:
     build:
       context: apps/ip_addr_utils/1.0.0
       dockerfile: Dockerfile
     configs:
-    - common_env.yml
-    secrets:
-    - walkoff_encryption_key
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 0
       restart_policy:
         condition: none
+    environment:
+      - APP_NAME=ip_addr_utils
     image: 127.0.0.1:5000/walkoff_app_ip_addr_utils:1.0.0
-
+    networks:
+      - walkoff_default
+    secrets:
+      - walkoff_encryption_key
+    volumes:
+      - .\data\shared:/app/shared
   app_nmap:
     build:
       context: apps/nmap/1.0.0
       dockerfile: Dockerfile
     configs:
-    - common_env.yml
-    secrets:
-    - walkoff_encryption_key
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 0
       restart_policy:
         condition: none
+    environment:
+      - APP_NAME=nmap
     image: 127.0.0.1:5000/walkoff_app_nmap:1.0.0
-
+    networks:
+      - walkoff_default
+    secrets:
+      - walkoff_encryption_key
+    volumes:
+      - .\data\shared:/app/shared
   app_power_shell:
     build:
       context: apps/power_shell/1.0.0
       dockerfile: Dockerfile
     configs:
-    - common_env.yml
-    secrets:
-    - walkoff_encryption_key
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 0
       restart_policy:
         condition: none
+    environment:
+      - APP_NAME=power_shell
     image: 127.0.0.1:5000/walkoff_app_power_shell:1.0.0
-
+    networks:
+      - walkoff_default
+    secrets:
+      - walkoff_encryption_key
+    volumes:
+      - .\data\shared:/app/shared
   app_sdk:
     build:
       context: ./
       dockerfile: ./app_sdk/Dockerfile
     configs:
-    - common_env.yml
-    secrets:
-    - walkoff_encryption_key
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 0
       restart_policy:
         condition: none
     image: 127.0.0.1:5000/walkoff_app_sdk:latest
-
+    networks:
+      - walkoff_default
   app_ssh:
     build:
       context: apps/ssh/1.0.0
       dockerfile: Dockerfile
     configs:
-    - common_env.yml
-    secrets:
-    - walkoff_encryption_key
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 0
       restart_policy:
         condition: none
+    environment:
+      - APP_NAME=ssh
     image: 127.0.0.1:5000/walkoff_app_ssh:1.0.0
-
+    networks:
+      - walkoff_default
+    secrets:
+      - walkoff_encryption_key
+    volumes:
+      - .\data\shared:/app/shared
   app_walk_off:
     build:
       context: apps/walk_off/1.0.0
       dockerfile: Dockerfile
     configs:
-    - common_env.yml
-    secrets:
-    - walkoff_encryption_key
+      - common_env.yml
     deploy:
       mode: replicated
       replicas: 0
       restart_policy:
         condition: none
+    environment:
+      - APP_NAME=walk_off
     image: 127.0.0.1:5000/walkoff_app_walk_off:1.0.0
-
+    networks:
+      - walkoff_default
+    secrets:
+      - walkoff_encryption_key
+    volumes:
+      - .\data\shared:/app/shared
 
 configs:
   common_env.yml:
@@ -261,9 +320,7 @@ configs:
 
 networks:
   walkoff_default:
-    attachable: true
-    driver: overlay
-    name: walkoff_default
+    external: true
 
 secrets:
   walkoff_encryption_key:

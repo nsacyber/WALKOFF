@@ -4,9 +4,9 @@ services:
     image: registry:2
     networks:
       - walkoff_default
-#    deploy:
-#      placement:
-#        constraints: [node.role==manager]
+    deploy:
+      placement:
+        constraints: [node.role==manager]
     ports:
       - 5000:5000
 
