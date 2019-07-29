@@ -8,7 +8,7 @@ import { NgForm } from '@angular/forms';
     templateUrl: './import.modal.html',
 })
 export class ImportModalComponent {
-    @ViewChild('myForm', { static: true })
+    @ViewChild('myForm')
     myForm: NgForm;
     submitted: boolean = false;
     importFile: File;
@@ -20,7 +20,7 @@ export class ImportModalComponent {
 	 * @param event JS Event for the playbook file input
 	 */
 	onImportSelectChange(event: Event) {
-        this.importFile = (event.srcElement || event.target  as any).files[0];
+        this.importFile = (event.srcElement as any).files[0];
         console.log(this.importFile)
 	}
     

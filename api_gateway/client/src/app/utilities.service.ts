@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
+import { Response } from '@angular/http';
 import * as moment from 'moment';
 
 @Injectable({
@@ -72,16 +72,17 @@ export class UtilitiesService {
 		})
 	}
 
-	extractResponseData (res: any) {
-		const body = res;
+	extractResponseData (res: Response) {
+		const body = res.json();
 		return body || {};
 	}
 
-	handleResponseError (error: HttpErrorResponse | any): Promise<any> {
+	handleResponseError (error: Response | any): Promise<any> {
 		let errMsg: string;
 		let err: string;
-		if (error instanceof HttpErrorResponse) {
-			err = error.error || error.message || JSON.stringify(error);
+		if (error instanceof Response) {
+			const body = error.json() || '';
+			err = body.error || body.detail || JSON.stringify(body);
 			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
 		} else {
 			err = errMsg = error.message ? error.message : error.toString();

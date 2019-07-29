@@ -33,7 +33,7 @@ class ControlWorkflow(object):
     """
     openapi_types = {
         'status': 'str',
-        'trigger_data': 'object',
+        'trigger_data': 'str',
         'trigger_id': 'str'
     }
 
@@ -95,7 +95,7 @@ class ControlWorkflow(object):
         The data that will be sent to the trigger  # noqa: E501
 
         :return: The trigger_data of this ControlWorkflow.  # noqa: E501
-        :rtype: object
+        :rtype: str
         """
         return self._trigger_data
 
@@ -106,7 +106,7 @@ class ControlWorkflow(object):
         The data that will be sent to the trigger  # noqa: E501
 
         :param trigger_data: The trigger_data of this ControlWorkflow.  # noqa: E501
-        :type: object
+        :type: str
         """
 
         self._trigger_data = trigger_data

@@ -6,12 +6,16 @@ from pathlib import Path
 from itertools import compress
 import uuid
 
+
 import aiodocker
 import aiohttp
 import aioredis
 from aiodocker.exceptions import DockerError
+from compose.cli.command import get_project
+from docker.types.services import SecretReference
 
-from common.config import config, static
+
+from common.config import config
 from common.helpers import send_status_update, UUID_GLOB
 from common.redis_helpers import connect_to_redis_pool, xlen, xdel
 from common.message_types import WorkflowStatusMessage
@@ -21,14 +25,14 @@ from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_conte
                                    remove_service, get_secret, load_volumes)
 from umpire.app_repo import AppRepo
 
-logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
+logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("UMPIRE")
-static.set_local_hostname("local_umpire")
+
+CONTAINER_ID = os.getenv("HOSTNAME", "local_umpire")
 
 
 class Umpire:
-    def __init__(self, docker_client=None, redis=None, session=None, autoscale_worker=True, autoscale_app=True,
-                 autoheal_worker=True, autoheal_apps=True):
+    def __init__(self, docker_client=None, redis=None, session=None):
         self.redis: aioredis.Redis = redis
         self.docker_client: aiodocker.Docker = docker_client
         self.session = session
@@ -38,28 +42,36 @@ class Umpire:
         self.max_workers = 1
         self.service_replicas = {}
 
-        self.autoscale_worker = autoscale_worker
-        self.autoscale_app = autoscale_app
-        self.autoheal_worker = autoheal_worker
-        self.autoheal_apps = autoheal_apps
-
     @classmethod
-    async def init(cls, docker_client, redis, session, autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps):
-        self = cls(docker_client, redis, session, autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps)
+    async def init(cls, docker_client, redis, session):
+        self = cls(docker_client, redis, session)
         # await redis.flushall()  # TODO: do a more targeted cleanup of redis
         self.app_repo = await AppRepo.create(config.APPS_PATH, session)
         self.running_apps = await self.get_running_apps()
-        self.worker = await get_service(self.docker_client, static.WORKER_SERVICE)
+        self.worker = await get_service(self.docker_client, "worker")
         services = await self.docker_client.services.list()
         self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in services}
-        self.max_workers = config.get_int("MAX_WORKER_REPLICAS", 10)
 
         try:
-            await self.redis.xgroup_create(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP, mkstream=True)
-            logger.info(f"Created {static.REDIS_WORKFLOW_QUEUE} stream and {static.REDIS_WORKFLOW_GROUP} group.")
-
+            await self.redis.xgroup_create(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP, mkstream=True)
         except aioredis.errors.BusyGroupError:
-            logger.info(f"{static.REDIS_WORKFLOW_QUEUE} stream already exists.")
+            logger.info("Workflow Queue stream already exists, not creating new one.")
+
+        await self.build_app_sdk()
+        await self.build_worker()
+
+        for app_name, app in self.app_repo.apps.items():
+            for version_name, version in app.items():
+                image_name = version.services[0].image_name
+                image = None
+                try:
+                    image = await self.docker_client.images.pull(image_name)
+                except DockerError:
+                    logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
+
+                # if we didn't find the image, try to build it
+                if image is None:
+                    await self.build_app(app_name, version_name)
 
         if len(self.app_repo.apps) < 1:
             logger.error("Walkoff must be loaded with at least one app. Please check that applications dir exists.")
@@ -70,9 +82,7 @@ class Umpire:
     async def run(autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps):
         async with connect_to_redis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session, \
                 connect_to_aiodocker() as docker_client:
-            ump = await Umpire.init(docker_client=docker_client, redis=redis, session=session,
-                                    autoscale_worker=autoscale_worker, autoscale_app=autoscale_app,
-                                    autoheal_worker=autoheal_worker, autoheal_apps=autoheal_apps)
+            ump = await Umpire.init(docker_client=docker_client, redis=redis, session=session)
 
             # Attach our signal handler to cleanly close services we've created
             loop = asyncio.get_running_loop()
@@ -81,26 +91,26 @@ class Umpire:
 
             logger.info("Umpire is ready!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),
-                                 asyncio.create_task(ump.monitor_queues()))
+                                 asyncio.create_task(ump.monitor_queues(autoscale_worker, autoscale_app,
+                                                                        autoheal_worker, autoheal_apps)))
         await ump.shutdown()
 
     async def shutdown(self):
         logger.info("Shutting down Umpire...")
 
         # Clean up redis streams
-        action_queues = set(await self.redis.keys(pattern="*:*", encoding="utf-8")).union({static.REDIS_WORKFLOW_QUEUE})
-        await self.redis.xgroup_destroy(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP)
-        [await self.redis.xgroup_destroy(q, static.REDIS_ACTION_RESULTS_GROUP) for q in action_queues]
+        action_queues = set(await self.redis.keys(pattern="*:*", encoding="utf-8")).union({config.REDIS_WORKFLOW_QUEUE})
+        await self.redis.xgroup_destroy(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP)
+        [await self.redis.xgroup_destroy(q, config.REDIS_ACTION_RESULTS_GROUP) for q in action_queues]
         mask = [await self.redis.delete(q) for q in action_queues]
         removed_qs = list(compress(action_queues, mask))
         logger.debug(f"Removed redis streams: {removed_qs}")
 
-        # # Clean up docker services
-        # services = [*(await self.get_running_apps()).keys()]
-        # await self.
-        # mask = [await self.launch_workers(0)]
-        # removed_apps = list(compress(self.running_apps, mask))
-        # logger.debug(f"Removed apps: {removed_apps}")
+        # Clean up docker services
+        services = [*(await self.get_running_apps()).keys(), "worker"]
+        mask = [await remove_service(self.docker_client, s) for s in services]
+        removed_apps = list(compress(self.running_apps, mask))
+        logger.debug(f"Removed apps: {removed_apps}")
 
         # Clean up any unfinished tasks (shouldn't really be any though)
         tasks = [t for t in asyncio.all_tasks() if t is not
@@ -111,47 +121,239 @@ class Umpire:
         logger.info("Successfully shutdown Umpire")
 
     async def get_running_apps(self):
-        func = lambda s: s['Spec']['Name'].count(static.APP_PREFIX) > 0
+        func = lambda s: s['Spec']['Name'].count(config.APP_PREFIX) > 0
         services = filter(func, (await self.docker_client.services.list()))
-        return {s['Spec']['Name']: {'id': s["ID"], 'version': s['Version']['Index']} for s in services}
+        return {s['Spec']['Name']:  {'id': s["ID"], 'version': s['Version']['Index']} for s in services}
 
     async def launch_workers(self, replicas=1):
+        worker_name = "worker"
+        repo = f"{config.DOCKER_REGISTRY}/{worker_name}"
+        project = get_project(project_dir=Path(__file__).parent, project_name=config.APP_PREFIX)
+        worker = [service for service in project.services if service.name == "worker"][0]
+
+        # see if the image provided by the docker-compose file can be pulled
         try:
-            self.worker = await get_service(self.docker_client, static.WORKER_SERVICE)
-            if self.worker == {}:
-                raise DockerError
-            await update_service(self.docker_client, service_id=self.worker["id"], version=self.worker["version"],
-                                 image=self.worker["image"], mode={"replicated": {"Replicas": replicas}})
-            self.worker = await get_service(self.docker_client, self.worker["id"])
-            await asyncio.sleep(3)
+            await self.docker_client.images.pull(repo)
+        except DockerError as e:
+            logger.debug(f"Could not pull {repo}. Trying to build local instead.")
+            await self.build_worker()
+
+        try:
+            secrets = await load_secrets(self.docker_client, project=project)
+            mode = {"replicated": {'Replicas': replicas}}
+            service_kwargs = ServiceKwargs.configure(image=worker.image_name, service=worker, secrets=secrets,
+                                                     mode=mode, mounts=[])
+            await self.docker_client.services.create(name=worker.name, **service_kwargs)
+            self.worker = await get_service(self.docker_client, worker.name)
+
         except DockerError:
-            logger.exception(f"Service {static.WORKER_SERVICE} failed to update")
+            try:
+                self.worker = await get_service(self.docker_client, "worker")
+                if self.worker == {}:
+                    raise DockerError
+                await update_service(self.docker_client, service_id=self.worker["id"], version=self.worker["version"],
+                                     image=worker.image_name, mode={"replicated": {"Replicas": replicas}})
+                self.worker = await get_service(self.docker_client, self.worker["id"])
+                return
+            except DockerError:
+                logger.exception(f"Service {worker.name} failed to update")
+                return
+
+    async def build_worker(self):
+        try:
+            logger.info(f"Building worker")
+            worker_name = "worker"
+            repo = f"{config.DOCKER_REGISTRY}/{worker_name}"
+            project = get_project(project_dir=Path(__file__).parent, project_name=config.APP_PREFIX)
+            worker = [service for service in project.services if service.name == "worker"][0]
+            build_opts = worker.options.get('build', {})
+            self.max_workers = worker.options.get("deploy", {}).get("replicas", 1)
+
+            with docker_context(Path(build_opts["context"]).parent, dirs=["common", "worker"]) as context:
+                log_stream = await self.docker_client.images.build(fileobj=context, tag=worker.image_name, rm=True,
+                                                                   forcerm=True, pull=True, stream=True,
+                                                                   path_dockerfile=build_opts["dockerfile"],
+                                                                   encoding="application/x-tar")
+            await stream_docker_log(log_stream)
+
+            # Tag the image so it can be pushed to the repo
+            await self.docker_client.images.tag(worker.image_name, repo)
+
+        except DockerBuildError:
+            logger.exception(f"Error during worker build")
             return
 
-    async def launch_app(self, service_name, version, replicas=1):
+        try:
+            logger.info(f"Pushing worker")
+            log_stream = await self.docker_client.images.push(repo, stream=True)
+            await stream_docker_log(log_stream)
+
+        except DockerBuildError:
+            logger.exception(f"Error during worker push")
+            return
+
+    async def build_app_sdk(self):
+        try:
+            logger.info(f"Building walkoff_app_sdk")
+            sdk_name = "walkoff_app_sdk"
+            repo = f"{config.DOCKER_REGISTRY}/{sdk_name}"
+            project = get_project(project_dir=Path(__file__).parent, project_name=sdk_name)
+            sdk = [service for service in project.services if service.name == sdk_name][0]
+            build_opts = sdk.options.get('build', {})
+
+            with docker_context(Path(build_opts["context"])) as context:
+                log_stream = await self.docker_client.images.build(fileobj=context, tag=sdk.image_name, rm=True,
+                                                                   forcerm=True, pull=True, stream=True,
+                                                                   path_dockerfile=build_opts["dockerfile"],
+                                                                   encoding="application/x-tar")
+            await stream_docker_log(log_stream)
+
+            # Tag the image so it can be pushed to the repo
+            await self.docker_client.images.tag(sdk.image_name, repo)
+        except DockerBuildError:
+            logger.exception(f"Error during walkoff_app_sdk build")
+            return
+
+        try:
+            logger.info(f"Pushing walkoff_app_sdk")
+            log_stream = await self.docker_client.images.push(repo, stream=True)
+            await stream_docker_log(log_stream)
+        except DockerBuildError:
+            logger.exception(f"Error during walkoff_app_sdk push")
+            return
+
+    async def launch_app(self, app, version, replicas=1):
+        app_name = f"{config.APP_PREFIX}_{app}"
+        repo = f"{config.DOCKER_REGISTRY}/{app_name}"
+        full_tag = f"{repo}:{version}"
+        service = self.app_repo.apps[app][version].services[0]
+        image_name = service.image_name
+        image = None
+
+         # TODO: Ensure that image_name == app_name
+
+        if app_name in self.running_apps:
+            logger.info(f"Service {app} already exists. Trying 'update_app' instead.")
+            await self.update_app(app, version, replicas)
+            return
+
+        logger.debug(f"Launching {app}...")
+
+        # see if the image provided by the docker-compose file can be pulled
+        try:
+            image = await self.docker_client.images.pull(image_name)
+        except DockerError:
+            logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
+
+        # if we didn't find the image, try to build it
+        if image is None:
+            await self.build_app(app, version)
+            image_name = full_tag
+
+        try:
+            encryption_secret_id = await get_secret(self.docker_client, "encryption_key")
+            secrets = await load_secrets(self.docker_client, project=self.app_repo.apps[app][version])
+            secrets.append(SecretReference(secret_id=encryption_secret_id, secret_name="encryption_key"))
+            mode = {"replicated": {'Replicas': replicas}}
+            mounts = await load_volumes(project=self.app_repo.apps[app][version])
+            # TODO: change to environmental variable abs path + data/shared
+            # shared_path = "/home/osboxes/Desktop/WALKOFF/data/shared:/app/shared:rw"
+            # mounts.append(shared_path)
+            service_kwargs = ServiceKwargs.configure(image=image_name, service=service, secrets=secrets, mode=mode,
+                                                     mounts=mounts)
+            await self.docker_client.services.create(name=app_name, **service_kwargs)
+            self.running_apps[app_name] = await get_service(self.docker_client, app_name)
+
+        except DockerError:
+            logger.exception(f"Service {app_name} failed to launch")
+            return
+
+        logger.info(f"Launched {app}")
+
+    async def update_app(self, app, version, replicas=1):
+        app_name = f"{config.APP_PREFIX}_{app}"
+        repo = f"{config.DOCKER_REGISTRY}/{app_name}"
+        full_tag = f"{repo}:{version}"
+        service = self.app_repo.apps[app][version].services[0]
+        image_name = service.image_name
+        image = None
+
+        if app_name not in self.running_apps:
+            logger.info(f"Service {app} does not exists. Trying 'launch_app' instead.")
+            await self.launch_app(app, version, replicas)
+            return
+
+        logger.debug(f"Updating {app}...")
+
+        # see if the image provided by the docker-compose file can be pulled
+        try:
+            image = await self.docker_client.images.pull(full_tag)
+        except DockerError as e:
+            logger.debug(f"Could not pull {image_name}. Trying to see build local instead.")
+
+        # if we didn't find the image, try to build it
+        if image is None:
+            await self.build_app(app, version)
+            image_name = full_tag
+
         try:
             mode = {"replicated": {'Replicas': replicas}}
-            self.running_apps[service_name] = await get_service(self.docker_client, service_name)
-            await update_service(self.docker_client, service_id=self.running_apps[service_name]["id"],
-                                 version=self.running_apps[service_name]["version"],
-                                 image=self.running_apps[service_name]["image"], mode=mode)
-            self.running_apps[service_name] = await get_service(self.docker_client, service_name)
-            await asyncio.sleep(3)
+            self.running_apps[app_name] = await get_service(self.docker_client, app_name)
+            await update_service(self.docker_client, service_id=self.running_apps[app_name]["id"],
+                                 version=self.running_apps[app_name]["version"], image=image_name, mode=mode)
+            self.running_apps[app_name] = await get_service(self.docker_client, app_name)
+
         except DockerError:
-            logger.exception(f"Service {service_name} failed to update")
+            logger.exception(f"Service {app_name} failed to update")
+            return
+
+        logger.info(f"Updated {app}")
+
+    async def build_app(self, app, version):
+        app_name = f"{config.APP_PREFIX}_{app}"
+        repo = f"{config.DOCKER_REGISTRY}/{app_name}"
+        full_tag = f"{repo}:{version}"
+        service = self.app_repo.apps[app][version].services[0]
+        build_opts = service.options.get('build', {})
+
+        if build_opts.get("context", None) is None:
+            logger.error(f"App {app}:{version} must specify docker build context in docker-compose.yaml.")
+            return
+
+        try:
+            logger.info(f"Building {app}:{version}")
+            with docker_context(build_opts["context"]) as context:
+                log_stream = await self.docker_client.images.build(fileobj=context, tag=app_name, rm=True, forcerm=True,
+                                                                   path_dockerfile="Dockerfile", stream=True,
+                                                                   encoding="application/x-tar")
+            await stream_docker_log(log_stream)
+
+            # Tag the image so it can be pushed to the repo
+            await self.docker_client.images.tag(app_name, repo, tag=version)
+        except DockerBuildError:
+            logger.exception(f"Error during {app}:{version} build")
+            return
+
+        try:
+            logger.info(f"Pushing {app}:{version}")
+            log_stream = await self.docker_client.images.push(full_tag, stream=True)
+            await stream_docker_log(log_stream)
+
+        except DockerBuildError:
+            logger.exception(f"Error during {app}:{version} push")
+            return
 
     async def scale_worker(self):
-        total_workflows = await xlen(self.redis, static.REDIS_WORKFLOW_QUEUE)
-        executing_workflows = (await self.redis.xpending(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP))[0]
+        total_workflows = await xlen(self.redis, config.REDIS_WORKFLOW_QUEUE)
+        executing_workflows = (await self.redis.xpending(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP))[0]
         queued_workflows = total_workflows - executing_workflows
 
         logger.debug(f"Queued Workflows: {queued_workflows}")
         logger.debug(f"Executing Workflows: {executing_workflows}")
 
-        current_workers = self.service_replicas.get(static.WORKER_SERVICE, {"running": 0, "desired": 0})["desired"]
+        current_workers = self.service_replicas.get("worker", {"running": 0, "desired": 0})["desired"]
         workers_needed = min(total_workflows, self.max_workers)
         logger.debug(f"Running Workers: {current_workers}")
-        logger.debug(f"Needed Workers: {workers_needed}")
 
         if workers_needed > current_workers > 0:
             await self.launch_workers(workers_needed)
@@ -161,8 +363,7 @@ class Umpire:
 
     async def scale_app(self):
         self.running_apps = await self.get_running_apps()
-        logger.debug(
-            f"Running apps: {[{s: self.service_replicas.get(s)['running']} for s in self.running_apps.keys()]}")
+        logger.debug(f"Running apps: {[{s: self.service_replicas.get(s)['running']} for s in self.running_apps.keys()]}")
 
         streams = [key.split(':') for key in await self.redis.keys(pattern=UUID_GLOB + ":*:*", encoding="utf-8")]
 
@@ -186,30 +387,24 @@ class Umpire:
                 workloads[group]["queued"] += queued_work
                 workloads[group]["total"] += total_work
 
-                service_name = f"{static.APP_PREFIX}_{app_name}"
+                service_name = f"{config.APP_PREFIX}_{app_name}"
                 curr_replicas = self.service_replicas.get(service_name, {"running": 0, "desired": 0})["desired"]
-                max_replicas = config.get_int("MAX_APP_REPLICAS", 10)
+                max_replicas = self.app_repo.apps[app_name][version].services[0].options["deploy"]["replicas"]
                 replicas_needed = min(total_work, max_replicas)
 
-                logger.debug(f"Total work: {total_work}")
-                logger.debug(f"queued: {total_work}")
-
-                logger.debug(f"Needed replicas: {replicas_needed}")
-                logger.debug(f"Current replicas: {curr_replicas}")
-
-                if replicas_needed > curr_replicas:
-                    logger.info(f"Launching {':'.join([service_name, version])}")
-
                 if replicas_needed > curr_replicas > 0:
-                    await self.launch_app(service_name, version, replicas_needed)
+                    await self.update_app(app_name, version, replicas_needed)
                 elif replicas_needed > curr_replicas == 0:  # scale to 0 and restart
-                    await self.launch_app(service_name, version, 0)
-                    await self.launch_app(service_name, version, replicas_needed)
+                    await self.update_app(app_name, version, 0)
+                    await self.update_app(app_name, version, replicas_needed)
+                else:
+                    continue
 
+                logger.info(f"Launched {':'.join([app_name, version])}")
 
-            for service_name, workload in workloads.items():
-                logger.debug(f"Queued actions for {service_name}: {workload['queued']}")
-                logger.debug(f"Executing actions for {service_name}: {workload['executing']}")
+            for app_name, workload in workloads.items():
+                logger.debug(f"Queued actions for {app_name}: {workload['queued']}")
+                logger.debug(f"Executing actions for {app_name}: {workload['executing']}")
 
     async def check_pending_actions(self):
         self.running_apps = await self.get_running_apps()
@@ -217,7 +412,7 @@ class Umpire:
         if len(action_queues) > 0:
             for key in action_queues:
                 execution_id, app_name, version = key.split(':')
-                service_name = f"{static.APP_PREFIX}_{app_name}"
+                service_name = f"{config.APP_PREFIX}_{app_name}"
                 app_group = f"{app_name}:{version}"
                 pending = (await self.redis.xpending(key, app_group))
                 if pending[0] > 0:
@@ -228,14 +423,11 @@ class Umpire:
                     if sum(mask) < len(consumers):
                         dead_consumers = compress(consumers, (not _ for _ in mask))
                         for consumer in dead_consumers:
-                            logger.warning("Claiming stale messages.")
-
                             dead_pending = await self.redis.xpending(key, app_group, "-", "+", 1, consumer=consumer)
 
                             # Umpire claims the message in the name of the UMPIRE!
-                            msg = await self.redis.xclaim(key, app_group, "UMPIRE", 1000,
+                            msg = await self.redis.xclaim(key, app_group, "UMPIRE", 1,
                                                           dead_pending[0][0].decode())
-
                             # Dereference the stuff we need. This may change as redis solidifies their plan
                             execution_id, action = msg[0][-1].popitem()
                             id_ = msg[0][0]
@@ -247,43 +439,43 @@ class Umpire:
                             await self.redis.xack(stream=key, group_name=app_group, id=id_)
                             await xdel(self.redis, stream=key, id_=id_)
 
-    async def monitor_queues(self):
-        # count = 0
+    async def monitor_queues(self, autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps):
+        count = 0
         while True:
             services = await self.docker_client.services.list()
             self.service_replicas = {s["Spec"]["Name"]: (await get_replicas(self.docker_client, s["ID"])) for s in
                                      services}
 
-            if self.autoscale_worker:
+            if autoscale_worker:
                 await self.scale_worker()
-            if self.autoscale_app:
+            if autoscale_app:
                 await self.scale_app()
-            if self.autoheal_apps:
+            if autoheal_apps:
                 await self.check_pending_actions()
 
             # Reload the app projects and apis every once in a while
-            # if count * config.get_int("UMPIRE_HEARTBEAT", 1) >= config.get_int("APP_REFRESH", 60):
-            #     count = 0
-            #     logger.info("Refreshing apps.")
-            #     # TODO: maybe do this a bit more intelligently? Presently it throws uniqueness errors for db
-            #     await self.app_repo.load_apps_and_apis()
-            #     await self.app_repo.delete_unused_apps_and_apis()
-            #
+            if count * config.get_int("UMPIRE_HEARTBEAT", 1) >= config.get_int("APP_REFRESH", 60):
+                count = 0
+                logger.info("Refreshing apps.")
+                # TODO: maybe do this a bit more intelligently? Presently it throws uniqueness errors for db
+                await self.app_repo.load_apps_and_apis()
+                await self.app_repo.delete_unused_apps_and_apis()
+
             await asyncio.sleep(config.get_int("UMPIRE_HEARTBEAT", 1))
-            # count += 1
+            count += 1
 
     async def workflow_control_listener(self):
         """ Continuously monitors the control stream for workflow abort messages """
         while True:
             try:
                 with await self.redis as redis:
-                    msg = await redis.xread_group(static.REDIS_WORKFLOW_CONTROL_GROUP, static.CONTAINER_ID,
-                                                  streams=[static.REDIS_WORKFLOW_CONTROL], count=1, latest_ids=['>'])
+                    msg = await redis.xread_group(config.REDIS_WORKFLOW_CONTROL_GROUP, CONTAINER_ID,
+                                                  streams=[config.REDIS_WORKFLOW_CONTROL], count=1, latest_ids=['>'])
             except aioredis.errors.ReplyError:
-                logger.debug(f"Stream {static.REDIS_WORKFLOW_CONTROL} doesn't exist. Attempting to create it...")
-                await self.redis.xgroup_create(static.REDIS_WORKFLOW_CONTROL, static.REDIS_WORKFLOW_CONTROL_GROUP,
+                logger.debug(f"Stream {config.REDIS_WORKFLOW_CONTROL} doesn't exist. Attempting to create it...")
+                await self.redis.xgroup_create(config.REDIS_WORKFLOW_CONTROL, config.REDIS_WORKFLOW_CONTROL_GROUP,
                                                mkstream=True)
-                logger.debug(f"Created stream {static.REDIS_WORKFLOW_CONTROL}.")
+                logger.debug(f"Created stream {config.REDIS_WORKFLOW_CONTROL}.")
                 continue
 
             if len(msg) < 1:
@@ -296,7 +488,7 @@ class Umpire:
             execution_id = msg[0][2][b"execution_id"].decode()
             workflow = workflow_loads(msg[0][2][b"workflow"])
 
-            executing_workflows = await self.redis.xpending(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP)
+            executing_workflows = await self.redis.xpending(config.REDIS_WORKFLOW_QUEUE, config.REDIS_WORKFLOW_GROUP)
 
             if executing_workflows[0] < 1:
                 status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
@@ -304,15 +496,9 @@ class Umpire:
 
             else:
                 # Kill worker
-                try:
-                    worker_to_abort = executing_workflows[3][0][0].decode()
-                    container = await self.docker_client.containers.get(worker_to_abort)
-                    await container.kill(signal="SIGQUIT")
-                except DockerError as e:
-                    if not self.autoscale_worker:
-                        logger.info("Need to kill worker to abort workflow, but worker is not being scaled by umpire.")
-                    else:
-                        logger.exception("Failed to kill worker after workflow abort. Unexpected behavior may result.")
+                worker_to_abort = executing_workflows[3][0][0].decode()
+                container = await self.docker_client.containers.get(worker_to_abort)
+                await container.kill(signal="SIGQUIT")
 
                 # Kill apps
                 action_streams = await self.redis.keys(f"{execution_id}:*:*", encoding="utf-8")
@@ -330,7 +516,7 @@ class Umpire:
                         await container.kill(signal="SIGKILL")
                     await self.redis.delete(stream)
                 await self.redis.delete(f"{execution_id}:results")
-            await self.redis.xack(stream=stream, group_name=static.REDIS_WORKFLOW_CONTROL_GROUP, id=id_)
+            await self.redis.xack(stream=stream, group_name=config.REDIS_WORKFLOW_CONTROL_GROUP, id=id_)
             await xdel(self.redis, stream=stream, id_=id_)
 
 

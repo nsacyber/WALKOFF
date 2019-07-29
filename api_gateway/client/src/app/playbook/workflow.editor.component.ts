@@ -69,15 +69,15 @@ import { Transform } from '../models/playbook/transform';
 	providers: [AuthService, GlobalsService, SettingsService],
 })
 export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDestroy {
-	@ViewChild('cyRef', { static: true }) cyRef: ElementRef;
-	@ViewChild('workflowResultsTable', { static: false }) workflowResultsTable: DatatableComponent;
-	@ViewChild('consoleContainer', { static: false }) consoleContainer: ElementRef;
-	@ViewChild('consoleTable', { static: false }) consoleTable: DatatableComponent;
-	@ViewChild('errorLogTable', { static: false }) errorLogTable: DatatableComponent;
-	@ViewChild('environmentVariableTable', { static: false }) environmentVariableTable: DatatableComponent;
-	@ViewChild('importFile', { static: false }) importFile: ElementRef;
-	@ViewChild('accordion', { static: true }) apps_actions: ElementRef;
-	@ViewChild('consoleArea', { static: false }) consoleArea: CodemirrorComponent;
+	@ViewChild('cyRef') cyRef: ElementRef;
+	@ViewChild('workflowResultsTable') workflowResultsTable: DatatableComponent;
+	@ViewChild('consoleContainer') consoleContainer: ElementRef;
+	@ViewChild('consoleTable') consoleTable: DatatableComponent;
+	@ViewChild('errorLogTable') errorLogTable: DatatableComponent;
+	@ViewChild('environmentVariableTable') environmentVariableTable: DatatableComponent;
+	@ViewChild('importFile') importFile: ElementRef;
+	@ViewChild('accordion') apps_actions: ElementRef;
+	@ViewChild('consoleArea') consoleArea: CodemirrorComponent;
 
 	globals: Variable[] = [];
 	relevantGlobals: Variable[] = [];
@@ -161,7 +161,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const cyDummy = cytoscape();
 		if (!cyDummy.clipboard) { clipboard(cytoscape, $); }
 		if (!cyDummy.edgehandles) { cytoscape.use(edgehandles); }
-		if (!cyDummy.gridGuide) { gridGuide(cytoscape, $); }
+		if (!cyDummy.gridGuide) { cytoscape.use(gridGuide); }
 		if (!cyDummy.panzoom) { cytoscape.use(panzoom); }
 		if (!cyDummy.undoRedo) { cytoscape.use(undoRedo); }
 
@@ -216,7 +216,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	getConsoleSSE(workflowExecutionId: string) {
 		if (this.consoleEventSource) this.consoleEventSource.close();
 
-		return this.authService.getEventSource(`api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
+		return this.authService.getEventSource(`/api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
 			.then(eventSource => {
 				this.consoleEventSource = eventSource;
 				this.consoleEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
@@ -257,7 +257,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	getNodeStatusSSE(workflowExecutionId: string) {
 		if (this.eventSource) this.eventSource.close();
 
-		return this.authService.getEventSource(`api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
+		return this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
 			.then(eventSource => {
 				this.eventSource = eventSource
 				this.eventSource.onerror = (e: any) => this.statusEventErrorHandler(e);

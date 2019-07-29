@@ -1,6 +1,6 @@
 # walkoff_client.TempInternalApi
 
-All URIs are relative to *http://localhost/walkoff/api*
+All URIs are relative to *http://localhost/api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------

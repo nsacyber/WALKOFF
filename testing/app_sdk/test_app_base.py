@@ -13,6 +13,8 @@ import logging
 import os
 import json
 
+ACTIONS_IN_PROCESS = os.getenv("ACTIONS_IN_PROCESS", "actions-in-process")
+
 
 @pytest.fixture
 def app(redis):

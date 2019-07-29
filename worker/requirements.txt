@@ -7,5 +7,3 @@ docker-compose
 pyyaml
 sqlalchemy
 asteval
-six
-tenacity

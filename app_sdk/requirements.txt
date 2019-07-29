@@ -1,6 +1,4 @@
 aiohttp
 pyyaml
 asteval
-cryptography
-six
-tenacity
+pycrypto

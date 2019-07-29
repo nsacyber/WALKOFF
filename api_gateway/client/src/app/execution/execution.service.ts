@@ -89,7 +89,7 @@ export class ExecutionService {
 	 * Asyncryonously gets arrays of all playbooks and workflows (id, name pairs only).
 	 */
 	getPlaybooks(): Promise<Playbook[]> {
-		return this.http.get('api/playbooks')
+		return this.http.get('/api/playbooks')
 			.toPromise()
 			.then((data: object[]) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
@@ -99,7 +99,7 @@ export class ExecutionService {
 	 * Returns all playbooks and their child workflows in minimal form (id, name).
 	 */
 	getWorkflows(): Promise<Workflow[]> {
-		return this.http.get('api/workflows')
+		return this.http.get('/api/workflows')
 			.toPromise()
 			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
@@ -110,7 +110,7 @@ export class ExecutionService {
 	 * @param workflowId ID of the workflow to load
 	 */
 	loadWorkflow(workflowId: string): Promise<Workflow> {
-		return this.http.get(`api/workflows/${workflowId}`)
+		return this.http.get(`/api/workflows/${workflowId}`)
 			.toPromise()
 			.then((data: object) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);

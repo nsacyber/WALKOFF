@@ -6,9 +6,6 @@ GlobalVariable:
   properties:
     id_:
       $ref: '#/components/schemas/Uuid'
-    _walkoff_type:
-      type: string
-      description: Workflow type for json decoder
     name:
       type: string
       description: The name of the global variable
@@ -34,9 +31,6 @@ GlobalVariableTemplate:
   properties:
     id_:
       $ref: '#/components/schemas/Uuid'
-    _walkoff_type:
-      type: string
-      description: Workflow type for json decoder
     name:
       type: string
       description: The name of the global template

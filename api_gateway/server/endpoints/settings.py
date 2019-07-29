@@ -3,7 +3,7 @@ from datetime import timedelta
 from flask import current_app, request
 from flask_jwt_extended import jwt_required
 
-import api_gateway.flask_config
+import api_gateway.config
 from api_gateway.helpers import format_exception_message
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.problem import Problem
@@ -34,8 +34,8 @@ def update_settings():
             'Access token duration must be less than refresh token duration.')
 
     for config, config_value in config_in.items():
-        if hasattr(api_gateway.flask_config.FlaskConfig, config.upper()):
-            setattr(api_gateway.flask_config.FlaskConfig, config.upper(), config_value)
+        if hasattr(api_gateway.config.Config, config.upper()):
+            setattr(api_gateway.config.Config, config.upper(), config_value)
         elif hasattr(current_app.config, config.upper()):
             setattr(current_app.config, config.upper(), config_value)
 

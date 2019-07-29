@@ -9,6 +9,7 @@ from flask import jsonify, current_app, request
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError, StatementError
 
+from api_gateway.config import Config
 from api_gateway import helpers
 # ToDo: investigate why these imports are needed (AppApi will not have valid reference to actions if this isn't here
 from api_gateway.executiondb.action import ActionApi

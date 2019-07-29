@@ -78,7 +78,7 @@ describe('GlobalsComponent', () => {
 			],
 		},
 	]);
-
+	
 	/**
 	 * async beforeEach
 	 */
@@ -91,7 +91,7 @@ describe('GlobalsComponent', () => {
 				JwtModule.forRoot({
 					config: {
 						tokenGetter: jwtTokenGetter,
-						blacklistedRoutes: ['login', 'api/auth', 'api/auth/logout', 'api/auth/refresh']
+						blacklistedRoutes: ['/login', '/api/auth', '/api/auth/logout', '/api/auth/refresh']
 					}
 				}),
 				ToastrModule.forRoot({ positionClass: 'toast-bottom-right' })
@@ -100,7 +100,7 @@ describe('GlobalsComponent', () => {
 			],
 			declarations: [GlobalsComponent],
 			schemas: [NO_ERRORS_SCHEMA],
-			providers: [GlobalsService, JwtInterceptor,
+			providers: [GlobalsService, JwtInterceptor, 
 			// Providing JwtInterceptor allow to inject JwtInterceptor manually into RefreshTokenInterceptor
 			{
 				provide: HTTP_INTERCEPTORS,

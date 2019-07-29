@@ -37,8 +37,8 @@ import * as moment from 'moment';
 	providers: [AuthService],
 })
 export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
-	@ViewChild('nodeStatusContainer', { static: false }) nodeStatusContainer: ElementRef;
-	@ViewChild('nodeStatusTable', { static: false }) nodeStatusTable: DatatableComponent;
+	@ViewChild('nodeStatusContainer') nodeStatusContainer: ElementRef;
+	@ViewChild('nodeStatusTable') nodeStatusTable: DatatableComponent;
 
 	schedulerStatus: string;
 	workflowStatuses: WorkflowStatus[] = [];
@@ -174,7 +174,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Initiates an EventSource for workflow statuses from the server. Binds various events to the event handler.
 	 */
 	getWorkflowStatusSSE(): void {
-		this.authService.getEventSource('api/streams/workflowqueue/workflow_status')
+		this.authService.getEventSource('/api/streams/workflowqueue/workflow_status')
 			.then(eventSource => {
 				this.workflowStatusEventSource = eventSource;
 				this.workflowStatusEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
@@ -253,7 +253,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getNodeStatusSSE(workflowExecutionId: string = null): void {
 		if (this.nodeStatusEventSource) this.nodeStatusEventSource.close();
 
-		let url = `api/streams/workflowqueue/actions?summary=true`;
+		let url = `/api/streams/workflowqueue/actions?summary=true`;
 		if (workflowExecutionId) url += `&workflow_execution_id=${ workflowExecutionId }`;
 
 		this.authService.getEventSource(url)
@@ -515,7 +515,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	dateComparator(propA, propB) {
 		if (!propA && !propB) return 0;
-		if (!propA) return 1;
+		if (!propA) return 1; 
 		if (!propB) return -1;
 		return moment(propA).diff(moment(propB));
 	}

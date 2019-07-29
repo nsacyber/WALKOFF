@@ -1,6 +1,6 @@
 # walkoff_client.UsersApi
 
-All URIs are relative to *http://localhost/walkoff/api*
+All URIs are relative to *http://localhost/api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -29,8 +29,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/walkoff/api
-configuration.host = "http://localhost/walkoff/api"
+# Defining host is optional and default to http://localhost/api
+configuration.host = "http://localhost/api"
 # Create an instance of the API class
 api_instance = walkoff_client.UsersApi(walkoff_client.ApiClient(configuration))
 add_user = walkoff_client.AddUser() # AddUser | The new user object to be created
@@ -88,8 +88,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/walkoff/api
-configuration.host = "http://localhost/walkoff/api"
+# Defining host is optional and default to http://localhost/api
+configuration.host = "http://localhost/api"
 # Create an instance of the API class
 api_instance = walkoff_client.UsersApi(walkoff_client.ApiClient(configuration))
 user_id = 56 # int | The id of the user to be fetched
@@ -147,8 +147,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/walkoff/api
-configuration.host = "http://localhost/walkoff/api"
+# Defining host is optional and default to http://localhost/api
+configuration.host = "http://localhost/api"
 # Create an instance of the API class
 api_instance = walkoff_client.UsersApi(walkoff_client.ApiClient(configuration))
 
@@ -201,8 +201,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/walkoff/api
-configuration.host = "http://localhost/walkoff/api"
+# Defining host is optional and default to http://localhost/api
+configuration.host = "http://localhost/api"
 # Create an instance of the API class
 api_instance = walkoff_client.UsersApi(walkoff_client.ApiClient(configuration))
 user_id = 56 # int | The id of the user to be fetched
@@ -260,8 +260,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/walkoff/api
-configuration.host = "http://localhost/walkoff/api"
+# Defining host is optional and default to http://localhost/api
+configuration.host = "http://localhost/api"
 # Create an instance of the API class
 api_instance = walkoff_client.UsersApi(walkoff_client.ApiClient(configuration))
 user_id = 56 # int | The id of the user to be fetched

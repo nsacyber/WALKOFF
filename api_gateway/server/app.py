@@ -12,8 +12,7 @@ from yaml import Loader, load
 from sqlalchemy import event
 from api_gateway.executiondb.workflow import Workflow
 
-from common.config import config, static
-from api_gateway.flask_config import FlaskConfig
+import api_gateway.config
 from api_gateway.extensions import db, jwt
 from api_gateway.server import context
 from api_gateway.helpers import compose_api
@@ -25,8 +24,8 @@ logger = logging.getLogger(__name__)
 
 def register_blueprints(flaskapp):
     flaskapp.logger.info('Registering builtin blueprints')
-    flaskapp.register_blueprint(results_stream, url_prefix='/walkoff/api/streams/workflowqueue')
-    flaskapp.register_blueprint(console.console_stream, url_prefix='/walkoff/api/streams/console')
+    flaskapp.register_blueprint(results_stream, url_prefix='/api/streams/workflowqueue')
+    flaskapp.register_blueprint(console.console_stream, url_prefix='/api/streams/console')
     flaskapp.register_blueprint(root.root_page, url_prefix='/')
     for blueprint in (results_stream, console.console_stream):
         blueprint.cache = flaskapp.running_context.cache
@@ -48,11 +47,11 @@ def __register_blueprint(flaskapp, blueprint, url_prefix):
 
 def register_swagger_blueprint(flaskapp):
     # register swagger API docs location
-    swagger_path = os.path.join(static.API_PATH, 'composed_api.yaml')
+    swagger_path = os.path.join(api_gateway.config.Config.API_PATH, 'composed_api.yaml')
     swagger_yaml = load(open(swagger_path), Loader=Loader)
-    swaggerui_blueprint = get_swaggerui_blueprint(static.SWAGGER_URL, swagger_yaml,
+    swaggerui_blueprint = get_swaggerui_blueprint(api_gateway.config.Config.SWAGGER_URL, swagger_yaml,
                                                   config={'spec': swagger_yaml})
-    flaskapp.register_blueprint(swaggerui_blueprint, url_prefix=static.SWAGGER_URL)
+    flaskapp.register_blueprint(swaggerui_blueprint, url_prefix=api_gateway.config.Config.SWAGGER_URL)
     flaskapp.logger.info("Registered blueprint for swagger API docs at url prefix /api/docs")
 
 
@@ -68,7 +67,7 @@ connexion_app = connexion.App(__name__, specification_dir='../api/', options={'s
 _app = connexion_app.app
 
 _app.jinja_loader = FileSystemLoader([os.path.join("api_gateway", "templates")])
-_app.config.from_object(FlaskConfig)
+_app.config.from_object(api_gateway.config.Config)
 
 try:
     db.init_app(_app)
@@ -79,7 +78,7 @@ except Exception as e:
     sys.exit(1)
 
 jwt.init_app(_app)
-compose_api(static)
+compose_api(api_gateway.config.Config)
 connexion_app.add_api('composed_api.yaml')
 _app.running_context = context.Context(app=_app)
 register_blueprints(_app)
@@ -87,7 +86,6 @@ register_swagger_blueprint(_app)
 
 add_health_check(_app)
 
-_app.debug = True
 
 # Validate database models before saving them, here.
 # This is here to avoid circular imports.

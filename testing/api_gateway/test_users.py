@@ -4,7 +4,7 @@ import requests
 import logging
 from api_gateway.server.app import app
 from flask_jwt_extended import decode_token, JWTManager
-from api_gateway.flask_config import Config
+from api_gateway.config import Config
 from api_gateway.serverdb.user import User
 from api_gateway.serverdb.role import Role
 from api_gateway.serverdb.tokens import BlacklistedToken

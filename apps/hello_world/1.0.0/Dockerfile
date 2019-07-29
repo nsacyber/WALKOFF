@@ -1,36 +1,26 @@
-# Use the Walkoff App SDK as a base image
+# Base our app image off of the WALKOFF App SDK image
 FROM 127.0.0.1:5000/walkoff_app_sdk as base
 
-# Stage - Install/build Python dependencies
+# We're going to stage away all of the bloat from the build tools so lets create a builder stage
 FROM base as builder
 
-# Install any OS packages required for building Python dependencies
-# Removing package cache reduces final image size since we won't apt-get install anything else in this stage
+# Install all alpine build tools needed for our pip installs
+RUN apk --no-cache add --update alpine-sdk libffi libffi-dev musl-dev openssl-dev
 
-#RUN apt-get update \
-# && apt-get install -y --no-install-recommends git autoconf g++ \
-# && rm -rf /var/lib/apt/lists/*
-
-# Install pip packages to a temporary directory for copying into the final image later
+# Install all of our pip packages in a single directory that we can copy to our base image later
 RUN mkdir /install
 WORKDIR /install
-
 COPY requirements.txt /requirements.txt
-RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.txt
+RUN pip install --prefix="/install" -r /requirements.txt
 
-# Stage - Copy pip packages and source files
+# Switch back to our base image and copy in all of our built packages and source code
 FROM base
-
 COPY --from=builder /install /usr/local
 COPY src /app
 
-# Install any OS packages dependencies needed in the final image for our app to run
-# Removing package cache reduces final image size since we won't apt-get install anything else in this stage
+# Install any binary dependencies needed in our final image
+# RUN apk --no-cache add --update my_binary_dependency
 
-#RUN apt-get update \
-# && apt-get install -y --no-install-recommends my_binary_dependency \
-# && rm -rf /var/lib/apt/lists/*
-
-# Finally, set the working directory and how our app will run.
+# Finally, lets run our app!
 WORKDIR /app
 CMD python app.py --log-level DEBUG

@@ -22,7 +22,7 @@ export class MessagesService {
 	 * Grabs an array of message listings from the server.
 	 */
 	getMessageListings(page: number = 1): Promise<MessageListing[]> {
-		return this.http.get(`api/messages?page=${ page }`)
+		return this.http.get(`/api/messages?page=${ page }`)
 			.toPromise()
 			.then((data: object[]) => plainToClass(MessageListing, data))
 			.catch(this.utils.handleResponseError);
@@ -33,7 +33,7 @@ export class MessagesService {
 	 * @param messageId ID of message to query
 	 */
 	getMessage(messageId: number): Promise<Message> {
-		return this.http.get(`api/messages/${messageId}`)
+		return this.http.get(`/api/messages/${messageId}`)
 			.toPromise()
 			.then((data: object) => plainToClass(Message, data))
 			.catch(this.utils.handleResponseError);
@@ -47,7 +47,7 @@ export class MessagesService {
 	performActionOnMessages(messageIds: number | number[], action: string): Promise<void> {
 		if (!Array.isArray(messageIds)) { messageIds = [messageIds]; }
 
-		return this.http.put('api/messages', { ids: messageIds, action })
+		return this.http.put('/api/messages', { ids: messageIds, action })
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
@@ -67,7 +67,7 @@ export class MessagesService {
 			data_in: action,
 			arguments: [arg],
 		};
-		return this.http.put('api/triggers/send_data', body)
+		return this.http.put('/api/triggers/send_data', body)
 			.toPromise()
 			.catch(this.utils.handleResponseError);
 	}

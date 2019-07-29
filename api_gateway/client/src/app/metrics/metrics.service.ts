@@ -18,18 +18,18 @@ export class MetricsService {
 	 * Gets an array of AppMetric objects specified in the DB.
 	 */
 	getAppMetrics(): Promise<AppMetric[]> {
-		return this.http.get('api/metrics/apps')
+		return this.http.get('/api/metrics/apps')
 			.toPromise()
 			.then((res: any) => res.apps)
 			.then((data) => plainToClass(AppMetric, data))
 			.catch(this.utils.handleResponseError);
     }
-
+    
     /**
 	 * Gets an array of WorkflowMetric objects specified in the  DB.
 	 */
 	getWorkflowMetrics(): Promise<WorkflowMetric[]> {
-		return this.http.get('api/metrics/workflows')
+		return this.http.get('/api/metrics/workflows')
 			.toPromise()
 			.then((res: any) => res.workflows)
 			.then((data) => plainToClass(WorkflowMetric, data))

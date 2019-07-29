@@ -1,21 +1,20 @@
-FROM python:3.7.4-slim-buster as base
+FROM python:3.7-alpine as base
 
-# Stage - Install/build Python dependencies
 FROM base as builder
-
-RUN apt-get update \
- && apt-get install -y --no-install-recommends git autoconf g++ \
- && rm -rf /var/lib/apt/lists/*
+RUN apk --no-cache add --update alpine-sdk
 
 RUN mkdir /install
 WORKDIR /install
 
 COPY ./worker/requirements.txt /requirements.txt
-RUN pip install --no-warn-script-location --prefix="/install" git+https://github.com/aio-libs/aioredis.git
-RUN pip install --no-warn-script-location --prefix="/install" --no-deps asteval
-RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.txt
 
-# Stage - Copy pip packages and source files
+RUN git clone "https://github.com/aio-libs/aioredis.git"
+RUN pip install --prefix="/install" ./aioredis
+RUN pip install --prefix="/install" --no-deps asteval
+RUN pip install --prefix="/install" six
+RUN pip install --prefix="/install" -r /requirements.txt
+
+
 FROM base
 
 COPY --from=builder /install /usr/local

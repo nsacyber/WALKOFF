@@ -15,7 +15,7 @@ export class MainService {
 	 * Asyncryonously returns a list of imported interface names from the server.
 	 */
 	getInterfaceNames(): Promise<string[]> {
-		return this.http.get('api/dashboards')
+		return this.http.get('/api/dashboards')
 			.toPromise()
 			.catch(this.utils.handleResponseError);
 	}
@@ -26,7 +26,7 @@ export class MainService {
 	 * Will fill up to 5 read notifications if unread notifications do not exist.
 	 */
 	getInitialNotifications(): Promise<MessageListing[]> {
-		return this.http.get('api/notifications')
+		return this.http.get('/api/notifications')
 			.toPromise()
 			.then((data) => plainToClass(MessageListing, data))
 			.catch(this.utils.handleResponseError);
@@ -37,7 +37,7 @@ export class MainService {
 	 * @param messageId DB ID of message to retrieve
 	 */
 	getMessage(messageId: number): Promise<Message> {
-		return this.http.get(`api/messages/${messageId}`)
+		return this.http.get(`/api/messages/${messageId}`)
 			.toPromise()
 			.then((data) => plainToClass(Message, data))
 			.catch(this.utils.handleResponseError);

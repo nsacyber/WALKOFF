@@ -18,17 +18,16 @@
           "spec": false
         }
       },
-      "architect": {
+      "targets": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/walkoff",
-            "deployUrl": "client/dist/walkoff/",
+            "outputPath": "dist",
+            "deployUrl": "client/dist/",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
-            "tsConfig": "tsconfig.app.json",
-            "aot": false,
+            "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
               "src/assets"
@@ -39,10 +38,10 @@
             "scripts": [
               "./node_modules/jquery/dist/jquery.min.js",
               "./node_modules/bootstrap/dist/js/bootstrap.js",
-              "./node_modules/select2/dist/js/select2.js",
-              "./node_modules/eventsource/example/eventsource-polyfill.js",
               "./node_modules/bootbox/dist/bootbox.min.js",
-              "./node_modules/chart.js/dist/Chart.bundle.js"
+              "./node_modules/select2/dist/js/select2.js",
+              "./node_modules/chart.js/dist/Chart.bundle.js",
+              "./node_modules/eventsource/example/eventsource-polyfill.js"
             ]
           },
           "configurations": {
@@ -61,14 +60,7 @@
               "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
-              "buildOptimizer": true,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "5mb",
-                  "maximumError": "10mb"
-                }
-              ]
+              "buildOptimizer": true
             }
           }
         },
@@ -94,7 +86,7 @@
           "options": {
             "main": "src/test.ts",
             "polyfills": "src/polyfills.ts",
-            "tsConfig": "tsconfig.spec.json",
+            "tsConfig": "src/tsconfig.spec.json",
             "karmaConfig": "src/karma.conf.js",
             "styles": [
               "src/styles.scss"
@@ -110,15 +102,20 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "tsconfig.app.json",
-              "tsconfig.spec.json",
-              "e2e/tsconfig.json"
+              "src/tsconfig.app.json",
+              "src/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
             ]
           }
-        },
+        }
+      }
+    },
+    "walkoff-e2e": {
+      "root": "e2e/",
+      "projectType": "application",
+      "targets": {
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
@@ -129,6 +126,15 @@
             "production": {
               "devServerTarget": "walkoff:serve:production"
             }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": "e2e/tsconfig.e2e.json",
+            "exclude": [
+              "**/node_modules/**"
+            ]
           }
         }
       }

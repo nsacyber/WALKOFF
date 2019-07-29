@@ -20,7 +20,7 @@ export class AuthService {
 
 	//TODO: not currently used, eventually should be used on the login
 	login(username: string, password: string): Promise<void> {
-		return this.http.post('api/auth', { username, password })
+		return this.http.post('/api/auth', { username, password })
 			.toPromise()
 			.then((tokens: { access_token: string, refresh_token: string }) => {
 				sessionStorage.setItem(ACCESS_TOKEN_NAME, tokens.access_token);
@@ -36,7 +36,7 @@ export class AuthService {
 	logout(): Promise<void> {
 		const headers = { 'Authorization': `Bearer ${ this.getAccessToken() }` };
 
-		return this.http.post('api/auth/logout', { refresh_token: sessionStorage.getItem(REFRESH_TOKEN_NAME) }, { headers })
+		return this.http.post('/api/auth/logout', { refresh_token: sessionStorage.getItem(REFRESH_TOKEN_NAME) }, { headers })
 			.toPromise()
 			.then(() => {
 				this.clearTokens();
@@ -97,13 +97,13 @@ export class AuthService {
 			sessionStorage.removeItem('access_token');
 			sessionStorage.removeItem('refresh_token');
 			//TODO: figure out a better way of handling this... maybe incorporate login into the main component somehow
-			location.href = 'login';
+			location.href = '/login';
 			return Promise.reject('Refresh token does not exist or has expired. Please log in again.');
 		}
 
 		const headers = { 'Authorization': `Bearer ${ this.getRefreshToken() }` };
 
-		return this.http.post('api/auth/refresh', {}, { headers })
+		return this.http.post('/api/auth/refresh', {}, { headers })
 			.toPromise()
 			.then((res: any) => {
 				const accessToken = res.access_token;

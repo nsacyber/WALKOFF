@@ -16,7 +16,11 @@ import docker
 from docker.models.services import _get_create_service_kwargs
 from docker.types.services import ServiceMode, Resources, EndpointSpec, RestartPolicy, SecretReference
 
-from common.config import config, static
+from compose.cli.command import get_project as get_compose_project
+from compose.utils import timeparse, parse_bytes
+from compose.config.environment import Environment
+
+from common.config import config
 from common.helpers import sint, sfloat
 
 logger = logging.getLogger("UMPIRE")
@@ -30,8 +34,6 @@ class DockerBuildError(Exception):
 class ServiceKwargs:
     @classmethod
     def configure(cls, image, service, secrets=None, mounts=None, **kwargs):
-        from compose.utils import timeparse, parse_bytes
-
         self = ServiceKwargs()
         options = service.options
         deploy_opts = options.get("deploy", {})
@@ -127,7 +129,7 @@ async def update_service(client, service_id, version, *, image=None, rollback=No
     data = json.dumps(clean_map(spec))
 
     await client._query_json(
-        "services/{service_id}/update".format(service_id=service_id),  # Todo: fstring
+        "services/{service_id}/update".format(service_id=service_id),
         method="POST",
         data=data,
         params=params,
@@ -142,15 +144,6 @@ async def get_secret(client: aiodocker.Docker, secret_id):
 
 async def delete_secret(client: aiodocker.Docker, secret_id):
     await client._query(f"secrets/{secret_id}", "DELETE")
-
-
-async def disconnect_from_network(client: aiodocker.Docker):
-    await client._query(f"networks/walkoff_default/disconnect", "POST")
-
-
-async def get_network(client: aiodocker.Docker, network_id):
-    resp = await client._query(f"networks/{network_id}")
-    return await resp.json()
 
 
 async def get_nodes(client: aiodocker.Docker):
@@ -169,17 +162,13 @@ def normalize_name(name, delimiter=''):
 
 
 def get_project(path):
-    from compose.cli.command import get_project as get_compose_project
-
-    project = get_compose_project(path, environment=load_docker_env(), project_name=static.APP_PREFIX)
+    project = get_compose_project(path, environment=load_docker_env(), project_name=config.APP_PREFIX)
     project.path = path  # we'll add this in to refresh the project later
     return project
 
 
 def load_docker_env():
     # TODO: remove this since it is likely no longer needed
-    from compose.config.environment import Environment
-
     environment = os.environ
     # environment.update({key: val for key, val in config["DOCKER_ENV"].items()})
     return Environment(environment)
@@ -188,7 +177,7 @@ def load_docker_env():
 async def get_service(docker_client, service_id):
     try:
         s = await docker_client.services.inspect(service_id)
-        return {'id': s["ID"], 'version': s['Version']['Index'], 'image': s['Spec']['Labels']['com.docker.stack.image']}
+        return {'id': s["ID"], 'version': s['Version']['Index']}
     except DockerError:
         return {}
 
@@ -296,17 +285,13 @@ async def connect_to_aiodocker():
 
 
 @contextmanager
-def docker_context(path, dirs=None, dockerignore=None):
+def docker_context(path, dirs=None):
     """
     Tars and compresses the given docker context in memory. Useful for sending contexts to `docker build` commands.
     :param path: str or pathlib.Path object representing the path of the context
-    :param dirs: whitelist of directories under path to grab
-    :param dockerignore: blacklist of directories under path to ignore
+    :param dirs: white list of directories under path to grab
     :return: an in memory tar of the context
     """
-
-    dockerignore = [] if not dockerignore else dockerignore
-
     if not isinstance(path, Path):
         try:
             path = Path(path)
@@ -322,9 +307,7 @@ def docker_context(path, dirs=None, dockerignore=None):
         for d in dirs:
             tar.add(path / d, arcname=d)
     else:
-        tar.add(path, arcname='', filter=(lambda ti: None if ti.isdir() and ti.name in dockerignore
-                                                             or "__pycache__" in ti.name else ti))
-    # tar.list()
+        tar.add(path, arcname='')
     tar.close()
     try:
         fileobj.seek(0)  # must go back to start of file after tarfile writes to it

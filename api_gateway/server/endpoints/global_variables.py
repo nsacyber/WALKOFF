@@ -3,8 +3,6 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
 
-from common.config import config
-from common.helpers import fernet_encrypt, fernet_decrypt
 from api_gateway import helpers
 from api_gateway.executiondb.global_variable import (GlobalVariable, GlobalVariableSchema,
                                                      GlobalVariableTemplate, GlobalVariableTemplateSchema)
@@ -12,7 +10,7 @@ from api_gateway.security import permissions_accepted_for_resources, ResourcePer
 from api_gateway.server.decorators import with_resource_factory, paginate
 from api_gateway.server.problem import unique_constraint_problem
 from http import HTTPStatus
-
+from api_gateway.executiondb.global_variable import GlobalCipher
 
 import logging
 logger = logging.getLogger(__name__)
@@ -48,34 +46,39 @@ global_variable_template_schema = GlobalVariableTemplateSchema()
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["read"]))
 @paginate(global_variable_schema)
 def read_all_globals():
-    with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
-        key = f.read()
-        ret = []
-        query = current_app.running_context.execution_db.session.query(GlobalVariable).order_by(GlobalVariable.name).all()
+    f = open('/run/secrets/encryption_key')
+    key = f.read()
+    my_cipher = GlobalCipher(key)
 
-        if request.args.get('to_decrypt') == "false":
-            return query, HTTPStatus.OK
-        else:
-            for global_var in query:
-                temp_var = deepcopy(global_var)
-                temp_var.value = fernet_decrypt(key, global_var.value)
-                ret.append(temp_var)
+    ret = []
+    query = current_app.running_context.execution_db.session.query(GlobalVariable).order_by(GlobalVariable.name).all()
 
-            return ret, HTTPStatus.OK
+    if request.args.get('to_decrypt') == "false":
+        return query, HTTPStatus.OK
+    else:
+        for global_var in query:
+            temp_var = deepcopy(global_var)
+            temp_var.value = my_cipher.decrypt(global_var.value)
+            ret.append(temp_var)
+
+        return ret, HTTPStatus.OK
 
 #TODO: only allow decrypted read for permissible users
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["read"]))
 @with_global_variable("read", "global_var")
 def read_global(global_var):
+    f = open('/run/secrets/encryption_key')
+    key = f.read()
+    my_cipher = GlobalCipher(key)
 
     global_json = global_variable_schema.dump(global_var)
 
     if request.args.get('to_decrypt') == "false":
         return jsonify(global_json), HTTPStatus.OK
     else:
-        with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
-            return jsonify(fernet_decrypt(f.read(), global_json['value'])), HTTPStatus.OK
+        global_json['value'] = my_cipher.decrypt(global_json['value'])
+        return jsonify(global_json), HTTPStatus.OK
 
 
 @jwt_required
@@ -93,9 +96,6 @@ def delete_global(global_var):
 def create_global():
     data = request.get_json()
     try:
-        with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
-            data['value'] = fernet_encrypt(f.read(), data['value'])
-
         global_variable = global_variable_schema.load(data)
         current_app.running_context.execution_db.session.add(global_variable)
         current_app.running_context.execution_db.session.commit()
@@ -111,9 +111,6 @@ def create_global():
 def update_global(global_var):
     data = request.get_json()
     try:
-        with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
-            data['value'] = fernet_encrypt(f.read(), data['value'])
-
         global_variable_schema.load(data, instance=global_var)
         current_app.running_context.execution_db.session.commit()
         return global_variable_schema.dump(global_var), HTTPStatus.OK

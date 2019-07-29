@@ -36,8 +36,6 @@ data/cache/
 data/registry/
 data/postgres/
 data/redis/
-data/portainer/
 app_sdk/walkoff_app_sdk.egg-info
 venv/
 *.unison.*
-tmp-compose.yml

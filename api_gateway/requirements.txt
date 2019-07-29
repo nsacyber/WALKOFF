@@ -34,5 +34,4 @@ swagger_spec_validator
 flask-swagger-ui
 jsonpatch
 asteval
-cryptography
-tenacity
+pycrypto

@@ -36,7 +36,8 @@ export class NodeStatus {
 
 	completed_at?: string;
 
-	parameters?: any;
+	@Type(() => Argument)
+	arguments: Argument[] = [];
 
 	@Exclude({ toPlainOnly: true })
 	localized_started_at?: string;

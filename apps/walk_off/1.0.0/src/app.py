@@ -5,14 +5,12 @@ import time
 import logging
 import json
 
-from walkoff_app_sdk.common.config import config
 from walkoff_app_sdk.app_base import AppBase
 
 logger = logging.getLogger("apps")
 
 DEFAULT_TIMEOUT = 2
-WALKOFF_ADDRESS_DEFAULT = config.API_GATEWAY_URI
-
+WALKOFF_ADDRESS_DEFAULT = "http://test_api_gateway:8080"
 
 class Walkoff(AppBase):
     __version__ = "1.0.0"
@@ -26,7 +24,7 @@ class Walkoff(AppBase):
         if timeout is None:
             timeout=DEFAULT_TIMEOUT
         try:
-            response = await self._request('post', '/walkoff/api/auth', timeout,
+            response = await self._request('post', '/api/auth', timeout,
                                          data=dict(username=username, password=password))
         except asyncio.CancelledError:
             return False, 'TimedOut'
@@ -51,8 +49,8 @@ class Walkoff(AppBase):
         new_refresh_token = await self.refresh_token(DEFAULT_TIMEOUT, refresh_token)
         headers = self.retrieve_header(new_refresh_token)
         try:
-            response = await self._request('post', '/walkoff/api/auth/logout', timeout, headers=headers, data=dict(refresh_token=new_refresh_token))
-
+            response = await self._request('post', '/api/auth/logout', timeout, headers=headers, data=dict(refresh_token=new_refresh_token))
+        
         except asyncio.CancelledError:
             return False, 'TimedOut'
 
@@ -73,7 +71,7 @@ class Walkoff(AppBase):
             timeout=DEFAULT_TIMEOUT
         headers = self.retrieve_header(access_token)
         try:
-            response = await self.standard_request('get', '/walkoff/api/users', timeout=DEFAULT_TIMEOUT, headers=headers)
+            response = await self.standard_request('get', '/api/users', timeout=DEFAULT_TIMEOUT, headers=headers)
             if response.status == 200:
                 resp = await response.json()
                 return resp, 'Success'
@@ -89,7 +87,7 @@ class Walkoff(AppBase):
             timeout=DEFAULT_TIMEOUT
         headers = self.retrieve_header(access_token)
         try:
-            response = await self.standard_request('get', '/walkoff/api/workflowqueue', timeout=DEFAULT_TIMEOUT, headers=headers)
+            response = await self.standard_request('get', '/api/workflowqueue', timeout=DEFAULT_TIMEOUT, headers=headers)
             if response.status == 200:
                 resp = await response.json()
                 return resp, 'Success'
@@ -104,7 +102,7 @@ class Walkoff(AppBase):
             timeout=DEFAULT_TIMEOUT
         headers = self.retrieve_header(access_token)
         try:
-            response = await self.standard_request('post', '/walkoff/api/workflowqueue', timeout=timeout, headers=headers, data=dict(workflow_id=workflow_id))
+            response = await self.standard_request('post', '/api/workflowqueue', timeout=timeout, headers=headers, data=dict(workflow_id=workflow_id))
             if response.status == 202:
                 resp_json = await response.json()
                 return resp_json
@@ -123,7 +121,7 @@ class Walkoff(AppBase):
     #         timeout=DEFAULT_TIMEOUT
     #     headers = self.retrieve_header(access_token)
     #     try:
-    #         response = await self.standard_request('get', "/walkoff/api/workflowqueue", data = dict(execution_id=execution_id), timeout=timeout, headers=headers)
+    #         response = await self.standard_request('get', "/api/workflowqueue", data = dict(execution_id=execution_id), timeout=timeout, headers=headers)
     #         if response.status == 200:
     #             resp_json = await response.json()
     #             return resp_json, "Success"
@@ -132,7 +130,7 @@ class Walkoff(AppBase):
     #         else:
     #             return response.status, "UnknownResponse"
     #     except asyncio.CancelledError:
-    #         return False, 'TimedOut'
+    #         return False, 'TimedOut' 
 
 
     # SHUTDOWN WALKOFF
@@ -142,7 +140,7 @@ class Walkoff(AppBase):
         new_refresh_token = await self.refresh_token(DEFAULT_TIMEOUT, refresh_token)
         headers = self.retrieve_header(new_refresh_token)
         try:
-            await self._request('post', '/walkoff/api/auth/logout', timeout = timeout, headers=headers,
+            await self._request('post', '/api/auth/logout', timeout = timeout, headers=headers,
                           data=dict(refresh_token=new_refresh_token))
             return "Successfully logged out."
         except asyncio.CancelledError:
@@ -167,7 +165,7 @@ class Walkoff(AppBase):
         session = aiohttp.ClientSession()
         try:
             async with session.get(url) as response:
-                resp = await session.request(method = method, url = url, **kwargs)
+                resp = await session.request(method = method, url = url, **kwargs) 
                 return resp
         finally:
             await session.close()
@@ -178,10 +176,10 @@ class Walkoff(AppBase):
         args = kwargs
         args['timeout'] = timeout
         if not (headers is None):
-            args['headers'] = headers
+            args['headers'] = headers 
         if data is not None:
             args['json'] = data
-
+     
         if method == 'put':
             return await self.fetch_http('PUT', address, **args)
         elif method == 'post':
@@ -206,7 +204,7 @@ class Walkoff(AppBase):
 
     async def refresh_token(self, timeout, token):
         headers = {'Authorization': 'Bearer {}'.format(token)}
-        response = await self._request('post','/walkoff/api/auth/refresh', timeout, headers=headers)
+        response = await self._request('post','/api/auth/refresh', timeout, headers=headers)
         if response.status == 401:
             return 'Unauthorized'
         elif response.status == 201:

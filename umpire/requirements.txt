@@ -2,7 +2,3 @@ docker
 docker-compose
 aiodocker
 pyyaml
-aiohttp
-async_timeout
-six
-tenacity
