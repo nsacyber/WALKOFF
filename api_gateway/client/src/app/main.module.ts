@@ -34,9 +34,11 @@ import { MetricsComponent } from './metrics/metrics.component';
 import { SettingsComponent } from './settings/settings.component';
 import { DashboardsComponent } from './dashboards/dashboards.component';
 import { ExecutionComponent } from './execution/execution.component';
+import { BucketsComponent } from './buckets/buckets.component';
 
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { GlobalsModalComponent } from './globals/globals.modal.component';
+import { BucketsModalComponent } from './buckets/buckets.modal.component';
 import { VariableModalComponent } from './globals/variable.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
 import { SettingsRoleModalComponent } from './settings/settings.roles.modal.component';
@@ -99,9 +101,11 @@ import { ImportModalComponent } from './playbook/import.modal.component';
 		SettingsComponent,
 		DashboardsComponent,
 		ExecutionComponent,
+		BucketsComponent,
 		//Modals
 		SchedulerModalComponent,
 		GlobalsModalComponent,
+		BucketsModalComponent,
 		VariableModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
@@ -142,6 +146,7 @@ import { ImportModalComponent } from './playbook/import.modal.component';
 		SchedulerModalComponent,
 		GlobalsModalComponent,
 		VariableModalComponent,
+		BucketsModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		SettingsTimeoutModalComponent,
