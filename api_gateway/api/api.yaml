@@ -41,10 +41,6 @@ tags:
     description: System Resources
   - name: TempInternal
     description: TempInternal
-  - name: Buckets
-    description: Bucket Operations
-  - name: BucketTriggers
-    description: Bucket Trigger Operations
 
 servers:
   - url: /api
@@ -61,8 +57,6 @@ paths:
   $ref: ./workflows.yaml
   $ref: ./dashboards.yaml
   $ref: ./results.yaml
-  $ref: ./buckets.yaml
-  $ref: ./bucket_triggers.yaml
 
 security:
   - AuthenticationToken: []
@@ -81,7 +75,6 @@ components:
     $ref: ./objects/workflows.yaml
     $ref: ./objects/dashboard.yaml
     $ref: ./objects/results.yaml
-    $ref: ./objects/bucket.yaml
 
   securitySchemes:
     AuthenticationToken:

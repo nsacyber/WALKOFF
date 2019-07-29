@@ -53,7 +53,6 @@ class Config:
     REDIS_WORKFLOW_GROUP = os.getenv("REDIS_WORKFLOW_GROUP", "workflow-group")
     REDIS_ACTION_RESULTS_GROUP = os.getenv("REDIS_ACTION_RESULTS_GROUP", "action-results-group")
     REDIS_WORKFLOW_TRIGGERS_GROUP = os.getenv("REDIS_WORKFLOW_TRIGGERS_GROUP", "workflow-triggers-group")
-    REDIS_MINIO_EVENT_GROUP = os.getenv("REDIS_MINIO_EVENT_GROUP", "minio-event-group")
     REDIS_WORKFLOW_CONTROL = os.getenv("REDIS_WORKFLOW_CONTROL", "workflow-control")
     REDIS_WORKFLOW_CONTROL_GROUP = os.getenv("REDIS_WORKFLOW_CONTROL_GROUP", "workflow-control-group")
 

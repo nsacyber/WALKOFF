@@ -9,4 +9,3 @@ pyyaml
 sqlalchemy
 sphinxcontrib-openapi
 m2r
-tldextract
