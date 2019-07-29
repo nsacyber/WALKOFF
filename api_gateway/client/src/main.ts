@@ -14,5 +14,5 @@ document.addEventListener('DOMContentLoaded', event => {
         platformBrowserDynamic().bootstrapModule(MainModule)
             .catch(err => console.log(err));
     }
-    else { location.href = '/login'; }
+    else { location.href = 'login'; }
 });

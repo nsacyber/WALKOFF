@@ -26,10 +26,7 @@ export class NodeStatusEvent {
 
 	completed_at: string
 
-	@Type(() => Argument)
-	arguments: Argument[] = [];
-
-
+	parameters?: any;
 
 	toNewNodeStatus(): NodeStatus {
 		const out = new NodeStatus();
@@ -42,7 +39,7 @@ export class NodeStatusEvent {
 		out.status = this.status;
 		out.started_at = this.started_at;
 		out.completed_at = this.completed_at;
-		out.arguments = this.arguments;
+		out.parameters = this.parameters;
 		out.result = this.result;
 
 		return out;

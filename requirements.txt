@@ -7,5 +7,8 @@ docker
 docker-compose
 pyyaml
 sqlalchemy
+cryptography
 sphinxcontrib-openapi
 m2r
+minio
+sanic

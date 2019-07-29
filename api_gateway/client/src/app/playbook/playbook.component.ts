@@ -71,7 +71,7 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 	getWorkflowStatusSSE(executionId: string) {
 		if (this.eventSource) this.eventSource.close();
 
-		return this.authService.getEventSource(`/api/streams/workflowqueue/workflow_status`)
+		return this.authService.getEventSource(`api/streams/workflowqueue/workflow_status`)
 			.then(eventSource => {
 				this.eventSource = eventSource;
 				this.eventSource.onerror = (e: any) => this.eventSource.close();

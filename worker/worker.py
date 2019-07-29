@@ -11,7 +11,7 @@ import aiohttp
 import aioredis
 
 from common.message_types import message_dumps, message_loads, NodeStatusMessage, WorkflowStatusMessage, StatusEnum
-from common.config import config
+from common.config import config, static
 from common.helpers import get_walkoff_auth_header, send_status_update
 from common.redis_helpers import connect_to_redis_pool, xdel, deref_stream_message
 from common.workflow_types import (Node, Action, Condition, Transform, Parameter, Trigger,
@@ -19,10 +19,7 @@ from common.workflow_types import (Node, Action, Condition, Transform, Parameter
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WORKER")
-# logging.getLogger("asyncio").setLevel(logging.DEBUG)
-# logger.setLevel(logging.DEBUG)
-
-CONTAINER_ID = os.getenv("HOSTNAME")
+static.set_local_hostname("local_worker")
 
 
 class Worker:
@@ -54,16 +51,16 @@ class Worker:
         """
         while True:
             logger.info("Waiting for workflows...")
-            if CONTAINER_ID is None:
-                logger.exception("Environment variable 'HOSTNAME' does not exist in worker container.")
-                sys.exit(-1)
+            # if static.CONTAINER_ID is None:
+            #     logger.exception("Environment variable 'HOSTNAME' does not exist in worker container.")
+            #     sys.exit(-1)
 
             try:
-                message = await redis.xread_group(config.REDIS_WORKFLOW_GROUP, CONTAINER_ID,
-                                                  streams=[config.REDIS_WORKFLOW_QUEUE], latest_ids=['>'],
+                message = await redis.xread_group(static.REDIS_WORKFLOW_GROUP, static.CONTAINER_ID,
+                                                  streams=[static.REDIS_WORKFLOW_QUEUE], latest_ids=['>'],
                                                   timeout=config.get_int("WORKER_TIMEOUT", 30) * 1000, count=1)
-            except aioredis.ReplyError:
-                logger.error("Error reading from workflow queue.")
+            except aioredis.ReplyError as e:
+                logger.error(f"Error reading from workflow queue: {e}.")
                 sys.exit(-1)
 
             if len(message) < 1:  # We've timed out with no work. Guess we'll die now...
@@ -72,14 +69,14 @@ class Worker:
             execution_id_workflow, stream, id_ = deref_stream_message(message)
             execution_id, workflow = execution_id_workflow
             try:
-                if not (await redis.sismember(config.REDIS_ABORTING_WORKFLOWS, execution_id)):
-                    await redis.sadd(config.REDIS_EXECUTING_WORKFLOWS, execution_id)
+                if not (await redis.sismember(static.REDIS_ABORTING_WORKFLOWS, execution_id)):
+                    await redis.sadd(static.REDIS_EXECUTING_WORKFLOWS, execution_id)
                     yield workflow_loads(workflow)
 
             except Exception as e:
-                print(e)
+                logger.exception(e)
             finally:  # Clean up workflow-queue
-                await redis.xack(stream=stream, group_name=config.REDIS_WORKFLOW_GROUP, id=id_)
+                await redis.xack(stream=stream, group_name=static.REDIS_WORKFLOW_GROUP, id=id_)
                 await xdel(redis, stream=stream, id_=id_)
 
     @staticmethod
@@ -100,8 +97,10 @@ class Worker:
                 # Attach our abort signal handler to a specific instance of the worker
                 loop.add_signal_handler(signal.SIGQUIT, lambda: asyncio.ensure_future(worker.abort()))
 
-                await redis.xgroup_create(worker.results_stream, config.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
-                logger.info(f"Starting execution of workflow: {workflow.name}")
+                log_msg = f"workflow: {workflow.name} ({workflow.id_}) as {workflow.execution_id}"
+
+                await redis.xgroup_create(worker.results_stream, static.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
+                logger.info(f"Starting {log_msg}")
                 status = WorkflowStatusMessage.execution_started(worker.workflow.execution_id, worker.workflow.id_,
                                                                  worker.workflow.name)
 
@@ -111,17 +110,17 @@ class Worker:
                     worker.execution_task = asyncio.create_task(worker.execute_workflow())
                     await asyncio.gather(worker.execution_task)
                 except asyncio.CancelledError:
-                    logger.info(f"Aborted execution of workflow: {workflow.name}")
+                    logger.info(f"Aborting {log_msg}")
                     status = WorkflowStatusMessage.execution_aborted(worker.workflow.execution_id,
                                                                      worker.workflow.id_,
                                                                      worker.workflow.name)
                 except Exception:
-                    logger.exception(f"Failed execution of workflow: {workflow.name}")
+                    logger.info(f"Failed {log_msg}")
                     status = WorkflowStatusMessage.execution_completed(worker.workflow.execution_id,
                                                                        worker.workflow.id_,
                                                                        worker.workflow.name)
                 else:
-                    logger.info(f"Completed execution of workflow: {workflow.name}")
+                    logger.info(f"Completed {log_msg}")
                     status = WorkflowStatusMessage.execution_completed(worker.workflow.execution_id,
                                                                        worker.workflow.id_,
                                                                        worker.workflow.name)
@@ -142,7 +141,8 @@ class Worker:
         logger.info("Successfully shutdown Worker")
 
     async def abort(self):
-        logger.info("Aborting workflow...")
+        logger.info(f"Aborting workflow: {self.workflow.name} ({self.workflow.id_}) as {self.workflow.execution_id}")
+
         [task.cancel() for task in self.scheduling_tasks]
         self.results_getter_task.cancel()
         self.execution_task.cancel()
@@ -157,7 +157,7 @@ class Worker:
         logger.info("Canceling outstanding tasks...")
         await asyncio.gather(*self.scheduling_tasks, *message_tasks, self.results_getter_task, self.execution_task,
                              return_exceptions=True)
-        logger.info("Successfully aborted workflow!")
+        logger.info(f"Successfully aborted workflow: {self.workflow.name} ({self.workflow.id_}) as {self.workflow.execution_id}")
 
     async def cancel_helper(self, node, to_cancel):
         children = set(self.workflow.successors(node))
@@ -358,7 +358,7 @@ class Worker:
                                                                          result=repr(e), parameters={}))
 
     async def get_globals(self):
-        url = config.API_GATEWAY_URI.rstrip('/') + '/api'
+        url = config.API_GATEWAY_URI.rstrip('/') + '/walkoff/api'
         headers, self.token = await get_walkoff_auth_header(self.session, self.token)
         # saving decryption for app-level
         payload = {'to_decrypt': 'false'}
@@ -369,7 +369,9 @@ class Worker:
 
     async def dereference_params(self, action: Action):
         param_ret = {}
-        global_vars = await self.get_globals()
+
+        globals_needed = any(param.variant == ParameterVariant.GLOBAL for param in action.parameters)
+        global_vars = await self.get_globals() if globals_needed else []
 
         for param in action.parameters:
             param_ret[param.name] = param.value
@@ -396,19 +398,21 @@ class Worker:
 
     async def schedule_node(self, node, parents, children):
         """ Waits until all dependencies of an action are met and then schedules the action """
-        logger.info(f"Scheduling node {node.id_} ({node.name})...")
+        logger.info(f"Scheduling {node.label}-{self.workflow.execution_id}...")
 
         while not all(parent.id_ in self.accumulator for parent in parents.values()):
-            await asyncio.sleep(0)
+            logger.debug(f"Node {node.label}-{self.workflow.execution_id} waiting for parents: {parents.values()}. "
+                        f"Accumulator: {self.accumulator}")
+            await asyncio.sleep(1)
 
-        logger.info(f"Node {node.id_} ({node.name}) ready to execute.")
+        logger.info(f"{node.label}-{self.workflow.execution_id} ready to execute.")
 
         # node has more than one parent, check if both parent nodes have been cancelled
         if len(parents) > 1:
             count = 0
             for parent in parents:
                 if parent in self.cancelled:
-                    count = count + 1
+                    count += 1
 
             if count == self.parent_map[node.id_]:
                 await self.cancel_subgraph(node)
@@ -461,16 +465,15 @@ class Worker:
         elif isinstance(node, Trigger):
             trigger_stream = f"{self.workflow.execution_id}-{node.id_}:triggers"
             msg = None
-            logger.debug(f"Waiting for trigger in {self.workflow.execution_id} ({self.workflow.name}) at "
-                         f"{node.id_} ({node.name})")
+            logger.info(f"Trigger waiting in {self.workflow.name} at {node.label}-{self.workflow.execution_id}")
             while not msg:
                 try:
                     with await self.redis as redis:
-                        msg = await redis.xread_group(config.REDIS_WORKFLOW_TRIGGERS_GROUP, CONTAINER_ID,
+                        msg = await redis.xread_group(static.REDIS_WORKFLOW_TRIGGERS_GROUP, static.CONTAINER_ID,
                                                       streams=[trigger_stream], count=1, latest_ids=['>'])
 
-                    logger.debug(f"Trigger satisfied in {self.workflow.execution_id} ({self.workflow.name}) at "
-                                 f"{node.id_} ({node.name}) with message {msg}")
+                    logger.info(f"Triggered {self.workflow.name} at {node.label}-{self.workflow.execution_id} "
+                                 f"with {msg}")
 
                     await send_status_update(self.session, self.workflow.execution_id,
                                              NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
@@ -484,7 +487,7 @@ class Worker:
                     await self.redis.delete(trigger_stream)
                 except aioredis.errors.ReplyError as e:
                     logger.debug(f"Stream {trigger_stream} doesn't exist. Attempting to create it...")
-                    await self.redis.xgroup_create(trigger_stream, config.REDIS_WORKFLOW_TRIGGERS_GROUP,
+                    await self.redis.xgroup_create(trigger_stream, static.REDIS_WORKFLOW_TRIGGERS_GROUP,
                                                    mkstream=True, latest_id='0')
 
         # TODO: decide if we want pending action messages and uncomment this line
@@ -494,17 +497,16 @@ class Worker:
 
     async def get_action_results(self):
         """ Continuously monitors the results queue until all scheduled actions have been completed """
-        results_stream = f"{self.workflow.execution_id}:results"
 
         while len(self.in_process) > 0 or len(self.parallel_in_process) > 0:
             try:
                 with await self.redis as redis:
-                    msg = await redis.xread_group(config.REDIS_ACTION_RESULTS_GROUP, CONTAINER_ID,
+                    msg = await redis.xread_group(static.REDIS_ACTION_RESULTS_GROUP, static.CONTAINER_ID,
                                                   streams=[self.results_stream], count=1, latest_ids=['>'])
 
             except aioredis.errors.ReplyError:
                 logger.debug(f"Stream {self.workflow.execution_id} doesn't exist. Attempting to create it...")
-                await self.redis.xgroup_create(self.results_stream, config.REDIS_ACTION_RESULTS_GROUP,
+                await self.redis.xgroup_create(self.results_stream, static.REDIS_ACTION_RESULTS_GROUP,
                                                mkstream=True)
                 logger.debug(f"Created stream {self.results_stream}.")
                 continue
@@ -569,7 +571,7 @@ class Worker:
                 self.parallel_in_process.pop(node_message.node_id, None)
             elif node_message.status != StatusEnum.EXECUTING:
                 self.in_process.pop(node_message.node_id, None)
-            await self.redis.xack(stream=stream, group_name=config.REDIS_ACTION_RESULTS_GROUP, id=id_)
+            await self.redis.xack(stream=stream, group_name=static.REDIS_ACTION_RESULTS_GROUP, id=id_)
             await xdel(self.redis, stream=stream, id_=id_)
 
         # Remove the finished results stream and group
