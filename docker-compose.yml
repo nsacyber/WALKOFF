@@ -106,14 +106,38 @@ services:
     stop_grace_period: 30s
     secrets:
       - encryption_key
-  #    volumes:
-  #      - ./api_gateway/client/:/app/api_gateway/client
+    volumes:
+      - C:/Users/aheibel/Documents/Github/WALKOFF/api_gateway/client:/app/api_gateway/client
+  minio:
+    image: "minio/minio:latest"
+    ports:
+      - 9000:9000
+    networks:
+      - walkoff_default
+    command: server /data
+    secrets:
+      - access_key
+      - secret_key
+
+#  walkoff_listener:
+#    image: "127.0.0.1:5000/walkoff_listener:latest"
+#    build:
+#      context: ./
+#      dockerfile: ./listener/Dockerfile
+#    networks:
+#      - walkoff_default
+#    depends_on:
+#      - minio
+#      - walkoff_redis
+#    secrets:
+#      - access_key
+#      - secret_key
 
   walkoff_redis:
     container_name: walkoff_redis
     image: "redis"
-#    ports:
-#      - 6379:6379
+    ports:
+      - 6379:6379
     networks:
       - walkoff_default
     command: redis-server --port 6379
@@ -185,6 +209,10 @@ services:
 
 secrets:
   encryption_key:
+    external: true
+  secret_key:
+    external: true
+  access_key:
     external: true
 
 networks:

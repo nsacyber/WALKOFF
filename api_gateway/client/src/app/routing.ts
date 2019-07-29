@@ -11,6 +11,7 @@ import { DashboardsComponent } from './dashboards/dashboards.component';
 import { ExecutionComponent } from './execution/execution.component';
 import { ManageDashboardsComponent } from './dashboards/manage.dashboards.component';
 import { WorkflowEditorComponent } from './playbook/workflow.editor.component';
+import { BucketsComponent } from './buckets/buckets.component';
 //etc
 
 const routes: Routes = [
@@ -25,6 +26,7 @@ const routes: Routes = [
 	{ path: 'dashboard/new', component: ManageDashboardsComponent },
 	{ path: 'dashboard/:dashboardId/edit', component: ManageDashboardsComponent },
 	{ path: 'dashboard/:dashboardId', component: DashboardsComponent },
+	{ path: 'buckets', component: BucketsComponent },
 ];
 
 @NgModule({

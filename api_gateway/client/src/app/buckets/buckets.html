@@ -1,0 +1,48 @@
+<div id="main" class="bucketsMain container-fluid">
+	<h1>Buckets</h1>
+  <div class="row align-items-center mb-3">
+    <div class="col">
+			<button (click)="addBucket()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add Bucket</button>
+		</div>
+    <div class="col-4"></div>
+    <div class="col-4">
+			<input class="form-control" placeholder="Filter Results..." [formControl]="filterQuery" />
+		</div>
+  </div>
+  <ngx-datatable #bucketsTable class='material expandable bucketsTable' [columnMode]="'flex'" [rows]="displayBuckets"
+	 [sorts]="[{prop: 'name', dir: 'asc'}]" [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
+    <ngx-datatable-row-detail [rowHeight]="100" #TriggerRow (toggle)="onDetailToggle($event)">
+      <ng-template let-row="row" ngx-datatable-row-detail-template>
+
+      </ng-template>
+    </ngx-datatable-row-detail>
+    <ngx-datatable-column name="Name" prop="name" [flexGrow]="1">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+				<span title="{{row.description}}">{{row.name}}</span>
+			</ng-template>
+    </ngx-datatable-column>
+		<ngx-datatable-column name="Description" prop="description" [flexGrow]="4">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+				<span title="{{row.description}}">{{row.description}}</span>
+			</ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <button (click)="editBucket(row)" class="mr-1 btn btn-primary" title="Edit Bucket">
+					<i class="fa fa-edit"></i>
+				</button>
+				<button (click)="deleteBucket(row)" class="mr-1 btn btn-danger" title="Delete Bucket">
+					<i class="fa fa-times"></i>
+				</button>
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column name="TriggerAction" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <button (click)="addTrigger(row)" class="mr-1 btn btn-primary" title="Add Trigger">
+					<i class="fa fa-edit"></i>
+				</button>
+      </ng-template>
+    </ngx-datatable-column>
+	</ngx-datatable>
+</div>
+
