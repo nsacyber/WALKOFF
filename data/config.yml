@@ -3,9 +3,11 @@
 # Common options
 API_GATEWAY_URI: "http://core_api_gateway:8080"
 REDIS_URI: "redis://resource_redis:6379"
+MINIO: "resource_minio:9000"
 ENCRYPTION_KEY_PATH: "/run/secrets/walkoff_encryption_key"
 
 # Worker options
+MAX_WORKER_REPLICAS: "10"
 WORKER_TIMEOUT: "30"
 WALKOFF_USERNAME: "admin"
 WALKOFF_PASSWORD: "admin"
@@ -27,5 +29,5 @@ EXECUTION_DB_NAME: "execution"
 DB_USERNAME: "walkoff"
 DB_PASSWORD: "walkoff"
 
-# Minio Options
-MINIO: "resource_minio:9000"
+# App options
+MAX_APP_REPLICAS: "10"

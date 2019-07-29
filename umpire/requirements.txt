@@ -5,3 +5,4 @@ pyyaml
 aiohttp
 async_timeout
 six
+tenacity

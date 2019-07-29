@@ -1,5 +1,7 @@
 import logging
 
+from tenacity import retry, stop_after_attempt, wait_exponential
+
 from common.config import config
 from common.message_types import(message_dumps, NodeStatusMessage, WorkflowStatusMessage,
                                  StatusEnum, JSONPatch, JSONPatchOps)
@@ -28,9 +30,9 @@ def sfloat(value, default):
     except (TypeError, ValueError):
         return default
 
-
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
 async def get_walkoff_auth_header(session, token=None, timeout=5*60):
-    url = config.API_GATEWAY_URI.rstrip('/') + '/api'
+    url = config.API_GATEWAY_URI.rstrip('/') + '/walkoff/api'
 
     # TODO: make this secure and don't use default admin user
     if token is None:
@@ -109,7 +111,7 @@ async def send_status_update(session, execution_id, message, headers=None):
         raise ValueError(f"Attempting to send improper message type: {type(message)}")
 
     params = {"event": message.status.value}
-    url = f"{config.API_GATEWAY_URI}/api/internal/workflowstatus/{execution_id}"
+    url = f"{config.API_GATEWAY_URI}/walkoff/api/internal/workflowstatus/{execution_id}"
     headers, token = await get_walkoff_auth_header(session)
     headers["content-type"] = "application/json"
 

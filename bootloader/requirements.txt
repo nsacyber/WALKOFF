@@ -2,3 +2,4 @@ docker
 aiodocker
 pyyaml
 minio
+tenacity

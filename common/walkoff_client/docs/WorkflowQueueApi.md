@@ -1,6 +1,6 @@
 # walkoff_client.WorkflowQueueApi
 
-All URIs are relative to *http://localhost/api*
+All URIs are relative to *http://localhost/walkoff/api*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -29,8 +29,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.WorkflowQueueApi(walkoff_client.ApiClient(configuration))
 all_ = True # bool | Whether or not to delete all workflow statuses, defaults to false (optional)
@@ -88,8 +88,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.WorkflowQueueApi(walkoff_client.ApiClient(configuration))
 execution = 'execution_example' # str | The ID of the execution to get.
@@ -149,8 +149,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.WorkflowQueueApi(walkoff_client.ApiClient(configuration))
 execute_workflow = walkoff_client.ExecuteWorkflow() # ExecuteWorkflow | 
@@ -209,8 +209,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.WorkflowQueueApi(walkoff_client.ApiClient(configuration))
 page = 56 # int | page of data to get (optional)
@@ -267,8 +267,8 @@ configuration = walkoff_client.Configuration()
 # Configure Bearer authorization (JWT): AuthenticationToken
 configuration.access_token = 'YOUR_BEARER_TOKEN'
 
-# Defining host is optional and default to http://localhost/api
-configuration.host = "http://localhost/api"
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
 api_instance = walkoff_client.WorkflowQueueApi(walkoff_client.ApiClient(configuration))
 execution = 'execution_example' # str | The ID of the execution to get.
