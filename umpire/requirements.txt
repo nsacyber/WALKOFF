@@ -6,3 +6,4 @@ aiohttp
 async_timeout
 six
 tenacity
+sanic
