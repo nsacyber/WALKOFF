@@ -514,9 +514,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ng_bootstrap_ng_bootstrap__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ng-bootstrap/ng-bootstrap */ "./node_modules/@ng-bootstrap/ng-bootstrap/fesm5/ng-bootstrap.js");
 /* harmony import */ var ngx_toastr__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ngx-toastr */ "./node_modules/ngx-toastr/fesm5/ngx-toastr.js");
 /* harmony import */ var rxjs_add_operator_debounceTime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! rxjs/add/operator/debounceTime */ "./node_modules/rxjs-compat/_esm5/add/operator/debounceTime.js");
-/* harmony import */ var _utilities_service__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../utilities.service */ "./src/app/utilities.service.ts");
-/* harmony import */ var _buckets_service__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./buckets.service */ "./src/app/buckets/buckets.service.ts");
-/* harmony import */ var _buckets_modal_component__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./buckets.modal.component */ "./src/app/buckets/buckets.modal.component.ts");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js");
+/* harmony import */ var _utilities_service__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../utilities.service */ "./src/app/utilities.service.ts");
+/* harmony import */ var _buckets_service__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./buckets.service */ "./src/app/buckets/buckets.service.ts");
+/* harmony import */ var _buckets_modal_component__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./buckets.modal.component */ "./src/app/buckets/buckets.modal.component.ts");
+/* harmony import */ var _triggers_modal_component__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./triggers.modal.component */ "./src/app/buckets/triggers.modal.component.ts");
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -526,6 +528,43 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 var __metadata = (undefined && undefined.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+
+
 
 
 
@@ -541,8 +580,8 @@ var BucketsComponent = /** @class */ (function () {
         this.toastrService = toastrService;
         this.utils = utils;
         this.buckets = [];
-        this.displayBuckets = [];
         this.filterQuery = new _angular_forms__WEBPACK_IMPORTED_MODULE_1__["FormControl"]();
+        this.availableWorkflows = [];
     }
     /**
      * On component initialization, get the scheduler status for display/actioning.
@@ -552,86 +591,172 @@ var BucketsComponent = /** @class */ (function () {
      */
     BucketsComponent.prototype.ngOnInit = function () {
         var _this = this;
-        this.getBuckets();
-        this.filterQuery
-            .valueChanges
-            .debounceTime(500)
-            .subscribe(function (event) { return _this.filterBuckets(); });
+        this.getWorkflows();
+        this.bucketsService.bucketsChange.subscribe(function (buckets) { return _this.buckets = buckets; });
+        for (var b in this.buckets) {
+            this.buckets[b].triggersChange = new rxjs__WEBPACK_IMPORTED_MODULE_5__["Observable"](function (observer) {
+                _this.buckets[b].observer = observer;
+                _this.bucketsService.getAllTriggers().then(function (triggers) { return _this.buckets[b].observer.next(triggers); });
+            });
+            this.buckets[b].triggersChange.subscribe(function (triggers) { return _this.buckets[b].triggers = triggers; });
+        }
     };
-    /**
-       * Based on the search filter input, filter out the buckets based on matching some parameters (name, desc.).
-       */
-    BucketsComponent.prototype.filterBuckets = function () {
-        var searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
-        this.displayBuckets = this.buckets.filter(function (s) {
-            return (s.name.toLocaleLowerCase().includes(searchFilter) ||
-                s.description.toString().includes(searchFilter));
-        });
-    };
-    /**
-     * Gets a list of buckets from the server for display in our data table.
-     */
-    BucketsComponent.prototype.getBuckets = function () {
-        var _this = this;
-        this.bucketsService
-            .getAllBuckets()
-            .then(function (buckets) { return _this.displayBuckets = _this.buckets = buckets; })
-            .catch(function (e) { return _this.toastrService.error("Error retrieving buckets: " + e.message); });
-    };
-    /**
-       * Activates when a row is toggled
-       */
-    BucketsComponent.prototype.onDetailToggle = function (e) {
-    };
+    Object.defineProperty(BucketsComponent.prototype, "filterBuckets", {
+        /**
+           * Based on the search filter input, filter out the buckets based on matching some parameters (name, desc.).
+           */
+        get: function () {
+            var searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
+            return this.buckets.filter(function (bucket) {
+                return bucket.name.toLocaleLowerCase().includes(searchFilter) ||
+                    bucket.description.toLocaleLowerCase().includes(searchFilter) ||
+                    (bucket.description && bucket.description.toLocaleLowerCase().includes(searchFilter));
+            });
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Spawns a modal for adding a new bucket. Passes in our workflow names for usage in the modal.
      */
     BucketsComponent.prototype.addBucket = function () {
-        var modalRef = this.modalService.open(_buckets_modal_component__WEBPACK_IMPORTED_MODULE_7__["BucketsModalComponent"], { size: 'lg' });
+        var _this = this;
+        var modalRef = this.modalService.open(_buckets_modal_component__WEBPACK_IMPORTED_MODULE_8__["BucketsModalComponent"], { size: 'lg' });
         modalRef.componentInstance.title = 'Create a new Bucket';
         modalRef.componentInstance.submitText = 'Add Bucket';
-        this._handleModalClose(modalRef);
+        modalRef.result.then(function (bucket) {
+            _this.bucketsService.addBucket(bucket).then(function () {
+                _this.toastrService.success("Added <b>" + bucket.name + "</b>");
+            });
+        }, function () { return null; });
+    };
+    BucketsComponent.prototype.editBucket = function (bucket) {
+        var _this = this;
+        var modalRef = this.modalService.open(_buckets_modal_component__WEBPACK_IMPORTED_MODULE_8__["BucketsModalComponent"], { size: 'lg' });
+        modalRef.componentInstance.existing = true;
+        modalRef.componentInstance.title = 'Edit Bucket';
+        modalRef.componentInstance.submitText = 'Edit Bucket';
+        modalRef.componentInstance.bucket = bucket.clone();
+        modalRef.result.then(function (bucket) {
+            _this.bucketsService.editBucket(bucket).then(function () {
+                _this.toastrService.success("Added <b>" + bucket.name + "</b>");
+            });
+        }, function () { return null; });
+    };
+    BucketsComponent.prototype.deleteBucket = function (bucketToDelete) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.utils.confirm("Are you sure you want to delete <b>" + bucketToDelete.name + "</b>?")];
+                    case 1:
+                        _a.sent();
+                        this.bucketsService
+                            .deleteBucket(bucketToDelete)
+                            .then(function () { return _this.toastrService.success("Deleted <b>" + bucketToDelete.name + "</b>"); })
+                            .catch(function (e) { return _this.toastrService.error("Error deleting <b>" + e.message + "</b>"); });
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    BucketsComponent.prototype.addTrigger = function (bucket) {
+        var _this = this;
+        var modalRef = this.modalService.open(_triggers_modal_component__WEBPACK_IMPORTED_MODULE_9__["TriggersModalComponent"], { size: 'lg' });
+        modalRef.componentInstance.title = 'Create a new Trigger';
+        modalRef.componentInstance.submitText = 'Add Trigger';
+        modalRef.componentInstance.availableWorkflows = this.availableWorkflows;
+        modalRef.result.then(function (trigger) {
+            console.log(trigger);
+            _this.bucketsService.addTrigger(bucket, trigger).then(function () {
+                _this.toastrService.success("Added Trigger");
+            });
+        }, function () { return null; });
+    };
+    BucketsComponent.prototype.editTrigger = function (trigger_to_edit) {
+        var _this = this;
+        var modalRef = this.modalService.open(_triggers_modal_component__WEBPACK_IMPORTED_MODULE_9__["TriggersModalComponent"], { size: 'lg' });
+        modalRef.componentInstance.title = 'Edit a Trigger';
+        modalRef.componentInstance.submitText = 'Edit Trigger';
+        modalRef.componentInstance.availableWorkflows = this.availableWorkflows;
+        var bucket = this.buckets.find(function (obj) { return obj.id == trigger_to_edit["parent"]; });
+        modalRef.result.then(function (trigger) {
+            _this.bucketsService.editTrigger(bucket, trigger, trigger_to_edit["id"]).then(function () {
+                _this.toastrService.success("Added Trigger");
+            });
+        }, function () { return null; });
+    };
+    BucketsComponent.prototype.deleteTrigger = function (trigger) {
+        return __awaiter(this, void 0, void 0, function () {
+            var bucket;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        bucket = this.buckets.find(function (obj) { return obj.id == trigger["parent"]; });
+                        return [4 /*yield*/, this.utils.confirm("Are you sure you want to delete <b>" + trigger.id + "</b>?")];
+                    case 1:
+                        _a.sent();
+                        this.bucketsService
+                            .deleteTrigger(bucket, trigger)
+                            .then(function () { return _this.toastrService.success("Deleted <b>" + trigger.id + "</b>"); })
+                            .catch(function (e) { return _this.toastrService.error("Error deleting <b>" + e.message + "</b>"); });
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    BucketsComponent.prototype.toggleExpandRow = function (row) {
+        //    console.log('Toggled Expand Row!', row);
+        this.table.rowDetail.toggleExpandRow(row);
+    };
+    BucketsComponent.prototype.onDetailToggle = function (event) {
+        //    console.log('Detail Toggled', event);
     };
     /**
-     * On closing an add/edit modal (on clicking save), we will add or update existing scheduled tasks for display.
-     * @param modalRef Modal reference that is being closed
-     */
-    BucketsComponent.prototype._handleModalClose = function (modalRef) {
+       * Grabs an array of playbooks/workflows from the server (id, name pairs).
+       * From this array, creates an array of Select2Option data with the id and playbook/workflow name.
+       */
+    BucketsComponent.prototype.getWorkflows = function () {
         var _this = this;
-        modalRef.result
-            .then(function (result) {
-            //Handle modal dismiss
-            if (!result || !result.bucket) {
-                return;
-            }
-            //On edit, find and update the edited item
-            if (result.isEdit) {
-                var toUpdate = _this.buckets.find(function (st) { return st.id === result.bucket.id; });
-                Object.assign(toUpdate, result.bucket);
-                _this.filterBuckets();
-                _this.toastrService.success("Bucket \"" + result.buckets.name + "\" successfully edited.");
-            }
-            else {
-                _this.buckets.push(result.bucket);
-                _this.filterBuckets();
-                _this.toastrService.success("Buckets \"" + result.bucket.name + "\" successfully added.");
-            }
-        }, function (error) { if (error) {
-            _this.toastrService.error(error.message);
-        } });
+        this.bucketsService
+            .getWorkflows()
+            .then(function (workflows) {
+            workflows.forEach(function (workflow) {
+                _this.availableWorkflows.push({
+                    id: workflow.id,
+                    text: "" + workflow.name,
+                });
+            });
+        });
     };
+    /**
+     * Converts the workflow ids array of a scheduled task into a readable string for display in the datatable.
+     * @param scheduledTask Scheduled task to convert the workflows of
+     */
+    BucketsComponent.prototype.getFriendlyWorkflows = function (trigger) {
+        if (!this.availableWorkflows || !trigger.workflow) {
+            return '';
+        }
+        return this.availableWorkflows.filter(function (workflow) {
+            return trigger.workflow;
+        }).map(function (workflow) { return workflow.text; }).join(', ');
+    };
+    __decorate([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewChild"])('bucketsTable'),
+        __metadata("design:type", Object)
+    ], BucketsComponent.prototype, "table", void 0);
     BucketsComponent = __decorate([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"])({
             selector: 'buckets-component',
             template: __webpack_require__(/*! ./buckets.html */ "./src/app/buckets/buckets.html"),
             styles: [__webpack_require__(/*! ./buckets.scss */ "./src/app/buckets/buckets.scss"), __webpack_require__(/*! ../../../node_modules/ng-pick-datetime/styles/picker.min.css */ "./node_modules/ng-pick-datetime/styles/picker.min.css")],
             encapsulation: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewEncapsulation"].None,
-            providers: [_buckets_service__WEBPACK_IMPORTED_MODULE_6__["BucketsService"]],
         }),
-        __metadata("design:paramtypes", [_buckets_service__WEBPACK_IMPORTED_MODULE_6__["BucketsService"],
+        __metadata("design:paramtypes", [_buckets_service__WEBPACK_IMPORTED_MODULE_7__["BucketsService"],
             _ng_bootstrap_ng_bootstrap__WEBPACK_IMPORTED_MODULE_2__["NgbModal"],
             ngx_toastr__WEBPACK_IMPORTED_MODULE_3__["ToastrService"],
-            _utilities_service__WEBPACK_IMPORTED_MODULE_5__["UtilitiesService"]])
+            _utilities_service__WEBPACK_IMPORTED_MODULE_6__["UtilitiesService"]])
     ], BucketsComponent);
     return BucketsComponent;
 }());
@@ -647,7 +772,7 @@ var BucketsComponent = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"main\" class=\"bucketsMain container-fluid\">\r\n\t<h1>Buckets</h1>\r\n  <div class=\"row align-items-center mb-3\">\r\n    <div class=\"col\">\r\n\t\t\t<button (click)=\"addBucket()\" class=\"btn btn-outline-primary\"><i class=\"fa fa-plus\"></i> Add Bucket</button>\r\n\t\t</div>\r\n    <div class=\"col-4\"></div>\r\n    <div class=\"col-4\">\r\n\t\t\t<input class=\"form-control\" placeholder=\"Filter Results...\" [formControl]=\"filterQuery\" />\r\n\t\t</div>\r\n  </div>\r\n  <ngx-datatable #bucketsTable class='material expandable bucketsTable' [columnMode]=\"'flex'\" [rows]=\"displayBuckets\"\r\n\t [sorts]=\"[{prop: 'name', dir: 'asc'}]\" [sortType]=\"'multi'\" [headerHeight]=\"50\" [footerHeight]=\"50\" [rowHeight]=\"undefined\" [limit]=\"25\">\r\n    <ngx-datatable-row-detail [rowHeight]=\"100\" #TriggerRow (toggle)=\"onDetailToggle($event)\">\r\n      <ng-template let-row=\"row\" ngx-datatable-row-detail-template>\r\n\r\n      </ng-template>\r\n    </ngx-datatable-row-detail>\r\n    <ngx-datatable-column name=\"Name\" prop=\"name\" [flexGrow]=\"1\">\r\n      <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n\t\t\t\t<span title=\"{{row.description}}\">{{row.name}}</span>\r\n\t\t\t</ng-template>\r\n    </ngx-datatable-column>\r\n\t\t<ngx-datatable-column name=\"Description\" prop=\"description\" [flexGrow]=\"4\">\r\n      <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n\t\t\t\t<span title=\"{{row.description}}\">{{row.description}}</span>\r\n\t\t\t</ng-template>\r\n    </ngx-datatable-column>\r\n    <ngx-datatable-column name=\"Actions\" [resizeable]=\"false\" [sortable]=\"false\" [draggable]=\"false\" [flexGrow]=\"1\">\r\n      <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n        <button (click)=\"editBucket(row)\" class=\"mr-1 btn btn-primary\" title=\"Edit Bucket\">\r\n\t\t\t\t\t<i class=\"fa fa-edit\"></i>\r\n\t\t\t\t</button>\r\n\t\t\t\t<button (click)=\"deleteBucket(row)\" class=\"mr-1 btn btn-danger\" title=\"Delete Bucket\">\r\n\t\t\t\t\t<i class=\"fa fa-times\"></i>\r\n\t\t\t\t</button>\r\n      </ng-template>\r\n    </ngx-datatable-column>\r\n    <ngx-datatable-column name=\"TriggerAction\" [resizeable]=\"false\" [sortable]=\"false\" [draggable]=\"false\" [flexGrow]=\"1\">\r\n      <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n        <button (click)=\"addTrigger(row)\" class=\"mr-1 btn btn-primary\" title=\"Add Trigger\">\r\n\t\t\t\t\t<i class=\"fa fa-edit\"></i>\r\n\t\t\t\t</button>\r\n      </ng-template>\r\n    </ngx-datatable-column>\r\n\t</ngx-datatable>\r\n</div>\r\n\r\n"
+module.exports = "<div id=\"main\" class=\"bucketsMain container-fluid\">\r\n\t<h1>Buckets</h1>\r\n  <div class=\"row align-items-center mb-3\">\r\n    <div class=\"col\">\r\n\t\t\t<button (click)=\"addBucket()\" class=\"btn btn-outline-primary\"><i class=\"fa fa-plus\"></i> Add Bucket</button>\r\n\t\t</div>\r\n    <div class=\"col-4\"></div>\r\n    <div class=\"col-4\">\r\n\t\t\t<input class=\"form-control\" placeholder=\"Filter Results...\" [formControl]=\"filterQuery\" />\r\n\t\t</div>\r\n  </div>\r\n  <ngx-datatable #bucketsTable class='material expandable bucketsTable' [columnMode]=\"'flex'\" [rows]=\"buckets\"\r\n\t [sorts]=\"[{prop: 'name', dir: 'asc'}]\" [sortType]=\"'multi'\" [headerHeight]=\"50\" [footerHeight]=\"50\" [rowHeight]=\"undefined\" [limit]=\"25\">\r\n\r\n    <ngx-datatable-row-detail [rowHeight]=\"undefined\" #triggerRow (toggle)=\"onDetailToggle($event)\">\r\n        <ng-template let-row=\"row\" let-expanded=\"expanded\" ngx-datatable-row-detail-template>\r\n          <div style=\"padding-left:35px;\">\r\n\r\n            <!-- TRIGGER SUB-Table -->\r\n<!--            <div><strong>Address</strong></div>-->\r\n                <ngx-datatable #triggersTable class='material expandable triggersTable' [columnMode]=\"'flex'\" [rows]=\"row.triggers\"\r\n\t                [sorts]=\"[{prop: 'id', dir: 'asc'}]\" [sortType]=\"'multi'\" [headerHeight]=\"50\" [footerHeight]=\"50\" [rowHeight]=\"undefined\" [limit]=\"25\">\r\n\r\n                      <ngx-datatable-column name=\"id\" prop=\"id\" [flexGrow]=\"1\">\r\n                        <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n                          <span title=\"{{row.id}}\">{{row.id}}</span>\r\n                        </ng-template>\r\n                      </ngx-datatable-column>\r\n\r\n                      <ngx-datatable-column name=\"type\" prop=\"type\" [flexGrow]=\"4\">\r\n                        <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n                          <span title=\"{{row.type}}\">{{row.event_type}}</span>\r\n                        </ng-template>\r\n                      </ngx-datatable-column>\r\n\r\n                      <ngx-datatable-column name=\"workflow\" prop=\"workflow\" [flexGrow]=\"4\">\r\n                        <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n                          <span title=\"{{row.workflow}}\">{{row.workflow}}</span>\r\n                        </ng-template>\r\n                      </ngx-datatable-column>\r\n\r\n                      <ngx-datatable-column name=\"prefix\" prop=\"prefix\" [flexGrow]=\"4\">\r\n                        <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n                          <span title=\"{{row.prefix}}\">{{row.prefix}}</span>\r\n                        </ng-template>\r\n                      </ngx-datatable-column>\r\n\r\n                      <ngx-datatable-column name=\"suffix\" prop=\"suffix\" [flexGrow]=\"4\">\r\n                        <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n                          <span title=\"{{row.suffix}}\">{{row.suffix}}</span>\r\n                        </ng-template>\r\n                      </ngx-datatable-column>\r\n\r\n                      <ngx-datatable-column name=\"actions\" [resizeable]=\"false\" [sortable]=\"false\" [draggable]=\"false\" [flexGrow]=\"1\">\r\n                        <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n                          <button (click)=\"editTrigger(row)\" class=\"mr-1 btn btn-primary\" title=\"Edit Trigger\">\r\n                            <i class=\"fa fa-edit\"></i>\r\n                          </button>\r\n                          <button (click)=\"deleteTrigger(row)\" class=\"mr-1 btn btn-danger\" title=\"Delete Trigger\">\r\n                            <i class=\"fa fa-times\"></i>\r\n                          </button>\r\n                        </ng-template>\r\n                    </ngx-datatable-column>\r\n\r\n                </ngx-datatable>\r\n          </div>\r\n        </ng-template>\r\n    </ngx-datatable-row-detail>\r\n\r\n    <ngx-datatable-column [width]=\"50\" [resizeable]=\"false\" [sortable]=\"false\" [draggable]=\"false\" [canAutoResize]=\"false\">\r\n      <ng-template let-row=\"row\" let-expanded=\"expanded\" ngx-datatable-cell-template>\r\n        <a href=\"javascript:void(0)\" [class.datatable-icon-right]=\"!expanded\" [class.datatable-icon-down]=\"expanded\" title=\"Expand/Collapse Row\" (click)=\"toggleExpandRow(row)\"></a>\r\n      </ng-template>\r\n    </ngx-datatable-column>\r\n\r\n    <ngx-datatable-column name=\"Name\" prop=\"name\" [flexGrow]=\"1\">\r\n      <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n\t\t\t\t<span title=\"{{row.description}}\">{{row.name}}</span>\r\n\t\t\t</ng-template>\r\n    </ngx-datatable-column>\r\n\t\t<ngx-datatable-column name=\"Description\" prop=\"description\" [flexGrow]=\"4\">\r\n      <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n\t\t\t\t<span title=\"{{row.description}}\">{{row.description}}</span>\r\n\t\t\t</ng-template>\r\n    </ngx-datatable-column>\r\n\r\n    <ngx-datatable-column name=\"Actions\" [resizeable]=\"false\" [sortable]=\"false\" [draggable]=\"false\" [flexGrow]=\"1\">\r\n      <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n        <button (click)=\"editBucket(row)\" class=\"mr-1 btn btn-primary\" title=\"Edit Bucket\">\r\n\t\t\t\t\t<i class=\"fa fa-edit\"></i>\r\n\t\t\t\t</button>\r\n\t\t\t\t<button (click)=\"deleteBucket(row)\" class=\"mr-1 btn btn-danger\" title=\"Delete Bucket\">\r\n\t\t\t\t\t<i class=\"fa fa-times\"></i>\r\n\t\t\t\t</button>\r\n      </ng-template>\r\n    </ngx-datatable-column>\r\n\r\n     <ngx-datatable-column name=\"Triggers\" [resizeable]=\"false\" [sortable]=\"false\" [draggable]=\"false\" [flexGrow]=\"1\">\r\n      <ng-template let-row=\"row\" ngx-datatable-cell-template>\r\n        <button (click)=\"addTrigger(row)\" class=\"mr-1 btn btn-primary\" title=\"Add Trigger\">\r\n\t\t\t\t\t<i class=\"fa fa-plus\"></i>\r\n\t\t\t\t</button>\r\n      </ng-template>\r\n    </ngx-datatable-column>\r\n\r\n\t</ngx-datatable>\r\n</div>\r\n\r\n"
 
 /***/ }),
 
@@ -689,26 +814,20 @@ var BucketsModalComponent = /** @class */ (function () {
         this.toastrService = toastrService;
         this.cdr = cdr;
         this.bucket = new _models_buckets_bucket__WEBPACK_IMPORTED_MODULE_5__["Bucket"]();
-        this.validationErrors = {};
+        this.existing = false;
     }
     BucketsModalComponent.prototype.ngOnInit = function () {
     };
     BucketsModalComponent.prototype.ngAfterViewInit = function () {
+        this.cdr.detectChanges();
     };
     /**
      * Submits the add/edit bucket modal.
      */
     BucketsModalComponent.prototype.submit = function () {
-        var _this = this;
         if (!this.isBasicInfoValid()) {
             return;
         }
-        this.bucketsService
-            .addBucket(this.bucket)
-            .then(function (bucket) { return _this.activeModal.close({
-            bucket: bucket,
-            isEdit: false,
-        }); }).catch(function (e) { return _this.toastrService.error(e.message); });
     };
     BucketsModalComponent.prototype.isBasicInfoValid = function () {
         if (this.bucket.name && this.bucket.name.trim()) {
@@ -728,10 +847,6 @@ var BucketsModalComponent = /** @class */ (function () {
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"])(),
         __metadata("design:type", String)
     ], BucketsModalComponent.prototype, "submitText", void 0);
-    __decorate([
-        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewChild"])('typeRef'),
-        __metadata("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_0__["ElementRef"])
-    ], BucketsModalComponent.prototype, "typeRef", void 0);
     BucketsModalComponent = __decorate([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"])({
             selector: 'buckets-modal',
@@ -756,7 +871,7 @@ var BucketsModalComponent = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"modal-header\">\r\n\t<h4 class=\"modal-title\">{{title}}</h4>\r\n</div>\r\n<div class=\"modal-body\">\r\n\t<div class=\"container-fluid\">\r\n<!--\t\t<form id=\"bucketForm\" #bucketForm=\"ngForm\" (ngSubmit)=\"submit()\">-->\r\n\t\t\t<div class=\"row\">\r\n\t\t\t\t<div class=\"col-6\">\r\n\t\t\t\t\t<div class=\"form-group\">\r\n\t\t\t\t\t\t<label for=\"name\">Name<i class=\"fa fa-asterisk required\" title=\"This field is required.\"></i></label>\r\n\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" [(ngModel)]=\"bucket.name\" #name=\"ngModel\" name=\"name\" required tabindex=\"1\">\r\n\t\t\t\t\t\t<div *ngIf=\"name.errors && (name.dirty || name.touched)\" class=\"alert alert-danger\">\r\n\t\t\t\t\t\t\t<div [hidden]=\"!name.errors.required\">\r\n\t\t\t\t\t\t\t\tName is required.\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</div>\r\n        </div>\r\n\r\n\t\t\t\t<div class=\"col-6\">\r\n\t\t\t\t\t<div class=\"form-group\">\r\n\t\t\t\t\t\t<label for=\"description\">Description</label>\r\n\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" [(ngModel)]=\"bucket.description\" name=\"description\" tabindex=\"2\">\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n      </div>\r\n\r\n<!--\t\t</form>-->\r\n\t</div>\r\n</div>\r\n<div class=\"modal-footer\">\r\n\t<button type=\"button\" class=\"btn btn-secondary\" (click)=\"activeModal.dismiss()\">Undo Changes and Close</button>\r\n\t<button type=\"button\" class=\"btn btn-primary\" [disabled]=\"!isBasicInfoValid()\" (click)=\"submit()\">{{submitText}}</button>\r\n</div>\r\n"
+module.exports = "<div class=\"modal-header\">\r\n\t<h4 class=\"modal-title\">{{title}}</h4>\r\n</div>\r\n<div class=\"modal-body\">\r\n\t<div class=\"container-fluid\">\r\n\t\t<form id=\"bucketForm\" #bucketForm=\"ngForm\" (ngSubmit)=\"submit()\">\r\n\t\t\t<div class=\"row\">\r\n\r\n\t\t\t\t<div class=\"col-6\">\r\n\t\t\t\t\t<div class=\"form-group\">\r\n\t\t\t\t\t\t<label for=\"name\">Name<i class=\"fa fa-asterisk required\" title=\"This field is required.\"></i></label>\r\n\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" [(ngModel)]=\"bucket.name\" #name=\"ngModel\" name=\"name\" required tabindex=\"1\">\r\n\t\t\t\t\t\t<div *ngIf=\"name.errors && (name.dirty || name.touched)\" class=\"alert alert-danger\">\r\n\t\t\t\t\t\t\t<div [hidden]=\"!name.errors.required\">\r\n\t\t\t\t\t\t\t\tName is required.\r\n\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</div>\r\n        </div>\r\n\r\n\t\t\t\t<div class=\"col-6\">\r\n\t\t\t\t\t<div class=\"form-group\">\r\n\t\t\t\t\t\t<label for=\"description\">Description</label>\r\n\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" [(ngModel)]=\"bucket.description\" name=\"description\" tabindex=\"2\">\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n      </div>\r\n\t\t</form>\r\n\t</div>\r\n</div>\r\n<div class=\"modal-footer\">\r\n\t<button type=\"button\" class=\"btn btn-secondary\" (click)=\"activeModal.dismiss()\">Undo Changes and Close</button>\r\n\t<button type=\"button\" class=\"btn btn-primary\" [disabled]=\"!isBasicInfoValid()\" (click)=\"activeModal.close(bucket)\">{{submitText}}</button>\r\n</div>\r\n"
 
 /***/ }),
 
@@ -786,10 +901,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var rxjs_add_operator_map__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs/add/operator/map */ "./node_modules/rxjs-compat/_esm5/add/operator/map.js");
 /* harmony import */ var rxjs_add_operator_toPromise__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs/add/operator/toPromise */ "./node_modules/rxjs-compat/_esm5/add/operator/toPromise.js");
 /* harmony import */ var rxjs_add_operator_toPromise__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(rxjs_add_operator_toPromise__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var class_transformer__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! class-transformer */ "./node_modules/class-transformer/index.js");
-/* harmony import */ var class_transformer__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(class_transformer__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _utilities_service__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../utilities.service */ "./src/app/utilities.service.ts");
+/* harmony import */ var _utilities_service__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../utilities.service */ "./src/app/utilities.service.ts");
+/* harmony import */ var class_transformer__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! class-transformer */ "./node_modules/class-transformer/index.js");
+/* harmony import */ var class_transformer__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(class_transformer__WEBPACK_IMPORTED_MODULE_5__);
 /* harmony import */ var _models_buckets_bucket__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../models/buckets/bucket */ "./src/app/models/buckets/bucket.ts");
+/* harmony import */ var _models_buckets_trigger__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../models/buckets/trigger */ "./src/app/models/buckets/trigger.ts");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js");
+/* harmony import */ var _models_playbook_workflow__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../models/playbook/workflow */ "./src/app/models/playbook/workflow.ts");
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -806,35 +924,227 @@ var __metadata = (undefined && undefined.__metadata) || function (k, v) {
 
 
 
+
+
+
 var BucketsService = /** @class */ (function () {
     function BucketsService(http, utils) {
+        var _this = this;
         this.http = http;
         this.utils = utils;
+        this.bucketsChange = new rxjs__WEBPACK_IMPORTED_MODULE_8__["Observable"](function (observer) {
+            _this.observer = observer;
+            _this.getAllBuckets().then(function (buckets) { return _this.observer.next(buckets); });
+        });
     }
     BucketsService.prototype.getAllBuckets = function () {
         return this.utils.paginateAll(this.getBuckets.bind(this));
+    };
+    BucketsService.prototype.getAllTriggers = function () {
+        return this.getBuckets.bind(this);
+    };
+    BucketsService.prototype.getTriggers = function (bucket) {
+        return this.http.get("/api/buckets/" + bucket.id + "/triggers")
+            .toPromise()
+            .then(function (data) { return Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["plainToClass"])(_models_buckets_trigger__WEBPACK_IMPORTED_MODULE_7__["BucketTrigger"], data); })
+            .catch(this.utils.handleResponseError);
+    };
+    BucketsService.prototype.emitChange = function (data) {
+        var _this = this;
+        if (this.observer)
+            this.getAllBuckets().then(function (buckets) { return _this.observer.next(buckets); });
+        return data;
     };
     BucketsService.prototype.getBuckets = function (page) {
         if (page === void 0) { page = 1; }
         return this.http.get("/api/buckets?page=" + page)
             .toPromise()
-            .then(function (data) { return Object(class_transformer__WEBPACK_IMPORTED_MODULE_4__["plainToClass"])(_models_buckets_bucket__WEBPACK_IMPORTED_MODULE_6__["Bucket"], data); })
+            .then(function (data) { return Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["plainToClass"])(_models_buckets_bucket__WEBPACK_IMPORTED_MODULE_6__["Bucket"], data); })
             .catch(this.utils.handleResponseError);
     };
     BucketsService.prototype.addBucket = function (bucket) {
-        return this.http.post('/api/buckets', bucket)
+        var _this = this;
+        return this.http.post('/api/buckets', Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["classToPlain"])(bucket))
             .toPromise()
-            .then(function (data) { return Object(class_transformer__WEBPACK_IMPORTED_MODULE_4__["plainToClass"])(_models_buckets_bucket__WEBPACK_IMPORTED_MODULE_6__["Bucket"], data); })
+            .then(function (data) { return _this.emitChange(data); })
+            .then(function (data) { return Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["plainToClass"])(_models_buckets_bucket__WEBPACK_IMPORTED_MODULE_6__["Bucket"], data); })
+            .catch(this.utils.handleResponseError);
+    };
+    BucketsService.prototype.editBucket = function (bucket) {
+        var _this = this;
+        return this.http.put("/api/buckets/" + bucket.id, Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["classToPlain"])(bucket))
+            .toPromise()
+            .then(function (data) { return _this.emitChange(data); })
+            .then(function (data) { return Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["plainToClass"])(_models_buckets_bucket__WEBPACK_IMPORTED_MODULE_6__["Bucket"], data); })
+            .catch(this.utils.handleResponseError);
+    };
+    BucketsService.prototype.deleteBucket = function (bucket) {
+        var _this = this;
+        return this.http.delete("/api/buckets/" + bucket.id)
+            .toPromise()
+            .then(function (data) { return _this.emitChange(data); })
+            .then(function () { return null; })
+            .catch(this.utils.handleResponseError);
+    };
+    BucketsService.prototype.addTrigger = function (bucket, trigger) {
+        var _this = this;
+        return this.http.post("/api/buckets/" + bucket.id + "/triggers", Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["classToPlain"])(trigger))
+            .toPromise()
+            .then(function (data) { return bucket.emitTriggerChange(_this, data); })
+            .then(function (data) { return Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["plainToClass"])(_models_buckets_trigger__WEBPACK_IMPORTED_MODULE_7__["BucketTrigger"], data); })
+            .catch(this.utils.handleResponseError);
+    };
+    BucketsService.prototype.editTrigger = function (bucket, trigger, trigger_id) {
+        var _this = this;
+        console.log(trigger);
+        return this.http.put("/api/buckets/" + bucket.id + "/triggers/" + trigger_id, Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["classToPlain"])(trigger))
+            .toPromise()
+            .then(function (data) { return bucket.emitTriggerChange(_this, data); })
+            .then(function (data) { return Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["plainToClass"])(_models_buckets_trigger__WEBPACK_IMPORTED_MODULE_7__["BucketTrigger"], data); })
+            .catch(this.utils.handleResponseError);
+    };
+    BucketsService.prototype.deleteTrigger = function (bucket, trigger) {
+        var _this = this;
+        return this.http.delete("/api/buckets/" + bucket.id + "/triggers/" + trigger.id)
+            .toPromise()
+            .then(function (data) { return bucket.emitTriggerChange(_this, data); })
+            .then(function () { return null; })
+            .catch(this.utils.handleResponseError);
+    };
+    BucketsService.prototype.getWorkflows = function () {
+        return this.http.get('/api/workflows')
+            .toPromise()
+            .then(function (data) { return Object(class_transformer__WEBPACK_IMPORTED_MODULE_5__["plainToClass"])(_models_playbook_workflow__WEBPACK_IMPORTED_MODULE_9__["Workflow"], data); })
             .catch(this.utils.handleResponseError);
     };
     BucketsService = __decorate([
-        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Injectable"])(),
-        __metadata("design:paramtypes", [_angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpClient"], _utilities_service__WEBPACK_IMPORTED_MODULE_5__["UtilitiesService"]])
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Injectable"])({
+            providedIn: 'root'
+        }),
+        __metadata("design:paramtypes", [_angular_common_http__WEBPACK_IMPORTED_MODULE_1__["HttpClient"], _utilities_service__WEBPACK_IMPORTED_MODULE_4__["UtilitiesService"]])
     ], BucketsService);
     return BucketsService;
 }());
 
 
+
+/***/ }),
+
+/***/ "./src/app/buckets/triggers.modal.component.ts":
+/*!*****************************************************!*\
+  !*** ./src/app/buckets/triggers.modal.component.ts ***!
+  \*****************************************************/
+/*! exports provided: TriggersModalComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TriggersModalComponent", function() { return TriggersModalComponent; });
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
+/* harmony import */ var _ng_bootstrap_ng_bootstrap__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @ng-bootstrap/ng-bootstrap */ "./node_modules/@ng-bootstrap/ng-bootstrap/fesm5/ng-bootstrap.js");
+/* harmony import */ var ngx_toastr__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ngx-toastr */ "./node_modules/ngx-toastr/fesm5/ngx-toastr.js");
+/* harmony import */ var _utilities_service__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utilities.service */ "./src/app/utilities.service.ts");
+/* harmony import */ var _buckets_service__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./buckets.service */ "./src/app/buckets/buckets.service.ts");
+/* harmony import */ var _models_buckets_trigger__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../models/buckets/trigger */ "./src/app/models/buckets/trigger.ts");
+var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (undefined && undefined.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+
+
+
+var TriggersModalComponent = /** @class */ (function () {
+    function TriggersModalComponent(bucketsService, activeModal, toastrService, cdr) {
+        this.bucketsService = bucketsService;
+        this.activeModal = activeModal;
+        this.toastrService = toastrService;
+        this.cdr = cdr;
+        this.trigger = new _models_buckets_trigger__WEBPACK_IMPORTED_MODULE_5__["BucketTrigger"]();
+        this.availableWorkflows = [];
+        this.existing = false;
+    }
+    TriggersModalComponent.prototype.ngOnInit = function () {
+        this.trigger.workflow = "";
+        this.workflowSelectConfig = {
+            width: '100%',
+            multiple: false,
+            allowClear: true,
+            placeholder: 'Select workflow to run on trigger...',
+            closeOnSelect: false,
+        };
+    };
+    TriggersModalComponent.prototype.ngAfterViewInit = function () {
+    };
+    /**
+     * Submits the add/edit bucket modal.
+     */
+    TriggersModalComponent.prototype.submit = function () {
+        if (!this.isBasicInfoValid()) {
+            return;
+        }
+    };
+    TriggersModalComponent.prototype.isBasicInfoValid = function () {
+        if (this.trigger.event_type && this.trigger.workflow.length) {
+            return true;
+        }
+        return false;
+    };
+    /**
+     * Updates the working scheduled task's workflows from the event value.
+     * @param event JS Event from workflows select2
+     */
+    TriggersModalComponent.prototype.workflowsSelectChanged = function (event) {
+        this.trigger.workflow = event.value;
+    };
+    __decorate([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"])(),
+        __metadata("design:type", _models_buckets_trigger__WEBPACK_IMPORTED_MODULE_5__["BucketTrigger"])
+    ], TriggersModalComponent.prototype, "trigger", void 0);
+    __decorate([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"])(),
+        __metadata("design:type", String)
+    ], TriggersModalComponent.prototype, "title", void 0);
+    __decorate([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"])(),
+        __metadata("design:type", String)
+    ], TriggersModalComponent.prototype, "submitText", void 0);
+    __decorate([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"])(),
+        __metadata("design:type", Array)
+    ], TriggersModalComponent.prototype, "availableWorkflows", void 0);
+    TriggersModalComponent = __decorate([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"])({
+            selector: 'triggers-modal',
+            template: __webpack_require__(/*! ./triggers.modal.html */ "./src/app/buckets/triggers.modal.html"),
+            styles: [__webpack_require__(/*! ./buckets.scss */ "./src/app/buckets/buckets.scss")],
+            providers: [_utilities_service__WEBPACK_IMPORTED_MODULE_3__["UtilitiesService"]],
+        }),
+        __metadata("design:paramtypes", [_buckets_service__WEBPACK_IMPORTED_MODULE_4__["BucketsService"], _ng_bootstrap_ng_bootstrap__WEBPACK_IMPORTED_MODULE_1__["NgbActiveModal"],
+            ngx_toastr__WEBPACK_IMPORTED_MODULE_2__["ToastrService"], _angular_core__WEBPACK_IMPORTED_MODULE_0__["ChangeDetectorRef"]])
+    ], TriggersModalComponent);
+    return TriggersModalComponent;
+}());
+
+
+
+/***/ }),
+
+/***/ "./src/app/buckets/triggers.modal.html":
+/*!*********************************************!*\
+  !*** ./src/app/buckets/triggers.modal.html ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"modal-header\">\r\n\t<h4 class=\"modal-title\">{{title}}</h4>\r\n</div>\r\n<div class=\"modal-body\">\r\n\t<div class=\"container-fluid\">\r\n\t\t<form id=\"triggerForm\" #triggerForm=\"ngForm\" (ngSubmit)=\"submit()\">\r\n\t\t\t<div class=\"row\">\r\n\r\n        <div class=\"col-6\">\r\n\t\t\t\t\t<div class=\"form-group\">\r\n\t\t\t\t\t\t<label for=\"event_type\">Event Type</label>\r\n            <select class=\"form-control\" [(ngModel)]=\"trigger.event_type\" name=\"event_type\" tabindex=\"4\">\r\n              <option value=\"s3:ObjectCreated:*\">s3:ObjectCreated:*</option>\r\n              <option value=\"s3:ObjectAccessed:*\">s3:ObjectAccessed:*</option>\r\n              <option value=\"s3:ObjectRemoved:*\">s3:ObjectRemoved:*</option>\r\n            </select>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n        <div class=\"col-6\">\r\n\t\t\t\t\t<div class=\"form-group\">\r\n\t\t\t\t\t\t<label for=\"workflow\">Workflow</label>\r\n            <select2 [data]=\"availableWorkflows\" [value]=\"undefined\"  [options]=\"workflowSelectConfig\"\r\n\t\t\t\t      name=\"workflow\" tabindex=\"2\" (valueChanged)=\"workflowsSelectChanged($event)\"></select2>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n        <div class=\"col-6\">\r\n\t\t\t\t\t<div class=\"form-group\">\r\n\t\t\t\t\t\t<label for=\"suffix\">Suffix</label>\r\n\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" [(ngModel)]=\"trigger.suffix\" name=\"suffix\" tabindex=\"2\">\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n        <div class=\"col-6\">\r\n\t\t\t\t\t<div class=\"form-group\">\r\n\t\t\t\t\t\t<label for=\"prefix\">Prefix</label>\r\n\t\t\t\t\t\t<input type=\"text\" class=\"form-control\" [(ngModel)]=\"trigger.prefix\" name=\"prefix\" tabindex=\"2\">\r\n\t\t\t\t\t</div>\r\n\t\t\t\t</div>\r\n\r\n      </div>\r\n\t\t</form>\r\n\t</div>\r\n</div>\r\n<div class=\"modal-footer\">\r\n\t<button type=\"button\" class=\"btn btn-secondary\" (click)=\"activeModal.dismiss()\">Undo Changes and Close</button>\r\n\t<button type=\"button\" class=\"btn btn-primary\" [disabled]=\"!isBasicInfoValid()\" (click)=\"activeModal.close(trigger)\">{{submitText}}</button>\r\n</div>\r\n"
 
 /***/ }),
 
@@ -3471,29 +3781,30 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dashboards_dashboards_component__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./dashboards/dashboards.component */ "./src/app/dashboards/dashboards.component.ts");
 /* harmony import */ var _execution_execution_component__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./execution/execution.component */ "./src/app/execution/execution.component.ts");
 /* harmony import */ var _buckets_buckets_component__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./buckets/buckets.component */ "./src/app/buckets/buckets.component.ts");
-/* harmony import */ var _scheduler_scheduler_modal_component__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./scheduler/scheduler.modal.component */ "./src/app/scheduler/scheduler.modal.component.ts");
-/* harmony import */ var _globals_globals_modal_component__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./globals/globals.modal.component */ "./src/app/globals/globals.modal.component.ts");
-/* harmony import */ var _buckets_buckets_modal_component__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./buckets/buckets.modal.component */ "./src/app/buckets/buckets.modal.component.ts");
-/* harmony import */ var _globals_variable_modal_component__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./globals/variable.modal.component */ "./src/app/globals/variable.modal.component.ts");
-/* harmony import */ var _settings_settings_user_modal_component__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./settings/settings.user.modal.component */ "./src/app/settings/settings.user.modal.component.ts");
-/* harmony import */ var _settings_settings_roles_modal_component__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(/*! ./settings/settings.roles.modal.component */ "./src/app/settings/settings.roles.modal.component.ts");
-/* harmony import */ var _settings_settings_timeout_modal_component__WEBPACK_IMPORTED_MODULE_39__ = __webpack_require__(/*! ./settings/settings.timeout.modal.component */ "./src/app/settings/settings.timeout.modal.component.ts");
-/* harmony import */ var _execution_execution_variable_modal_component__WEBPACK_IMPORTED_MODULE_40__ = __webpack_require__(/*! ./execution/execution.variable.modal.component */ "./src/app/execution/execution.variable.modal.component.ts");
-/* harmony import */ var _playbook_playbook_environment_variable_modal_component__WEBPACK_IMPORTED_MODULE_41__ = __webpack_require__(/*! ./playbook/playbook.environment.variable.modal.component */ "./src/app/playbook/playbook.environment.variable.modal.component.ts");
-/* harmony import */ var _playbook_playbook_argument_component__WEBPACK_IMPORTED_MODULE_42__ = __webpack_require__(/*! ./playbook/playbook.argument.component */ "./src/app/playbook/playbook.argument.component.ts");
-/* harmony import */ var _playbook_playbook_conditions_component__WEBPACK_IMPORTED_MODULE_43__ = __webpack_require__(/*! ./playbook/playbook.conditions.component */ "./src/app/playbook/playbook.conditions.component.ts");
-/* harmony import */ var _playbook_playbook_transforms_component__WEBPACK_IMPORTED_MODULE_44__ = __webpack_require__(/*! ./playbook/playbook.transforms.component */ "./src/app/playbook/playbook.transforms.component.ts");
-/* harmony import */ var _playbook_playbook_conditional_expression_component__WEBPACK_IMPORTED_MODULE_45__ = __webpack_require__(/*! ./playbook/playbook.conditional.expression.component */ "./src/app/playbook/playbook.conditional.expression.component.ts");
-/* harmony import */ var _settings_settings_roles_component__WEBPACK_IMPORTED_MODULE_46__ = __webpack_require__(/*! ./settings/settings.roles.component */ "./src/app/settings/settings.roles.component.ts");
-/* harmony import */ var _messages_messages_modal_component__WEBPACK_IMPORTED_MODULE_47__ = __webpack_require__(/*! ./messages/messages.modal.component */ "./src/app/messages/messages.modal.component.ts");
-/* harmony import */ var _pipes_keys_pipe__WEBPACK_IMPORTED_MODULE_48__ = __webpack_require__(/*! ./pipes/keys.pipe */ "./src/app/pipes/keys.pipe.ts");
-/* harmony import */ var _utilities_service__WEBPACK_IMPORTED_MODULE_49__ = __webpack_require__(/*! ./utilities.service */ "./src/app/utilities.service.ts");
-/* harmony import */ var _dashboards_manage_dashboards_component__WEBPACK_IMPORTED_MODULE_50__ = __webpack_require__(/*! ./dashboards/manage.dashboards.component */ "./src/app/dashboards/manage.dashboards.component.ts");
-/* harmony import */ var _dashboards_widget_modal_component__WEBPACK_IMPORTED_MODULE_51__ = __webpack_require__(/*! ./dashboards/widget.modal.component */ "./src/app/dashboards/widget.modal.component.ts");
-/* harmony import */ var _pipes_safeEmbed_pipe__WEBPACK_IMPORTED_MODULE_52__ = __webpack_require__(/*! ./pipes/safeEmbed.pipe */ "./src/app/pipes/safeEmbed.pipe.ts");
-/* harmony import */ var _playbook_workflow_editor_component__WEBPACK_IMPORTED_MODULE_53__ = __webpack_require__(/*! ./playbook/workflow.editor.component */ "./src/app/playbook/workflow.editor.component.ts");
-/* harmony import */ var _playbook_metadata_modal_component__WEBPACK_IMPORTED_MODULE_54__ = __webpack_require__(/*! ./playbook/metadata.modal.component */ "./src/app/playbook/metadata.modal.component.ts");
-/* harmony import */ var _playbook_import_modal_component__WEBPACK_IMPORTED_MODULE_55__ = __webpack_require__(/*! ./playbook/import.modal.component */ "./src/app/playbook/import.modal.component.ts");
+/* harmony import */ var _buckets_triggers_modal_component__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./buckets/triggers.modal.component */ "./src/app/buckets/triggers.modal.component.ts");
+/* harmony import */ var _scheduler_scheduler_modal_component__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./scheduler/scheduler.modal.component */ "./src/app/scheduler/scheduler.modal.component.ts");
+/* harmony import */ var _globals_globals_modal_component__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./globals/globals.modal.component */ "./src/app/globals/globals.modal.component.ts");
+/* harmony import */ var _buckets_buckets_modal_component__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./buckets/buckets.modal.component */ "./src/app/buckets/buckets.modal.component.ts");
+/* harmony import */ var _globals_variable_modal_component__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./globals/variable.modal.component */ "./src/app/globals/variable.modal.component.ts");
+/* harmony import */ var _settings_settings_user_modal_component__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(/*! ./settings/settings.user.modal.component */ "./src/app/settings/settings.user.modal.component.ts");
+/* harmony import */ var _settings_settings_roles_modal_component__WEBPACK_IMPORTED_MODULE_39__ = __webpack_require__(/*! ./settings/settings.roles.modal.component */ "./src/app/settings/settings.roles.modal.component.ts");
+/* harmony import */ var _settings_settings_timeout_modal_component__WEBPACK_IMPORTED_MODULE_40__ = __webpack_require__(/*! ./settings/settings.timeout.modal.component */ "./src/app/settings/settings.timeout.modal.component.ts");
+/* harmony import */ var _execution_execution_variable_modal_component__WEBPACK_IMPORTED_MODULE_41__ = __webpack_require__(/*! ./execution/execution.variable.modal.component */ "./src/app/execution/execution.variable.modal.component.ts");
+/* harmony import */ var _playbook_playbook_environment_variable_modal_component__WEBPACK_IMPORTED_MODULE_42__ = __webpack_require__(/*! ./playbook/playbook.environment.variable.modal.component */ "./src/app/playbook/playbook.environment.variable.modal.component.ts");
+/* harmony import */ var _playbook_playbook_argument_component__WEBPACK_IMPORTED_MODULE_43__ = __webpack_require__(/*! ./playbook/playbook.argument.component */ "./src/app/playbook/playbook.argument.component.ts");
+/* harmony import */ var _playbook_playbook_conditions_component__WEBPACK_IMPORTED_MODULE_44__ = __webpack_require__(/*! ./playbook/playbook.conditions.component */ "./src/app/playbook/playbook.conditions.component.ts");
+/* harmony import */ var _playbook_playbook_transforms_component__WEBPACK_IMPORTED_MODULE_45__ = __webpack_require__(/*! ./playbook/playbook.transforms.component */ "./src/app/playbook/playbook.transforms.component.ts");
+/* harmony import */ var _playbook_playbook_conditional_expression_component__WEBPACK_IMPORTED_MODULE_46__ = __webpack_require__(/*! ./playbook/playbook.conditional.expression.component */ "./src/app/playbook/playbook.conditional.expression.component.ts");
+/* harmony import */ var _settings_settings_roles_component__WEBPACK_IMPORTED_MODULE_47__ = __webpack_require__(/*! ./settings/settings.roles.component */ "./src/app/settings/settings.roles.component.ts");
+/* harmony import */ var _messages_messages_modal_component__WEBPACK_IMPORTED_MODULE_48__ = __webpack_require__(/*! ./messages/messages.modal.component */ "./src/app/messages/messages.modal.component.ts");
+/* harmony import */ var _pipes_keys_pipe__WEBPACK_IMPORTED_MODULE_49__ = __webpack_require__(/*! ./pipes/keys.pipe */ "./src/app/pipes/keys.pipe.ts");
+/* harmony import */ var _utilities_service__WEBPACK_IMPORTED_MODULE_50__ = __webpack_require__(/*! ./utilities.service */ "./src/app/utilities.service.ts");
+/* harmony import */ var _dashboards_manage_dashboards_component__WEBPACK_IMPORTED_MODULE_51__ = __webpack_require__(/*! ./dashboards/manage.dashboards.component */ "./src/app/dashboards/manage.dashboards.component.ts");
+/* harmony import */ var _dashboards_widget_modal_component__WEBPACK_IMPORTED_MODULE_52__ = __webpack_require__(/*! ./dashboards/widget.modal.component */ "./src/app/dashboards/widget.modal.component.ts");
+/* harmony import */ var _pipes_safeEmbed_pipe__WEBPACK_IMPORTED_MODULE_53__ = __webpack_require__(/*! ./pipes/safeEmbed.pipe */ "./src/app/pipes/safeEmbed.pipe.ts");
+/* harmony import */ var _playbook_workflow_editor_component__WEBPACK_IMPORTED_MODULE_54__ = __webpack_require__(/*! ./playbook/workflow.editor.component */ "./src/app/playbook/workflow.editor.component.ts");
+/* harmony import */ var _playbook_metadata_modal_component__WEBPACK_IMPORTED_MODULE_55__ = __webpack_require__(/*! ./playbook/metadata.modal.component */ "./src/app/playbook/metadata.modal.component.ts");
+/* harmony import */ var _playbook_import_modal_component__WEBPACK_IMPORTED_MODULE_56__ = __webpack_require__(/*! ./playbook/import.modal.component */ "./src/app/playbook/import.modal.component.ts");
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3523,6 +3834,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 
 
 // Custom routing module
+
 
 
 
@@ -3592,7 +3904,7 @@ var MainModule = /** @class */ (function () {
                 _main_main_component__WEBPACK_IMPORTED_MODULE_23__["MainComponent"],
                 //Router module components
                 _playbook_playbook_component__WEBPACK_IMPORTED_MODULE_25__["PlaybookComponent"],
-                _playbook_workflow_editor_component__WEBPACK_IMPORTED_MODULE_53__["WorkflowEditorComponent"],
+                _playbook_workflow_editor_component__WEBPACK_IMPORTED_MODULE_54__["WorkflowEditorComponent"],
                 _scheduler_scheduler_component__WEBPACK_IMPORTED_MODULE_24__["SchedulerComponent"],
                 _globals_globals_component__WEBPACK_IMPORTED_MODULE_26__["GlobalsComponent"],
                 _messages_messages_component__WEBPACK_IMPORTED_MODULE_27__["MessagesComponent"],
@@ -3602,32 +3914,33 @@ var MainModule = /** @class */ (function () {
                 _execution_execution_component__WEBPACK_IMPORTED_MODULE_31__["ExecutionComponent"],
                 _buckets_buckets_component__WEBPACK_IMPORTED_MODULE_32__["BucketsComponent"],
                 //Modals
-                _scheduler_scheduler_modal_component__WEBPACK_IMPORTED_MODULE_33__["SchedulerModalComponent"],
-                _globals_globals_modal_component__WEBPACK_IMPORTED_MODULE_34__["GlobalsModalComponent"],
-                _buckets_buckets_modal_component__WEBPACK_IMPORTED_MODULE_35__["BucketsModalComponent"],
-                _globals_variable_modal_component__WEBPACK_IMPORTED_MODULE_36__["VariableModalComponent"],
-                _settings_settings_user_modal_component__WEBPACK_IMPORTED_MODULE_37__["SettingsUserModalComponent"],
-                _settings_settings_roles_modal_component__WEBPACK_IMPORTED_MODULE_38__["SettingsRoleModalComponent"],
-                _settings_settings_timeout_modal_component__WEBPACK_IMPORTED_MODULE_39__["SettingsTimeoutModalComponent"],
-                _messages_messages_modal_component__WEBPACK_IMPORTED_MODULE_47__["MessagesModalComponent"],
-                _playbook_playbook_environment_variable_modal_component__WEBPACK_IMPORTED_MODULE_41__["PlaybookEnvironmentVariableModalComponent"],
-                _playbook_metadata_modal_component__WEBPACK_IMPORTED_MODULE_54__["MetadataModalComponent"],
-                _playbook_import_modal_component__WEBPACK_IMPORTED_MODULE_55__["ImportModalComponent"],
-                _execution_execution_variable_modal_component__WEBPACK_IMPORTED_MODULE_40__["ExecutionVariableModalComponent"],
+                _scheduler_scheduler_modal_component__WEBPACK_IMPORTED_MODULE_34__["SchedulerModalComponent"],
+                _globals_globals_modal_component__WEBPACK_IMPORTED_MODULE_35__["GlobalsModalComponent"],
+                _buckets_buckets_modal_component__WEBPACK_IMPORTED_MODULE_36__["BucketsModalComponent"],
+                _globals_variable_modal_component__WEBPACK_IMPORTED_MODULE_37__["VariableModalComponent"],
+                _settings_settings_user_modal_component__WEBPACK_IMPORTED_MODULE_38__["SettingsUserModalComponent"],
+                _settings_settings_roles_modal_component__WEBPACK_IMPORTED_MODULE_39__["SettingsRoleModalComponent"],
+                _settings_settings_timeout_modal_component__WEBPACK_IMPORTED_MODULE_40__["SettingsTimeoutModalComponent"],
+                _messages_messages_modal_component__WEBPACK_IMPORTED_MODULE_48__["MessagesModalComponent"],
+                _playbook_playbook_environment_variable_modal_component__WEBPACK_IMPORTED_MODULE_42__["PlaybookEnvironmentVariableModalComponent"],
+                _playbook_metadata_modal_component__WEBPACK_IMPORTED_MODULE_55__["MetadataModalComponent"],
+                _playbook_import_modal_component__WEBPACK_IMPORTED_MODULE_56__["ImportModalComponent"],
+                _execution_execution_variable_modal_component__WEBPACK_IMPORTED_MODULE_41__["ExecutionVariableModalComponent"],
+                _buckets_triggers_modal_component__WEBPACK_IMPORTED_MODULE_33__["TriggersModalComponent"],
                 // Other subcomponents
-                _playbook_playbook_argument_component__WEBPACK_IMPORTED_MODULE_42__["PlaybookArgumentComponent"],
-                _playbook_playbook_conditions_component__WEBPACK_IMPORTED_MODULE_43__["PlaybookConditionsComponent"],
-                _playbook_playbook_transforms_component__WEBPACK_IMPORTED_MODULE_44__["PlaybookTransformsComponent"],
-                _playbook_playbook_conditional_expression_component__WEBPACK_IMPORTED_MODULE_45__["PlaybookConditionalExpressionComponent"],
-                _settings_settings_roles_component__WEBPACK_IMPORTED_MODULE_46__["SettingsRolesComponent"],
+                _playbook_playbook_argument_component__WEBPACK_IMPORTED_MODULE_43__["PlaybookArgumentComponent"],
+                _playbook_playbook_conditions_component__WEBPACK_IMPORTED_MODULE_44__["PlaybookConditionsComponent"],
+                _playbook_playbook_transforms_component__WEBPACK_IMPORTED_MODULE_45__["PlaybookTransformsComponent"],
+                _playbook_playbook_conditional_expression_component__WEBPACK_IMPORTED_MODULE_46__["PlaybookConditionalExpressionComponent"],
+                _settings_settings_roles_component__WEBPACK_IMPORTED_MODULE_47__["SettingsRolesComponent"],
                 // Pipes
-                _pipes_keys_pipe__WEBPACK_IMPORTED_MODULE_48__["KeysPipe"],
-                _dashboards_manage_dashboards_component__WEBPACK_IMPORTED_MODULE_50__["ManageDashboardsComponent"],
-                _pipes_safeEmbed_pipe__WEBPACK_IMPORTED_MODULE_52__["SafeEmbedPipe"],
-                _dashboards_widget_modal_component__WEBPACK_IMPORTED_MODULE_51__["WidgetModalComponent"],
+                _pipes_keys_pipe__WEBPACK_IMPORTED_MODULE_49__["KeysPipe"],
+                _dashboards_manage_dashboards_component__WEBPACK_IMPORTED_MODULE_51__["ManageDashboardsComponent"],
+                _pipes_safeEmbed_pipe__WEBPACK_IMPORTED_MODULE_53__["SafeEmbedPipe"],
+                _dashboards_widget_modal_component__WEBPACK_IMPORTED_MODULE_52__["WidgetModalComponent"],
             ],
             providers: [
-                _utilities_service__WEBPACK_IMPORTED_MODULE_49__["UtilitiesService"],
+                _utilities_service__WEBPACK_IMPORTED_MODULE_50__["UtilitiesService"],
                 _auth_auth_service__WEBPACK_IMPORTED_MODULE_7__["AuthService"],
                 _auth0_angular_jwt__WEBPACK_IMPORTED_MODULE_8__["JwtInterceptor"],
                 {
@@ -3642,19 +3955,20 @@ var MainModule = /** @class */ (function () {
                 }
             ],
             entryComponents: [
-                _scheduler_scheduler_modal_component__WEBPACK_IMPORTED_MODULE_33__["SchedulerModalComponent"],
-                _globals_globals_modal_component__WEBPACK_IMPORTED_MODULE_34__["GlobalsModalComponent"],
-                _globals_variable_modal_component__WEBPACK_IMPORTED_MODULE_36__["VariableModalComponent"],
-                _buckets_buckets_modal_component__WEBPACK_IMPORTED_MODULE_35__["BucketsModalComponent"],
-                _settings_settings_user_modal_component__WEBPACK_IMPORTED_MODULE_37__["SettingsUserModalComponent"],
-                _settings_settings_roles_modal_component__WEBPACK_IMPORTED_MODULE_38__["SettingsRoleModalComponent"],
-                _settings_settings_timeout_modal_component__WEBPACK_IMPORTED_MODULE_39__["SettingsTimeoutModalComponent"],
-                _messages_messages_modal_component__WEBPACK_IMPORTED_MODULE_47__["MessagesModalComponent"],
-                _execution_execution_variable_modal_component__WEBPACK_IMPORTED_MODULE_40__["ExecutionVariableModalComponent"],
-                _playbook_playbook_environment_variable_modal_component__WEBPACK_IMPORTED_MODULE_41__["PlaybookEnvironmentVariableModalComponent"],
-                _playbook_import_modal_component__WEBPACK_IMPORTED_MODULE_55__["ImportModalComponent"],
-                _playbook_metadata_modal_component__WEBPACK_IMPORTED_MODULE_54__["MetadataModalComponent"],
-                _dashboards_widget_modal_component__WEBPACK_IMPORTED_MODULE_51__["WidgetModalComponent"]
+                _scheduler_scheduler_modal_component__WEBPACK_IMPORTED_MODULE_34__["SchedulerModalComponent"],
+                _globals_globals_modal_component__WEBPACK_IMPORTED_MODULE_35__["GlobalsModalComponent"],
+                _globals_variable_modal_component__WEBPACK_IMPORTED_MODULE_37__["VariableModalComponent"],
+                _buckets_buckets_modal_component__WEBPACK_IMPORTED_MODULE_36__["BucketsModalComponent"],
+                _buckets_triggers_modal_component__WEBPACK_IMPORTED_MODULE_33__["TriggersModalComponent"],
+                _settings_settings_user_modal_component__WEBPACK_IMPORTED_MODULE_38__["SettingsUserModalComponent"],
+                _settings_settings_roles_modal_component__WEBPACK_IMPORTED_MODULE_39__["SettingsRoleModalComponent"],
+                _settings_settings_timeout_modal_component__WEBPACK_IMPORTED_MODULE_40__["SettingsTimeoutModalComponent"],
+                _messages_messages_modal_component__WEBPACK_IMPORTED_MODULE_48__["MessagesModalComponent"],
+                _execution_execution_variable_modal_component__WEBPACK_IMPORTED_MODULE_41__["ExecutionVariableModalComponent"],
+                _playbook_playbook_environment_variable_modal_component__WEBPACK_IMPORTED_MODULE_42__["PlaybookEnvironmentVariableModalComponent"],
+                _playbook_import_modal_component__WEBPACK_IMPORTED_MODULE_56__["ImportModalComponent"],
+                _playbook_metadata_modal_component__WEBPACK_IMPORTED_MODULE_55__["MetadataModalComponent"],
+                _dashboards_widget_modal_component__WEBPACK_IMPORTED_MODULE_52__["WidgetModalComponent"]
             ],
             bootstrap: [_main_main_component__WEBPACK_IMPORTED_MODULE_23__["MainComponent"]],
         })
@@ -5180,7 +5494,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Bucket", function() { return Bucket; });
 /* harmony import */ var class_transformer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! class-transformer */ "./node_modules/class-transformer/index.js");
 /* harmony import */ var class_transformer__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(class_transformer__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _trigger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./trigger */ "./src/app/models/buckets/trigger.ts");
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
+/* harmony import */ var rxjs_add_operator_toPromise__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs/add/operator/toPromise */ "./node_modules/rxjs-compat/_esm5/add/operator/toPromise.js");
+/* harmony import */ var rxjs_add_operator_toPromise__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(rxjs_add_operator_toPromise__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _trigger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./trigger */ "./src/app/models/buckets/trigger.ts");
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -5192,14 +5509,37 @@ var __metadata = (undefined && undefined.__metadata) || function (k, v) {
 };
 
 
+
+
+
 var Bucket = /** @class */ (function () {
     function Bucket() {
-        this.bucket_trigger = [];
+        this.triggers = [];
+        this.isHidden = true;
     }
+    Bucket.prototype.clone = function () {
+        return Object(class_transformer__WEBPACK_IMPORTED_MODULE_0__["classToClass"])(this, { ignoreDecorators: true });
+    };
+    Bucket.prototype.emitTriggerChange = function (bucketService, data) {
+        var _this = this;
+        if (this.observer)
+            bucketService.getAllTriggers().then(function (triggers) { return _this.observer.next(triggers); });
+        return data;
+    };
     __decorate([
-        Object(class_transformer__WEBPACK_IMPORTED_MODULE_0__["Type"])(function () { return _trigger__WEBPACK_IMPORTED_MODULE_1__["BucketTrigger"]; }),
+        Object(class_transformer__WEBPACK_IMPORTED_MODULE_0__["Type"])(function () { return _trigger__WEBPACK_IMPORTED_MODULE_3__["BucketTrigger"]; }),
         __metadata("design:type", Array)
-    ], Bucket.prototype, "bucket_trigger", void 0);
+    ], Bucket.prototype, "triggers", void 0);
+    __decorate([
+        Object(class_transformer__WEBPACK_IMPORTED_MODULE_0__["Exclude"])(),
+        __metadata("design:type", Boolean)
+    ], Bucket.prototype, "isHidden", void 0);
+    Bucket = __decorate([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])({
+            providedIn: 'root',
+        }),
+        __metadata("design:paramtypes", [])
+    ], Bucket);
     return Bucket;
 }());
 

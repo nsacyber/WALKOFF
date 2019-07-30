@@ -35,7 +35,7 @@ import { SettingsComponent } from './settings/settings.component';
 import { DashboardsComponent } from './dashboards/dashboards.component';
 import { ExecutionComponent } from './execution/execution.component';
 import { BucketsComponent } from './buckets/buckets.component';
-
+import { TriggersModalComponent } from './buckets/triggers.modal.component';
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { GlobalsModalComponent } from './globals/globals.modal.component';
 import { BucketsModalComponent } from './buckets/buckets.modal.component';
@@ -61,6 +61,8 @@ import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 import { WorkflowEditorComponent } from './playbook/workflow.editor.component';
 import { MetadataModalComponent } from './playbook/metadata.modal.component';
 import { ImportModalComponent } from './playbook/import.modal.component';
+
+import { Bucket } from './models/buckets/bucket';
 
 @NgModule({
 	imports: [
@@ -115,6 +117,7 @@ import { ImportModalComponent } from './playbook/import.modal.component';
 		MetadataModalComponent,
 		ImportModalComponent,
 		ExecutionVariableModalComponent,
+		TriggersModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
 		PlaybookConditionsComponent,
@@ -147,6 +150,7 @@ import { ImportModalComponent } from './playbook/import.modal.component';
 		GlobalsModalComponent,
 		VariableModalComponent,
 		BucketsModalComponent,
+		TriggersModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		SettingsTimeoutModalComponent,

@@ -3,8 +3,9 @@
 </div>
 <div class="modal-body">
 	<div class="container-fluid">
-<!--		<form id="bucketForm" #bucketForm="ngForm" (ngSubmit)="submit()">-->
+		<form id="bucketForm" #bucketForm="ngForm" (ngSubmit)="submit()">
 			<div class="row">
+
 				<div class="col-6">
 					<div class="form-group">
 						<label for="name">Name<i class="fa fa-asterisk required" title="This field is required."></i></label>
@@ -24,11 +25,10 @@
 					</div>
 				</div>
       </div>
-
-<!--		</form>-->
+		</form>
 	</div>
 </div>
 <div class="modal-footer">
 	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
-	<button type="button" class="btn btn-primary" [disabled]="!isBasicInfoValid()" (click)="submit()">{{submitText}}</button>
+	<button type="button" class="btn btn-primary" [disabled]="!isBasicInfoValid()" (click)="activeModal.close(bucket)">{{submitText}}</button>
 </div>

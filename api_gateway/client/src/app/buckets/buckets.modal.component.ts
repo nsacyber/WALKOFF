@@ -19,10 +19,8 @@ export class BucketsModalComponent implements OnInit, AfterViewInit {
   @Input() bucket: Bucket = new Bucket();
   @Input() title: string;
   @Input() submitText: string;
+  existing: boolean = false;
 
-  validationErrors: { [key: string]: string } = {};
-
-	@ViewChild('typeRef') typeRef: ElementRef;
 
 	constructor (
 		private bucketsService: BucketsService, public activeModal: NgbActiveModal,
@@ -33,6 +31,7 @@ export class BucketsModalComponent implements OnInit, AfterViewInit {
 	}
 
 	ngAfterViewInit(): void {
+	  this.cdr.detectChanges();
 	}
 
 	/**
@@ -40,17 +39,12 @@ export class BucketsModalComponent implements OnInit, AfterViewInit {
 	 */
 	submit(): void {
     if (!this.isBasicInfoValid()) { return; }
+  }
 
-    this.bucketsService
-				.addBucket(this.bucket)
-				.then(bucket => this.activeModal.close({
-					bucket,
-					isEdit: false,
-				})).catch(e => this.toastrService.error(e.message));
-	}
 
   isBasicInfoValid(): boolean {
 		if (this.bucket.name && this.bucket.name.trim()) { return true; }
 		return false;
 	}
+
 }

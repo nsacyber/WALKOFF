@@ -23,7 +23,9 @@ class Bucket(db.Model):
         return out
 
     def as_json(self):
-        out = {"name": self.name,
+        out = {
+                "id": self.id,
+                "name": self.name,
                "description": self.description,
                "triggers": self._get_triggers_as_list()
                }
@@ -34,7 +36,7 @@ class BucketTrigger(db.Model):
     __tablename__ = 'bucket_triggers'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     bucket_id = db.Column(db.Integer, db.ForeignKey('bucket.id'))
-    workflow_id = db.Column(db.String(255), nullable=False)
+    workflow = db.Column(db.String(255), nullable=False)
     event_type = db.Column(db.Enum('s3:ObjectCreated:*',
                                    's3:ObjectRemoved:*',
                                    's3:ObjectAccessed:*',
@@ -43,14 +45,17 @@ class BucketTrigger(db.Model):
     suffix = db.Column(db.String(255), nullable=False)
 
 
-    def __init__(self, workflow_id='', event_type='unspecified', prefix='', suffix=''):
-        self.workflow_id = workflow_id
+    def __init__(self, workflow='', event_type='unspecified', prefix='', suffix=''):
+        self.workflow = workflow
         self.event_type = event_type
         self.prefix = prefix
         self.suffix = suffix
 
     def as_json(self):
-        out = { "workflow_id": self.workflow_id,
+        out = {
+                "id": self.id,
+                "parent": self.bucket_id,
+                "workflow": self.workflow,
                 "event_type": self.event_type,
                 "prefix": self.prefix,
                 "suffix": self.suffix

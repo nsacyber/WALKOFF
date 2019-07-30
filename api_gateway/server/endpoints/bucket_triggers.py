@@ -25,7 +25,7 @@ def create_trigger(bucket_id):
     json_data = request.get_json()
     b = Bucket.query.filter_by(id=bucket_id).first()
     if b:
-        trigger_params = {'workflow_id': json_data['workflow_id'],
+        trigger_params = {'workflow': json_data['workflow'],
             'event_type': json_data['event_type'] if 'event_type' in json_data else 'unspecified',
             'prefix': json_data['prefix'] if 'prefix' in json_data else '',
             'suffix': json_data['suffix'] if 'suffix' in json_data else ''}
@@ -54,8 +54,8 @@ def update_trigger(bucket_id, trigger_id):
     json_data = request.get_json()
     t = Trigger.query.filter_by(id=trigger_id, bucket_id=bucket_id).first()
     if t:
-        if 'workflow_id' in json_data:
-            t.workflow_id = json_data['workflow_id']
+        if 'workflow' in json_data:
+            t.workflow = json_data['workflow']
         if 'event_type' in json_data:
             t.event_type = json_data['event_type']
         if 'prefix' in json_data:

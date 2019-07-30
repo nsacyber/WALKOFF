@@ -9,13 +9,70 @@
 			<input class="form-control" placeholder="Filter Results..." [formControl]="filterQuery" />
 		</div>
   </div>
-  <ngx-datatable #bucketsTable class='material expandable bucketsTable' [columnMode]="'flex'" [rows]="displayBuckets"
+  <ngx-datatable #bucketsTable class='material expandable bucketsTable' [columnMode]="'flex'" [rows]="buckets"
 	 [sorts]="[{prop: 'name', dir: 'asc'}]" [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
-    <ngx-datatable-row-detail [rowHeight]="100" #TriggerRow (toggle)="onDetailToggle($event)">
-      <ng-template let-row="row" ngx-datatable-row-detail-template>
 
-      </ng-template>
+    <ngx-datatable-row-detail [rowHeight]="undefined" #triggerRow (toggle)="onDetailToggle($event)">
+        <ng-template let-row="row" let-expanded="expanded" ngx-datatable-row-detail-template>
+          <div style="padding-left:35px;">
+
+            <!-- TRIGGER SUB-Table -->
+<!--            <div><strong>Address</strong></div>-->
+                <ngx-datatable #triggersTable class='material expandable triggersTable' [columnMode]="'flex'" [rows]="row.triggers"
+	                [sorts]="[{prop: 'id', dir: 'asc'}]" [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
+
+                      <ngx-datatable-column name="id" prop="id" [flexGrow]="1">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                          <span title="{{row.id}}">{{row.id}}</span>
+                        </ng-template>
+                      </ngx-datatable-column>
+
+                      <ngx-datatable-column name="type" prop="type" [flexGrow]="4">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                          <span title="{{row.type}}">{{row.event_type}}</span>
+                        </ng-template>
+                      </ngx-datatable-column>
+
+                      <ngx-datatable-column name="workflow" prop="workflow" [flexGrow]="4">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                          <span title="{{row.workflow}}">{{row.workflow}}</span>
+                        </ng-template>
+                      </ngx-datatable-column>
+
+                      <ngx-datatable-column name="prefix" prop="prefix" [flexGrow]="4">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                          <span title="{{row.prefix}}">{{row.prefix}}</span>
+                        </ng-template>
+                      </ngx-datatable-column>
+
+                      <ngx-datatable-column name="suffix" prop="suffix" [flexGrow]="4">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                          <span title="{{row.suffix}}">{{row.suffix}}</span>
+                        </ng-template>
+                      </ngx-datatable-column>
+
+                      <ngx-datatable-column name="actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                          <button (click)="editTrigger(row)" class="mr-1 btn btn-primary" title="Edit Trigger">
+                            <i class="fa fa-edit"></i>
+                          </button>
+                          <button (click)="deleteTrigger(row)" class="mr-1 btn btn-danger" title="Delete Trigger">
+                            <i class="fa fa-times"></i>
+                          </button>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                </ngx-datatable>
+          </div>
+        </ng-template>
     </ngx-datatable-row-detail>
+
+    <ngx-datatable-column [width]="50" [resizeable]="false" [sortable]="false" [draggable]="false" [canAutoResize]="false">
+      <ng-template let-row="row" let-expanded="expanded" ngx-datatable-cell-template>
+        <a href="javascript:void(0)" [class.datatable-icon-right]="!expanded" [class.datatable-icon-down]="expanded" title="Expand/Collapse Row" (click)="toggleExpandRow(row)"></a>
+      </ng-template>
+    </ngx-datatable-column>
+
     <ngx-datatable-column name="Name" prop="name" [flexGrow]="1">
       <ng-template let-row="row" ngx-datatable-cell-template>
 				<span title="{{row.description}}">{{row.name}}</span>
@@ -26,6 +83,7 @@
 				<span title="{{row.description}}">{{row.description}}</span>
 			</ng-template>
     </ngx-datatable-column>
+
     <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
       <ng-template let-row="row" ngx-datatable-cell-template>
         <button (click)="editBucket(row)" class="mr-1 btn btn-primary" title="Edit Bucket">
@@ -36,13 +94,15 @@
 				</button>
       </ng-template>
     </ngx-datatable-column>
-    <ngx-datatable-column name="TriggerAction" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
+
+     <ngx-datatable-column name="Triggers" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
       <ng-template let-row="row" ngx-datatable-cell-template>
         <button (click)="addTrigger(row)" class="mr-1 btn btn-primary" title="Add Trigger">
-					<i class="fa fa-edit"></i>
+					<i class="fa fa-plus"></i>
 				</button>
       </ng-template>
     </ngx-datatable-column>
+
 	</ngx-datatable>
 </div>
 

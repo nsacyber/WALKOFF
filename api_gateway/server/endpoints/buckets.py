@@ -40,7 +40,7 @@ def create_bucket():
             f"Bucket with name {json_data['name']} already exists")
 
 def _create_trigger(json_data):
-    out = {'workflow_id': json_data['workflow_id'],
+    out = {'workflow': json_data['workflow'],
             'event_type': json_data['event_type'] if 'event_type' in json_data else 'unspecified',
             'prefix': json_data['prefix'] if 'prefix' in json_data else '',
             'suffix': json_data['suffix'] if 'suffix' in json_data else ''}
