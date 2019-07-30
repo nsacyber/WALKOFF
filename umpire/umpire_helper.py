@@ -81,14 +81,14 @@ class UmpireApi:
         found = False
         try:
             minio_client.stat_object("apps-bucket", abs_path);
-            found = True;
+            found = True
         except Exception as e:
             print(e)
 
         if found is True:
             minio_client.remove_object("apps-bucket", abs_path)
             minio_client.put_object("apps-bucket", abs_path, file_data, file_size)
-            print("Removed object")
+            print("Successfully Replaced object")
         else:
             print("NOT FOUND")
 
