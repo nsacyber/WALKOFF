@@ -358,7 +358,7 @@ class Worker:
                                                                          result=repr(e), parameters={}))
 
     async def get_globals(self):
-        url = config.API_GATEWAY_URI.rstrip('/') + '/api'
+        url = config.API_GATEWAY_URI.rstrip('/') + '/walkoff/api'
         headers, self.token = await get_walkoff_auth_header(self.session, self.token)
         # saving decryption for app-level
         payload = {'to_decrypt': 'false'}
@@ -401,7 +401,7 @@ class Worker:
         logger.info(f"Scheduling {node.label}-{self.workflow.execution_id}...")
 
         while not all(parent.id_ in self.accumulator for parent in parents.values()):
-            logger.info(f"Node {node.label}-{self.workflow.execution_id} waiting for parents: {parents.values()}. "
+            logger.debug(f"Node {node.label}-{self.workflow.execution_id} waiting for parents: {parents.values()}. "
                         f"Accumulator: {self.accumulator}")
             await asyncio.sleep(1)
 

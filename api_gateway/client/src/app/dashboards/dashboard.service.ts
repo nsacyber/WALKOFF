@@ -47,21 +47,21 @@ export class DashboardService {
     }
 
     deleteDashboard(dashboard: Dashboard) {
-        return this.http.delete(`/api/dashboards/${ dashboard.id }`)
+        return this.http.delete(`api/dashboards/${ dashboard.id }`)
             .toPromise()
             .then((data) => this.emitChange(data))
             .catch(this.utils.handleResponseError);
     }
 
     getDashboards() : Promise<Dashboard[]> {
-        return this.http.get('/api/dashboards')
+        return this.http.get('api/dashboards')
 			.toPromise()
 			.then((data) => plainToClass(Dashboard, data))
             .catch(this.utils.handleResponseError);
     }
 
     getDashboard(id: string) : Promise<Dashboard> {
-        return this.http.get(`/api/dashboards/${ id }`)
+        return this.http.get(`api/dashboards/${ id }`)
 			.toPromise()
 			.then((data: object) => plainToClass(Dashboard, data))
 			.catch(this.utils.handleResponseError);

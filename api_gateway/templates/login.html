@@ -107,7 +107,7 @@
             var username = $("#username").val();
             var password = $("#password").val();
             $.ajax({
-                url: '/api/auth',
+                url: '/walkoff/api/auth',
                 contentType: 'application/json',
                 data: JSON.stringify({ "username": username, "password": password }),
                 type: "POST",
@@ -115,7 +115,7 @@
                 success: function (data) {
                     sessionStorage.setItem("access_token", data["access_token"]);
                     sessionStorage.setItem("refresh_token", data["refresh_token"]);
-                    location.href = "/";
+                    location.href = "/walkoff";
                 },
                 error: function (e) {
                     $("#message").text("Invalid Login");
