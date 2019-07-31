@@ -15,7 +15,8 @@ from common.config import config, static
 from common.helpers import get_walkoff_auth_header, send_status_update
 from common.redis_helpers import connect_to_redis_pool, xdel, deref_stream_message
 from common.workflow_types import (Node, Action, Condition, Transform, Parameter, Trigger,
-                                   ParameterVariant, Workflow, workflow_dumps, workflow_loads, ConditionException)
+                                   ParameterVariant, Workflow, workflow_dumps, workflow_loads, ConditionException,
+                                   TransformException)
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WORKER")
@@ -330,11 +331,21 @@ class Worker:
             status = NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result, parameters={})
             logger.info(f"Transform {transform.label}-succeeded with result: {result}")
 
-        # TODO: figure out exactly what can be raised by the possible transforms
-        except Exception as e:
+        except TransformException as e:
             logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
-            status = NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, result=repr(e),
+
+            aeval = Interpreter()
+            aeval(transform.transform)
+            if len(aeval.error) > 0:
+                error_tuple = (aeval.error[0]).get_error()
+                ret = error_tuple[0] + "(): " + error_tuple[1]
+
+            status = NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, result=ret,
                                                          parameters={})
+
+        except Exception as e:
+            logger.exception(f"Something bad happened in Condition evaluation: {e!r}")
+            return
 
         # Send the status message through redis to ensure get_action_results completes it correctly
         await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
