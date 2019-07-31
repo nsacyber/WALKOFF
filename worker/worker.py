@@ -344,7 +344,7 @@ class Worker:
                                                          parameters={})
 
         except Exception as e:
-            logger.exception(f"Something bad happened in Condition evaluation: {e!r}")
+            logger.exception(f"Something bad happened in Transform evaluation: {e!r}")
             return
 
         # Send the status message through redis to ensure get_action_results completes it correctly
