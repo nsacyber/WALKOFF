@@ -20,7 +20,7 @@ class UmpireApi:
     async def build_image(app_name, version):
         tag_name = f"{static.APP_PREFIX}_{app_name}"
         try:
-            p_dest = pathlib.Path(f"./temp_apps/{app_name}/{version}/src").mkdir(parents=True, exist_ok=True)
+            pathlib.Path(f"./temp_apps/{app_name}/{version}/src").mkdir(parents=True, exist_ok=True)
         except Exception as e:
             print(e)
 
@@ -80,15 +80,15 @@ class UmpireApi:
         abs_path = f"apps/{app_name}/{version}/{path}"
         found = False
         try:
-            minio_client.stat_object("apps-bucket", abs_path);
+            minio_client.stat_object("apps-bucket", abs_path)
             found = True
         except Exception as e:
-            print(e)
+            return str(e)
 
         if found is True:
             minio_client.remove_object("apps-bucket", abs_path)
             minio_client.put_object("apps-bucket", abs_path, file_data, file_size)
-            print("Successfully Replaced object")
+            return True
         else:
-            print("NOT FOUND")
+            return False
 
