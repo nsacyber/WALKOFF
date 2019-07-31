@@ -3,6 +3,8 @@ from pathlib import Path
 from common.config import config, static
 import asyncio
 import logging
+import io
+# from io import StringIO
 
 
 from common.docker_helpers import connect_to_aiodocker, docker_context, stream_docker_log, logger as docker_logger
@@ -11,7 +13,7 @@ import pathlib
 # tag_name = f"{static.APP_PREFIX}_hello_world"
 # app_name = "hello_world"
 # version = "1.0.0"
-logger = logging.getLogger("Umpire API")
+logger = logging.getLogger("Umpire")
 
 
 class UmpireApi:
@@ -47,12 +49,15 @@ class UmpireApi:
             # logger.info(f"Building {repo} with {Dockerfile} in {./ data / temp_apps / {app_name} / version /}")
             context_dir = f"./temp_apps/{app_name}/{version}/"
             with docker_context(Path(context_dir)) as context:
+                logger.info("Sending image to be built")
                 dockerfile = "./Dockerfile"
                 log_stream = await docker_client.images.build(fileobj=context, tag=f"{config.DOCKER_REGISTRY}/{tag_name}:{version}", rm=True,
                                                           forcerm=True, pull=True, stream=True,
                                                           path_dockerfile=dockerfile,
                                                           encoding="application/x-tar")
+                logger.info("Docker image building")
                 await stream_docker_log(log_stream)
+                logger.info("Docker image Built")
     @staticmethod
     async def list_files(app_name, version):
         relative_path = []
@@ -87,6 +92,7 @@ class UmpireApi:
 
         if found is True:
             minio_client.remove_object("apps-bucket", abs_path)
+            file_data = io.BytesIO(file_data)
             minio_client.put_object("apps-bucket", abs_path, file_data, file_size)
             return True
         else:

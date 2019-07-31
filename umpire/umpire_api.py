@@ -55,6 +55,8 @@ class UmpireApiFileView1(HTTPMethodView):
         if file_data is None:
             raise ServerError("Unable to process. Parameter file_data not received.", status_code=400)
 
+        # File data should be bytes right now
+        file_data = file_data.encode('utf-8')
         file_size = len(file_data)
 
         success = await UmpireApi.update_file(app_name, version, path, file_data, file_size)
