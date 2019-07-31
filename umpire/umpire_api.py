@@ -16,25 +16,43 @@ BUILD_STATUS_GLOB = "umpire_api_build"
 
 class UmpireApiFileView1(HTTPMethodView):
     # GET http://localhost:2828/file
-    # Returns all files
+    # Returns context of file given a specific file_id
+    # Body Params: app_name, app_version, file_path
     async def get(self, request):
-        return text("This returns all the files")
+        app_name = json.loads(request.body.decode('utf-8')).get("app_name")
+        version = json.loads(request.body.decode('utf-8')).get("app_version")
+        path = json.loads(request.body.decode('utf-8')).get("file_path")
+
+        file_data = await UmpireApi.get_file(app_name, version, path)
+        return text(file_data)
 
     # POST http://localhost:2828/file
-    # Body Params: file_path, file_data
+    # Body Params: app_name, app_version, file_path, file_data, file_size
     # Returns context of file given a specific file_id
     async def post(self, request):
-        file_path = json.loads(request.body.decode('utf-8')).get("file_path")
+        app_name = json.loads(request.body.decode('utf-8')).get("app_name")
+        version = json.loads(request.body.decode('utf-8')).get("app_version")
+        path = json.loads(request.body.decode('utf-8')).get("file_path")
         file_data = json.loads(request.body.decode('utf-8')).get("file_data")
-        return text(f"You have updated {file_path} to include {file_data}")
+        file_size = json.loads(request.body.decode('utf-8')).get("file_size")
+
+        success = await UmpireApi.update_file(app_name, version, path, file_data, file_size)
+        if success:
+            return text(f"You have updated {path} to include {file_data}")
+        else:
+            return text("FILE NOT FOUND")
 
 
 class UmpireApiFileView2(HTTPMethodView):
-    # GET http://localhost:2828/file/file_id
-    # Returns context of file given a specific file_id
-    # URL Params: file_id
-    async def get(self, request, file_path):
-        return text(f"You have made a get request for {file_path}'s file context.")
+    # GET http://localhost:2828/files
+    # Returns all files
+    # Body Params: app_name, version, path
+    async def get(self, request):
+        app_name = json.loads(request.body.decode('utf-8')).get("app_name")
+        version = json.loads(request.body.decode('utf-8')).get("app_version")
+
+        result = await UmpireApi.list_files(app_name, version)
+        return text(result)
 
 
 class UmpireApiBuildView1(HTTPMethodView):
@@ -47,6 +65,7 @@ class UmpireApiBuildView1(HTTPMethodView):
             build_keys = set(await conn.keys(pattern=BUILD_STATUS_GLOB + "*", encoding="utf-8"))
             for key in build_keys:
                 build = await conn.execute('get', key)
+                build = build.decode('utf-8')
                 ret.append((key, build))
             return text(f"List of Current Builds: {ret}")
 
@@ -75,6 +94,7 @@ class UmpireApiBuildView2(HTTPMethodView):
         async with connect_to_redis_pool(config.REDIS_URI) as conn:
             get = BUILD_STATUS_GLOB + "." + build_id
             build_status = await conn.execute('get', get)
+            build_status = build_status.decode('utf-8')
             return text(build_status)
 
 
@@ -82,7 +102,7 @@ app.add_route(UmpireApiBuildView1.as_view(), '/build')
 app.add_route(UmpireApiBuildView2.as_view(), '/build/<build_id>')
 
 app.add_route(UmpireApiFileView1.as_view(), '/file')
-app.add_route(UmpireApiFileView2.as_view(), '/file/<file_path>')
+app.add_route(UmpireApiFileView2.as_view(), '/files')
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=2828, debug=True)
