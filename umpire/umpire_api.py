@@ -1,6 +1,7 @@
 from sanic import Sanic
 from sanic.response import text
 from sanic.views import HTTPMethodView
+from sanic.exceptions import ServerError
 import json
 import uuid
 import logging
@@ -20,8 +21,16 @@ class UmpireApiFileView1(HTTPMethodView):
     # Body Params: app_name, app_version, file_path
     async def get(self, request):
         app_name = json.loads(request.body.decode('utf-8')).get("app_name")
+        if app_name is None:
+            raise ServerError("Unable to process. Parameter app_name not received.", status_code=400)
+
         version = json.loads(request.body.decode('utf-8')).get("app_version")
+        if version is None:
+            raise ServerError("Unable to process. Parameter app_version not received.", status_code=400)
+
         path = json.loads(request.body.decode('utf-8')).get("file_path")
+        if path is None:
+            raise ServerError("Unable to process. Parameter file-path not received.", status_code=400)
 
         file_data = await UmpireApi.get_file(app_name, version, path)
         return text(file_data)
@@ -31,16 +40,28 @@ class UmpireApiFileView1(HTTPMethodView):
     # Returns context of file given a specific file_id
     async def post(self, request):
         app_name = json.loads(request.body.decode('utf-8')).get("app_name")
+        if app_name is None:
+            raise ServerError("Unable to process. Parameter app_name not received.", status_code=400)
+
         version = json.loads(request.body.decode('utf-8')).get("app_version")
+        if version is None:
+            raise ServerError("Unable to process. Parameter app_version not received.", status_code=400)
+
         path = json.loads(request.body.decode('utf-8')).get("file_path")
+        if path is None:
+            raise ServerError("Unable to process. Parameter file_path not received.", status_code=400)
+
         file_data = json.loads(request.body.decode('utf-8')).get("file_data")
-        file_size = json.loads(request.body.decode('utf-8')).get("file_size")
+        if file_data is None:
+            raise ServerError("Unable to process. Parameter file_data not received.", status_code=400)
+
+        file_size = len(file_data)
 
         success = await UmpireApi.update_file(app_name, version, path, file_data, file_size)
         if success:
             return text(f"You have updated {path} to include {file_data}")
         else:
-            return text("FILE NOT FOUND")
+            raise ServerError("FILE NOT FOUND", status_code=400)
 
 
 class UmpireApiFileView2(HTTPMethodView):
@@ -49,7 +70,12 @@ class UmpireApiFileView2(HTTPMethodView):
     # Body Params: app_name, version, path
     async def get(self, request):
         app_name = json.loads(request.body.decode('utf-8')).get("app_name")
+        if app_name is None:
+            raise ServerError("Unable to process. Parameter app_name not received.", status_code=400)
+
         version = json.loads(request.body.decode('utf-8')).get("app_version")
+        if version is None:
+            raise ServerError("Unable to process. Parameter app_version not received.", status_code=400)
 
         result = await UmpireApi.list_files(app_name, version)
         return text(result)
@@ -59,7 +85,6 @@ class UmpireApiBuildView1(HTTPMethodView):
     # GET http://localhost:2828/build
     # Returns list of current builds
     async def get(self, request):
-
         async with connect_to_redis_pool(config.REDIS_URI) as conn:
             ret = []
             build_keys = set(await conn.keys(pattern=BUILD_STATUS_GLOB + "*", encoding="utf-8"))
@@ -71,11 +96,17 @@ class UmpireApiBuildView1(HTTPMethodView):
 
     # POST http://localhost:2828/build
     # Creates a build for a specified WALKOFF app/version number and sets build status in redis keyed by UUID
-    # Body Params: app_name, version_number
+    # Body Params: app_name, app_version
     async def post(self, request):
         app_name = json.loads(request.body.decode('utf-8')).get("app_name")
-        version_number = json.loads(request.body.decode('utf-8')).get("version_number")
-        await UmpireApi.build_image(app_name=app_name, version=version_number)
+        if app_name is None:
+            raise ServerError("Unable to process. Parameter app_name not received.", status_code=400)
+
+        version = json.loads(request.body.decode('utf-8')).get("app_version")
+        if version is None:
+            raise ServerError("Unable to process. Parameter app_version not received.", status_code=400)
+
+        await UmpireApi.build_image(app_name, version)
 
         build_id = str(uuid.uuid4())
         redis_key = BUILD_STATUS_GLOB + "." + app_name + "." + build_id
