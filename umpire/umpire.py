@@ -79,8 +79,8 @@ class Umpire:
             for signame in {'SIGINT', 'SIGTERM'}:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
-            logger.info("Executing Umpire API...")
-            os.system("python ./umpire/umpire_api.py")
+            logger.info("Bringing up Umpire API...")
+            os.system("python umpire_api.py")
 
             logger.info("Umpire is ready!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),

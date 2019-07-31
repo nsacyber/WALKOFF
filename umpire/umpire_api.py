@@ -2,29 +2,16 @@ from sanic import Sanic
 from sanic.response import text
 from sanic.views import HTTPMethodView
 import json
-from contextlib import asynccontextmanager
-import aioredis
 import uuid
-import os
 import logging
+
+from common.config import config
+from common.redis_helpers import connect_to_redis_pool
+from umpire.umpire_helper import UmpireApi
+
 logger = logging.getLogger("UMPIRE")
-
 app = Sanic('umpire_api')
-REDIS_URI = os.getenv("REDIS_URI", "redis://resource_redis:6379")
 BUILD_STATUS_GLOB = "umpire_api_build"
-
-
-@asynccontextmanager
-async def connect_to_redis_pool(redis_uri) -> aioredis.Redis:
-    # Redis client bound to pool of connections (auto-reconnecting).
-    redis = await aioredis.create_redis_pool(redis_uri)
-    try:
-        yield redis
-    finally:
-        # gracefully close pool
-        redis.close()
-        await redis.wait_closed()
-        logger.info("Redis connection pool closed.")
 
 
 class UmpireApiFileView1(HTTPMethodView):
@@ -55,7 +42,7 @@ class UmpireApiBuildView1(HTTPMethodView):
     # Returns list of current builds
     async def get(self, request):
 
-        async with connect_to_redis_pool(REDIS_URI) as conn:
+        async with connect_to_redis_pool(config.REDIS_URI) as conn:
             ret = []
             build_keys = set(await conn.keys(pattern=BUILD_STATUS_GLOB + "*", encoding="utf-8"))
             for key in build_keys:
@@ -69,12 +56,12 @@ class UmpireApiBuildView1(HTTPMethodView):
     async def post(self, request):
         app_name = json.loads(request.body.decode('utf-8')).get("app_name")
         version_number = json.loads(request.body.decode('utf-8')).get("version_number")
-        app_with_version = app_name + "/" + version_number
+        await UmpireApi.build_image(app_name=app_name, version=version_number)
 
         build_id = str(uuid.uuid4())
         redis_key = BUILD_STATUS_GLOB + "." + app_name + "." + build_id
         build_id = app_name + "." + build_id
-        async with connect_to_redis_pool(REDIS_URI) as conn:
+        async with connect_to_redis_pool(config.REDIS_URI) as conn:
             await conn.execute('set', redis_key, "BUILDING")
             ret = {"build_id": build_id}
             return text(ret)
@@ -85,7 +72,7 @@ class UmpireApiBuildView2(HTTPMethodView):
     # Returns build status of build specified by build id
     # URL Param: build_id
     async def get(self, request, build_id):
-        async with connect_to_redis_pool(REDIS_URI) as conn:
+        async with connect_to_redis_pool(config.REDIS_URI) as conn:
             get = BUILD_STATUS_GLOB + "." + build_id
             build_status = await conn.execute('get', get)
             return text(build_status)
