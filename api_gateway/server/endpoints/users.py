@@ -16,8 +16,11 @@ with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(i
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 def read_all_users():
     page = request.args.get('page', 1, type=int)
-    return [user.as_json() for user in
-            User.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], HTTPStatus.OK
+    users = []
+    for user in User.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items:
+        if user.username != "internal_user":
+            users.append(user.as_json())
+    return users, HTTPStatus.OK
 
 
 @jwt_required
@@ -47,7 +50,10 @@ def create_user():
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 @with_user('read', 'user_id')
 def read_user(user_id):
-    return user_id.as_json(), HTTPStatus.OK
+    user = User.query.filter_by(User.id == user_id).first()
+    if user.username != "internal_user":
+        return user_id.as_json(), HTTPStatus.OK
+    return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required
