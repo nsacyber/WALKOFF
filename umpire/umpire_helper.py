@@ -4,8 +4,7 @@ from common.config import config, static
 import asyncio
 import logging
 import io
-# from io import StringIO
-
+import aiodocker
 
 from common.docker_helpers import connect_to_aiodocker, docker_context, stream_docker_log, logger as docker_logger
 import pathlib
@@ -15,12 +14,25 @@ import pathlib
 # version = "1.0.0"
 logger = logging.getLogger("Umpire")
 
+async def push_image(docker_client, repo):
+    logger.info(f"Pushing image {repo}.")
+
+    try:
+        await docker_client.images.push(repo)
+        # await stream_docker_log(log_stream)
+        logger.info(f"Pushed image {repo}.")
+        return True
+    except aiodocker.exceptions.DockerError as e:
+        logger.exception(f"Failed to push image: {e}")
+        return False
+
 
 class UmpireApi:
 
     @staticmethod
     async def build_image(app_name, version):
         tag_name = f"{static.APP_PREFIX}_{app_name}"
+        repo = f"{config.DOCKER_REGISTRY}/{tag_name}:{version}"
         try:
             pathlib.Path(f"./temp_apps/{app_name}/{version}/src").mkdir(parents=True, exist_ok=True)
         except Exception as e:
@@ -48,16 +60,18 @@ class UmpireApi:
             # async def build_image(docker_client, repo, dockerfile, context_dir, dockerignore):
             # logger.info(f"Building {repo} with {Dockerfile} in {./ data / temp_apps / {app_name} / version /}")
             context_dir = f"./temp_apps/{app_name}/{version}/"
+
             with docker_context(Path(context_dir)) as context:
                 logger.info("Sending image to be built")
                 dockerfile = "./Dockerfile"
-                log_stream = await docker_client.images.build(fileobj=context, tag=f"{config.DOCKER_REGISTRY}/{tag_name}:{version}", rm=True,
+                log_stream = await docker_client.images.build(fileobj=context, tag=repo, rm=True,
                                                           forcerm=True, pull=True, stream=True,
                                                           path_dockerfile=dockerfile,
                                                           encoding="application/x-tar")
                 logger.info("Docker image building")
                 await stream_docker_log(log_stream)
                 logger.info("Docker image Built")
+                await push_image(docker_client, repo)
     @staticmethod
     async def list_files(app_name, version):
         relative_path = []
@@ -93,6 +107,8 @@ class UmpireApi:
         if found is True:
             minio_client.remove_object("apps-bucket", abs_path)
             file_data = io.BytesIO(file_data)
+
+
             minio_client.put_object("apps-bucket", abs_path, file_data, file_size)
             return True
         else:
