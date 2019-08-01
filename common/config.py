@@ -84,6 +84,7 @@ class Config:
     API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", f"http://{Static.API_GATEWAY_SERVICE}:8080")
     REDIS_URI = os.getenv("REDIS_URI", f"redis://{Static.REDIS_SERVICE}:6379")
     ENCRYPTION_KEY_PATH = os.getenv("ENCRYPTION_KEY_PATH", "/run/secrets/walkoff_encryption_key")
+    INTERNAL_KEY_PATH = os.getenv("INTERNAL_KEY_PATH", "/run/secrets/walkoff_internal_key")
     MINIO = os.getenv("MINIO", f"{Static.MINIO_SERVICE}:9000")
 
     # Worker options
