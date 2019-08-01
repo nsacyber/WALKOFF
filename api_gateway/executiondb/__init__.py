@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 from sqlalchemy_utils import database_exists, create_database
 
-import api_gateway.config
+from common.config import config
 from api_gateway.helpers import format_db_path
 
 Base = declarative_base()
@@ -30,7 +30,7 @@ class ExecutionDatabase(object):
     instance = None
     db_type = ""
 
-    def __init__(self, execution_db_type, execution_db_path, execution_db_host="localhost"):
+    def __init__(self):
         # All of these imports are necessary
         from api_gateway.executiondb.returns import ReturnApi
         from api_gateway.executiondb.parameter import Parameter, ParameterApi
@@ -45,15 +45,15 @@ class ExecutionDatabase(object):
         from api_gateway.executiondb.workflow import Workflow
         from api_gateway.executiondb.workflowresults import WorkflowStatus, NodeStatus
 
-        ExecutionDatabase.db_type = execution_db_type
+        ExecutionDatabase.db_type = config.DB_TYPE
 
-        if 'sqlite' in execution_db_type:
-            self.engine = create_engine(format_db_path(execution_db_type, execution_db_path),
+        if 'sqlite' in config.DB_TYPE:
+            self.engine = create_engine(format_db_path(config.DB_TYPE, config.EXECUTION_DB_NAME),
                                         connect_args={'check_same_thread': False}, poolclass=NullPool)
         else:
             self.engine = create_engine(
-                format_db_path(execution_db_type, execution_db_path, 'EXECUTION_DB_USERNAME', 'EXECUTION_DB_PASSWORD',
-                               execution_db_host),
+                format_db_path(config.DB_TYPE, config.EXECUTION_DB_NAME, config.DB_USERNAME, config.DB_PASSWORD,
+                               config.DB_HOST),
                 poolclass=NullPool)
             if not database_exists(self.engine.url):
                 try:

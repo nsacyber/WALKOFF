@@ -1,9 +1,8 @@
 import logging
 import base64
+import json
 from uuid import uuid4
 
-from Crypto import Random
-from Crypto.Cipher import AES
 from flask import current_app
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 
@@ -11,8 +10,9 @@ from sqlalchemy import Column, String, JSON, ForeignKey, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 
+from common.config import config
+from common.helpers import fernet_decrypt, fernet_encrypt
 from api_gateway.executiondb import Base, BaseSchema
-
 
 logger = logging.getLogger(__name__)
 
@@ -86,42 +86,12 @@ class GlobalVariableSchema(BaseSchema):
 
     @validates_schema
     def validate_global(self, data, **kwargs):
-        f = open('/run/secrets/encryption_key')
-        key = f.read()
-        my_cipher = GlobalCipher(key)
-        data['value'] = my_cipher.encrypt(data['value'])
-
         try:
             if "schema" in data:
-                template = current_app.running_context.execution_db.session.query(GlobalVariableTemplate).filter(
-                    GlobalVariableTemplate.id_ == data['schema']
-                ).first()
-                Draft4Validator(template.schema).validate(data['value'])
-        except (SchemaError, JSONSchemaValidationError) as e:
-            raise MarshmallowValidationError(str(e))
+                with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
+                    temp = fernet_decrypt(f.read(), data['value'])
+                Draft4Validator(data['schema']['schema']).validate(temp)
 
-
-class GlobalCipher(object):
-
-    def __init__(self, key):
-        self.key = key.rstrip()
-
-    def encrypt(self, raw):
-        raw = self.pad(raw)
-        iv = Random.new().read(AES.block_size)
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return (base64.b64encode(iv + cipher.encrypt(raw))).decode('utf-8')
-
-    def decrypt(self, enc):
-        enc = base64.b64decode(enc)
-        iv = enc[:AES.block_size]
-        cipher = AES.new(self.key, AES.MODE_CBC, iv)
-        return self.unpad(cipher.decrypt(enc[AES.block_size:])).decode('utf-8')
-
-    @staticmethod
-    def pad(x):
-        return x + (32 - len(x) % 32) * chr(32 - len(x) % 32)
-
-    @staticmethod
-    def unpad(x):
-        return x[:-ord(x[len(x)-1:])]
+        except (SchemaError, JSONSchemaValidationError):
+            raise MarshmallowValidationError(f"Global variable did not validate with provided schema: "
+                                             f"{data['schema']['schema']}")

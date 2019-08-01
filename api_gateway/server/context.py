@@ -1,10 +1,11 @@
 import logging
 import os
+import re
 
 from sqlalchemy.exc import OperationalError
 from redis import Redis
 
-import api_gateway.config
+from common.config import config
 import api_gateway.executiondb
 import api_gateway.scheduler
 
@@ -18,9 +19,7 @@ class Context(object):
             variables that might be needed.
         """
         try:
-            self.execution_db = api_gateway.executiondb.ExecutionDatabase(api_gateway.config.Config.EXECUTION_DB_TYPE,
-                                                                          api_gateway.config.Config.EXECUTION_DB_PATH,
-                                                                          api_gateway.config.Config.EXECUTION_DB_HOST)
+            self.execution_db = api_gateway.executiondb.ExecutionDatabase()
         except OperationalError as e:
             if "password" in str(e):
                 logger.error("Incorrect username and/or password for execution database. Please make sure these are "
@@ -32,5 +31,19 @@ class Context(object):
             os._exit(1)
 
         if init_all:
-            self.cache = Redis(**api_gateway.config.Config.REDIS_OPTIONS)
+            exp = re.compile(r"redis://(.*):(\d+)")
+            r = re.match(exp, config.REDIS_URI)
+
+            if not r:
+                logger.error(f"REDIS_URI not set correctly, got {config.REDIS_URI} "
+                             f"but expected URI of form 'redis://hostname:6379'")
+                os._exit(1)
+
+            host = r.group(1)
+            try:
+                port = r.group(2)
+            except IndexError:
+                port = 6379
+
+            self.cache = Redis(host=host, port=port)
             self.scheduler = api_gateway.scheduler.Scheduler(app)

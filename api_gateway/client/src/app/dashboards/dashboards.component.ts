@@ -2,8 +2,8 @@ import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
-import * as jsPDF from 'jspdf';
-import * as html2canvas from 'html2canvas';
+//import * as jsPDF from 'jspdf';
+//import * as html2canvas from 'html2canvas';
 
 import { AuthService } from '../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
@@ -18,7 +18,7 @@ import { Dashboard } from '../models/dashboard/dashboard';
 	providers: [AuthService],
 })
 export class DashboardsComponent implements OnInit {
-	@ViewChild('dashboardsMain') main: ElementRef;
+	@ViewChild('dashboardsMain', { static: true }) main: ElementRef;
 	dashboardName: string;
 	dashboardId: string;
 	paramsSub: any;
@@ -126,36 +126,36 @@ export class DashboardsComponent implements OnInit {
 
 	savePDF() {
 		return window.print();
-		var el = $('#main');//document.getElementById('grid');
-		var HTML_Width = el.width();
-		var HTML_Height = el.height();
-		var top_left_margin = 15;
-		var PDF_Width = HTML_Width + (top_left_margin * 2);
-		var PDF_Height = (PDF_Width * 1.5) + (top_left_margin * 2);
-		var canvas_image_width = HTML_Width;
-		var canvas_image_height = HTML_Height;
+		// var el = $('#main');//document.getElementById('grid');
+		// var HTML_Width = el.width();
+		// var HTML_Height = el.height();
+		// var top_left_margin = 15;
+		// var PDF_Width = HTML_Width + (top_left_margin * 2);
+		// var PDF_Height = (PDF_Width * 1.5) + (top_left_margin * 2);
+		// var canvas_image_width = HTML_Width;
+		// var canvas_image_height = HTML_Height;
 
-		var totalPDFPages = Math.ceil(HTML_Height / PDF_Height) - 1;
-
-
-		html2canvas(el[0], { allowTaint: true }).then(function (canvas) {
-			canvas.getContext('2d');
-
-			console.log(canvas.height + "  " + canvas.width);
+		// var totalPDFPages = Math.ceil(HTML_Height / PDF_Height) - 1;
 
 
-			var imgData = canvas.toDataURL("image/jpeg", 1.0);
-			var pdf = new jsPDF('p', 'pt', [PDF_Width, PDF_Height]);
-			pdf.addImage(imgData, 'JPG', top_left_margin, top_left_margin, canvas_image_width, canvas_image_height);
+		// html2canvas(el[0], { allowTaint: true }).then(function (canvas) {
+		// 	canvas.getContext('2d');
+
+		// 	console.log(canvas.height + "  " + canvas.width);
 
 
-			for (var i = 1; i <= totalPDFPages; i++) {
-				pdf.addPage(PDF_Width, PDF_Height);
-				pdf.addImage(imgData, 'JPG', top_left_margin, -(PDF_Height * i) + (top_left_margin * 4), canvas_image_width, canvas_image_height);
-			}
+		// 	var imgData = canvas.toDataURL("image/jpeg", 1.0);
+		// 	var pdf = new jsPDF('p', 'pt', [PDF_Width, PDF_Height]);
+		// 	pdf.addImage(imgData, 'JPG', top_left_margin, top_left_margin, canvas_image_width, canvas_image_height);
 
-			pdf.save("HTML-Document.pdf");
-		});
+
+		// 	for (var i = 1; i <= totalPDFPages; i++) {
+		// 		pdf.addPage(PDF_Width, PDF_Height);
+		// 		pdf.addImage(imgData, 'JPG', top_left_margin, -(PDF_Height * i) + (top_left_margin * 4), canvas_image_width, canvas_image_height);
+		// 	}
+
+		// 	pdf.save("HTML-Document.pdf");
+		// });
 		// html2canvas(document.getElementById('grid')).then(canvas => {
 		// 	// var img = canvas.toDataURL("image/png");
 		// 	// var doc = new jsPDF();

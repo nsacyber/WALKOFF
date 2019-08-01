@@ -15,14 +15,14 @@ export class SettingsService {
 	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 
 	getConfiguration(): Promise<Configuration> {
-		return this.http.get('/api/settings')
+		return this.http.get('api/settings')
 			.toPromise()
 			.then((data: object) => plainToClass(Configuration, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	updateConfiguration(configuration: Configuration): Promise<Configuration> {
-		return this.http.put('/api/settings', configuration)
+		return this.http.put('api/settings', configuration)
 			.toPromise()
 			.then((data: object) => plainToClass(Configuration, data))
 			.catch(this.utils.handleResponseError);
@@ -33,56 +33,56 @@ export class SettingsService {
 	}
 
 	getUsers(page: number = 1): Promise<User[]> {
-		return this.http.get(`/api/users?page=${ page }`)
+		return this.http.get(`api/users?page=${ page }`)
 			.toPromise()
 			.then((data: object[]) => plainToClass(User, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	addUser(user: User): Promise<User> {
-		return this.http.post('/api/users', user)
+		return this.http.post('api/users', user)
 			.toPromise()
 			.then((data: object) => plainToClass(User, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	editUser(user: User): Promise<User> {
-		return this.http.put(`/api/users/${user.id}`, user)
+		return this.http.put(`api/users/${user.id}`, user)
 			.toPromise()
 			.then((data: object) => plainToClass(User, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	deleteUser(id: number): Promise<void> {
-		return this.http.delete(`/api/users/${id}`)
+		return this.http.delete(`api/users/${id}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
 	}
 
 	getRoles(): Promise<Role[]> {
-		return this.http.get('/api/roles')
+		return this.http.get('api/roles')
 			.toPromise()
 			.then((data: object[]) => plainToClass(Role, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	addRole(role: Role): Promise<Role> {
-		return this.http.post('/api/roles', role)
+		return this.http.post('api/roles', role)
 			.toPromise()
 			.then((data: object) => plainToClass(Role, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	editRole(role: Role): Promise<Role> {
-		return this.http.put(`/api/roles/${role.id}`, role)
+		return this.http.put(`api/roles/${role.id}`, role)
 			.toPromise()
 			.then((data: object) => plainToClass(Role, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	deleteRole(id: number): Promise<void> {
-		return this.http.delete(`/api/roles/${id}`)
+		return this.http.delete(`api/roles/${id}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
@@ -114,7 +114,7 @@ export class SettingsService {
 		// ];
 
 		// return Promise.resolve(testData);
-		return this.http.get('/api/availableresourceactions')
+		return this.http.get('api/availableresourceactions')
 			.toPromise()
 			.then((data: object[]) => plainToClass(AvailableResourceAction, data))
 			.catch(this.utils.handleResponseError);

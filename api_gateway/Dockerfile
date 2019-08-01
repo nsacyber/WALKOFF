@@ -1,21 +1,25 @@
-FROM python@sha256:8fe3b17b88644d379ca7e0c724a82a595c8cfbe2b37e1d6d33e7bb5c435a8a29 as base
+FROM python:3.7.4-slim-buster as base
 
+# Stage - Install/build Python dependencies
 FROM base as builder
-RUN apk --no-cache add --update alpine-sdk libffi libffi-dev postgresql-dev musl-dev
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends autoconf g++ python3.7-dev \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /install
 WORKDIR /install
 
 COPY ./api_gateway/requirements.txt /requirements.txt
-RUN pip install --prefix="/install" -r /requirements.txt
+RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.txt
 
+# Stage - Copy pip packages and source files
 FROM base
 
 COPY --from=builder /install /usr/local
-RUN apk --no-cache add --update libpq
 COPY ./common /app/common
 COPY ./api_gateway /app/api_gateway
 WORKDIR /app
 
 
-CMD gunicorn -k gevent -b $IP:$PORT api_gateway.walkoff:app
+CMD gunicorn -k gevent -b 0.0.0.0:8080 api_gateway.server.app:app

@@ -1,6 +1,6 @@
-import api_gateway.config
+from common.config import static
 from api_gateway.helpers import compose_api
 
-compose_api(api_gateway.config.Config)
+compose_api(static)
 
 

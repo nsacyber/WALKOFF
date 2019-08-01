@@ -8,27 +8,25 @@
 				<div class="col-6">
 					<div class="form-group">
 						<label for="username">
-							Username
-							<i class="fa fa-asterisk required" title="This field is required."></i>
+							Username <i class="fa fa-asterisk required" title="This field is required."></i>
 						</label>
-						<input type="text" class="form-control" [(ngModel)]="workingUser.username" name="username" #username="ngModel" required>
-						<div *ngIf="username.errors && (username.dirty || username.touched)" class="alert alert-danger">
-							<div [hidden]="!username.errors.required">
-								Username is required.
-							</div>
+						<input type="text" class="form-control" [class.is-invalid]="username.touched && username.invalid" [(ngModel)]="workingUser.username" name="username" #username="ngModel" required>
+						<div class="invalid-feedback">
+							Username is required.
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="active">Active</label>
-						<input type="checkbox" class="form-control" [(ngModel)]="workingUser.active" name="active">
-					</div>
-					<div class="form-group">
 						<label for="role_ids">
-							Roles
-							<i class="fa fa-asterisk required" title="At least one role is required."></i>
+							Roles <i class="fa fa-asterisk required" title="At least one role is required."></i>
 						</label>
 						<select2 [data]="roleSelectData" [value]="roleSelectInitialValue" [options]="roleSelectConfig"
 						(valueChanged)="roleSelectChange($event)"></select2>
+					</div>
+					<div class="form-group">
+						<span class="switch">
+							<input type="checkbox" class="switch" [(ngModel)]="workingUser.active" name="is_active" id="is_active">
+							<label class="m-0" for="is_active">{{ workingUser.active ? 'Active' : 'Inactive'}}</label>
+						</span>
 					</div>
 				</div>
 				<div class="col-6">

@@ -5,6 +5,8 @@
 @import '~font-awesome/scss/font-awesome';
 @import '~bootstrap/scss/bootstrap';
 
+@import 'bootstrap4-switch';
+
 @import "~codemirror/lib/codemirror.css";
 @import "~codemirror/theme/darcula.css";
 
@@ -13,7 +15,7 @@
 @import '@swimlane/ngx-datatable/release/assets/icons.css';
 @import 'select2/dist/css/select2.min.css';
 @import 'ngx-toastr/toastr.css';
-@import "~jsoneditor/dist/jsoneditor.min.css";
+@import '~jsoneditor/dist/jsoneditor.min.css';
 
 /* Hack along for modal animations in ng-bootstrap */
 @keyframes modal-b-fade {

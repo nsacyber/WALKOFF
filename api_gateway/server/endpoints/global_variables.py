@@ -3,6 +3,8 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
 
+from common.config import config
+from common.helpers import fernet_encrypt, fernet_decrypt
 from api_gateway import helpers
 from api_gateway.executiondb.global_variable import (GlobalVariable, GlobalVariableSchema,
                                                      GlobalVariableTemplate, GlobalVariableTemplateSchema)
@@ -11,8 +13,12 @@ from api_gateway.security import permissions_accepted_for_resources, ResourcePer
 from api_gateway.server.decorators import with_resource_factory, paginate
 from api_gateway.server.problem import unique_constraint_problem
 from http import HTTPStatus
+<<<<<<< HEAD
 from api_gateway.executiondb.global_variable import GlobalCipher
 from common.roles_helpers import auth_check, update_permissions, default_permissions
+=======
+
+>>>>>>> 1.0.0-alpha.1
 
 import logging
 logger = logging.getLogger(__name__)
@@ -46,13 +52,12 @@ global_variable_template_schema = GlobalVariableTemplateSchema()
 @jwt_required
 @paginate(global_variable_schema)
 def read_all_globals():
-    f = open('/run/secrets/encryption_key')
-    key = f.read()
-    my_cipher = GlobalCipher(key)
+    with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
+        key = f.read()
+        ret = []
+        query = current_app.running_context.execution_db.session.query(GlobalVariable).order_by(GlobalVariable.name).all()
 
-    ret = []
-    query = current_app.running_context.execution_db.session.query(GlobalVariable).order_by(GlobalVariable.name).all()
-
+<<<<<<< HEAD
     if request.args.get('to_decrypt') == "false":
         return query, HTTPStatus.OK
     else:
@@ -63,13 +68,27 @@ def read_all_globals():
                 temp_var.value = my_cipher.decrypt(global_var.value)
                 ret.append(temp_var)
         return ret, HTTPStatus.OK
+=======
+        if request.args.get('to_decrypt') == "false":
+            return query, HTTPStatus.OK
+        else:
+            for global_var in query:
+                temp_var = deepcopy(global_var)
+                temp_var.value = fernet_decrypt(key, global_var.value)
+                ret.append(temp_var)
+
+            return ret, HTTPStatus.OK
+>>>>>>> 1.0.0-alpha.1
 
 
 @jwt_required
 @with_global_variable("read", "global_var")
 def read_global(global_var):
+<<<<<<< HEAD
     global_id = str(global_var.id_)
     to_read = auth_check(global_id, "read", "global_variables")
+=======
+>>>>>>> 1.0.0-alpha.1
 
     if to_read:
         f = open('/run/secrets/encryption_key')
@@ -84,7 +103,12 @@ def read_global(global_var):
             global_json['value'] = my_cipher.decrypt(global_json['value'])
             return jsonify(global_json), HTTPStatus.OK
     else:
+<<<<<<< HEAD
         return None, HTTPStatus.FORBIDDEN
+=======
+        with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
+            return jsonify(fernet_decrypt(f.read(), global_json['value'])), HTTPStatus.OK
+>>>>>>> 1.0.0-alpha.1
 
 
 @jwt_required
@@ -118,6 +142,9 @@ def create_global():
         default_permissions("global_variables", global_id)
 
     try:
+        with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
+            data['value'] = fernet_encrypt(f.read(), data['value'])
+
         global_variable = global_variable_schema.load(data)
         current_app.running_context.execution_db.session.add(global_variable)
         current_app.running_context.execution_db.session.commit()
@@ -132,6 +159,7 @@ def create_global():
 def update_global(global_var):
     # todo: ONCE UI ELEMENT IS BUILT OUT, DO CHECK FOR UPDATED PERMISSIONS
     data = request.get_json()
+<<<<<<< HEAD
     global_id = data["id_"]
 
     to_update = auth_check(global_id, "update", "global_variables")
@@ -145,6 +173,19 @@ def update_global(global_var):
             return unique_constraint_problem("global_variable", "update", data["name"])
     else:
         return None, HTTPStatus.FORBIDDEN
+=======
+    try:
+        with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
+            data['value'] = fernet_encrypt(f.read(), data['value'])
+
+        global_variable_schema.load(data, instance=global_var)
+        current_app.running_context.execution_db.session.commit()
+        return global_variable_schema.dump(global_var), HTTPStatus.OK
+    except (IntegrityError, StatementError):
+        current_app.running_context.execution_db.session.rollback()
+        return unique_constraint_problem("global_variable", "update", data["name"])
+
+>>>>>>> 1.0.0-alpha.1
 
 # Templates
 

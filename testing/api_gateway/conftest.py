@@ -1,10 +1,10 @@
 from os import environ
 import pytest
 
-from api_gateway.config import Config
+from api_gateway.flask_config import Config
 from api_gateway.helpers import format_db_path
 
-environ["REDIS_OPTIONS"] = "{\"host\": \"redis\", \"port\": 6379}"
+environ["REDIS_OPTIONS"] = "{\"host\": \"redis\", \"port\": 6479}"
 environ["IP"] = "0.0.0.0"
 environ["PORT"] = "8080"
 environ["WALKOFF_DB_TYPE"] = "postgresql"

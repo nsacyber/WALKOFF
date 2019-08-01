@@ -1,1 +1,8 @@
-api_gateway/client/node_modules/
+.git
+.idea
+api_gateway/client/node_modules
+data
+docs
+testing
+__pycache__
+**/__pycache__

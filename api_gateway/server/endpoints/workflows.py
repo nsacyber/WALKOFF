@@ -31,7 +31,7 @@ def workflow_getter(workflow):
         return current_app.running_context.execution_db.session.query(Workflow).filter_by(name=workflow).first()
 
 
-with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
+with_workflow = with_resource_factory('workflow', workflow_getter)
 
 ALLOWED_EXTENSIONS = {'json'}
 
