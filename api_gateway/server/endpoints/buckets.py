@@ -27,8 +27,13 @@ def create_bucket():
                         'triggers' : [_create_trigger(x) for x in json_data["triggers"]] if 'triggers' in json_data else []
                         }
         new_bucket = Bucket(**bucket_params)
-        db.session.add(new_bucket)
-        db.session.commit()
+        added = new_bucket.create_bucket_in_minio(new_bucket.name)
+        if added:
+            db.session.add(new_bucket)
+            db.session.commit()
+        else:
+            db.session.expire(new_bucket)
+
         current_app.logger.info(f"Bucket added: {bucket_params}")
         return new_bucket.as_json(), HTTPStatus.CREATED
     else:
@@ -64,7 +69,11 @@ def update_bucket(bucket_id):
     b = Bucket.query.filter_by(id=bucket_id).first()
     if b:
         if 'name' in json_data:
-            b.name = json_data['name']
+            added = b.create_bucket_in_minio(json_data["name"])
+            removed = b.remove_bucket_in_minio(b.name)
+
+            b.name = json_data["name"]
+            db.session.commit()
 
         if 'description' in json_data:
             b.description = json_data['description']
@@ -80,9 +89,11 @@ def update_bucket(bucket_id):
 def delete_bucket(bucket_id):
     b = Bucket.query.filter_by(id=bucket_id).first()
     if b:
-        db.session.delete(b)
-        db.session.commit()
-        return None, HTTPStatus.NO_CONTENT
+        status = b.remove_bucket_in_minio(b.name)
+        if status:
+            db.session.delete(b)
+            db.session.commit()
+            return None, HTTPStatus.NO_CONTENT
     return None, HTTPStatus.NOT_FOUND
 
 

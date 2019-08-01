@@ -1,8 +1,10 @@
-import json
-import logging
+import os
+from minio import Minio
+from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
+                         BucketAlreadyExists, InvalidBucketError, NoSuchBucket)
 
 from api_gateway.extensions import db
-
+from sqlalchemy import orm
 
 class Bucket(db.Model):
     __tablename__ = 'bucket'
@@ -14,9 +16,60 @@ class Bucket(db.Model):
     def __init__(self, name, description='', triggers=None):
         self.name = name
         self.description = description
+
+        #MINIO CONFIG
+        # self.minio_address = os.getenv("MINIO_ADDRESS")
+        self.minio_address = "minio:9000"
+        self.minio_access_key = "test"
+        self.minio_secret_key = "secretkey"
+        self.minio_secure = False
+        self.minio_region = None
+
         if triggers is not None:
             for t in set(triggers):
                 self.triggers.append(BucketTrigger(**t))
+
+    @orm.reconstructor
+    def init_on_load(self):
+        self.minio_address = "minio:9000"
+        self.minio_access_key = "test"
+        self.minio_secret_key = "secretkey"
+        self.minio_secure = False
+        self.minio_region = None
+
+    def create_bucket_in_minio(self, name):
+        mc = Minio(self.minio_address, access_key=self.minio_access_key, secret_key=self.minio_secret_key,
+                   secure=self.minio_secure, region=self.minio_region)
+        if not mc.bucket_exists(name):
+            try:
+                mc.make_bucket(name)
+                return True
+            except InvalidBucketError as err:
+                return False
+            except BucketAlreadyOwnedByYou as err:
+                return False
+            except BucketAlreadyExists as err:
+                return False
+            except ResponseError as err:
+                return False
+
+    def remove_bucket_in_minio(self, name):
+        mc = Minio(self.minio_address, access_key=self.minio_access_key, secret_key=self.minio_secret_key,
+                   secure=self.minio_secure, region=self.minio_region)
+        if mc.bucket_exists(name):
+            try:
+                mc.remove_bucket(name)
+                return True
+            except NoSuchBucket as err:
+                return False
+            except ResponseError as err:
+                return False
+
+    def update_bucket_in_minio(self, new_name):
+        success1 = self.create_bucket_in_minio(new_name)
+        success2 = self.remove_bucket_in_minio(self.name)
+        self.name = new_name
+        return success1 and success2
 
     def _get_triggers_as_list(self):
         out = [t.as_json() for t in self.triggers]
@@ -61,3 +114,4 @@ class BucketTrigger(db.Model):
                 "suffix": self.suffix
               }
         return out
+

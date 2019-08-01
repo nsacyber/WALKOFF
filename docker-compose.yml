@@ -102,10 +102,13 @@ services:
       - "EXECUTION_DB_PASSWORD=walkoff"
       - "WALKOFF_DB_USERNAME=walkoff"
       - "WALKOFF_DB_PASSWORD=walkoff"
+      - "MINIO_ADDRESS=minio:9000"
     stop_signal: SIGINT
     stop_grace_period: 30s
     secrets:
       - encryption_key
+      - secret_key
+      - access_key
     volumes:
       - C:/Users/aheibel/Documents/Github/WALKOFF/api_gateway/client:/app/api_gateway/client
   minio:
@@ -113,7 +116,9 @@ services:
     ports:
       - 9000:9000
     networks:
-      - walkoff_default
+      walkoff_default:
+        aliases:
+          - minio
     command: server /data
     secrets:
       - access_key
@@ -204,6 +209,7 @@ services:
     #      - '8081:8081' # Uncomment for unsecure HTTP access to API Gateway
     volumes:
       - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
+#      - ./nginx/minio.conf:/opt/bitnami/nginx/conf/server_blocks/minio.conf:ro
       - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
       - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
 
