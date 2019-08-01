@@ -12,4 +12,7 @@ RUN pip install --prefix="/install" -r /requirements.txt
 COPY ./listener /app/listener
 WORKDIR /app
 
+COPY --from=builder /install /usr/local
+COPY ./common /app/common
+
 CMD python listener.py
