@@ -1,8 +1,8 @@
 .git
 .idea
 api_gateway/client/node_modules
-data
 docs
+data
 testing
 __pycache__
 **/__pycache__
