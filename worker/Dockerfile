@@ -21,6 +21,7 @@ FROM base
 COPY --from=builder /install /usr/local
 COPY ./common /app/common
 COPY ./worker /app/worker
+COPY ./umpire /app/umpire
 
 WORKDIR /app
 

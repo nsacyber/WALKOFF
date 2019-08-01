@@ -1,0 +1,49 @@
+#main.customReport {
+	position: absolute;
+	top: 50px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+}
+
+#main.customReport iframe {
+	position: absolute;
+	border: none;
+	top:0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#main.reportsMain {
+	padding: 10px 15px;
+}
+
+gridster.displayGrid {
+	background: none;
+}
+
+.widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.widget-header {
+    flex-basis: content;
+}
+
+.widget-content {
+	flex: 1;
+	position: relative;
+}
+
+.widget-fullscreen {
+    overflow-y: scroll !important;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left:0;
+    bottom:0;
+}
