@@ -15,7 +15,8 @@ from common.config import config, static
 from common.helpers import get_walkoff_auth_header, send_status_update
 from common.redis_helpers import connect_to_redis_pool, xdel, deref_stream_message
 from common.workflow_types import (Node, Action, Condition, Transform, Parameter, Trigger,
-                                   ParameterVariant, Workflow, workflow_dumps, workflow_loads, ConditionException)
+                                   ParameterVariant, Workflow, workflow_dumps, workflow_loads, ConditionException,
+                                   TransformException)
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("WORKER")
@@ -97,8 +98,10 @@ class Worker:
                 # Attach our abort signal handler to a specific instance of the worker
                 loop.add_signal_handler(signal.SIGQUIT, lambda: asyncio.ensure_future(worker.abort()))
 
+                log_msg = f"workflow: {workflow.name} ({workflow.id_}) as {workflow.execution_id}"
+
                 await redis.xgroup_create(worker.results_stream, static.REDIS_ACTION_RESULTS_GROUP, mkstream=True)
-                logger.info(f"Starting execution of workflow: {workflow.name}")
+                logger.info(f"Starting {log_msg}")
                 status = WorkflowStatusMessage.execution_started(worker.workflow.execution_id, worker.workflow.id_,
                                                                  worker.workflow.name)
 
@@ -108,17 +111,17 @@ class Worker:
                     worker.execution_task = asyncio.create_task(worker.execute_workflow())
                     await asyncio.gather(worker.execution_task)
                 except asyncio.CancelledError:
-                    logger.info(f"Aborted execution of workflow: {workflow.name}")
+                    logger.info(f"Aborting {log_msg}")
                     status = WorkflowStatusMessage.execution_aborted(worker.workflow.execution_id,
                                                                      worker.workflow.id_,
                                                                      worker.workflow.name)
                 except Exception:
-                    logger.exception(f"Failed execution of workflow: {workflow.name}")
+                    logger.info(f"Failed {log_msg}")
                     status = WorkflowStatusMessage.execution_completed(worker.workflow.execution_id,
                                                                        worker.workflow.id_,
                                                                        worker.workflow.name)
                 else:
-                    logger.info(f"Completed execution of workflow: {workflow.name}")
+                    logger.info(f"Completed {log_msg}")
                     status = WorkflowStatusMessage.execution_completed(worker.workflow.execution_id,
                                                                        worker.workflow.id_,
                                                                        worker.workflow.name)
@@ -139,7 +142,8 @@ class Worker:
         logger.info("Successfully shutdown Worker")
 
     async def abort(self):
-        logger.info("Aborting workflow...")
+        logger.info(f"Aborting workflow: {self.workflow.name} ({self.workflow.id_}) as {self.workflow.execution_id}")
+
         [task.cancel() for task in self.scheduling_tasks]
         self.results_getter_task.cancel()
         self.execution_task.cancel()
@@ -154,7 +158,7 @@ class Worker:
         logger.info("Canceling outstanding tasks...")
         await asyncio.gather(*self.scheduling_tasks, *message_tasks, self.results_getter_task, self.execution_task,
                              return_exceptions=True)
-        logger.info("Successfully aborted workflow!")
+        logger.info(f"Successfully aborted workflow: {self.workflow.name} ({self.workflow.id_}) as {self.workflow.execution_id}")
 
     async def cancel_helper(self, node, to_cancel):
         children = set(self.workflow.successors(node))
@@ -327,11 +331,21 @@ class Worker:
             status = NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result, parameters={})
             logger.info(f"Transform {transform.label}-succeeded with result: {result}")
 
-        # TODO: figure out exactly what can be raised by the possible transforms
-        except Exception as e:
+        except TransformException as e:
             logger.exception(f"Worker received error for {transform.name}-{self.workflow.execution_id}")
-            status = NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, result=repr(e),
+
+            aeval = Interpreter()
+            aeval(transform.transform)
+            if len(aeval.error) > 0:
+                error_tuple = (aeval.error[0]).get_error()
+                ret = error_tuple[0] + "(): " + error_tuple[1]
+
+            status = NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, result=ret,
                                                          parameters={})
+
+        except Exception as e:
+            logger.exception(f"Something bad happened in Transform evaluation: {e!r}")
+            return
 
         # Send the status message through redis to ensure get_action_results completes it correctly
         await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
@@ -355,7 +369,7 @@ class Worker:
                                                                          result=repr(e), parameters={}))
 
     async def get_globals(self):
-        url = config.API_GATEWAY_URI.rstrip('/') + '/api'
+        url = config.API_GATEWAY_URI.rstrip('/') + '/walkoff/api'
         headers, self.token = await get_walkoff_auth_header(self.session, self.token)
         # saving decryption for app-level
         payload = {'to_decrypt': 'false'}
@@ -366,7 +380,9 @@ class Worker:
 
     async def dereference_params(self, action: Action):
         param_ret = {}
-        global_vars = await self.get_globals()
+
+        globals_needed = any(param.variant == ParameterVariant.GLOBAL for param in action.parameters)
+        global_vars = await self.get_globals() if globals_needed else []
 
         for param in action.parameters:
             param_ret[param.name] = param.value
@@ -393,19 +409,21 @@ class Worker:
 
     async def schedule_node(self, node, parents, children):
         """ Waits until all dependencies of an action are met and then schedules the action """
-        logger.info(f"Scheduling node {node.id_} ({node.name})...")
+        logger.info(f"Scheduling {node.label}-{self.workflow.execution_id}...")
 
         while not all(parent.id_ in self.accumulator for parent in parents.values()):
-            await asyncio.sleep(0)
+            logger.debug(f"Node {node.label}-{self.workflow.execution_id} waiting for parents: {parents.values()}. "
+                        f"Accumulator: {self.accumulator}")
+            await asyncio.sleep(1)
 
-        logger.info(f"Node {node.id_} ({node.name}) ready to execute.")
+        logger.info(f"{node.label}-{self.workflow.execution_id} ready to execute.")
 
         # node has more than one parent, check if both parent nodes have been cancelled
         if len(parents) > 1:
             count = 0
             for parent in parents:
                 if parent in self.cancelled:
-                    count = count + 1
+                    count += 1
 
             if count == self.parent_map[node.id_]:
                 await self.cancel_subgraph(node)
@@ -458,16 +476,15 @@ class Worker:
         elif isinstance(node, Trigger):
             trigger_stream = f"{self.workflow.execution_id}-{node.id_}:triggers"
             msg = None
-            logger.debug(f"Waiting for trigger in {self.workflow.execution_id} ({self.workflow.name}) at "
-                         f"{node.id_} ({node.name})")
+            logger.info(f"Trigger waiting in {self.workflow.name} at {node.label}-{self.workflow.execution_id}")
             while not msg:
                 try:
                     with await self.redis as redis:
                         msg = await redis.xread_group(static.REDIS_WORKFLOW_TRIGGERS_GROUP, static.CONTAINER_ID,
                                                       streams=[trigger_stream], count=1, latest_ids=['>'])
 
-                    logger.debug(f"Trigger satisfied in {self.workflow.execution_id} ({self.workflow.name}) at "
-                                 f"{node.id_} ({node.name}) with message {msg}")
+                    logger.info(f"Triggered {self.workflow.name} at {node.label}-{self.workflow.execution_id} "
+                                 f"with {msg}")
 
                     await send_status_update(self.session, self.workflow.execution_id,
                                              NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
@@ -491,7 +508,6 @@ class Worker:
 
     async def get_action_results(self):
         """ Continuously monitors the results queue until all scheduled actions have been completed """
-        results_stream = f"{self.workflow.execution_id}:results"
 
         while len(self.in_process) > 0 or len(self.parallel_in_process) > 0:
             try:

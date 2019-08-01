@@ -1,7 +1,10 @@
 .git
 .idea
 api_gateway/client/node_modules
-data
+docs
+data/portainer
+data/postgres
+data/registry
 testing
 __pycache__
 **/__pycache__

@@ -3,3 +3,4 @@ pyyaml
 asteval
 cryptography
 six
+tenacity

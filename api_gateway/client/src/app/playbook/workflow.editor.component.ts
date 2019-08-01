@@ -216,7 +216,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	getConsoleSSE(workflowExecutionId: string) {
 		if (this.consoleEventSource) this.consoleEventSource.close();
 
-		return this.authService.getEventSource(`/api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
+		return this.authService.getEventSource(`api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
 			.then(eventSource => {
 				this.consoleEventSource = eventSource;
 				this.consoleEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
@@ -257,7 +257,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	getNodeStatusSSE(workflowExecutionId: string) {
 		if (this.eventSource) this.eventSource.close();
 
-		return this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
+		return this.authService.getEventSource(`api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
 			.then(eventSource => {
 				this.eventSource = eventSource
 				this.eventSource.onerror = (e: any) => this.statusEventErrorHandler(e);

@@ -97,7 +97,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	 * For existing messages, if they were responded to, remove the ! icon.
 	 */
 	getNotificationsSSE(): void {
-		this.authService.getEventSource('/api/streams/messages/notifications')
+		this.authService.getEventSource('api/streams/messages/notifications')
 			.then(eventSource => {
 				this.eventSource = eventSource;
 
@@ -114,7 +114,7 @@ export class MainComponent implements OnInit, OnDestroy {
 					}
 
 					// Remove the oldest message that is read if we have too many (>5) read messages or too many total (>20)
-					if (this.messageListings.filter(m => m.is_read).length > MAX_READ_MESSAGES || 
+					if (this.messageListings.filter(m => m.is_read).length > MAX_READ_MESSAGES ||
 						this.messageListings.length > MAX_TOTAL_MESSAGES) {
 						this.messageListings.pop();
 					}
@@ -159,7 +159,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	 */
 	logout(): void {
 		this.authService.logout()
-			.then(() => location.href = '/login')
+			.then(() => location.href = 'login')
 			.catch(e => console.error(e));
 	}
 
@@ -178,9 +178,9 @@ export class MainComponent implements OnInit, OnDestroy {
 				this._recalculateNewMessagesCount();
 
 				this.messageModalRef = this.modalService.open(MessagesModalComponent);
-				
+
 				this.messageModalRef.componentInstance.message = this.utils.cloneDeep(message);
-		
+
 				this._handleModalClose(this.messageModalRef);
 			})
 			.catch(e => this.toastrService.error(`Error opening message: ${e.message}`));

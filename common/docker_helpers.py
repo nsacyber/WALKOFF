@@ -127,7 +127,7 @@ async def update_service(client, service_id, version, *, image=None, rollback=No
     data = json.dumps(clean_map(spec))
 
     await client._query_json(
-        "services/{service_id}/update".format(service_id=service_id),
+        "services/{service_id}/update".format(service_id=service_id),  # Todo: fstring
         method="POST",
         data=data,
         params=params,
@@ -142,6 +142,10 @@ async def get_secret(client: aiodocker.Docker, secret_id):
 
 async def delete_secret(client: aiodocker.Docker, secret_id):
     await client._query(f"secrets/{secret_id}", "DELETE")
+
+
+async def disconnect_from_network(client: aiodocker.Docker):
+    await client._query(f"networks/walkoff_default/disconnect", "POST")
 
 
 async def get_network(client: aiodocker.Docker, network_id):

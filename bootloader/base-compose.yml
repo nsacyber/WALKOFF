@@ -4,9 +4,9 @@ services:
     image: registry:2
     networks:
       - walkoff_default
-#    deploy:
-#      placement:
-#        constraints: [node.role==manager]
+    deploy:
+      placement:
+        constraints: [node.role==manager]
     ports:
       - 5000:5000
 
@@ -18,7 +18,7 @@ services:
 #      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
 #      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
     volumes:
-      - ./data/registry:/var/lib/registry
+      - ./data/registry/reg_data:/var/lib/registry
 #      - ./data/config.yml:/etc/docker/registry/config.yml
 #      - /var/lib/boot2docker:/certs
 #      - /var/lib/boot2docker/auth:/auth
@@ -27,9 +27,29 @@ services:
     image: "redis"
     networks:
       - walkoff_default
+#    ports:
+#      - "6379:6379"
     command: redis-server --port 6379
 #    volumes:
 #      - /path/to/persistent/dir/redis:/data
+
+  resource_minio:
+    image: minio/minio
+    networks:
+      - walkoff_default
+#    ports:
+#      - "9001:9000"
+    volumes:
+#      - data1:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./apps:/app/apps
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    environment:
+      MINIO_ACCESS_KEY: walkoff
+      MINIO_SECRET_KEY: walkoff123
+    command: server /data
 
   resource_postgres:
     image: "postgres"
@@ -42,7 +62,7 @@ services:
       placement:
         constraints: [node.role==manager]
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./data/postgres/pg_data:/var/lib/postgresql/data
 
   resource_portainer:
     image: "portainer/portainer"
@@ -53,7 +73,7 @@ services:
         constraints: [node.role==manager]
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/portainer:/data
+      - ./data/portainer/prt_data:/data
 
 configs:
   common_env.yml:
@@ -65,6 +85,7 @@ secrets:
 
 networks:
   walkoff_default:
-    driver: overlay
-    name: walkoff_default
-    attachable: true
+#    driver: overlay
+#    name: walkoff_default
+#    attachable: true
+    external: true

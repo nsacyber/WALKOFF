@@ -10,3 +10,4 @@ sqlalchemy
 cryptography
 sphinxcontrib-openapi
 m2r
+minio

@@ -8,16 +8,18 @@ import os
 import re
 import shutil
 import base64
+from minio import Minio
 from pathlib import Path
 
 import aiodocker
 import aiohttp
 import yaml
 import yaml.scanner
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from common.config import config, static
 from common.docker_helpers import (create_secret, get_secret, delete_secret, get_network, connect_to_aiodocker,
-                                   docker_context, stream_docker_log, logger as docker_logger)
+                                   docker_context, stream_docker_log, logger as docker_logger, disconnect_from_network)
 
 logging.basicConfig(level=logging.DEBUG, format="{asctime} - {name} - {levelname}:{message}", style='{')
 
@@ -32,21 +34,7 @@ COMPOSE_BASE = {"version": "3.5",
 APP_NAME_PREFIX = "walkoff_"
 
 DOCKER_HOST_IP = os.getenv("DOCKER_HOST_IP")
-
-
-async def exponential_wait(func, args, msg):
-    wait = 0.5
-    return_code = 1
-    while return_code:
-        if wait > 128:
-            logger.exception(f"{msg} - Too many attempts, exiting.")
-            os._exit(return_code)
-
-        return_code = await asyncio.create_task(func(*args))
-        if return_code:
-            wait *= 2
-            logger.info(f"{msg} - Checking again in {wait} seconds...")
-            await asyncio.sleep(wait)
+p = Path('./apps').glob('**/*')
 
 
 def bannerize(text, fill='='):
@@ -87,13 +75,14 @@ def compose_from_app(path: pathlib.Path, name):
     compose = copy.deepcopy(COMPOSE_BASE)
     build = {"build": {"context": str(path), "dockerfile": "Dockerfile"}}
     image = {"image": f"{config.DOCKER_REGISTRY}/{APP_NAME_PREFIX}{name}:{path.name}"}
+    networks = {"networks": ["walkoff_default"]}
     deploy = {"deploy": {"mode": "replicated", "replicas": 0, "restart_policy": {"condition": "none"}}}
     config_mount = {"configs": ["common_env.yml"]}
     secret_mount = {"secrets": ["walkoff_encryption_key"]}
     shared_path = os.getcwd() + "/data/shared"
     final_mount = shared_path + ":/app/shared"
     volumes_mount = {"volumes": [final_mount]}
-    compose["services"] = {name: {**build, **image, **deploy, **config_mount,
+    compose["services"] = {name: {**build, **image, ** networks, **deploy, **config_mount,
                                   **secret_mount, **volumes_mount, **env_file}}
     return compose
 
@@ -170,20 +159,30 @@ async def delete_dir_contents(path):
             shutil.rmtree(os.path.join(root, d))
 
 
+@retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
 async def deploy_compose(compose):
-    if not isinstance(compose, dict):
-        compose = parse_yaml(compose)
 
-    # Dump the compose to a temporary compose file and launch that. This is so we can amend the compose and update the
-    # the stack without launching a new one
-    dump_yaml(config.TMP_COMPOSE, compose)
-    compose = config.TMP_COMPOSE
+    try:
+        if not isinstance(compose, dict):
+            compose = parse_yaml(compose)
 
-    proc = await asyncio.create_subprocess_exec("docker", "stack", "deploy", "--compose-file", compose, "walkoff",
-                                                stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-    await log_proc_output(proc)
+        # Dump the compose to a temporary compose file and launch that. This is so we can amend the compose and update the
+        # the stack without launching a new one
+        dump_yaml(config.TMP_COMPOSE, compose)
+        compose = config.TMP_COMPOSE
 
-    return proc.returncode
+        proc = await asyncio.create_subprocess_exec("docker", "stack", "deploy", "--compose-file", compose, "walkoff",
+                                                    stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+        await log_proc_output(proc)
+
+        if proc.returncode:
+            raise OSError
+        else:
+            return True
+
+    except Exception as e:
+        logger.info("Failed deploying, waiting to try again...")
+        raise e
 
 
 async def build_image(docker_client, repo, dockerfile, context_dir, dockerignore):
@@ -250,13 +249,50 @@ class Bootloader:
                 # TODO: Pipe this through the logger. print_help() accepts a file kwarg that we can use to do this
                 parser.print_help()
 
-    async def _wait_for_registry(self):
+    @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
+    async def wait_for_registry(self):
         try:
             async with self.session.get("http://" + DOCKER_HOST_IP) as resp:
                 if resp.status == 200:
-                    return False
-        except aiohttp.ClientConnectionError:
-            return True
+                    return True
+                else:
+                    raise ConnectionError
+        except Exception as e:
+            logger.info("Registry not available yet, waiting to try again...")
+            raise e
+
+    @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
+    async def wait_for_minio(self):
+        try:
+            async with self.session.get(f"http://{config.MINIO}/minio/health/ready") as resp:
+                if resp.status == 200:
+                    return True
+                else:
+                    raise ConnectionError
+        except Exception as e:
+            logger.info("Minio not available yet, waiting to try again...")
+            raise e
+
+    async def push_to_minio(self):
+        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        flag = False
+        try:
+            buckets = minio_client.list_buckets()
+            for bucket in buckets:
+                if bucket.name == "apps-bucket":
+                    flag = True
+        except:
+            logger.info("Bucket doesn't exist.")
+
+        if flag is False:
+            minio_client.make_bucket("apps-bucket", location="us-east-1")
+
+        files = [x for x in p if x.is_file()]
+        for file in files:
+            path_to_file = str(file)
+            with open(path_to_file, "rb") as file_data:
+                file_stat = os.stat(path_to_file)
+                minio_client.put_object("apps-bucket", path_to_file, file_data, file_stat.st_size)
 
     async def up(self):
 
@@ -281,19 +317,17 @@ class Bootloader:
             docker_logger.setLevel("DEBUG")
 
         logger.info("Creating persistent directories for registry, postgres, portainer...")
-        os.makedirs(Path("data") / "registry", exist_ok=True)
-        os.makedirs(Path("data") / "postgres", exist_ok=True)
-        os.makedirs(Path("data") / "portainer", exist_ok=True)
+        os.makedirs(Path("data") / "registry" / "reg_data", exist_ok=True)
+        os.makedirs(Path("data") / "postgres" / "pg_data", exist_ok=True)
+        os.makedirs(Path("data") / "portainer" / "prt_data", exist_ok=True)
 
         # Bring up the base compose with the registry
         logger.info("Deploying base services (registry, postgres, portainer, redis)...")
         base_compose = parse_yaml(config.BASE_COMPOSE)
 
-        await exponential_wait(deploy_compose, [base_compose], "Deployment failed")
+        await deploy_compose(base_compose)
 
-        await exponential_wait(self._wait_for_registry, {}, "Registry not available yet")
-
-
+        await self.wait_for_registry()
 
         # Merge the base, walkoff, and app composes
         app_composes = generate_app_composes()
@@ -318,6 +352,9 @@ class Bootloader:
                                       self.dockerignore)
                     await push_image(self.docker_client, service["image"])
 
+        await self.wait_for_minio()
+        await self.push_to_minio()
+
         logger.info("Deploying Walkoff stack...")
 
         return_code = await deploy_compose(merged_compose)
@@ -336,6 +373,7 @@ class Bootloader:
                             help="Skip network removal check. Use this if you have attached external services to it.")
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Set log level to debug.")
+        parser.add_argument("-n")
 
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
@@ -351,9 +389,9 @@ class Bootloader:
 
         await log_proc_output(proc)
 
-        if not args.skipnetwork:
-            logger.info("Waiting for containers to exit and network to be removed...")
-            await exponential_wait(check_for_network, [self.docker_client], "Network walkoff_default still exists")
+        # if not args.skipnetwork:
+        #     logger.info("Waiting for containers to exit and network to be removed...")
+        #     await exponential_wait(check_for_network, [self.docker_client], "Network walkoff_default still exists")
 
         if args.key:
             resp = input("Deleting encryption key will render database unreadable, and therefore it will be cleared. "

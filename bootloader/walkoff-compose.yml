@@ -2,6 +2,7 @@ version: '3.5'
 services:
   core_umpire:
     image: "127.0.0.1:5000/umpire:latest"
+#    command: python -m umpire.umpire --log-level=debug
     build:
       context: ./
       dockerfile: umpire/Dockerfile
@@ -16,11 +17,11 @@ services:
     depends_on:
       - resource_redis
       - resource_registry
+      - resource_minio
     secrets:
       - walkoff_encryption_key
     configs:
       - common_env.yml
-    command: python -m umpire.umpire # --log-level=debug
 
   core_api_gateway:
     image: "127.0.0.1:5000/api_gateway:latest"
@@ -38,11 +39,13 @@ services:
     depends_on:
       - resource_redis
       - resource_postgres
-    volumes:
-      - ./api_gateway/client/dist:/app/api_gateway/client/dist
+#    volumes:
+#      - ./api_gateway/client/dist:/app/api_gateway/client/dist
 
   resource_nginx:
     image: 'bitnami/nginx:latest'
+    networks:
+      - walkoff_default
     ports:
       - '8080:8080'
 #      - '8081:8081' # Uncomment for unsecure HTTP access to API Gateway
@@ -54,7 +57,10 @@ services:
       - core_api_gateway
 
   core_worker:
+#    command: python -m worker.worker --log-level=debug
     image: "127.0.0.1:5000/worker:latest"
+    networks:
+      - walkoff_default
     build:
       context: ./
       dockerfile: ./worker/Dockerfile
@@ -67,6 +73,8 @@ services:
         condition: none
 
   app_sdk:
+    networks:
+      - walkoff_default
     build:
       context: ./
       dockerfile: ./app_sdk/Dockerfile
@@ -89,6 +97,7 @@ secrets:
 
 networks:
   walkoff_default:
-    driver: overlay
-    name: walkoff_default
-    attachable: true
+#    driver: overlay
+#    name: walkoff_default
+#    attachable: true
+    external: true

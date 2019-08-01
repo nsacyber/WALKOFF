@@ -13,6 +13,25 @@ import { Trigger } from './trigger';
 import { WorkflowNode } from './WorkflowNode';
 import { Transform } from './transform';
 
+
+enum PermissionEnum {
+	NONE,
+	CAN_SEE,
+	CAN_USE,
+	CAN_EDIT
+}
+
+export class WorkflowPermission {
+	static readonly NONE  = new WorkflowPermission(PermissionEnum.NONE, 'No Permission', []);
+	static readonly CAN_SEE = new WorkflowPermission(PermissionEnum.CAN_SEE, 'Can view', ['read']);
+	static readonly CAN_USE  = new WorkflowPermission(PermissionEnum.CAN_USE, 'Can execute', ['read', 'execute']);
+	static readonly CAN_EDIT  = new WorkflowPermission(PermissionEnum.CAN_EDIT, 'Can modify', ['read', 'update', 'delete', 'execute']);
+	static readonly PERMISSIONS  = [ WorkflowPermission.NONE, WorkflowPermission.CAN_SEE, WorkflowPermission.CAN_USE, WorkflowPermission.CAN_EDIT ]
+
+	// private to disallow creating other instances of this type
+	private constructor(public readonly key: PermissionEnum, public readonly description: any, public readonly crud: string[]) {}
+}
+
 export class Workflow extends ExecutionElement {
 	// _playbook_id: number;
 	/**

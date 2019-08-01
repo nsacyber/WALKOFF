@@ -47,6 +47,7 @@ class Static:
     NGINX_SERVICE = f"{RESOURCE_PREFIX}_nginx"
     PORTAINER_SERVICE = f"{RESOURCE_PREFIX}_portainer"
     REGISTRY_SERVICE = f"{RESOURCE_PREFIX}_registry"
+    MINIO_SERVICE = f"{RESOURCE_PREFIX}_minio"
 
     # Redis options
     REDIS_EXECUTING_WORKFLOWS = "executing-workflows"
@@ -83,8 +84,10 @@ class Config:
     API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", f"http://{Static.API_GATEWAY_SERVICE}:8080")
     REDIS_URI = os.getenv("REDIS_URI", f"redis://{Static.REDIS_SERVICE}:6379")
     ENCRYPTION_KEY_PATH = os.getenv("ENCRYPTION_KEY_PATH", "/run/secrets/walkoff_encryption_key")
+    MINIO = os.getenv("MINIO", f"{Static.MINIO_SERVICE}:9000")
 
     # Worker options
+    MAX_WORKER_REPLICAS = os.getenv("MAX_WORKER_REPLICAS", "10")
     WORKER_TIMEOUT = os.getenv("WORKER_TIMEOUT", "30")
     WALKOFF_USERNAME = os.getenv("WALKOFF_USERNAME", '')
     WALKOFF_PASSWORD = os.getenv("WALKOFF_PASSWORD", '')
@@ -104,11 +107,12 @@ class Config:
     DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
     # Bootloader options
-    BASE_COMPOSE = "./bootloader/base-compose.yml"
-    WALKOFF_COMPOSE = "./bootloader/walkoff-compose.yml"
-    TMP_COMPOSE = "./tmp-compose.yml"
+    BASE_COMPOSE = os.getenv("BASE_COMPOSE", "./bootloader/base-compose.yml")
+    WALKOFF_COMPOSE = os.getenv("WALKOFF_COMPOSE", "./bootloader/walkoff-compose.yml")
+    TMP_COMPOSE = os.getenv("TMP_COMPOSE", "./tmp-compose.yml")
 
     # App options
+    MAX_APP_REPLICAS = os.getenv("MAX_APP_REPLICAS", "10")
     APP_TIMEOUT = os.getenv("APP_TIMEOUT", "30")  # ??
 
     # Overrides the environment variables for docker-compose and docker commands on the docker machine at 'DOCKER_HOST'
