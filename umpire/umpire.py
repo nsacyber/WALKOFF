@@ -80,7 +80,8 @@ class Umpire:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
             logger.info("Bringing up Umpire API...")
-            os.system("python umpire_api.py &")
+            # os.system("python umpire_api.py &")
+            os.system("uvicorn umpire_api:app --reload &")
 
             logger.info("Umpire is ready!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),
