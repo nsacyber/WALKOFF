@@ -317,9 +317,9 @@ class Bootloader:
             docker_logger.setLevel("DEBUG")
 
         logger.info("Creating persistent directories for registry, postgres, portainer...")
-        os.makedirs(Path("data") / "registry", exist_ok=True)
-        os.makedirs(Path("data") / "postgres", exist_ok=True)
-        os.makedirs(Path("data") / "portainer", exist_ok=True)
+        os.makedirs(Path("data") / "registry" / "reg_data", exist_ok=True)
+        os.makedirs(Path("data") / "postgres" / "pg_data", exist_ok=True)
+        os.makedirs(Path("data") / "portainer" / "prt_data", exist_ok=True)
 
         # Bring up the base compose with the registry
         logger.info("Deploying base services (registry, postgres, portainer, redis)...")

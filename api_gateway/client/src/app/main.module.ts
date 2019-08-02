@@ -37,7 +37,7 @@ import { GlobalsComponent } from './globals/globals.component';
 import { MessagesComponent } from './messages/messages.component';
 import { MetricsComponent } from './metrics/metrics.component';
 import { SettingsComponent } from './settings/settings.component';
-import { DashboardsComponent } from './dashboards/dashboards.component';
+import { ReportsComponent } from './reports/reports.component';
 import { ExecutionComponent } from './execution/execution.component';
 import { AppsListComponent } from './apps/apps.list.component';
 
@@ -59,8 +59,8 @@ import { MessagesModalComponent } from './messages/messages.modal.component';
 
 import { KeysPipe } from './pipes/keys.pipe';
 import { UtilitiesService } from './utilities.service';
-import { ManageDashboardsComponent } from './dashboards/manage.dashboards.component';
-import { WidgetModalComponent } from './dashboards/widget.modal.component';
+import { ManageReportsComponent } from './reports/manage.reports.component';
+import { WidgetModalComponent } from './reports/widget.modal.component';
 import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 import { WorkflowEditorComponent } from './playbook/workflow.editor.component';
 import { MetadataModalComponent } from './playbook/metadata.modal.component';
@@ -104,7 +104,7 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		MessagesComponent,
 		MetricsComponent,
 		SettingsComponent,
-		DashboardsComponent,
+		ReportsComponent,
 		ExecutionComponent,
 		AppsListComponent,
 		ManageAppComponent,
@@ -128,7 +128,7 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		SettingsRolesComponent,
 		// Pipes
 		KeysPipe,
-		ManageDashboardsComponent,
+		ManageReportsComponent,
 		SafeEmbedPipe,
 		WidgetModalComponent,
 	],

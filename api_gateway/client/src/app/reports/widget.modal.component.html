@@ -1,0 +1,61 @@
+<div class="modal-header">
+    <h4 class="modal-title">Configure {{ typeLabel }}</h4>
+</div>
+<div class="modal-body">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input label="title" type="text" [(ngModel)]="widget.name" class="form-control" placeholder="Title (Optional)">
+                </div>
+            </div>
+            <div *ngIf="!['text', 'kibana'].includes(widget.type)" class="col-12">
+              <div class="form-group">
+                  <label for="workflow">Workflow</label>
+                  <div>
+                      <select [(ngModel)]="widget.options.workflow" class="custom-select" (change)="updateExecutions()">
+                          <option *ngFor="let x of workflows" [value]="x.id">{{x.text}}</option>
+                      </select>
+                  </div>
+              </div>
+            </div>
+            <div *ngIf="widget.options.workflow" class="col-12">
+                <div class="form-group">
+                    <label for="workflow">Execution</label>
+                    <div>
+                        <select [(ngModel)]="widget.options.execution" class="custom-select" (change)="updateNodeResults()">
+                            <option *ngFor="let x of executions" [value]="x.id">{{x.text}}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="widget.options.execution" class="col-12">
+                <div class="form-group">
+                    <label for="action">Action</label>
+                    <div>
+                        <select [(ngModel)]="widget.options.action" class="custom-select">
+                            <option *ngFor="let x of nodeResults" [value]="x.id">{{x.text}}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="widget.type == 'text'" class="col-12">
+                <div class="form-group">
+                    <label for="text">Text</label>
+                    <textarea name="text" rows="4" [(ngModel)]="widget.options.text" class="form-control"></textarea>
+                </div>
+            </div>
+            <div *ngIf="widget.type == 'kibana'" class="col-12">
+                <div class="form-group">
+                    <label for="embedUrl">Embed Url</label>
+                    <input label="embedUrl" type="text" [(ngModel)]="widget.options.embedUrl" class="form-control">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Close</button>
+    <button type="button" class="btn btn-primary" (click)="activeModal.close(widget)">Save</button>
+</div>

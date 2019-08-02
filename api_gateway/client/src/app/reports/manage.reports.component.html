@@ -1,0 +1,100 @@
+<div id="main" class="manageReportMain">
+    <h1>{{ (existingReport) ? 'Edit' : 'New' }} Report
+        <!-- <input type="text" class="my-auto mr-3" [(ngModel)]="report.name" name="reportName" placeholder="Report Name" required> -->
+        <button *ngIf="existingReport" class="btn btn-danger btn-lg float-right" (click)="delete()"><i
+                class="fa fa-trash"></i></button>
+    </h1>
+    <div class="row">
+        <div class="col-12">
+            <div class="float-left">
+                <div class="form-group col-12">
+                    <form #myForm="ngForm" [class.was-validated]="submitted" novalidate>
+                        <div class="d-flex">
+                            <input type="text" class="form-control" [(ngModel)]="report.name" name="reportName"
+                                placeholder="Report Name" required>
+                            <button class="btn btn-primary ml-3" (click)="save()">Save</button>
+                        </div>
+                        <div class="invalid-feedback" [class.d-block]="!myForm.form.valid && submitted">
+                            Please enter a name for the report.
+                        </div>
+                    </form>
+                </div>
+                <div class="form-group col-12">
+                    <div class="panel-group" id="accordion" #accordion>
+                        <div class="card card-default my-1">
+                            <div class="card-heading playbook-heading" title="Widgets">
+                                <h5 class="card-title my-auto py-2 ml-3">Add Widget</h5>
+                            </div>
+                            <div class="card-collapse action-panel">
+                                <div class="card-body my-auto p-3">
+                                    <div *ngFor="let widget of widgets" class="card card-default actionPanel my-1"
+                                        dnd-draggable [dragEnabled]="true" [dragData]="widget"
+                                        (dblclick)="addWidget(widget.name)" [title]="widget.label">
+                                        <div class="card-body my-auto p-2">
+                                            <span>{{ widget.label }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="grid" class="gridster-container" [style.width]="getGridWidth()" [style.height]="getGridHeight()">
+                <gridster class="rounded" [options]="options" dnd-droppable (onDropSuccess)="addWidget($event.dragData.name)">
+                    <gridster-item [item]="item" *ngFor="let item of report.widgets" class="p-3 rounded">
+                        <!-- your content here -->
+                        <div class="widget">
+                            <div class="widget-header">
+                                <a class="text-secondary float-left" href="#" (click)="editWidget($event, item)"><i
+                                        class="fa fa-gear"></i></a>
+
+                                <button type="button" class="close" (click)="removeWidget($event, item)"
+                                    aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+
+                                <h5 *ngIf="item.name" class="text-center">{{ item.name }}</h5>
+                            </div>
+
+                            <div class="widget-content" *ngIf="item.metadata; let metadata">
+                                <div *ngIf="item.type == 'bar'">
+                                    <canvas baseChart [datasets]="metadata.chartData" [labels]="metadata.chartLabels"
+                                        [options]="item.chartOptions" [legend]="item.showLegend" [chartType]="'bar'">
+                                    </canvas>
+                                </div>
+
+                                <div *ngIf="item.type == 'line'">
+                                    <canvas baseChart [datasets]="metadata.chartData" [labels]="metadata.chartLabels"
+                                        [options]="item.chartOptions" [legend]="item.showLegend" [chartType]="'line'">
+                                    </canvas>
+                                </div>
+
+                                <div *ngIf="item.type == 'pie'">
+                                    <canvas baseChart [data]="metadata.chartData" [labels]="metadata.chartLabels"
+                                        [chartType]="'pie'" [legend]="item.showLegend">
+                                    </canvas>
+                                </div>
+
+                                <div *ngIf="item.type == 'text'">
+                                    <p *ngIf="item.options.text">{{ item.options.text }}</p>
+                                </div>
+
+                                <div *ngIf="item.type == 'table'">
+                                    <ngx-datatable class="material widget-fullscreen" headerHeight="45" rowHeight="45"
+                                        [columnMode]="'force'" [rows]="metadata.rows" [columns]="metadata.columns">
+                                    </ngx-datatable>
+                                </div>
+
+                                <div *ngIf="item.type == 'kibana'">
+                                    <iframe class="widget-fullscreen"
+                                        [src]="item.options.embedUrl | safeEmbed"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </gridster-item>
+                </gridster>
+            </div>
+        </div>
+    </div>
+</div>

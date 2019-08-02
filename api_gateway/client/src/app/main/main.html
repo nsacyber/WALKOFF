@@ -12,20 +12,6 @@
           <li class="nav-item">
             <a class="nav-link" routerLink="/workflows" routerLinkActive="active"><i class="fa fa-sitemap"></i><span class="navLink">Workflows</span></a>
           </li>
-          <li class="nav-item dropdown" routerLinkActive="active">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i class="fa fa-area-chart"></i><span class="navLink">Dashboards</span>
-            </a>
-            <div class="dropdown-menu border-0" aria-labelledby="navbarDropdown">
-              <a *ngFor="let dashboard of dashboards" class="dropdown-item installedDashboard" routerLink="/dashboard/{{dashboard.id}}">
-                <span>{{ dashboard.name }}</span>
-              </a>
-              <div *ngIf="dashboards && dashboards.length > 0" class="dropdown-divider"></div>
-              <a class="dropdown-item installedDashboard" routerLink="/dashboard/new">
-                <span><i>Create New Dashboard...</i></span>
-              </a>
-            </div>
-          </li>
           <li class="nav-item">
             <a class="nav-link" routerLink="/execution" routerLinkActive="active"><i class="fa fa-play-circle"></i><span class="navLink">Execution</span></a>
           </li>
@@ -47,6 +33,20 @@
           <!-- <li class="nav-item">
             <a class="nav-link" routerLink="/settings" routerLinkActive="active"><i class="fa fa-store"></i><span class="navLink">Marketplace</span></a>
           </li> -->
+          <li class="nav-item dropdown" routerLinkActive="active">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fa fa-area-chart"></i><span class="navLink">Reports</span>
+            </a>
+            <div class="dropdown-menu border-0" aria-labelledby="navbarDropdown">
+              <a *ngFor="let report of reports" class="dropdown-item installedReport" routerLink="/report/{{report.id}}">
+                <span>{{ report.name }}</span>
+              </a>
+              <div *ngIf="reports && reports.length > 0" class="dropdown-divider"></div>
+              <a class="dropdown-item installedReport" routerLink="/report/new">
+                <span><i>Create New Report...</i></span>
+              </a>
+            </div>
+          </li>
           <li class="nav-item">
             <a class="nav-link" routerLink="/settings" routerLinkActive="active"><i class="fa fa-gear"></i><span class="navLink">Settings</span></a>
           </li>
