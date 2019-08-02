@@ -1,0 +1,60 @@
+<div id="main" class="appsMain">
+    <!-- <h1 *ngIf="false" class="d-flex mt-2 mb-4">
+        <span class="mr-3">Workflows</span>
+        <div class="d-flex align-items-center">
+            <button (click)="createWorkflow()" class="btn btn-outline-primary mr-2">Create New</button>
+            <button (click)="importWorkflow()" class="btn btn-outline-primary">Import Workflow</button>
+        </div>
+        <div *ngIf="workflows.length > 0" class="col-4 my-1 my-lg-none ml-auto pr-0">
+                <input class="form-control" [formControl]="filterQuery" placeholder="Filter Workflows..." />
+            </div>
+    </h1> -->
+    <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol id="playbookBreadcrumbs" class="breadcrumb">
+                <li class="breadcrumb-item">Manage Applications</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row">
+
+        <div *ngFor="let a of apps" class="col-md-6 col-lg-4 col-xl-3 my-4">
+            <div class="card workflow-card shadow">
+                <div *ngIf="false" ngbDropdown placement="bottom-right" class="d-inline-block workflow-menu mt-3">
+                    <a class="workflow-menu-link text-muted h2 px-3" ngbDropdownToggle><i
+                            class="fa fa-ellipsis-v"></i></a>
+                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                        <button class="dropdown-item" (click)="editDescription(a)">Edit Description...</button>
+                        <button class="dropdown-item" (click)="duplicateWorkflow(a)">Duplicate</button>
+                        <button class="dropdown-item" (click)="exportWorkflow(a)">Export</button>
+                        <button class="dropdown-item" (click)="deleteWorkflow(a)">Delete</button>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+
+                    <h5 class="card-title d-flex justify-content-between">
+                        {{ a.name }} 
+                        <div *ngIf="a.app_version" class="d-inline-block">
+                            <span  class="badge badge-pil badge-primary mr-3">{{ a.app_version }} </span>
+                        </div>
+                        <div *ngIf="a.tags?.length > 0" class="small mt-1">
+                            <span *ngFor="let tag of a.tags" class="badge badge-pill badge-primary small mr-1">
+                                {{ tag }} </span>
+                        </div>
+                    </h5>
+
+                    <p class="card-text flex-grow-1">{{ a.description }}</p>
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-outline-primary ml-3 mr-1" (click)="manageApp(a)"><i
+                                class="fa fa-code"></i> Edit Application</button>
+                        <button class="btn btn-outline-primary mr-3" (click)="executeWorkflow(a)"><i
+                                class="fa fa-cloud-upload"></i> Rebuild Image</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

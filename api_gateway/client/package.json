@@ -17,9 +17,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --baseHref=/walkoff/",
-    "build:prod": "ng build --baseHref=/walkoff/ --prod",
-    "watch": "ng build --baseHref=/walkoff/ --watch",
+    "build": "ng build",
+    "build:prod": "ng build --prod",
+    "watch": "ng build --watch",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -65,6 +65,7 @@
     "html2canvas": "^1.0.0-rc.3",
     "jquery": "^3.4.1",
     "jquery-migrate": "~3.0.0",
+    "jquery.fancytree": "^2.31.0",
     "jqueryui": "~1.11.1",
     "jsoneditor": "^5.34.0",
     "jspdf": "^1.5.3",
