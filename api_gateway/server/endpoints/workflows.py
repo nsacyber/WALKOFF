@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from io import BytesIO
 
 from flask import request, current_app, send_file
@@ -44,11 +45,21 @@ def create_workflow():
     workflow_id = request.args.get("source")
     workflow_name = data['name']
 
-    if workflow_id:
-        return copy_workflow(workflow_id=workflow_id)
-
     if request.files and 'file' in request.files:
         data = json.loads(request.files['file'].read().decode('utf-8'))
+
+    if workflow_id:
+        wf = current_app.running_context.execution_db.session.query(Workflow) \
+            .filter(Workflow.id_ == workflow_id).first()
+        if wf.name == workflow_name:
+            return unique_constraint_problem('workflow', 'create', workflow_name)
+
+        return copy_workflow(workflow=wf, workflow_name=workflow_name)
+
+    wf2 = current_app.running_context.execution_db.session.query(Workflow) \
+        .filter(Workflow.id_ == data['id_']).first()
+    if wf2:
+        return import_workflow(data)
 
     try:
         workflow = workflow_schema.load(data)
@@ -64,14 +75,32 @@ def create_workflow():
         return unique_constraint_problem('workflow', 'create', workflow_name)
 
 
-@with_workflow('read', 'workflow')
-def copy_workflow(workflow):
-    data = request.get_json()
+def import_workflow(workflow_json):
+    regenerate_workflow_ids(workflow_json)
+    workflow_json['name'] = workflow_json.get("name")
 
-    workflow_json = workflow_schema.dump(workflow)
-    workflow_json['name'] = data.get("name", f"{workflow.name}_copy")
+    try:
+        new_workflow = workflow_schema.load(workflow_json)
+        current_app.running_context.execution_db.session.add(new_workflow)
+        current_app.running_context.execution_db.session.commit()
+        return workflow_schema.dump(new_workflow), HTTPStatus.CREATED
+    except IntegrityError:
+        current_app.running_context.execution_db.session.rollback()
+        current_app.logger.error(f" Could not import workflow {workflow_json['name']}. Unique constraint failed")
+        return unique_constraint_problem('workflow', 'import', workflow_json['name'])
+
+
+def copy_workflow(workflow, workflow_name):
+    old_json = workflow_schema.dump(workflow)
+    workflow_json = deepcopy(old_json)
 
     regenerate_workflow_ids(workflow_json)
+
+    if workflow_name:
+        workflow_json['name'] = workflow_name
+    else:
+        workflow_json['name'] = old_json.get("name")
+
     try:
         new_workflow = workflow_schema.load(workflow_json)
         current_app.running_context.execution_db.session.add(new_workflow)
