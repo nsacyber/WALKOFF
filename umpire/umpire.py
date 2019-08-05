@@ -81,7 +81,7 @@ class Umpire:
 
             logger.info("Bringing up Umpire API...")
             # os.system("python umpire_api.py &")
-            os.system("uvicorn umpire_api:app --reload &")
+            os.system("uvicorn umpire_api:app --host 0.0.0.0 &")
 
             logger.info("Umpire is ready!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),

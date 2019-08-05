@@ -1,7 +1,6 @@
 from minio import Minio
 from pathlib import Path
 from common.config import config, static
-import asyncio
 import logging
 import io
 import aiodocker
@@ -9,14 +8,11 @@ import aiodocker
 from common.docker_helpers import connect_to_aiodocker, docker_context, stream_docker_log, logger as docker_logger
 import pathlib
 
-# tag_name = f"{static.APP_PREFIX}_hello_world"
-# app_name = "hello_world"
-# version = "1.0.0"
 logger = logging.getLogger("Umpire")
+
 
 async def push_image(docker_client, repo):
     logger.info(f"Pushing image {repo}.")
-
     try:
         await docker_client.images.push(repo)
         # await stream_docker_log(log_stream)
@@ -27,7 +23,7 @@ async def push_image(docker_client, repo):
         return False
 
 
-class UmpireApi:
+class MinioApi:
 
     @staticmethod
     async def build_image(app_name, version):
@@ -39,7 +35,6 @@ class UmpireApi:
             print(e)
 
         minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
-
         objects = minio_client.list_objects("apps-bucket", recursive=True)
         for obj in objects:
             size = obj.size
@@ -57,10 +52,7 @@ class UmpireApi:
         logger.setLevel("DEBUG")
         docker_logger.setLevel("DEBUG")
         async with connect_to_aiodocker() as docker_client:
-            # async def build_image(docker_client, repo, dockerfile, context_dir, dockerignore):
-            # logger.info(f"Building {repo} with {Dockerfile} in {./ data / temp_apps / {app_name} / version /}")
             context_dir = f"./temp_apps/{app_name}/{version}/"
-
             with docker_context(Path(context_dir)) as context:
                 logger.info("Sending image to be built")
                 dockerfile = "./Dockerfile"
@@ -72,11 +64,11 @@ class UmpireApi:
                 await stream_docker_log(log_stream)
                 logger.info("Docker image Built")
                 await push_image(docker_client, repo)
+
     @staticmethod
     async def list_files(app_name, version):
         relative_path = []
         minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
-
         objects = minio_client.list_objects("apps-bucket", recursive=True)
         for obj in objects:
             p_src = Path(obj.object_name)
@@ -95,7 +87,6 @@ class UmpireApi:
     @staticmethod
     async def update_file(app_name, version, path, file_data, file_size):
         minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
-
         abs_path = f"apps/{app_name}/{version}/{path}"
         found = False
         try:
@@ -107,8 +98,6 @@ class UmpireApi:
         if found is True:
             minio_client.remove_object("apps-bucket", abs_path)
             file_data = io.BytesIO(file_data)
-
-
             minio_client.put_object("apps-bucket", abs_path, file_data, file_size)
             return True
         else:
