@@ -82,6 +82,7 @@ services:
   api_gateway:
     #    ports:
     #    - "8080:8080"
+    container_name: walkoff_api_gateway
     image: "127.0.0.1:5000/api_gateway:latest"
     build:
       context: ./
@@ -124,19 +125,24 @@ services:
       - access_key
       - secret_key
 
-#  walkoff_listener:
-#    image: "127.0.0.1:5000/walkoff_listener:latest"
-#    build:
-#      context: ./
-#      dockerfile: ./listener/Dockerfile
-#    networks:
-#      - walkoff_default
-#    depends_on:
-#      - minio
-#      - walkoff_redis
-#    secrets:
-#      - access_key
-#      - secret_key
+  walkoff_listener:
+    image: "127.0.0.1:5000/walkoff_listener:latest"
+    environment:
+      - "MINIO_IP=minio:9000"
+      - "WALKOFF_USERNAME=admin"
+      - "WALKOFF_PASSWORD=admin"
+      - "API_GATEWAY_URI=http://walkoff_api_gateway:8080"
+    build:
+      context: ./
+      dockerfile: ./listener/Dockerfile
+    networks:
+      - walkoff_default
+    depends_on:
+      - api_gateway
+      - minio
+    secrets:
+      - access_key
+      - secret_key
 
   walkoff_redis:
     container_name: walkoff_redis

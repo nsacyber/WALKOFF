@@ -1,58 +1,82 @@
 import asyncio, logging, requests, os
-import api_gateway_helpers as api
+import listener.api_gateway_helpers as api
 from minio import Minio
-
-
-import uuid
+from listener.trigger import Trigger
+import time
+import threading
 
 logger = logging.getLogger("minio_test")
 
 DELAY = 0.01
-class Listener():
-    def __init__(self):
-        self.buckets = []
-        self._setup()
+REFRESH_DELAY = 1
 
-    def _setup(self):
-        with requests.session() as s:
-            r = api.get_buckets(s)
-            self.buckets = r.json()
+def setup():
+    with requests.session() as s:
+        r = api.get_buckets(s)
+        buckets = r.json()
+        triggers = []
 
-            for bn in range(0, len(self.buckets)):
-                b = self.buckets[bn]["triggers"]
-                for tn in range(0, len(b)):
-                    r = api.get_workflow(s, b[tn]["workflow"])
+        # Concatinate the trigger sublists generated into a single trigger list
+        trig1 = [t for t in [b["triggers"] for b in buckets]]
+        for t in trig1:
+            triggers += t
 
-                    workflow_json = r.json()
-                    self.buckets[bn]["triggers"][tn]["workflow_raw"] = workflow_json
+        return [Trigger(t["id"], t["event_type"], next((x["name"] for x in buckets if x["id"] == t["parent"]), None), t["prefix"], t["suffix"], t["workflow"])
+                for t in triggers]
 
-def listen(bucket):
-    event_generator = mc.listen_bucket_notification(bucket["name"], events=[t["event_type"] for t in bucket["triggers"]])
+def listen(trigger):
+    event_generator = mc.listen_bucket_notification(trigger.parent, events=[trigger.event_type])
     return event_generator
 
-#Creates an async generator
-async def coroutine_read_events(evts):
-    for evt in evts:
-        yield evt
-        await asyncio.sleep(DELAY)
+class EventThread(threading.Thread):
+    def __init__(self, trigger):
+        super(EventThread, self).__init__()
+        self._stop_event = threading.Event()
+        self.trigger = trigger
 
-#Reads the async generator
-async def events(bucket, b):
-    async for i in coroutine_read_events(b):
-        with requests.session() as s:
-            workflow_id = bucket["triggers"][0]["workflow"]
-            r = api.execute_workflow(s, workflow_id)
-            print(r.text)
+    def stop(self):
+        self._stop_event.set()
 
-async def main(buckets):
-    evts = [asyncio.Task(events(b, listen(b))) for b in buckets]
-    await asyncio.gather(*evts)
+    def run(self):
+        events = listen(self.trigger)
+        while not self._stop_event.is_set():
+            i = next(events)
+            if i:
+                with requests.session() as s:
+                    workflow_id = self.trigger.workflow
+                    r = api.execute_workflow(s, workflow_id)
+
+def main():
+    running = []
+    runtimes = {}
+    while True:
+        new_list = setup()
+        added = list(set(new_list)-set(running))
+        print(added)
+        for add in added:
+            # runtimes[add.id] = threading.Thread(target=events, args=(add,))
+            runtimes[add.id] = EventThread(add)
+
+            runtimes[add.id].start()
+
+            running.append(add)
+
+        #Look for removal
+        removed = list(set(running)-set(new_list))
+        for r in removed:
+            runtimes[add.id].stop()
+            del runtimes[r.id]
+            running.remove(r)
+
+        print(runtimes)
+        time.sleep(REFRESH_DELAY)
+
 
 if __name__ == "__main__":
     ip = os.getenv("MINIO_IP")
-    access_key = os.getenv("MINIO_ACCESS_KEY")
-    secret_key = os.getenv("MINIO_SECRET_KEY")
+    access_key = api.get_docker_secret("access_key")
+    secret_key = api.get_docker_secret("secret_key")
     mc = Minio(ip, access_key=access_key, secret_key=secret_key, secure=False)
-    l = Listener()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(l.buckets))
+    loop.run_until_complete(main())
+    loop.close()

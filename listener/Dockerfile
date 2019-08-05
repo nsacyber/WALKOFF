@@ -8,11 +8,11 @@ WORKDIR /install
 
 COPY ./listener/requirements.txt /requirements.txt
 RUN pip install --prefix="/install" -r /requirements.txt
+RUN pip install requests
+RUN pip install minio
 
+COPY ./common /app/common
 COPY ./listener /app/listener
 WORKDIR /app
 
-COPY --from=builder /install /usr/local
-COPY ./common /app/common
-
-CMD python listener.py
+CMD python -m listener.listener
