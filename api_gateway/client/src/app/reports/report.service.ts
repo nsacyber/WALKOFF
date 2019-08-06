@@ -47,21 +47,21 @@ export class ReportService {
     }
 
     deleteReport(report: Report) {
-        return this.http.delete(`/api/dashboards/${ report.id }`)
+        return this.http.delete(`api/dashboards/${ report.id }`)
             .toPromise()
             .then((data) => this.emitChange(data))
             .catch(this.utils.handleResponseError);
     }
 
     getReports() : Promise<Report[]> {
-        return this.http.get('/api/dashboards')
+        return this.http.get('api/dashboards')
 			.toPromise()
 			.then((data) => plainToClass(Report, data))
             .catch(this.utils.handleResponseError);
     }
 
     getReport(id: string) : Promise<Report> {
-        return this.http.get(`/api/dashboards/${ id }`)
+        return this.http.get(`api/dashboards/${ id }`)
 			.toPromise()
 			.then((data: object) => plainToClass(Report, data))
 			.catch(this.utils.handleResponseError);

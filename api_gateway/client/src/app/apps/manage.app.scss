@@ -6,20 +6,6 @@
 	position: relative;
 }
 
-#main.appsMain:before {
-	content: "\f1b3"; 
-	font-family: FontAwesome;
-	font-style: normal;
-	font-weight: normal;
-	text-decoration: inherit;
-	position: fixed;
-	font-size: 50rem;
-	color: #38607724;
-	right: 4rem;
-	margin-top: -8rem;
-	z-index: -1;
-  }
-
 .appsMain .parametersEditor .failure {
     color: crimson;
 }
@@ -264,4 +250,13 @@
 
 #executionResultsModal > .modal-dialog {
 	max-width: 95%;
+}
+
+.CodeMirror {
+    min-height: 750px;
+    border: 1px solid #dee2e6 !important
+}
+
+.fancytree-container {
+    height: 700px;
 }

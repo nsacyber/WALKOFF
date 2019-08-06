@@ -23,7 +23,7 @@ app = FastAPI()
 # GET http://localhost:2828/file
 # Returns contents of file given a specific app_name, version number, and file path
 # Body Params: app_name, app_version, file_path
-@app.get("/umpire/file")
+@app.post("/umpire/file")
 async def get_file_contents(request: Request):
     app_name = request.app_name
     if app_name is None:
@@ -41,7 +41,7 @@ async def get_file_contents(request: Request):
 # POST http://localhost:2828/file
 # Body Params: app_name, app_version, file_path, file_data, file_size
 # Returns success message letting you know you have updated the file at file_path with the given file_data
-@app.post("/umpire/file")
+@app.post("/umpire/file-upload")
 async def update_file(request: Request):
     app_name = request.app_name
     if app_name is None:
@@ -72,7 +72,7 @@ async def update_file(request: Request):
 # GET http://localhost:2828/files
 # Body Params: app_name, version, path
 # Returns all files that exist under the specified app_name and version number
-@app.get("/umpire/files")
+@app.post("/umpire/files")
 async def list_all_files(request: Request):
     app_name = request.app_name
     if app_name is None:
