@@ -5,6 +5,9 @@ aiodocker
 pyyaml
 aiohttp
 async_timeout
+fastapi
 six
+uvicorn
 tenacity
 sanic
+pydantic
