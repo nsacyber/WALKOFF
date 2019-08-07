@@ -15,7 +15,11 @@ with_role = with_resource_factory('role', lambda role_id: Role.query.filter_by(i
 @jwt_required
 @admin_required
 def read_all_roles():
-    return [role.as_json() for role in Role.query.all()], HTTPStatus.OK
+    roles = []
+    for role in Role.query.all():
+        if role.id != 2:
+            roles.append(role.as_json())
+    return roles, HTTPStatus.OK
 
 
 @jwt_required
@@ -47,37 +51,46 @@ def create_role():
 @admin_required
 @with_role('read', 'role_id')
 def read_role(role_id):
-    return role_id.as_json(), HTTPStatus.OK
+    if role_id.id != 2:
+        return role_id.as_json(), HTTPStatus.OK
+    else:
+        return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required
 @admin_required
 @with_role('update', 'role_id')
 def update_role(role_id):
-    json_data = request.get_json()
-    if 'name' in json_data:
-        new_name = json_data['name']
-        role_db = Role.query.filter_by(name=new_name).first()
-        if role_db is None or role_db.id == json_data['id']:
-            role_id.name = new_name
-    if 'description' in json_data:
-        role_id.description = json_data['description']
-    if 'resources' in json_data:
-        resources = json_data['resources']
-        role_id.set_resources(resources)
-    db.session.commit()
-    current_app.logger.info(f"Edited role {json_data['id']} to {json_data}")
-    return role_id.as_json(), HTTPStatus.OK
+    if role_id.id != 2:
+        json_data = request.get_json()
+        if 'name' in json_data:
+            new_name = json_data['name']
+            role_db = Role.query.filter_by(name=new_name).first()
+            if role_db is None or role_db.id == json_data['id']:
+                role_id.name = new_name
+        if 'description' in json_data:
+            role_id.description = json_data['description']
+        if 'resources' in json_data:
+            resources = json_data['resources']
+            role_id.set_resources(resources)
+        db.session.commit()
+        current_app.logger.info(f"Edited role {json_data['id']} to {json_data}")
+        return role_id.as_json(), HTTPStatus.OK
+    else:
+        return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required
 @admin_required
 @with_role('delete', 'role_id')
 def delete_role(role_id):
-    clear_resources_for_role(role_id.name)
-    db.session.delete(role_id)
-    db.session.commit()
-    return None, HTTPStatus.NO_CONTENT
+    if role_id.id != 2:
+        clear_resources_for_role(role_id.name)
+        db.session.delete(role_id)
+        db.session.commit()
+        return None, HTTPStatus.NO_CONTENT
+    else:
+        return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required

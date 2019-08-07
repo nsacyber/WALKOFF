@@ -76,7 +76,7 @@ def initialize_default_resources_admin():
 
 def initialize_default_resources_internal_user():
     """Initializes the default resources for an internal user"""
-    internal_user = Role.query.filter(Role.name == "internal_user").first()
+    internal_user = Role.query.filter(Role.id == 2).first()
     if not internal_user:
         internal_user = Role("internal_user", description="Placeholder description",
                              resources=default_resource_permissions_internal_user)

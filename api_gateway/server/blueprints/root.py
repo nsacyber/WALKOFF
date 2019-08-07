@@ -8,6 +8,7 @@ from http import HTTPStatus
 from flask import current_app
 from flask import render_template, send_from_directory, Blueprint
 from sqlalchemy.exc import SQLAlchemyError
+from api_gateway.serverdb.role import Role
 
 from common.config import static
 from common.config import config
@@ -87,13 +88,13 @@ def create_user():
         admin_user.roles.append(admin_role)
 
     # Setup internal user
-    internal_role = Role.query.filter(Role.name == "internal_user").first()
+    internal_role = Role.query.filter(Role.id == 2).first()
     internal_user = User.query.filter_by(username="internal_user").first()
     if not internal_user:
         with open(config.INTERNAL_KEY_PATH, 'rb') as f:
             key = f.read()
             internal_pass = str(key)
-        add_user(username='internal_user', password=internal_pass, roles=[1])
+        add_user(username='internal_user', password=internal_pass, roles=[2])
     elif internal_role not in internal_user.roles:
         internal_user.roles.append(internal_role)
 

@@ -50,8 +50,7 @@ def create_user():
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 @with_user('read', 'user_id')
 def read_user(user_id):
-    user = User.query.filter_by(User.id == user_id).first()
-    if user.username != "internal_user":
+    if user_id.username != "internal_user":
         return user_id.as_json(), HTTPStatus.OK
     return None, HTTPStatus.FORBIDDEN
 
@@ -61,6 +60,10 @@ def read_user(user_id):
 def update_user(user_id):
     data = request.get_json()
     current_user = get_jwt_identity()
+
+    if user_id.username == "internal_user":
+        return None, HTTPStatus.FORBIDDEN
+
     if user_id.id == current_user:
         return update_user_fields(data, user_id)
     else:
@@ -78,43 +81,47 @@ def update_user(user_id):
 
 @admin_required
 def role_update_user_fields(data, user, update=False):
-    if 'roles' in data:
-        user.set_roles([role['id'] for role in data['roles']])
-    if 'active' in data:
-        user.active = data['active']
-    if update:
-        return update_user_fields(data, user)
+    if user.username != "internal_user":
+        if 'roles' in data:
+            user.set_roles([role['id'] for role in data['roles']])
+        if 'active' in data:
+            user.active = data['active']
+        if update:
+            return update_user_fields(data, user)
 
 
 def update_user_fields(data, user):
-    original_username = str(user.username)
-    if 'username' in data and data['username']:
-        user_db = User.query.filter_by(username=data['username']).first()
-        if user_db is None or user_db.id == user.id:
-            user.username = data['username']
-        else:
-            return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
-                           f"Username {data['username']} is already taken.")
-    if 'old_password' in data and 'password' in data:
-        if user.verify_password(data['old_password']):
-            user.password = data['password']
-        else:
-            user.username = original_username
-            return Problem.from_crud_resource(
-                HTTPStatus.UNAUTHORIZED,
-                'user',
-                'update',
-                'Current password is incorrect.')
-    db.session.commit()
-    current_app.logger.info(f"Updated user {user.id}. Updated to: {user.as_json()}")
-    return user.as_json(), HTTPStatus.OK
+    if user.username != "internal_user":
+        original_username = str(user.username)
+        if 'username' in data and data['username']:
+            user_db = User.query.filter_by(username=data['username']).first()
+            if user_db is None or user_db.id == user.id:
+                user.username = data['username']
+            else:
+                return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
+                               f"Username {data['username']} is already taken.")
+        if 'old_password' in data and 'password' in data:
+            if user.verify_password(data['old_password']):
+                user.password = data['password']
+            else:
+                user.username = original_username
+                return Problem.from_crud_resource(
+                    HTTPStatus.UNAUTHORIZED,
+                    'user',
+                    'update',
+                    'Current password is incorrect.')
+        db.session.commit()
+        current_app.logger.info(f"Updated user {user.id}. Updated to: {user.as_json()}")
+        return user.as_json(), HTTPStatus.OK
+    else:
+        return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('users', ['delete']))
 @with_user('delete', 'user_id')
 def delete_user(user_id):
-    if user_id.id != get_jwt_identity():
+    if user_id.id != get_jwt_identity() and user_id.username != "internal_user":
         db.session.delete(user_id)
         db.session.commit()
         current_app.logger.info(f"User {user_id.username} deleted")
