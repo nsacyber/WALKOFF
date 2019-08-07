@@ -1,0 +1,28 @@
+<div id="main" class="appsMain">
+    <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol id="playbookBreadcrumbs" class="breadcrumb">
+                <li *ngIf="filesLoaded" class="breadcrumb-item">
+                    Manage Application - <span class="">{{ currentApp.name }}</span>
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div id="tree"></div>
+            <div *ngIf="filesLoaded" class="row mt-3">
+                <div class="col">
+                        <button [disabled]="!currentFile" type="button" class="btn btn-primary mr-3" (click)="saveFile()">Save Changes</button>
+                        <button type="button" class="btn btn-primary" (click)="buildImage()">Build Image</button>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="filesLoaded" class="col-md-9">
+            <ngx-codemirror #consoleArea [(ngModel)]="content" [options]="options"></ngx-codemirror>
+        </div>
+    </div>
+
+</div>

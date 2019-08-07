@@ -326,6 +326,7 @@ class Bootloader:
         os.makedirs(Path("data") / "registry" / "reg_data", exist_ok=True)
         os.makedirs(Path("data") / "postgres" / "pg_data", exist_ok=True)
         os.makedirs(Path("data") / "portainer" / "prt_data", exist_ok=True)
+        os.makedirs(Path("data") / "minio" / "min_data", exist_ok=True)
 
         # Bring up the base compose with the registry
         logger.info("Deploying base services (registry, postgres, portainer, redis)...")
@@ -413,6 +414,7 @@ class Bootloader:
 
         if args.registry:
             await delete_dir_contents("data/registry")
+            await delete_dir_contents("data/minio/min_data")
 
         return proc.returncode
 

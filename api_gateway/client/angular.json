@@ -23,6 +23,7 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist/walkoff",
+            "baseHref": "/walkoff/",
             "deployUrl": "client/dist/walkoff/",
             "index": "src/index.html",
             "main": "src/main.ts",

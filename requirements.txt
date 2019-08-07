@@ -11,3 +11,5 @@ cryptography
 sphinxcontrib-openapi
 m2r
 minio
+uvicorn
+fastapi
