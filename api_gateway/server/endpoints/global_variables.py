@@ -104,8 +104,13 @@ def delete_global(global_var):
 def create_global():
     data = request.get_json()
     global_id = data['id_']
-    #new_permissions = [("workflow_operator", ["update", "delete", "read"])]  # TOREMOVE
+
     new_permissions = []
+    # permissions = data['permissions']
+    # for elem in permissions:
+    #     role = elem['role']
+    #     role_permissions = elem['permissions']
+    #     new_permissions.append((role, role_permissions))
 
     if new_permissions:
         update_permissions("global_variables", global_id, new_permissions=new_permissions)
@@ -113,6 +118,7 @@ def create_global():
         default_permissions("global_variables", global_id)
 
     try:
+        # data.pop('permissions', None)
         with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
             data['value'] = fernet_encrypt(f.read(), data['value'])
 
@@ -131,15 +137,17 @@ def update_global(global_var):
     data = request.get_json()
     global_id = data["id_"]
 
-    new_roles = [
-        ('admin', ["create", "read", "update", "delete"]),
-        ('workflow_developer', ["create", "read", "update", "delete"]),
-        ('workflow_operator', ["create", "read", "update", "delete"])
-    ]
+    new_permissions = []
+    # permissions = data['permissions']
+    # for elem in permissions:
+    #     role = elem['role']
+    #     role_permissions = elem['permissions']
+    #     new_permissions.append((role, role_permissions))
 
-    to_update = auth_check(global_id, "update", "global_variables", updated_roles=new_roles)
+    to_update = auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
     if to_update:
         try:
+            # data.pop('permissions', None)
             with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
                 data['value'] = fernet_encrypt(f.read(), data['value'])
 
