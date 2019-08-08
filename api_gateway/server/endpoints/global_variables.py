@@ -128,11 +128,16 @@ def create_global():
 @jwt_required
 @with_global_variable("update", "global_var")
 def update_global(global_var):
-    # todo: ONCE UI ELEMENT IS BUILT OUT, DO CHECK FOR UPDATED PERMISSIONS
     data = request.get_json()
     global_id = data["id_"]
 
-    to_update = auth_check(global_id, "update", "global_variables")
+    new_roles = [
+        ('admin', ["create", "read", "update", "delete"]),
+        ('workflow_developer', ["create", "read", "update", "delete"]),
+        ('workflow_operator', ["create", "read", "update", "delete"])
+    ]
+
+    to_update = auth_check(global_id, "update", "global_variables", updated_roles=new_roles)
     if to_update:
         try:
             with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:

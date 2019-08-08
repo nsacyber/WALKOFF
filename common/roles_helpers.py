@@ -31,17 +31,23 @@ def auth_check(to_check, permission, resource_name, new_name=None, updated_roles
                                     delete_operation(resource_name, to_check, permission)
                                 if updated_roles:
                                     delete_operation(resource_name, to_check, permission)
-                                    update_permissions(resource_name, new_name, new_permissions=updated_roles)
+                                    if new_name:
+                                        update_permissions(resource_name, new_name, new_permissions=updated_roles)
+                                    else:
+                                        update_permissions(resource_name, to_check, new_permissions=updated_roles)
                                 return True
             else:
-                # we know user has default privilege
+                # we know user has default privilege (e.g: admin)
                 if permission == "delete":
                     logger.info(
                         f" Deleted operation for {resource_name} --> ({to_check})")
                     delete_operation(resource_name, to_check, permission)
                 if updated_roles:
                     delete_operation(resource_name, to_check, permission)
-                    update_permissions(resource.name, to_check, new_permissions=updated_roles)
+                    if new_name:
+                        update_permissions(resource_name, new_name, new_permissions=updated_roles)
+                    else:
+                        update_permissions(resource_name, to_check, new_permissions=updated_roles)
 
                 return True
     return False
