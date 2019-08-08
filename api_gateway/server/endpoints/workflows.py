@@ -14,7 +14,7 @@ from api_gateway.security import permissions_accepted_for_resources, ResourcePer
 from api_gateway.server.decorators import with_resource_factory, is_valid_uid, \
     paginate
 from api_gateway.server.problem import unique_constraint_problem, improper_json_problem
-from common.roles_helpers import auth_check, update_permissions, default_permissions, get_permissions
+from common.roles_helpers import auth_check, update_permissions, default_permissions
 from http import HTTPStatus
 
 
@@ -48,12 +48,7 @@ def create_workflow():
     workflow_id = request.args.get("source")
     workflow_name = data['name']
 
-    new_permissions = []
-    # permissions = data['permissions']
-    # for elem in permissions:
-    #     role = elem['role']
-    #     role_permissions = elem['permissions']
-    #     new_permissions.append((role, role_permissions))
+    new_permissions = data['permissions']
 
     if request.files and 'file' in request.files:
         data = json.loads(request.files['file'].read().decode('utf-8'))
@@ -78,7 +73,6 @@ def create_workflow():
             default_permissions("workflows", workflow_name)
 
     try:
-        # data.pop('permissions', None)
         workflow = workflow_schema.load(data)
         current_app.running_context.execution_db.session.add(workflow)
         current_app.running_context.execution_db.session.commit()
@@ -95,13 +89,7 @@ def create_workflow():
 
 # TODO: ADD PERMISSIONS UI TO IMPORT WORKFLOW
 def import_workflow(workflow_json):
-    new_permissions = []
-    # permissions = workflow_json['permissions']
-    # for elem in permissions:
-    #     role = elem['role']
-    #     role_permissions = elem['permissions']
-    #     new_permissions.append((role, role_permissions))
-    # workflow_json.pop('permissions', None)
+    new_permissions = workflow_json['permissions']
 
     regenerate_workflow_ids(workflow_json)
     workflow_json['name'] = workflow_json.get("name")
@@ -195,17 +183,12 @@ def update_workflow(workflow):
     old_name = workflow.name
     new_name = data['name']
 
-    new_permissions = []
-    # permissions = data['permissions']
-    # for elem in permissions:
-    #     role = elem['role']
-    #     role_permissions = elem['permissions']
-    #     new_permissions.append((role, role_permissions))
+    new_permissions = data['permissions']
 
-    to_update = auth_check(old_name, "update", "workflows", new_name=new_name, updated_roles=new_permissions)
+    to_update = auth_check(old_name, "update", "workflows")
     if to_update:
+        auth_check(old_name, "update", "workflows", new_name=new_name, updated_roles=new_permissions)
         try:
-            # TODO: POP THE PERMISSIONS DATA
             workflow_schema.load(data, instance=workflow)
             current_app.running_context.execution_db.session.commit()
             current_app.logger.info(f"Updated workflow {workflow.name} ({workflow.id_})")

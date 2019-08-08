@@ -54,7 +54,7 @@ class GlobalVariable(Base):
     # Columns specific to GlobalVariables
     description = Column(String(255), default="")
     schema_id = Column(UUID(as_uuid=True), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
-    #permissions = Column(ARRAY(String(255)))
+    permissions = Column(JSON)
     _walkoff_type = Column(String(80), default="variable")
 
 

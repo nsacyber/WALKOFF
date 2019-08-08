@@ -13,7 +13,7 @@ with_role = with_resource_factory('role', lambda role_id: Role.query.filter_by(i
 
 
 @jwt_required
-@admin_required
+@permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
 def read_all_roles():
     roles = []
     for role in Role.query.all():
@@ -48,7 +48,7 @@ def create_role():
 
 
 @jwt_required
-@admin_required
+@permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
 @with_role('read', 'role_id')
 def read_role(role_id):
     if role_id.id != 2:

@@ -26,8 +26,6 @@ def auth_check(to_check, permission, resource_name, new_name=None, updated_roles
                                 return False
                             else:
                                 if permission == "delete":
-                                    logger.info(
-                                        f" Deleted operation for {resource_name} --> ({to_check})")
                                     delete_operation(resource_name, to_check, permission)
                                 if updated_roles:
                                     delete_operation(resource_name, to_check, permission)
@@ -37,24 +35,13 @@ def auth_check(to_check, permission, resource_name, new_name=None, updated_roles
                                         update_permissions(resource_name, to_check, new_permissions=updated_roles)
                                 return True
             else:
-                # we know user has default privilege (e.g: admin)
-                if permission == "delete":
-                    logger.info(
-                        f" Deleted operation for {resource_name} --> ({to_check})")
-                    delete_operation(resource_name, to_check, permission)
-                if updated_roles:
-                    delete_operation(resource_name, to_check, permission)
-                    if new_name:
-                        update_permissions(resource_name, new_name, new_permissions=updated_roles)
-                    else:
-                        update_permissions(resource_name, to_check, new_permissions=updated_roles)
-
-                return True
+                return False
     return False
 
 
 # deletes operation for specific resource in all roles
 def delete_operation(resource_name, to_check, permission):
+    logger.info(f" Deleting operation for {resource_name} --> ({to_check})")
     for resource_elem in db.session.query(Resource).filter(Resource.name == resource_name).all():
         if resource_elem.operations:
             if to_check in [elem.operation_id for elem in resource_elem.operations]:
@@ -67,21 +54,24 @@ def delete_operation(resource_name, to_check, permission):
 
 # updates permissions for specific resource
 def update_permissions(resource_type, resource_indicator, new_permissions):
-    for role_elem in new_permissions:
-        role_name = role_elem[0]
-        role_permissions = role_elem[1]
-        for resource in db.session.query(Role).filter(Role.name == role_name).first().resources:
-            if resource.name == resource_type:
-                if resource.operations:
-                    final = [Operation(resource_indicator, role_permissions)] + resource.operations
-                    setattr(resource, "operations", final)
-                    logger.info(f" Newly added operation for {resource_type} --> ({resource_indicator},{role_permissions})")
-                    db.session.commit()
-                else:
-                    resource.operations = [Operation(resource_indicator, role_permissions)]
-                    logger.info(f" Newly added operation for {resource_type} --> ({resource_indicator},{role_permissions})")
-                    db.session.commit()
-                logger.info(f" Updated {resource_type} element {resource_indicator} permissions for role type {role_name}")
+    if new_permissions:
+        for role_elem in new_permissions:
+            role_name = role_elem['role']
+            role_permissions = role_elem['permissions']
+            for resource in db.session.query(Role).filter(Role.name == role_name).first().resources:
+                if resource.name == resource_type:
+                    if resource.operations:
+                        final = [Operation(resource_indicator, role_permissions)] + resource.operations
+                        setattr(resource, "operations", final)
+                        logger.info(f" Newly added operation for {resource_type} --> ({resource_indicator},{role_permissions})")
+                        db.session.commit()
+                    else:
+                        resource.operations = [Operation(resource_indicator, role_permissions)]
+                        logger.info(f" Newly added operation for {resource_type} --> ({resource_indicator},{role_permissions})")
+                        db.session.commit()
+                    logger.info(f" Updated {resource_type} element {resource_indicator} permissions for role type {role_name}")
+    else:
+        default_permissions(resource_type, resource_indicator)
 
 
 # sets default permissions for given resource type
@@ -106,13 +96,3 @@ def default_permissions(resource_type, resource_indicator):
                         f"({resource_indicator},{role_permissions})")
                     db.session.commit()
 
-
-def get_permissions(workflow, target_name):
-    roles = db.session.query(Role).all()
-
-    for role in roles:
-        for resource in db.session.query(Role).filter(Role.name == role.name).first().resources:
-            if resource.name == "workflows":
-                role_permissions = [permission.name for permission in resource.permissions]
-                resource_ops = [Operation(target_name, role_permissions)]
-                return resource_ops

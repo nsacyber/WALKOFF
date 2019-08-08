@@ -15,6 +15,10 @@ GlobalVariable:
     _walkoff_type:
       type: string
       description: Workflow type for json decoder
+    permissions:
+      type: array
+      items:
+        type: object
     value:
       type: string
 #      oneOf:

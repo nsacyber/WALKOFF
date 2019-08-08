@@ -89,7 +89,6 @@ def delete_global(global_var):
     global_id = str(global_var.id_)
     to_delete = auth_check(global_id, "delete", "global_variables")
 
-    # update roles
     if to_delete:
         current_app.running_context.execution_db.session.delete(global_var)
         current_app.logger.info(f"Global_variable removed {global_var.name}")
@@ -105,20 +104,13 @@ def create_global():
     data = request.get_json()
     global_id = data['id_']
 
-    new_permissions = []
-    # permissions = data['permissions']
-    # for elem in permissions:
-    #     role = elem['role']
-    #     role_permissions = elem['permissions']
-    #     new_permissions.append((role, role_permissions))
-
+    new_permissions = data['permissions']
     if new_permissions:
         update_permissions("global_variables", global_id, new_permissions=new_permissions)
     else:
         default_permissions("global_variables", global_id)
 
     try:
-        # data.pop('permissions', None)
         with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
             data['value'] = fernet_encrypt(f.read(), data['value'])
 
@@ -137,17 +129,16 @@ def update_global(global_var):
     data = request.get_json()
     global_id = data["id_"]
 
-    new_permissions = []
-    # permissions = data['permissions']
-    # for elem in permissions:
-    #     role = elem['role']
-    #     role_permissions = elem['permissions']
-    #     new_permissions.append((role, role_permissions))
+    new_permissions = data['permissions']
 
-    to_update = auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
+    to_update = auth_check(global_id, "update", "global_variables")
     if to_update:
+        if new_permissions:
+            auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
+        else:
+            default_permissions("global_variables", global_id)
+
         try:
-            # data.pop('permissions', None)
             with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
                 data['value'] = fernet_encrypt(f.read(), data['value'])
 
