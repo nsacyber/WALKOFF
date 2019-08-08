@@ -39,7 +39,7 @@ default_resource_permissions_workflow_developer = [
     {"name": "settings", "permissions": ["read"]},
     {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
     {"name": "workflow_variables", "permissions": ["create", "read", "update", "delete"]},
-    {"name": "workflows", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "workflows", "permissions": ["create", "read", "update", "delete", "execute"]},
     {"name": "dashboards", "permissions": ["create", "read", "update", "delete"]},
     {"name": "workflowstatus", "permissions": ["read"]},
     {"name": "roles", "permissions": ["read"]},

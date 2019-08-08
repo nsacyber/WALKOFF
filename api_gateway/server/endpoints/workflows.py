@@ -48,7 +48,10 @@ def create_workflow():
     workflow_id = request.args.get("source")
     workflow_name = data['name']
 
-    new_permissions = data['permissions']
+    try:
+        new_permissions = data['permissions']
+    except:
+        new_permissions = []
 
     if request.files and 'file' in request.files:
         data = json.loads(request.files['file'].read().decode('utf-8'))
@@ -87,7 +90,6 @@ def create_workflow():
         return unique_constraint_problem('workflow', 'create', workflow_name)
 
 
-# TODO: ADD PERMISSIONS UI TO IMPORT WORKFLOW
 def import_workflow(workflow_json):
     new_permissions = workflow_json['permissions']
 
