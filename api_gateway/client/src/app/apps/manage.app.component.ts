@@ -48,6 +48,7 @@ export class ManageAppComponent implements OnInit, OnDestroy {
     currentFile: string;
     content: string;
     filesLoaded = false;
+    fileTree: any;
 
     options: any = {
         lineNumbers: true,
@@ -75,15 +76,39 @@ export class ManageAppComponent implements OnInit, OnDestroy {
                     this.currentApp = app;
                     this.appService.listFiles(app).then(files => {
                         this.filesLoaded = true;
-                        const tree = createTree('#tree', {
+                        this.fileTree = createTree('#tree', {
                             extensions: ['edit', 'filter'],
                             source: files,
-                            activate: (event, data) => (data.node.folder) ? '' : this.loadFile(data.node.data.path)
+                            activate: (event, data) => (data.node.folder) ? '' : this.loadFile(data.node.data.path),
+                            renderNode: (event, data)  => {
+                                var node = data.node;
+                                var $nodeSpan = $(node.span);
+                            
+                                // check if span of node already rendered
+                                if (node.folder && !$nodeSpan.data('rendered')) {
+                            
+                                    var newFileLink = $('<a href="#" class="fancytree-title small">+New File</a>');
+                                    newFileLink.click(() => {
+                                        this.createFile(node.data.path);
+                                        return false;
+                                    })
+                            
+                                    $nodeSpan.append(newFileLink);
+                                    $nodeSpan.data('rendered', true);
+                                }
+                            }
                         });
                     });
                 });
             }
         })
+    }
+
+    async createFile(root: string) {
+        const path = root + await this.utils.prompt('Enter name for new file');
+        await this.appService.putFile(this.currentApp, path, '')
+        await this.fileTree.reload(await this.appService.listFiles(this.currentApp))
+        this.toastrService.success(`Created <b>${ path }</b>`);
     }
     
     loadFile(path: string) {

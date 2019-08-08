@@ -80,7 +80,6 @@ def create_workflow():
         current_app.running_context.execution_db.session.add(workflow)
         current_app.running_context.execution_db.session.commit()
         current_app.logger.info(f" Created Workflow {workflow.name} ({workflow.id_})")
-        logger.info(f" Workflow {workflow.id_} successfully created -> {workflow_schema.dump(workflow)}")
         return workflow_schema.dump(workflow), HTTPStatus.CREATED
     except ValidationError as e:
         current_app.running_context.execution_db.session.rollback()
@@ -105,7 +104,6 @@ def import_workflow(workflow_json):
         new_workflow = workflow_schema.load(workflow_json)
         current_app.running_context.execution_db.session.add(new_workflow)
         current_app.running_context.execution_db.session.commit()
-        logger.info(f" Workflow {new_workflow.id_} successfully imported -> {workflow_schema.dump(new_workflow)}")
         return workflow_schema.dump(new_workflow), HTTPStatus.CREATED
     except IntegrityError:
         current_app.running_context.execution_db.session.rollback()
@@ -137,7 +135,6 @@ def copy_workflow(workflow, permissions, workflow_name=None):
         current_app.running_context.execution_db.session.add(new_workflow)
         current_app.running_context.execution_db.session.commit()
         current_app.logger.info(f" Workflow {workflow.id_} copied to {new_workflow.id_}")
-        logger.info(f" Workflow {new_workflow.id_} successfully copied -> {workflow_schema.dump(new_workflow)}")
         return workflow_schema.dump(new_workflow), HTTPStatus.CREATED
     except IntegrityError:
         current_app.running_context.execution_db.session.rollback()
