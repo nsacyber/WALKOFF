@@ -9,5 +9,4 @@ fastapi
 six
 uvicorn
 tenacity
-sanic
 pydantic

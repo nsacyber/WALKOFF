@@ -93,13 +93,14 @@ class MinioApi:
             minio_client.stat_object("apps-bucket", abs_path)
             found = True
         except Exception as e:
-            return str(e)
+            pass
 
         if found is True:
             minio_client.remove_object("apps-bucket", abs_path)
-            file_data = io.BytesIO(file_data)
+        file_data = io.BytesIO(file_data)
+        try:
             minio_client.put_object("apps-bucket", abs_path, file_data, file_size)
-            return True
-        else:
-            return False
+            return True, "Successfully placed file in Minio"
+        except Exception as e:
+            return False, str(e)
 

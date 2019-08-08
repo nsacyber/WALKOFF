@@ -12,6 +12,7 @@ from walkoff_client.api.scheduler_api import SchedulerApi
 from walkoff_client.api.settings_api import SettingsApi
 from walkoff_client.api.system_api import SystemApi
 from walkoff_client.api.temp_internal_api import TempInternalApi
+from walkoff_client.api.umpire_api import UmpireApi
 from walkoff_client.api.users_api import UsersApi
 from walkoff_client.api.workflow_queue_api import WorkflowQueueApi
 from walkoff_client.api.workflows_api import WorkflowsApi

@@ -26,7 +26,7 @@ def client_app_folder(filename):
 
 # Default route to angular application
 @root_page.route('/', defaults={'path': ''})
-@root_page.route('/walkoff/', defaults={'path': ''})
+@root_page.route('/walkoff', defaults={'path': ''})
 @root_page.route('/walkoff/<path:path>')
 def default(path):
     return send_from_directory(os.path.abspath(static.CLIENT_PATH), "dist/walkoff/index.html")
