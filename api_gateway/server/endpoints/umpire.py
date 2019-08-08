@@ -36,10 +36,10 @@ def list_all_files(app_name, app_version):
 
 
 # @jwt_required
-def get_file_contents(app_name, app_version):
+def get_file_contents(app_name, app_version, file_path):
 
-    data = request.get_json()
-    file_path = data.get("file_path")
+    # data = request.get_json()
+    # file_path = data.get("file_path")
     headers = {'content-type': 'application/json'}
     payload = {'app_name': app_name, 'app_version': app_version, 'file_path': file_path}
     url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/file"

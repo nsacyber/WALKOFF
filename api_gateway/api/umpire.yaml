@@ -34,17 +34,11 @@
     security: []
 
 /umpire/file/{app_name}/{app_version}:
-  post:
+  get:
     tags:
       - Umpire
     summary: Get contents of specified file.
     operationId: api_gateway.server.endpoints.umpire.get_file_contents
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/UploadFile'
     parameters:
       - name: app_name
         in: path
@@ -55,6 +49,12 @@
       - name: app_version
         in: path
         description: 'The version number of the app to list.'
+        required: true
+        schema:
+          type: string
+      - name: file_path
+        in: query
+        description: Whether or not to delete all workflow statuses, defaults to false
         required: true
         schema:
           type: string
