@@ -65,7 +65,7 @@ class Static:
     # API Gateway paths
     API_PATH = Path("api_gateway") / "api"
     CLIENT_PATH = Path("api_gateway") / "client"
-    SWAGGER_URL = "/api/docs"
+    SWAGGER_URL = "/walkoff/api/docs"
 
     def set_local_hostname(self, hostname):
         if not self.CONTAINER_ID:

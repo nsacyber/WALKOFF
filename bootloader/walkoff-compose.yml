@@ -50,7 +50,7 @@ services:
       - walkoff_default
     ports:
       - '8080:8080'
-#      - '8081:8081' # Uncomment for unsecure HTTP access to API Gateway
+      - '8081:8081' # Uncomment for unsecure HTTP access to API Gateway
     volumes:
       - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
       - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro

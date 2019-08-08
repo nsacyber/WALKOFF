@@ -63,7 +63,7 @@ async def update_file(request: Request):
     file_data = file_data.encode('utf-8')
     file_size = len(file_data)
 
-    success = await MinioApi.update_file(app_name, version, path, file_data, file_size)
+    success, message = await MinioApi.update_file(app_name, version, path, file_data, file_size)
     if success:
         return f"You have updated {path} to include {file_data}"
     else:

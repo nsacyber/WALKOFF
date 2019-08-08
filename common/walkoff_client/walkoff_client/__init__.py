@@ -27,6 +27,7 @@ from walkoff_client.api.scheduler_api import SchedulerApi
 from walkoff_client.api.settings_api import SettingsApi
 from walkoff_client.api.system_api import SystemApi
 from walkoff_client.api.temp_internal_api import TempInternalApi
+from walkoff_client.api.umpire_api import UmpireApi
 from walkoff_client.api.users_api import UsersApi
 from walkoff_client.api.workflow_queue_api import WorkflowQueueApi
 from walkoff_client.api.workflows_api import WorkflowsApi
@@ -87,6 +88,7 @@ from walkoff_client.models.task_trigger import TaskTrigger
 from walkoff_client.models.token import Token
 from walkoff_client.models.transform import Transform
 from walkoff_client.models.trigger import Trigger
+from walkoff_client.models.upload_file import UploadFile
 from walkoff_client.models.widget import Widget
 from walkoff_client.models.workflow_json import WorkflowJSON
 from walkoff_client.models.workflow_meta_data import WorkflowMetaData
