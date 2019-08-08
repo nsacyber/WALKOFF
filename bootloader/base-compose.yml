@@ -1,0 +1,91 @@
+version: '3.5'
+services:
+  resource_registry:
+    image: registry:2
+    networks:
+      - walkoff_default
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    ports:
+      - 5000:5000
+
+#    The commented lines are needed to enable auth on the custom registry
+#    environment:
+#      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
+#      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+#      REGISTRY_AUTH: htpasswd
+#      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+#      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+    volumes:
+      - ./data/registry/reg_data:/var/lib/registry
+#      - ./data/config.yml:/etc/docker/registry/config.yml
+#      - /var/lib/boot2docker:/certs
+#      - /var/lib/boot2docker/auth:/auth
+
+  resource_redis:
+    image: "redis"
+    networks:
+      - walkoff_default
+#    ports:
+#      - "6379:6379"
+    command: redis-server --port 6379
+#    volumes:
+#      - /path/to/persistent/dir/redis:/data
+
+  resource_minio:
+    image: minio/minio
+    networks:
+      - walkoff_default
+#    ports:
+#      - "9001:9000"
+    volumes:
+      - ./data/minio/min_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./apps:/app/apps
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    environment:
+      MINIO_ACCESS_KEY: walkoff
+      MINIO_SECRET_KEY: walkoff123
+    command: server /data
+
+  resource_postgres:
+    image: "postgres"
+    networks:
+      - walkoff_default
+    environment:
+      - "POSTGRES_USER=walkoff"
+      - "POSTGRES_PASSWORD=walkoff"
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    volumes:
+      - ./data/postgres/pg_data:/var/lib/postgresql/data
+
+  resource_portainer:
+    image: "portainer/portainer"
+    networks:
+      - walkoff_default
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/portainer/prt_data:/data
+
+configs:
+  common_env.yml:
+    file: ./data/config.yml
+
+secrets:
+  encryption_key:
+    external: true
+
+networks:
+  walkoff_default:
+#    driver: overlay
+#    name: walkoff_default
+#    attachable: true
+    external: true

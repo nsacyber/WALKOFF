@@ -1,0 +1,153 @@
+/apps:
+  get:
+    tags:
+      - System
+    summary: Gets all apps
+    description: ''
+    operationId: api_gateway.server.endpoints.appapi.read_all_app_names
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: array
+              description: List of app names
+              items:
+                type: string
+                example: [PhillipsHue, OpenDaylight, PaloAlto]
+
+/apps/apis:
+  get:
+    tags:
+      - Apps
+    summary: Get all app apis
+    description: ''
+    operationId: api_gateway.server.endpoints.appapi.read_all_app_apis
+    parameters:
+      - name: page
+        in: query
+        description: page of data to get
+        required: false
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AppApi'
+  post:  # ToDo: Delete this when testing is finished
+    tags:
+      - Apps
+    summary: Create app api
+    description: ''
+    operationId: api_gateway.server.endpoints.appapi.create_app_api
+    requestBody:
+      description: The app api object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AppApi'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppApi'
+
+/apps/apis/{app}:
+  get:
+    tags:
+      - Apps
+    summary: Get and app's api
+    description: ''
+    operationId: api_gateway.server.endpoints.appapi.read_app_api
+    parameters:
+      - name: app
+        in: path
+        description: Name OR ID of the app to get
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppApi'
+      404:
+        description: App does not exist
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+  put:  # ToDo: Delete this when testing is finished
+    tags:
+      - Apps
+    summary: Replace app api
+    description: ''
+    operationId: api_gateway.server.endpoints.appapi.update_app_api
+    parameters:
+      - name: app
+        in: path
+        description: Name OR ID of the app to get
+        required: true
+        schema:
+          type: string
+    requestBody:
+      description: The app api object to be updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AppApi'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppApi'
+      404:
+        description: AppApi does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      400:
+        description: AppApi already exists.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+  delete:  # ToDo: Delete this when testing is finished
+    tags:
+      - Apps
+    summary: Delete app api
+    description: ''
+    operationId: api_gateway.server.endpoints.appapi.delete_app_api
+    parameters:
+      - name: app
+        in: path
+        description: Name OR ID of the app to get
+        required: true
+        schema:
+          type: string
+    responses:
+      204:
+        description: Success
+      404:
+        description: AppApi does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

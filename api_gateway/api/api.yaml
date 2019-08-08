@@ -1,0 +1,94 @@
+openapi: '3.0.0'
+info:
+  description: >-
+    An active cyber defense development framework enabling orchestration
+    capabilities to be written once and deployed across WALKOFF-enabled
+    orchestration tools. https://nsacyber.github.io/WALKOFF/
+  version: 0.9.1
+  title: WALKOFF
+  contact:
+    email: walkoff@nsa.gov
+  license:
+    name: Creative-Commons
+    url: 'http://creativecommons.org/licenses/by/4.0/'
+
+tags:
+  - name: Authorization
+    description: Authorization Operations
+  - name: Apps
+    description: App Management Operations
+  - name: Settings
+    description: System Settings Operations
+  - name: GlobalVariables
+    description: GlobalVariable Operations
+  - name: Users
+    description: User operations
+  - name: Roles
+    description: Role Operations
+  - name: Workflows
+    description: Workflow Operations
+  - name: WorkflowQueue
+    description: Workflow Control Operations
+  - name: Events
+    description: Event Operations
+  - name: Scheduler
+    description: Scheduler Operations
+  - name: Triggers
+    description: Trigger Operations
+  - name: Client
+    description: Serves up client pages
+  - name: System
+    description: System Resources
+  - name: TempInternal
+    description: TempInternal
+
+servers:
+  - url: /walkoff/api
+
+paths:
+  $ref: ./apps.yaml
+  $ref: ./auth.yaml
+  $ref: ./settings.yaml
+  $ref: ./global_variables.yaml
+  $ref: ./roles.yaml
+  $ref: ./scheduler.yaml
+  $ref: ./users.yaml
+  $ref: ./workflowqueue.yaml
+  $ref: ./workflows.yaml
+  $ref: ./dashboards.yaml
+  $ref: ./results.yaml
+  $ref: ./umpire.yaml
+
+
+security:
+  - AuthenticationToken: []
+
+components:
+  schemas:
+    $ref: ./objects/appapi.yaml
+    $ref: ./objects/auth.yaml
+    $ref: ./objects/settings.yaml
+    $ref: ./objects/global_variables.yaml
+    $ref: ./objects/objects.yaml
+    $ref: ./objects/roles.yaml
+    $ref: ./objects/scheduler.yaml
+    $ref: ./objects/users.yaml
+    $ref: ./objects/workflowqueue.yaml
+    $ref: ./objects/workflows.yaml
+    $ref: ./objects/dashboard.yaml
+    $ref: ./objects/results.yaml
+    $ref: ./objects/umpire.yaml
+
+  securitySchemes:
+    AuthenticationToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: api_gateway.security.decode_token
+      description: >
+        We use a JWT authorization workflow. Use the /walkoff/api/auth endpoint to get JWT access and refresh tokens. Then use the
+        access token in the header "Authorization: Bearer accesstoken.goes.here".  That token will expire in 15 minutes by
+        default. When it expires, you'll receive a 401 response code. At that point, use the /walkoff/api/auth/refresh
+        with the header "Authorization: Bearer refreshtoken.goes.here" to receive a fresh access token. When you're done,
+        please use the /walkoff/api/auth/logout endpoint to log out.  See the implementation in the Walkoff App for an example
+        implementation.

@@ -1,0 +1,178 @@
+WorkflowStatusSummary:
+  type: object
+  required: [execution_id, workflow_id, name, status]
+  properties:
+    execution_id:
+      $ref: '#/components/schemas/Uuid'
+    workflow_id:
+      $ref: '#/components/schemas/Uuid'
+    name:
+      description: The name of the workflow.
+      type: string
+      example: WorkflowName
+      readOnly: true
+    status:
+      description: The current status of the workflow
+      type: string
+      enum: ['PENDING', 'EXECUTING', 'PAUSED', 'AWAITING_DATA', 'COMPLETED', 'ABORTED']
+      readOnly: true
+    started_at:
+      description: The timestamp of the start of workflow execution
+      type: string
+      format: date-time
+      example: '2017-05-24T00:42:22.934058Z'
+      readOnly: true
+    completed_at:
+      description: The timestamp of the end of workflow execution
+      type: string
+      format: date-time
+      example: '2017-05-24T00:42:22.934058Z'
+    user:
+      description: The user that executed the workflow
+      type: string
+    node_status:
+      description: The currently executing node
+      $ref: '#/components/schemas/NodeStatusSummary'
+
+WorkflowStatus:
+  type: object
+  required: [node_statuses, execution_id, workflow_id, name, status]
+  properties:
+    execution_id:
+      $ref: '#/components/schemas/Uuid'
+    workflow_id:
+      $ref: '#/components/schemas/Uuid'
+    name:
+      description: The name of the workflow.
+      type: string
+      example: WorkflowName
+      readOnly: true
+    status:
+      description: The current status of the workflow
+      type: string
+      enum: ['PENDING', 'EXECUTING', 'PAUSED', 'AWAITING_DATA', 'COMPLETED', 'ABORTED']
+      readOnly: true
+    started_at:
+      description: The timestamp of the start of workflow execution
+      type: string
+      format: date-time
+      example: '2017-05-24T00:42:22.934058Z'
+      readOnly: true
+    completed_at:
+      description: The timestamp of the end of workflow execution
+      type: string
+      format: date-time
+      example: '2017-05-24T00:42:22.934058Z'
+    user:
+      description: The user that executed the workflow
+      type: string
+    node_statuses:
+      description: The statuses of the workflow nodes
+      type: array
+      items:
+        $ref: '#/components/schemas/NodeStatus'
+
+NodeStatus:
+  type: object
+  description: The status of an node execution
+  required: [node_id, execution_id, label, name, app_name, status, started_at]
+  properties:
+    execution_id:
+      $ref: '#/components/schemas/Uuid'
+    node_id:
+      $ref: '#/components/schemas/Uuid'
+    label:
+      description: The name of the node
+      type: string
+      example: 'This One node'
+      readOnly: true
+    app_name:
+      description: The name of the app associated with the node
+      type: string
+      example: ThingGetter
+      readOnly: true
+    name:
+      description: The name of the node take by the node
+      type: string
+      example: get that thing
+      readOnly: true
+    status:
+      description: The status of the node
+      type: string
+      enum: ['EXECUTING', 'SUCCESS', 'FAILURE']
+      readOnly: true
+    result:
+      description: The result of the node
+      type: object
+      readOnly: true
+    started_at:
+      description: The timestamp of when the node started
+      type: string
+      format: date-time
+      example: '2017-05-24T00:42:22.934058Z'
+      readOnly: true
+    completed_at:
+      description: The timestamp of when the node completed
+      type: string
+      format: date-time
+      example: '2017-05-24T00:43:26.930892Z'
+      readOnly: true
+
+NodeStatusSummary:
+  type: object
+  description: The descriptive identification of an node
+  required: [node_id, execution_id, label, name, app_name]
+  properties:
+    execution_id:
+      $ref: '#/components/schemas/Uuid'
+    node_id:
+      $ref: '#/components/schemas/Uuid'
+    label:
+      description: The name of the node
+      type: string
+      example: 'This One node'
+      readOnly: true
+    app_name:
+      description: The name of the app associated with the node
+      type: string
+      example: ThingGetter
+      readOnly: true
+    name:
+      description: The name of the node take by the node
+      type: string
+      example: get that thing
+      readOnly: true
+
+ExecuteWorkflow:
+  type: object
+  required: [workflow_id]
+  properties:
+    workflow_id:
+      $ref: '#/components/schemas/Uuid'
+    execution_id:
+      $ref: '#/components/schemas/Uuid'
+    start:
+      description: The ID of the starting node
+      $ref: '#/components/schemas/Uuid'
+    parameters:
+      type: array
+      items:
+        $ref: '#/components/schemas/Parameter'
+    workflow_variables:
+      type: array
+      items:
+        $ref: '#/components/schemas/WorkflowVariable'
+
+ControlWorkflow:
+  type: object
+  required: [status]
+  properties:
+    status:
+      description: The action to take on the executing workflow
+      type: string
+      enum: ['trigger', 'abort']
+    trigger_id:
+      description: The ID of the trigger node
+      $ref: '#/components/schemas/Uuid'
+    trigger_data:
+      description: The data that will be sent to the trigger

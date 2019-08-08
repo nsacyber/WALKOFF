@@ -1,2 +1,0 @@
-class CustomException(Exception):
-    pass

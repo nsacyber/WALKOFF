@@ -1,7 +1,0 @@
-CACHE={"type": "redis", "host": "walkoff-redis-master", "port": 6379}
-HOST=0.0.0.0
-PORT=8080
-ZMQ_RESULTS_ADDRESS=tcp://walkoff-app:5556
-ZMQ_COMMUNICATION_ADDRESS=tcp://walkoff-app:5557
-SEPARATE_WORKERS=true
-NUMBER_PROCESSES=1

@@ -1,0 +1,48 @@
+GlobalVariable:
+  type: object
+  required: [name, value]
+  description: An global variable object, which is a type of parameter in an Action
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+    name:
+      type: string
+      description: The name of the global variable
+    value:
+      type: string
+#      oneOf:
+#        - type: "string"
+#        - type: "number"
+#        - type: "object"
+#        - type: "array"
+#        - type: "boolean"
+      description: The value of the global variable
+    description:
+      type: string
+      description: Description of the global variable
+
+
+GlobalVariableTemplate:
+  type: object
+  required: [name, schema]
+  description: An global variable template object, which is used to optionally validate global variables
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+    name:
+      type: string
+      description: The name of the global template
+    schema:
+      type: object
+      description: The schema for the global template
+    description:
+      type: string
+      description: Description of the global template

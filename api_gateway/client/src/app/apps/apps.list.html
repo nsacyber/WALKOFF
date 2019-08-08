@@ -1,0 +1,37 @@
+<div id="main" class="appsMain appsBackdrop">
+    <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol id="playbookBreadcrumbs" class="breadcrumb">
+                <li class="breadcrumb-item">Manage Applications</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row">
+        <div *ngFor="let a of apps" class="col-md-6 col-lg-4 col-xl-3 my-4">
+            <div class="card workflow-card shadow">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title d-flex justify-content-between">
+                        {{ a.name }} 
+                        <div *ngIf="a.app_version" class="d-inline-block">
+                            <span  class="badge badge-pil badge-primary mr-3">{{ a.app_version }} </span>
+                        </div>
+                        <div *ngIf="a.tags?.length > 0" class="small mt-1">
+                            <span *ngFor="let tag of a.tags" class="badge badge-pill badge-primary small mr-1">
+                                {{ tag }} </span>
+                        </div>
+                    </h5>
+
+                    <p class="card-text flex-grow-1">{{ a.description }}</p>
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-outline-primary ml-3 mr-1" (click)="manageApp(a)"><i
+                                class="fa fa-code"></i> Edit Application</button>
+                        <button class="btn btn-outline-primary mr-3" (click)="buildImage(a)"><i
+                                class="fa fa-cloud-upload"></i> Rebuild Image</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

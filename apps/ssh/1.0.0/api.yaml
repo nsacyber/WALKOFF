@@ -1,0 +1,162 @@
+walkoff_version: 1.0.0
+app_version: 1.0.0
+name: ssh
+description: Executes ssh shell commands via SSH
+contact_info:
+  name: Walkoff Team
+  url: https://github.com/nsacyber/walkoff
+  email: walkoff@nsa.gov
+license_info:
+  name: Creative Commons
+  url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
+actions:
+  - name: exec_command
+    description: Execute command on remote server with SSH client
+    parameters:
+      - name: hosts
+        parallelizable: true
+        schema:
+          type: array
+        description: hosts or hostnames of the remote server
+        required: true
+      - name: port
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        description: port number
+        required: true
+      - name: args
+        required: true
+        schema:
+          type: array
+        description: json array of arguments
+      - name: username
+        schema:
+          type: string
+        description: username to login with
+        required: true
+      - name: password
+        schema:
+          type: string
+        description: password to login with
+        required: true
+    returns:
+      schema:
+        type: string
+  - name: exec_local_command
+    description: Run a local bash command on the container
+    parameters:
+      - name: command
+        required: true
+        schema:
+          type: string
+        description: ssh command to run on local WALKOFF app container
+    returns:
+      schema:
+        type: string
+  - name: sftp_copy
+    description: Copy remote directory or files to remote host using sftp
+    parameters:
+      - name: src_path
+        required: true
+        schema:
+          type: string
+        description: source path of the file(s) or directory to copy from. You may specify a specific pattern of files or directories to copy using glob pattern match.
+      - name: dest_path
+        required: true
+        schema:
+          type: string
+        description: remote path of the file(s) or directory destination
+      - name: src_host
+        schema:
+          type: string
+        description: host or hostname of the remote server to copy from
+        required: true
+      - name: src_port
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        description: port number for the src_host
+        required: true
+      - name: src_username
+        schema:
+          type: string
+        description: username to login with for the src_host
+        required: true
+      - name: src_password
+        schema:
+          type: string
+        description: password to login with for the src_host
+        required: true
+      - name: dest_host
+        schema:
+          type: string
+        description: host or hostname of the remote server you would like to copy to
+        required: true
+      - name: dest_port
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        description: port number for the dst_host
+        required: true
+      - name: dest_username
+        schema:
+          type: string
+        description: username to login with
+        required: true
+      - name: dest_password
+        schema:
+          type: string
+        description: password to login with
+        required: true
+    returns:
+      schema:
+        type: string
+  - name: sftp_copy_from_json
+    description: Copy remote file to remote host using sftp
+    parameters:
+      - name: input
+        required: true
+        schema:
+          type: object
+        description: source path of the file to copy
+    returns:
+      schema:
+        type: string
+  - name: run_shell_script_file
+    description: runs the specified shell script on the remote server(s)
+    parameters:
+      - name: local_file_name
+        required: true
+        schema:
+          type: string
+        description: local path of the shell script to run
+      - name: hosts
+        schema:
+          type: array
+        description: hosts of the remote server
+        required: true
+      - name: port
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 65535
+        description: port number
+        required: true
+      - name: username
+        schema:
+          type: string
+        description: username to login with
+        required: true
+      - name: password
+        schema:
+          type: string
+        description: password to login with
+        required: true
+    returns:
+      schema:
+        type: string
+

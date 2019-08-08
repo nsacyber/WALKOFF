@@ -1,0 +1,38 @@
+.manageReportMain {
+	padding: 10px 15px;
+}
+
+
+
+.manageReportMain .card-default > .card-heading {
+	background-color: #eaf2f6;
+	font-weight: bolder;
+}
+
+.gridster-container {
+    margin: auto;
+}
+
+.widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.widget-header {
+    flex-basis: content;
+}
+
+.widget-content {
+    flex: 1;
+    position: relative;
+}
+
+.widget-fullscreen {
+    overflow-y: scroll;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left:0;
+    bottom:0;
+}

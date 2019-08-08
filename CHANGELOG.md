@@ -2,6 +2,73 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [1.0.0-alpha.2]
+
+This update includes numerous bugfixes and a number of reintroduced features. 
+
+### Added
+* Trigger nodes allow you to pause workflow execution until webhook for the trigger is hit with data
+* Basic Condition nodes allow you to perform branching execution in a more flowchart-like manner
+* Basic Transform nodes allow you to write code snippets to transform/remap/select action results on the fly (UI support pending)
+* Parallel Action node types in the workflow editor allow you to parallelize actions on a specified parameter
+* Display UUIDs for workflow and workflow nodes in UI
+* Portainer container creates UI for docker management
+
+### Changed
+* WALKOFF now runs utilizing stack deploy, allowing for the use of external Docker secrets
+* App version no longer required in app_name in api.tyaml
+* CRUD endpoints now accept resource names as keys when applicable
+* Globals can now be arbitrary JSON (UI support pending)
+* Builtins build location moved to Umpire and is only built once on startup
+
+### Removed
+
+### Security
+* Implemented AES-256 encryption/decryption for Global Variables. Exclusive-access decryption based on account level standing still needs to be implemented in the future. Currently, any GET request to the API gateway will return a decrypted Global Variable, regardless of account.  
+
+### Fixed
+* Workflow import/export
+* Workflow validation (still needs work); workflows can be saved in an incomplete state again
+* Validate workfow name uniqueness when creating workflows
+* Testing suite (still needs expansion)
+* Uniqueness constraints on CRUD operations
+* Dereferencing Global and Workflow variables in workflows
+* Ability to override starting parameters in a workflow execution
+* Ability to update/delete encrypted Global Variables
+* Hide global values by default on Globals tab
+* Default boolean parameters to false
+* Copying and pasting of nodes in workflow editor
+* Accessing action results before conditionals in parameters that follow it
+
+     
+## [1.0.0-alpha.1]
+
+This update includes a near-complete rewrite of the workflow execution logic, and a considerable refactor of the
+server in preparation for a future move to an asynchronous framework. The following changes are not exhaustive.
+
+### Added
+
+* "Umpire" added, which handles building and replication of Worker and App containers.
+
+### Changed
+
+* Docker Compose is required. Python 3.7 is required if running components locally (primarily for development).
+* Execution logic completely rewritten to support containerized architecture from the ground up.
+* Apps now live in their own containers, separate from workers. 
+* Apps should now be (internally) stateless
+* Kubernetes support has been removed in favor of using Docker Swarm API.
+* Playbooks removed, Workflows can now be grouped by tags instead.
+* unittest has been replaced with pytest
+* Redis is now the primary communication channel between components (removing ZMQ and Kafka).
+* SQLite database should no longer be used if running locally for development.
+* Workflow Execution page has been overhauled aesthetically.
+
+### Removed
+
+* Triggers have been temporarily removed, but are targeted for a near-future 1.1 release.
+
+
+
 ## [0.9.4]
 ###### 2018-12-11
 

@@ -1,0 +1,75 @@
+<div class="modal-header">
+	<h4 class="modal-title">{{title}}</h4>
+</div>
+<div id="userModalBody" class="modal-body">
+	<div class="container-fluid">
+		<form #userForm="ngForm" (ngSubmit)="submit()">
+			<div class="row">
+				<div class="col-6">
+					<div class="form-group">
+						<label for="username">
+							Username <i class="fa fa-asterisk required" title="This field is required."></i>
+						</label>
+						<input type="text" class="form-control" [class.is-invalid]="username.touched && username.invalid" [(ngModel)]="workingUser.username" name="username" #username="ngModel" required>
+						<div class="invalid-feedback">
+							Username is required.
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="role_ids">
+							Roles <i class="fa fa-asterisk required" title="At least one role is required."></i>
+						</label>
+						<select2 [data]="roleSelectData" [value]="roleSelectInitialValue" [options]="roleSelectConfig"
+						(valueChanged)="roleSelectChange($event)"></select2>
+					</div>
+					<div class="form-group">
+						<span class="switch">
+							<input type="checkbox" class="switch" [(ngModel)]="workingUser.active" name="is_active" id="is_active">
+							<label class="m-0" for="is_active">{{ workingUser.active ? 'Active' : 'Inactive'}}</label>
+						</span>
+					</div>
+				</div>
+				<div class="col-6">
+					<div class="form-group" *ngIf="workingUser.id">
+						<label for="currentPassword">Current Password</label>
+						<input type="password" class="form-control" [(ngModel)]="workingUser.currentPassword" #currentPassword="ngModel" name="currentPassword">
+						<div *ngIf="currentPassword.errors && (currentPassword.dirty || currentPassword.touched)" class="alert alert-danger">
+							<div [hidden]="!currentPassword.errors.required">
+								The user's current password is required.
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="newPassword">
+							New Password
+							<i *ngIf="!this.workingUser.id" class="fa fa-asterisk required" title="This field is required."></i>
+						</label>
+						<input type="password" class="form-control" [(ngModel)]="workingUser.newPassword" #newPassword="ngModel" name="newPassword">
+						<div *ngIf="(!workingUser.id || workingUser.currentPassword) && (newPassword.dirty || newPassword.touched) && !newPassword.value"
+							class="alert alert-danger">
+							Password is required.
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="confirmNewPassword">
+							Confirm New Password
+							<i *ngIf="!this.workingUser.id" class="fa fa-asterisk required" title="This field is required."></i>
+						</label>
+						<input type="password" class="form-control" [(ngModel)]="workingUser.confirmNewPassword" #confirmNewPassword="ngModel" name="confirmNewPassword">
+						<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && confirmNewPassword.value && newPassword.value !== confirmNewPassword.value"
+							class="alert alert-danger">
+							Passwords do not match.
+						</div>
+						<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && !confirmNewPassword.value" class="alert alert-danger">
+							You must re-enter the new password to confirm.
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-primary" [disabled]="!userForm.form.valid || !workingUser.role_ids.length" (click)="submit()">{{submitText}}</button>
+</div>

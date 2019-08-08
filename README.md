@@ -1,320 +1,115 @@
-[![Build Status](https://img.shields.io/travis/nsacyber/WALKOFF/master.svg?maxAge=3600&label=Linux)](https://travis-ci.org/nsacyber/WALKOFF) [![Build status](https://ci.appveyor.com/api/projects/status/hs6ujwd1f87n39ut/branch/master?svg=true)](https://ci.appveyor.com/project/iadgovuser11/walkoff/branch/master)
-[![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)[![GitHub (pre-)release](https://img.shields.io/github/release/nsacyber/WALKOFF/all.svg?style=flat)](release)
+Welcome to WALKOFF's documentation!
+===================================
+This documentation is intended as a reference for app and workflow developers as well as project contributors and operators.
+Here you will find walkthroughs, tutorials and other useful information about applications that are shipped with Walkoff, our changelog, and how to interact with Walkoff using its RESTful API.
 
-<img src="https://nsacyber.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
+What is WALKOFF?
+------------------
+WALKOFF is a flexible, easy to use, automation framework allowing users to integrate their capabilities and devices to cut through the repetitive, tedious tasks slowing them down,
 
-## Table of Contents
+**WHAT WE OFFER**
+ - *Easy-to-use:* Drag-and-drop workflow editor. Sharable apps and workflows.
+ - *Flexbility:* Deployable on Windows or Linux.
+ - *Modular:* Plug and play integration of almost anything with easy-to-develop applications.
+ - *Visual Analytics:* Send workflow data to custom dashboards (and soon, Elasticsearch & Kibana!)
 
-* [Description](#Description)
-* [Requirements](#Requirements)
-* [Installation](#Installation)
-  * [Docker](#Docker)
-  * [Kubernetes](#Kubernetes)
-  * [Natively](#Natively)
-* [Features](#Features)
-* [Apps](#Apps)
-* [Branches](#Branches)
-* [Updating Walkoff](#Updating-Walkoff)
-* [Stability and Versioning](#Stability-and-Versioning)
-* [Contributions](#Contributions)
+Documentation
+------------------------
+https://walkoff.readthedocs.io/en/latest/
 
-External Links:
-- [WALKOFF Apps Repository](https://github.com/nsacyber/WALKOFF-Apps)
-- [WALKOFF REST API Documentation](https://nsacyber.github.io/WALKOFF/swagger/index.html)
-- [WALKOFF Documentation](https://nsacyber.github.io/WALKOFF/documentation/build/index.html) 
-- [WALKOFF Tutorials](https://nsacyber.github.io/WALKOFF/tutorials/build/index.html)   
+Pre-requisites
+------------------------
+**Ensure that Docker, Docker Compose 3+, and git are installed!**
 
-## Overview
+* Docker CE: https://docs.docker.com/install/#supported-platforms
+* Docker Compose: https://docs.docker.com/compose/install/
+* Git: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 
-* Are repetitive, tedious processes taking up too much of your time?
-* Is more time spent focusing on managing your data than acting on the data
-  itself?
+If you do not already have a Docker Swarm initialized or joined, run the following command to create one:
 
-WALKOFF is an automation framework that allows you to easily automate these 80%
-of tedious tasks so you can get the job done faster, easier, and cheaper.
+    docker swarm init
 
-WALKOFF is built upon an app based architecture which enables the plug and play
-integration of devices and capabilities.  These capabilities can then be tied
-together to form Workflows.  Workflows are defined in a JSON format making them
-easily sharable across environments and organizations and easily
-created/customizable through our drag and drop workflow editor.
+**Note:** If you have multiple NICs you will need to use --advertise-addr to pick an address from which the swarm will be accessible.
 
-[![Overview](https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/img/overview.png)](https://nsacyber.github.io/WALKOFF/vid/overview.mp4)
+Deploying WALKOFF in a Unix environment
+---------------------------------------
 
-Apps can also have custom interfaces enabling app developers to uniquely
-display information.  WALKOFF not only makes it easier for users to automate
-their processes but allows users to act on their processes faster as well.
+1. Open a terminal and clone WALKOFF:
 
-## Requirements
+       git clone https://github.com/nsacyber/WALKOFF.git
 
-* Python 2.7+ or Python 3.4+
-* Redis 5+
-    * Redis can be run on Linux (see https://redis.io/topics/quickstart or check your OS's package manager), 
-    * If you are using Windows, you will need to use Redis in a VM or a Docker container.
-* Best used with Linux, or in Docker
-    * On Linux, you will need the `python-devel` package for your distribution if running natively.
-    * Windows is no longer supported at this time. We may restore Windows support at a later date, but we recommend running inside a Docker container or Linux VM instead.
+2. Move into the WALKOFF directory:
 
-*Individual apps may specify their own requirements.*
+       cd WALKOFF
 
-## Installation
-
-There are three main ways of using WALKOFF - natively, using Docker, or using Kubernetes.
-
-- Natively means running WALKOFF as a Python application on your computer. This is recommended for development.
-- Docker allows you to run WALKOFF inside a container that provides a consistent and portable environment. This is recommended for checking out the project, or development if you have issues with Python versioning.
-- Kubernetes allows you to run WALKOFF inside a cluster for purposes of scalability and load balancing. This is recommended for networks larger than toy examples. While an initial version exists, this is also under active development.
-
-Once installed, the default login is admin/admin. This can be changed and additional users can be created within the settings page inside WALKOFF.
-
-### Docker
-
-You can use Docker Compose to install WALKOFF along with Postgres and Redis.
-
-Docker Compose is included with Docker CE on Windows and MacOS, but will need to be installed separately on Linux (see https://docs.docker.com/compose/install/ and https://docs.docker.com/install/ for more details.)
-
-Once installed, create a file called `docker-compose.yaml` as below (or clone this repository, the file is provided under `k8s_manifests/dockerfiles/walkoff-combined/docker-compose.yaml`)
-
-```yaml
-version: '3'
-services:
-  walkoff:
-    ports:
-    - "8080:8080"
-    image: "walkoffcyber/walkoff:combinedv1"
-    environment:
-    - "CACHE={\"type\": \"redis\", \"host\": \"walkoff-redis\", \"port\": 6379}"
-    - "HOST=0.0.0.0"
-    - "PORT=8080"
-    - "ZMQ_RESULTS_ADDRESS=tcp://0.0.0.0:5556"
-    - "ZMQ_COMMUNICATION_ADDRESS=tcp://0.0.0.0:5557"
-    - "WALKOFF_DB_TYPE=postgresql"
-    - "EXECUTION_DB_TYPE=postgresql"
-    - "DB_PATH=walkoff"
-    - "EXECUTION_DB_PATH=execution"
-    - "WALKOFF_DB_HOST=walkoff-postgres"
-    - "EXECUTION_DB_HOST=walkoff-postgres"
-    - "EXECUTION_DB_USERNAME=walkoff"
-    - "EXECUTION_DB_PASSWORD=walkoff"
-    - "WALKOFF_DB_USERNAME=walkoff"
-    - "WALKOFF_DB_PASSWORD=walkoff"
-    depends_on:
-    - "walkoff-redis"
-    - "walkoff-postgres"
-    # entrypoint: 
-    # - "sleep" 
-    # - "36000"
-    # volumes:
-    # - /path/to/host/apps:/app/walkoff/apps
-  walkoff-redis:
-    image: "redis"
-  walkoff-postgres:
-    image: "postgres"
-    environment:
-    - "POSTGRES_USER=walkoff"
-    - "POSTGRES_PASSWORD=walkoff"
-```
-
-Alternatively:
-
-```
-# If you haven't created your own docker-compose.yaml, clone the respository and cd into it
-git clone https://github.com/nsacyber/WALKOFF.git
-cd WALKOFF/k8s_manifests/dockerfiles/walkoff-combined
-```
-
-Once you have configured the Compose file as desired and are in the same directory as it, you can start the containers (use Ctrl+C to stop them):
-```
-# Start containers
-docker-compose up
-```
-
-#### Passwords
-
-If you would like to set usernames and passwords for your Redis or Postgres containers, ensure that they are consistent in your docker-compose.yaml, and that proper permissions are set on the file to protect it.
-
-The default username and password after you access the webview is: `admin/admin`
-
-#### Development 
-
-If you intend to use the container for development, you may want to run WALKOFF manually inside the container to test your changes. To do this, uncomment the "entrypoint" line and its entries.
-
-You can also mount a volume to directories inside the container, for example if you are developing apps and would like to mount it to WALKOFF's app directory, a commented example is provided above. Alternatively, you can use the docker cp command to copy files into the container. (See https://docs.docker.com/engine/reference/commandline/cp/ for more details.)
-
-If you uncommented the `sleep` entrypoint for development purposes, you will need to start WALKOFF yourself:
-```
-# Obtain the WALKOFF container ID - look for/grep 'walkoffcyber/walkoff:combinedv1'
-docker ps
-
-# Enter the container (you can use the first three characters of the ID for short)
-docker exec -it abc /bin/bash
-
-# Once inside the container, run WALKOFF (use Ctrl+C to stop the server):
-python walkoff.py
-```
-
-
-### Kubernetes
-
-Prerequisites: 
-- Stand up a managed Kubernetes cluster (for development purposes, minikube is recommended: https://kubernetes.io/docs/setup/minikube/)
-- Install Helm to that cluster (see https://docs.helm.sh/using_helm/ for more details)
-
-You can then use `python -m walkoff install` to run a guided wizard that will set up resources for WALKOFF using helm and kubectl.
-
-For example, to run WALKOFF in Minikube, assuming Minikube, Helm, and WALKOFF's Python dependencies are already installed:
-```
-# Create the cluster and enable ingress controller (this may take a few minutes)
-minikube start
-minikube addons enable ingress
-
-# Install Helm tiller to cluster
-helm init
-
-# Check on status of pods - this may take a few minutes
-kubectl get pods --all-namespaces
-
-# Start WALKOFF install wizard
-python -m walkoff install
-
-# Obtain ingress IP of cluster, use this to access WALKOFF in your browser
-minikube ip
-```
-
-The steps break down as follows (see `online_install()` in `walkoff/cli/install.py` for details):
-
-1. Create a namespace for WALKOFF if needed (not required, use default if you don't)
-2. Generate ZMQ certificates and store the public/private keys in Kubernetes secrets
-3. Prompt for an existing Redis instance and password, else install one to the cluster using Helm
-4. Prompt for an existing PostgreSQL instance, username, and password, else install two to the cluster using Helm
-5. Prompt for an existing CA signing keypair, else create one and store them in Kubernetes secrets
-6. Install cert-manager (https://github.com/jetstack/cert-manager) to the cluster to generate SSL certificates for ingress
-7. Install WALKOFF to the cluster using Helm with collected configuration details.
-
-If the installation goes wrong or you change your mind, you can use `python -m walkoff uninstall` to rollback changes that the wizard made (you must do this before attempting another install). 
-
-### Natively
-
-We recommend using a Python virtual environment (such as [venv](https://docs.python.org/3/library/venv.html) included with Python 3, [virtualenv](https://virtualenv.pypa.io/en/latest/), [pyenv](https://github.com/pyenv/pyenv)-[virtualenv](https://github.com/pyenv/pyenv-virtualenv) or [pipenv](https://pipenv.readthedocs.io/en/latest/)),
-as this avoids package version conflicts with other applications that you might have, and avoids the necessity of 
-running pip with sudo, which could cause permissions issues as root will then own the packages.
-
-Install Redis Server:
-* MacOS: Use homebrew - https://brew.sh/
-* Linux: Use your distro's package manager, follow an appropriate guide for your distro.
-* Windows: There are no up-to-date Redis binaries available for Windows, and we no longer support Windows at this time. Support may resume at a later date.
-* Docker: Run a Redis container with port 6379 published to localhost: `docker run --name walkoff-redis -p 6379:6379 -d redis`
-
-With the pre-requisites above satisfied, you can use the all-in-one setup script:
-
-    python setup_walkoff.py
-
-If that is not the case, or if you would like to manually install WALKOFF:
-
-First, install Python dependencies with the following command:
-
-    pip install -r requirements.txt
-
-To install the Python dependencies for each individual app, run:
-
-    python scripts/install_dependencies.py
-
-Or to just install the dependencies for specific apps:
-
-    python scripts/install_dependencies.py -a AppOne,AppTwo,AppThree
+3. Build WALKOFF's bootloader container, which handles management of the WALKOFF stack:
    
-Then, generate certificates for WALKOFF's internal messaging:
+       ./build_bootloader.sh
+       
+   The bootloader performs the following tasks: 
+   * Creating Docker secrets, configs, networks, volumes, etc.
+   * Building and pushing component images to WALKOFF's internal registry.
+   * Deploying and removing the Docker Stack.
+   
+4. Launch WALKOFF with the bootloader, building components as well:
 
-    python scripts/generate_certificates.py
+       ./walkoff.sh up --build
 
-If you were previously familiar with WALKOFF, NodeJS and NPM are no longer needed to build front-end components, as the webpacked JavaScript files are now included in this repository.
+       # If verbose output is desired:
+       ./walkoff.sh up --build --debug
 
-That's it! To start up the server, just navigate back to the WALKOFF root and
-run:
+5. Navigate to the default IP and port. The default IP and the port can be changed by altering the port NGINX is exposed on (the right-hand port) in the top-level `docker-compose.yml`. Note that you should use HTTPS, and allow the self-signed certificate when prompted.
 
-    python walkoff.py
+       https://127.0.0.1:8080
 
-Then, navigate to the specified IP and port to start using WALKOFF. The default
-is `http://127.0.0.1:5000`.
+6. The default username is "admin" and password is "admin." These can and should be changed upon initial login.
 
-Through this script, you can also specify port and host, for example
+7. To stop WALKOFF, use the bootloader:
 
-    python walkoff.py --port 3333 --host 0.0.0.0
+       ./walkoff.sh down
 
-For more options, run
+       # If removing encryption key (and persistent data), stored images, and verbose output is desired:
+       ./walkoff.sh down --key --registry --debug
 
-    python walkoff.py --help
 
-## Features
+Deploying WALKOFF in a Windows environment
+------------------------------------------
 
-1. Custom app interfaces
-   * Interfaces are built using HTML/CSS/Javascript with back-end
-     functionality using Python.
+1. Open PowerShell and clone WALKOFF:
 
-   * Capability to stream data to interfaces.
+       git clone https://github.com/nsacyber/WALKOFF.git
 
-2. User and Role based authentication
+2. Move into the WALKOFF directory:
 
-3. Case based logging
-   * Can granularly configure which events to log on a per-case basis
+       cd WALKOFF
 
-4. Drag and Drop Workflow Editor
-   * Makes creation and editing of workflows as easy as dragging and dropping
-     capabilities.
+3. Use the provided `walkoff.ps1` script to initialize Walkoff's required components:
 
-5. Flexible Workflow Execution
-   * Manual Execution - Execute a workflow by pressing a button
-   * Active Execution - Cron style workflow execution
-     *Run workflow every 8 hours for the next 3 months*
-   * Passive Execution - Trigger a workflow based upon data sent to Walkoff
-   * Ability to pause and resume workflows enabling *human in the loop*
-     execution
+       # Create Docker volumes, secrets
+       .\walkoff.ps1 init
 
-6. Metrics
-   * How often are certain apps run?
+       # Build and Push WALKOFF component images
+       .\walkoff.ps1 build
 
-   * How often workflows are run?
+4. Launch WALKOFF with `walkoff.ps1`:
 
-## Apps
+       # Deploy WALKOFF stack
+       .\walkoff.ps1 up
 
-WALKOFF-enabled apps can be found at www.github.com/nsacyber/walkoff-apps
+       # Check WALKOFF stack services
+       .\walkoff.ps1 status
 
-## Branches
+5. Navigate to the default IP and port. The default IP and the port can be changed by altering the port NGINX is exposed on (the right-hand port) in the top-level `docker-compose.yml`. Note that you should use HTTPS, and allow the self-signed certificate when prompted.
 
-1. master - Main branch for WALKOFF version 2 will be updated from development
-   periodically
-2. development - Development branch for WALKOFF version 2.  Updated frequently
-3. gh-pages - Pages used to generate documentation at our
-   [github.io](https://nsacyber.github.io/WALKOFF "GitHub IO") site
+       https://127.0.0.1:8080
 
-*Other development-centric branches may be created but should not be
-considered permanent*
+6. The default username is "admin" and password is "admin." These can and should be changed upon initial login.
 
-## Updating Walkoff
+7. To stop WALKOFF, use the bootloader:
 
-An update script, `python -m walkoff local update`, is provided to update your local repo to the most
-recent release. This script uses SqlAlchemy-Alembic to update database schemas. Updating WALKOFF in Kubernetes is a work in progress.
+       .\walkoff.ps1 stop
 
-## Stability and Versioning
-
-WALKOFF uses Semantic Versioning. Until the full feature set is developed, the
-versions will begin with `0.x.y`. The `x` version will be updated when a
-breaking change is made, a breaking change being defined as one which modifies
-either the REST API or the API used to develop and specify the apps is modified
-in a way which breaks backward compatibility. No guarantees are yet made for
-the stability of the backend Python modules. The `y` version will be updated
-for patches, and bug fixes. The REST API will have an independent versioning
-system which may not follow Walkoff's version number.
-
-## Contributions
-
-WALKOFF is a community focused effort and contributions are welcome.
-Please submit pull requests to the `development` branch. Issues marked
-`help wanted` and `good first issue` are great places to start
-contributing. Additionally, you can always look at our
-[CodeClimate Issues page](https://codeclimate.com/github/nsacyber/WALKOFF/issues "CodeClimate Issues")
-and help us improve our code quality.
-
-Comments or questions?  walkoff@nsa.gov
+       # If removing encryption key, persistent data, stored images is desired:
+       .\walkoff.ps1 down
 
 

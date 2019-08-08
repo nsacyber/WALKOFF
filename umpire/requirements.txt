@@ -1,0 +1,12 @@
+docker
+docker-compose
+minio
+aiodocker
+pyyaml
+aiohttp
+async_timeout
+fastapi
+six
+uvicorn
+tenacity
+pydantic

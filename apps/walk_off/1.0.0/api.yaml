@@ -1,0 +1,146 @@
+walkoff_version: 1.0.0
+app_version: 1.0.0
+name: walk_off
+description: A meta application that utilizes several endpoints of WALKOFF's API
+contact_info:
+  name: Walkoff Team
+  url: https://github.com/nsacyber/walkoff
+  email: walkoff@nsa.gov
+license_info:
+  name: Creative Commons
+  url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
+actions:
+  - name: connect
+    description: Connect to Walkoff
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        required: true
+        schema:
+          type: number
+      - name: username
+        required: true
+        description: username
+        schema:
+          type: string
+      - name: password
+        required: true
+        description: password
+        schema:
+          type: string
+    returns:
+      schema:
+        type: string
+      example: "Success"
+  - name: disconnect
+    description: Disconnect from Walkoff
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        schema:
+          type: number
+        required: true
+      - name: refresh_token
+        description: refresh token
+        required: true
+        schema:
+          type: string
+    returns:
+      schema:
+        type: string
+      example: "Success"
+  - name: get_all_users
+    description: Gets a list of all the users loaded on the system
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        schema:
+          type: number
+        required: true
+      - name: access_token
+        description: Access Token
+        schema:
+          type: string
+        required: true
+    returns:
+      schema:
+        type: string
+      example: "Success"
+  - name: get_all_workflows
+    description: Gets a list of all the workflows loaded on the system
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        schema:
+          type: number
+        required: true
+      - name: access_token
+        description: Access Token
+        schema:
+          type: string
+        required: true
+    returns:
+      schema:
+        type: string
+      example: "Success"
+  - name: execute_workflow
+    description: Executes a workflow
+    parameters:
+      - name: workflow_id
+        description: ID of the workflow
+        schema:
+          type: string
+        required: true
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        schema:
+          type: number
+        required: true
+      - name: access_token
+        description: Access Token
+        schema:
+          type: string
+        required: true
+    returns:
+      schema:
+        type: string
+      example: "Success"
+  # - name: get_workflow_status
+  #   description: Get status information on a currently executing workflow
+  #   parameters:
+  #     - name: execution_id
+  #       description: ID of the workflow
+  #       schema:
+  #         type: string
+  #       required: true
+  #     - name: timeout
+  #       description: Timeout on the request (in seconds)
+  #       schema:
+  #         type: number
+  #       required: true
+  #     - name: access_token
+  #       description: Access Token
+  #       schema:
+  #         type: string
+  #       required: true
+  #   returns:
+  #     schema:
+  #       type: string
+  #     example: "Success"
+  - name: shutdown
+    description: Log out of Walkoff
+    parameters:
+      - name: refresh_token
+        description: refresh Token
+        schema:
+          type: string
+        required: true
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        schema:
+          type: number
+        required: true
+    returns:
+      schema:
+        type: string
+      example: "Success"

@@ -1,0 +1,176 @@
+AppApi:
+  type: object
+  description: Api used for an app
+  required: [name]
+  additionalProperties: false
+  properties:
+    name:
+      type: string
+      description: A unique and precise title of the API
+      example: Splunk
+    walkoff_version:
+      type: string
+      description: A semantic version number of the API
+    app_version:
+      type: string
+      description: A semantic version number of the API
+    description:
+      type: string
+      description: A longer description of the API. Should be different from the title.
+    contact_info:
+      $ref: '#/components/schemas/ApiContact'
+    license_info:
+      $ref: '#/components/schemas/ApiLicense'
+    actions:
+      description: Actions associated with this app
+      type: array
+      items:
+        $ref: '#/components/schemas/ActionApi'
+    tags:
+      type: array
+      items:
+        $ref: '#/components/schemas/ApiTag'
+      uniqueItems: true
+    external_docs:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternalDoc'
+
+
+ApiContact:
+  type: object
+  description: Contact information for the owners of this API
+  additionalProperties: false
+  properties:
+    name:
+      type: string
+      description: The name of the contact person or organization
+    url:
+      type: string
+      description: The URL pointing to the contact information
+      format: uri
+    email:
+      type: string
+      description: The email address of the contact person/organization
+      format: email
+
+ApiLicense:
+  type: object
+  description: License information for this API
+  additionalProperties: false
+  properties:
+    name:
+      type: string
+      description: The name of the license type
+    url:
+      type: string
+      description: The URL pointing to the license
+      format: uri
+
+ActionApi:
+  type: object
+  description: The api of an app's action
+  required: [name]
+  additionalProperties: false
+  properties:
+    name:
+      type: string
+      description: Unique name of the action
+    node_type:
+      default: ACTION
+      enum: [ACTION, CONDITION, TRANSFORM, TRIGGER]
+      description: The node type this action represents
+    returns:
+      $ref: '#/components/schemas/ReturnApi'
+    parameters:
+      type: array
+      items:
+        $ref: '#/components/schemas/ParameterApi'
+      description: The parameters needed by this action
+    deprecated:
+      type: boolean
+      default: false
+      description: Is this action deprecated?
+    description:
+      type: string
+      description: A longer description of the operation
+    external_docs:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternalDoc'
+
+ParameterApi:
+  type: object
+  description: A parameter using for actions
+  required: [name, schema]
+  additionalProperties: false
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+      description: Description of the parameter
+    placeholder:
+      description: Brief description of the field to be used to prompt a user
+    parallelizable:
+      type: boolean
+      default: false
+      description: Is this parameter parallelizable
+    required:
+      type: boolean
+      default: false
+      description: Is this parameter required
+    schema:
+      $ref: '#/components/schemas/ParameterSchema'
+
+ReturnApi:
+  type: object
+  description: A specification of what an action returns
+  additionalProperties: false
+  properties:
+    description:
+      type: string
+      description: Description of the return type
+    schema:
+      $ref: '#/components/schemas/ParameterSchema'
+    example:
+      description: An example of the returned type
+
+ExternalDoc:
+  type: object
+  description: information about external documentation
+  additionalProperties: false
+  properties:
+    description:
+      type: string
+      description: Description of the documentation
+    url:
+      type: string
+      description: Points to the external documentation
+      format: uri
+
+ApiTag:
+  type: object
+  description: A tag for a class of actions/conditions/transforms in this app
+  required: [name]
+  additionalProperties: false
+  properties:
+    name:
+      type: string
+      description: The name of the tag
+    description:
+      type: string
+      description: Description of the tag
+    external_docs:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternalDoc'
+
+ParameterSchema:
+  type: object
+  description: Fields used to validate parameter against a JSON schema (Draft 4)
+  required: [type]
+  properties:
+    type:
+      type: string
+      enum: [string, boolean, integer, number, object, array]

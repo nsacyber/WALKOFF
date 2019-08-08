@@ -1,0 +1,54 @@
+/internal/workflowstatus/{execution_id}:
+  # GET already exists under /workflowqueue/{execution_id}
+  patch:
+    tags:
+      - TempInternal
+    summary: Patch parts of a WorkflowStatusMessage object
+    description: For internal use only. This endpoint should only be available to the docker network.
+    operationId: api_gateway.server.endpoints.results.update_workflow_status
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/JSONPatch'
+    parameters:
+      - name: execution_id
+        in: path
+        description: execution_id of workflow status to update
+        required: true
+        schema:
+          type: string
+      - name: event
+        in: query
+        description: The event type that is being submitted
+        required: true
+        schema:
+          type: string
+          enum:
+            - PENDING
+            - COMPLETED
+            - ABORTED
+            - EXECUTING
+            - SUCCESS
+            - FAILURE
+    responses:
+      202:
+        description: Updated WorkflowStatusMessage entry
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowStatus'
+      400:
+        description: Invalid input error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      404:
+        description: WorkflowStatusMessage does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security: []

@@ -1,0 +1,24 @@
+#main.globalsMain {
+	padding: 10px 15px;
+}
+
+.globalsMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
+	white-space: initial;
+}
+
+#globalForm input[type=checkbox].form-control {
+	width: 34px;
+	margin: 0 5px;
+}
+
+#globalForm .confirmLabel {
+	margin-top: 15px;
+}
+
+#globalForm .required {
+	color: crimson;
+}
+
+#globalForm .fa {
+	margin-left: 5px;
+}

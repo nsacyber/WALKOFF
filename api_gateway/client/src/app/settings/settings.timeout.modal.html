@@ -1,0 +1,25 @@
+<div class="modal-header">
+    <h4 class="modal-title">Timeout Settings</h4>
+</div>
+<div class="modal-body">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="form-group">
+                    <label for="access_token_duration">JWT Access Token Duration (in minutes)</label>
+                    <input type="number" min="1" class="form-control" [(ngModel)]="configuration.access_token_duration" name="access_token_duration" required>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group">
+                    <label for="refresh_token_duration">JWT Refresh Token Duration (in days)</label>
+                    <input type="number" min="1" class="form-control" [(ngModel)]="configuration.refresh_token_duration" name="refresh_token_duration" required>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Close</button>
+    <button type="button" class="btn btn-primary" (click)="activeModal.close(configuration)">Save</button>
+</div>

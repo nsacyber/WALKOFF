@@ -1,39 +1,16 @@
-Flask >= 0.10.0
-Flask_SQLAlchemy >= 2.1
-flask_jwt_extended >= 3.4.0
-sqlalchemy >= 1.1.0
-sqlalchemy-utils >= 0.32.0
-APscheduler >= 3.0.0
-gevent >= 1.2
-connexion >= 2.0
-pyyaml >= 3.0
-pyzmq > 14.1.0
-passlib >= 1.7.0
-blinker >= 1.4
-protobuf >= 3.4.0, < 3.5.2
-enum34
-futures; python_version < "3"
-semver
-jsonschema == 2.6.0
-six >= 1.10.0
-marshmallow >= 3.0.0rc2
-marshmallow-sqlalchemy >= 0.13.0
-pynacl
-alembic
-healthcheck
-psycopg2-binary
-click
-kubernetes
-pyopenssl
-gitpython
-dill
-redis >= 3.0
-confluent-kafka
-fluent-logger
-msgpack
-prometheus_client
-werkzeug
-prometheus_flask_exporter
-requests
-swagger_spec_validator
-flask-swagger-ui
+#aiodns
+aiodocker
+aiohttp
+aioredis
+#cchardet
+docker
+docker-compose
+pyyaml
+sqlalchemy
+cryptography
+sphinxcontrib-openapi
+m2r
+minio
+uvicorn
+fastapi
+

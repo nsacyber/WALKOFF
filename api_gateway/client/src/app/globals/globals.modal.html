@@ -1,0 +1,112 @@
+<div class="modal-header">
+	<h4 class="modal-title">{{title}}</h4>
+</div>
+<div class="modal-body">
+	<div class="container-fluid">
+		<form id="globalForm" #globalForm="ngForm" (ngSubmit)="submit()">
+			<div class="row">
+				<div class="col-6">
+					<div class="form-group">
+						<label for="name">Name<i class="fa fa-asterisk required" title="This field is required."></i></label>
+						<input type="text" class="form-control" [(ngModel)]="workingGlobal.name" #name="ngModel" name="name" required tabindex="1">
+						<div *ngIf="name.errors && (name.dirty || name.touched)" class="alert alert-danger">
+							<div [hidden]="!name.errors.required">
+								Name is required.
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="app_name">Associated App<i class="fa fa-asterisk required" title="This field is required."></i></label>
+						<select class="form-control" [ngModel]="workingGlobal.app_name" #app="ngModel" (change)="handleAppSelection($event, $event.target.value)" 
+						 [disabled]="workingGlobal.id" name="app_name" tabindex="3" required>
+							<option value=""></option>
+							<option *ngFor="let i of appNames" [value]="i" [label]="i">{{i}}</option>
+						</select>
+						<div *ngIf="app.errors && (app.dirty || app.touched)" class="alert alert-danger">
+							<div [hidden]="!app.errors.required">
+								App is required.
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-6">
+					<div class="form-group">
+						<label for="description">Description</label>
+						<input type="text" class="form-control" [(ngModel)]="workingGlobal.description" name="ip" tabindex="2">
+					</div>
+					<div class="form-group">
+						<label for="type">Global Type<i class="fa fa-asterisk required" title="This field is required."></i></label>
+						<select class="form-control" [ngModel]="workingGlobal.type" #typeRef #type="ngModel" (change)="handleGlobalTypeSelection(null, $event.target.value)"
+						 name="type" tabindex="4" required>
+							<option value=""></option>
+							<option *ngFor="let i of globalTypesForApp" [value]="i.name" [label]="i.name">{{i.name}}</option>
+						</select>
+						<div *ngIf="type.errors && (type.dirty || type.touched)" class="alert alert-danger">
+							<div [hidden]="!type.errors.required">
+								Global type is required.
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<ng-container *ngIf="selectedGlobalType">
+				<div *ngFor="let i of selectedGlobalType.fields" class="form-group">
+					<label for="{{i.name}}">
+						{{i.name}}
+						<i *ngIf="i.description != null" class="fa fa-info-circle" [title]="i.description"></i>
+						<i *ngIf="i.required" class="fa fa-asterisk required" title="This field is required."></i>
+						<i *ngIf="i.encrypted" class="fa fa-lock"
+						 title="This field will be encrypted at rest and will not be returned to the client for viewing or editing."></i>
+						<!-- If we have an encrypted field AND this is an edit AND there is an encrypted value on the server, allow the user to clear it if it's not required -->
+						<div *ngIf="workingGlobal.id && i.encrypted && workingGlobal.fields[i.name] !== undefined" class="form-check form-check-inline">
+							<label class="form-check-label">
+								Clear Existing Value
+								<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1" 
+								(change)="handleEncryptedFieldClear(i.name, $event.target.checked)">
+							</label>
+						</div>
+					</label>
+
+					<!-- Normal string text entries -->
+					<input *ngIf="i.schema.type === 'string' && !i.schema.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingGlobal.fields[i.name]"
+					 [attr.type]="i.encrypted ? 'password' : 'text'" [attr.minlength]="i.schema.minLength > 0 ? i.schema.minLength : null"
+					 [attr.maxlength]="i.schema.maxLength > 0 ? i.schema.maxLength : null"
+					 [attr.pattern]="i.schema.pattern ? i.schema.pattern : null" [attr.required]="i.required"
+					 [disabled]="encryptedFieldsToBeCleared[i.name]" [attr.placeholder]="i.placeholder">
+
+					<!-- Enum types, make a select box -->
+					<select *ngIf="i.schema.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingGlobal.fields[i.name]"
+					[attr.required]="i.required">
+						<option *ngIf="!i.required" value=""></option>
+						<option *ngFor="let i of i.schema.enum" [value]="i" [label]="i">{{i}}</option>
+					</select>
+
+					<!-- For numbers enter number info -->
+					<input *ngIf="i.schema.type === 'number' || i.schema.type === 'integer'" class="form-control" name="{{i.name}}"
+					 [(ngModel)]="workingGlobal.fields[i.name]" type="number" [attr.min]="getMin(i.schema)" [attr.max]="getMax(i.schema)"
+					 [attr.step]="i.schema.multipleOf > 0 ? i.schema.multipleOf : null" [attr.required]="i.required"
+					 [attr.placeholder]="i.placeholder">
+
+					<!-- Checkbox for boolean values -->
+					<input *ngIf="i.schema.type === 'boolean'" type="checkbox" class="form-control" name="{{i.name}}" [(ngModel)]="workingGlobal.fields[i.name]">
+
+					<!-- Repeat input for encrypted fields -->
+					<ng-container *ngIf="encryptedConfirmFields[i.name] !== undefined">
+						<label for="_{{i.name}}" class="confirmLabel">Repeat {{i.name}}</label>
+						<input type="password" class="form-control" name="_{{i.name}}" [(ngModel)]="encryptedConfirmFields[i.name]"
+						[disabled]="encryptedFieldsToBeCleared[i.name]" placeholder="Enter the value for {{i.name}} again" required>
+					</ng-container>
+
+					<!-- Validation errors go here if they exist -->
+					<div *ngIf="validationErrors[i.name]" class="alert alert-danger">
+						{{validationErrors[i.name]}}
+					</div>
+				</div>
+			</ng-container>
+		</form>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-primary" [disabled]="!isBasicInfoValid()" (click)="submit()">{{submitText}}</button>
+</div>

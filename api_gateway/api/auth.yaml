@@ -1,0 +1,77 @@
+/auth:
+  post:
+    tags:
+      - Authorization
+    summary: Login and get access and refresh tokens
+    description: ''
+    operationId: api_gateway.server.endpoints.auth.login
+    requestBody:
+      description: The username and password
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Authentication'
+    responses:
+      201:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Token'
+      401:
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+    security: []
+
+/auth/refresh:
+  post:
+    tags:
+      - Authorization
+    summary: Get a fresh access token
+    description: ''
+    operationId: api_gateway.server.endpoints.auth.refresh
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Token'
+      401:
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/auth/logout:
+  post:
+    tags:
+      - Authorization
+    summary: Logout of walkoff
+    operationId: api_gateway.server.endpoints.auth.logout
+    requestBody:
+      description: The refresh token to be revoked
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [refresh_token]
+            properties:
+              refresh_token:
+                type: string
+                description: the refresh token to be revoked
+    responses:
+      204:
+        description: Success
+      400:
+        description: Invalid refresh token
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

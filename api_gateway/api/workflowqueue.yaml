@@ -1,0 +1,143 @@
+/workflowqueue:
+  get:
+    tags:
+      - WorkflowQueue
+    summary: Get status information on the workflows currently executing
+    description: ''
+    operationId: api_gateway.server.endpoints.workflowqueue.get_all_workflow_status
+    parameters:
+      - name: page
+        in: query
+        description: page of data to get
+        required: false
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/WorkflowStatusSummary'
+  post:
+    tags:
+      - WorkflowQueue
+    summary: Execute a workflow
+    description: ''
+    operationId: api_gateway.server.endpoints.workflowqueue.execute_workflow
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExecuteWorkflow'
+    responses:
+      202:
+        description: Success asynchronous.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Uuid'
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      400:
+        description: Invalid input error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/workflowqueue/{execution}:
+  get:
+    tags:
+      - WorkflowQueue
+    summary: Get status information on a currently executing workflow
+    description: ''
+    operationId: api_gateway.server.endpoints.workflowqueue.get_workflow_status
+    parameters:
+      - name: execution
+        in: path
+        description: The ID of the execution to get.
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowStatus'
+      404:
+        description: Object does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  patch:
+    tags:
+      - WorkflowQueue
+    summary: Abort or trigger a workflow
+    description: ''
+    operationId: api_gateway.server.endpoints.workflowqueue.control_workflow
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ControlWorkflow'
+    parameters:
+      - name: execution
+        in: path
+        description: The ID of the execution to get.
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success.
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      400:
+        description: Invalid input error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+
+/workflowqueue/cleardb:
+  parameters:
+    - name: all_
+      in: query
+      description: Whether or not to delete all workflow statuses, defaults to false
+      required: false
+      schema:
+        type: boolean
+    - name: days
+      in: query
+      description: The number of days of workflow statuses to keep
+      required: false
+      schema:
+        type: integer
+  delete:
+    tags:
+      - WorkflowQueue
+    summary: Removes workflow statuses from the execution database. It will delete all of them or ones older than a certain number of days
+    description: ''
+    operationId: api_gateway.server.endpoints.workflowqueue.clear_workflow_status
+    responses:
+      204:
+        description: Success

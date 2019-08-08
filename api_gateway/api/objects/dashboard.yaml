@@ -1,0 +1,54 @@
+Dashboard:
+  type: object
+  required: [name]
+  description: A dashboard containing widgets for visualization
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    name:
+      type: string
+      description: Name of the dashboard
+    widgets:
+      type: array
+      description: List of widgets contained in the dashboard
+      items:
+        $ref: '#/components/schemas/Widget'
+Widget:
+  type: object
+  required: [name, x, y, cols, rows, options]
+  description: A widget for a dashboard containing a visualization
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    dashboard_id:
+      $ref: '#/components/schemas/Uuid'
+    name:
+      type: string
+      description: Name of the widget
+    type_:
+      type: string
+      description: Type of widget
+    x:
+      type: integer
+      description: x position of the widget
+    y:
+      type: integer
+      description: y position of the widget
+    cols:
+      type: integer
+      description: width of the widget
+    rows:
+      type: integer
+      description: height of the widget
+    options: # ToDo: define widget types and contents
+      type: object
+#      properties:
+#        workflow:
+#          $ref: '#/components/schemas/Uuid'
+#        execution:
+#          type: string
+#          description: Execution of the workflow to get data from (latest or uuid)
+#        action:
+#          $ref: '#/components/schemas/Uuid'

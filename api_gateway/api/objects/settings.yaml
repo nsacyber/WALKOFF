@@ -1,0 +1,13 @@
+Settings:
+  type: object
+  description: Walkoff Settings
+  additionalProperties: false
+  properties:
+    access_token_duration:
+      type: number
+      minimum: 1
+      description: Time (in minutes) to allow an access token to persist. Should greater than the duration of the refresh token
+    refresh_token_duration:
+      type: number
+      minimum: 1
+      description: Time (in days) to allow a refresh token to persist. Should greater than the duration of the refresh token

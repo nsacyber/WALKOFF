@@ -1,0 +1,38 @@
+<div class="modal-header">
+    <h4 class="modal-title">{{ existing ? 'Edit Workflow' : 'Create Workflow' }}</h4>
+</div>
+<div class="modal-body">
+    <form #myForm="ngForm" novalidate>
+        <div class="form-group" *ngIf="existing && workflow.id">
+            <h6>Workflow ID</h6>
+            <input type="text" readonly class="form-control-plaintext px-2"  [value]="workflow.id">
+        </div>
+        <div class="form-group">
+            <h6>Enter a Workflow Name</h6>
+            <input name="name" type="text" [(ngModel)]="workflow.name" class="form-control" placeholder="Workflow Name"
+            ngbAutoFocus #workflowName="ngModel" [class.is-invalid]="workflowName.touched && workflowName.invalid">
+            <div class="invalid-feedback">
+                <span *ngIf="workflowName.hasError('unique')">
+                    Workflow with name already exists.
+                </span>
+                <span *ngIf="workflowName.hasError('required')">
+                    Please enter a unique workflow name.
+                </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <h6>Enter a Description (Optional)</h6>
+            <textarea name="description" rows="3" [(ngModel)]="workflow.description" class="form-control"
+                placeholder="Description (Optional)"></textarea>
+        </div>
+        <div class="form-group">
+            <h6>Add Tags (Optional)</h6>
+            <select2 [data]="currentTags" [value]="workflow.tags" [options]="tagSelectOptions"
+                (valueChanged)="tagsChanged($event)"></select2>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="submit()">{{ existing ? 'Save' : 'Continue' }}</button>
+</div>

@@ -1,0 +1,359 @@
+WorkflowJSON:
+  type: object
+  required: [name]
+  description: A workflow object
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    name:
+      description: The name of the workflow.
+      type: string
+      example: HelloWorldWorkflow
+    description:
+      type: string
+      description: Description of the workflow
+    tags:
+      description: Tag for workflow
+      type: array
+      items:
+        type: string
+    is_valid:
+      description: Is this workflow able to be run?
+      type: boolean
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
+    execution_id:
+      $ref: '#/components/schemas/Uuid'
+    start:
+      description: ID of the starting action
+      $ref: '#/components/schemas/Uuid'
+    actions:
+      description: Action nodes in workflow
+      type: array
+      items:
+        $ref: "#/components/schemas/Action"
+    branches:
+      description: Edges connecting nodes in workflow
+      type: array
+      items:
+        $ref: '#/components/schemas/Branch'
+    conditions:
+      description: Condition nodes in workflow
+      type: array
+      items:
+        $ref: '#/components/schemas/Condition'
+    transforms:
+      description: Transform nodes in workflow
+      type: array
+      items:
+        $ref: '#/components/schemas/Transform'
+    triggers:
+      description: Trigger nodes in workflow
+      type: array
+      items:
+        $ref: '#/components/schemas/Trigger'
+    workflow_variables:
+      description: The environment variables for this workflow
+      type: array
+      items:
+        $ref: '#/components/schemas/WorkflowVariable'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+
+
+WorkflowMetaData:
+  type: object
+  required: [id_, name]
+  description: A workflow  metadata object
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    name:
+      description: The name of the workflow.
+      type: string
+      example: HelloWorldWorkflow
+    description:
+      type: string
+      description: Description of the workflow
+    tags:
+      description: Tag for workflow
+      type: array
+      items:
+        type: string
+    is_valid:
+      description: Is this workflow able to be run?
+      type: boolean
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
+
+Action:
+  type: object
+  required: [app_name, app_version, label, name, position]
+  description: Encapsulation of executing an action in an app.
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+      description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
+    parallelized:
+      type: boolean
+      default: false
+    app_name:
+      description: The app to which the action belongs
+      type: string
+      example: CyberAnalytics
+    app_version:
+      description: The version of the app to which the action belongs
+      type: string
+      example: 1.0.0
+    name:
+      description: The name of the function this Action will take
+      type: string
+      example: pause
+    label:
+      description: User-specified label for the action
+      type: string
+      example: action1
+      minLength: 1
+    is_valid:
+      description: are the parameters of this action valid?
+      type: boolean
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
+    parallel_parameter:
+      description: Alternative parameter to parallelize the action on
+      $ref: '#/components/schemas/Parameter'
+    parameters:
+      description: The input parameters to the action
+      type: array
+      items:
+        $ref: '#/components/schemas/Parameter'
+    priority:
+      description: The priority for this Action, which will be compared to other Actions with the same parent Action, descending, i.e. 5 is the highest priority.
+      type: integer
+      minimum: 1
+      maximum: 5
+      default: 3
+    position:
+      description: Position object representing various fields of the position of the Action in the playbook editor.
+      $ref: '#/components/schemas/Position'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+
+Branch:
+  type: object
+  required: [source_id, destination_id]
+  description: Object representing an edge connecting two nodes in a Workflow
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    source_id:
+      description: The source node ID for this Branch
+      $ref: '#/components/schemas/Uuid'
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
+    destination_id:
+      description: The destination node ID for this Branch, if the conditions evaluate to True
+      $ref: '#/components/schemas/Uuid'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+
+Parameter:
+  type: object
+  nullable: true
+  required: [name, variant]
+  description: Object used for passing parameters into actions. The variety of parameter must be provided.
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    name:
+      type: string
+      example: regex
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
+    parallelized:
+      type: boolean
+      default: false
+    value:
+      description: The value of the argument OR The ID of the action whose output should be used
+    variant:
+      type: string
+      enum: [STATIC_VALUE, ACTION_RESULT, WORKFLOW_VARIABLE, GLOBAL]
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+
+Condition:
+  type: object
+  required: [label, conditional]
+  description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+      description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
+    app_name:
+      type: string
+      enum: [Builtin]
+    app_version:
+      description: The version of the app to which the action belongs
+      type: string
+      example: 1.0.0
+    name:
+      type: string
+      enum: [Condition]
+    label:
+      description: User-specified label for the condition
+      type: string
+      example: condition1
+    is_valid:
+      description: are the contents of this condition valid?
+      type: boolean
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
+    conditional:
+      type: string
+      example: "if Pre_Hello_World_Action == 5: return Hello_World_Action"
+    position:
+      description: Position object representing various fields of the position of the Action in the playbook editor.
+      $ref: '#/components/schemas/Position'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+
+Transform:
+  type: object
+  required: [label, transform]
+  description: Filters or otherwise transforms the data given to it
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+      description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
+    app_name:
+      type: string
+      enum: [Builtin]
+    app_version:
+      description: The version of the app to which the action belongs
+      type: string
+      example: 1.0.0
+    name:
+      type: string
+      enum: [Transform]
+    label:
+      description: The user defined name of the transform
+      type: string
+      example: transform
+    is_valid:
+      description: are the contents of this transform valid?
+      type: boolean
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
+    transform:
+      description: The transform to apply to the result of its parent Action
+      type: string
+      example: "result = input.get('Walkoff')"
+    position:
+      description: Position object representing various fields of the position of the Action in the playbook editor.
+      $ref: '#/components/schemas/Position'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+
+Trigger:
+  type: object
+  required: [label]
+  description: Halts execution of workflow pending an external trigger
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+      description: The ID of the object. If updating a workflow and the trigger object already exists, ID is required. Otherwise, do not include it.
+    app_name:
+      type: string
+      enum: [Builtin]
+    app_version:
+      description: The version of the app to which the action belongs
+      type: string
+      example: 1.0.0
+    name:
+      type: string
+      enum: [Trigger]
+    label:
+      description: The user defined name of the trigger
+      type: string
+      example: Wait for Approval
+    is_valid:
+      description: are the contents of this trigger valid?
+      type: boolean
+    errors:
+      $ref: '#/components/schemas/ExecutionElementErrors'
+    trigger_schema:
+      description: Schema to validate sent data with
+      type: object
+    position:
+      description: Position object representing various fields of the position of the Action in the playbook editor.
+      $ref: '#/components/schemas/Position'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+
+Position:
+  type: object
+  required: [x, y]
+  description: Various specifications for how the Action is displayed in the playbook editor
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    x:
+      type: number
+      description: The X coordinate for the Action
+    y:
+      type: number
+      description: The Y coordinate for the Action
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+
+WorkflowVariable:
+  type: object
+  required: [name, value]
+  description: A workflow variable object that is available in the workflow scope
+  additionalProperties: false
+  properties:
+   id_:
+     $ref: '#/components/schemas/Uuid'
+   name:
+     type: string
+     description: The name of the workflow variable
+   value:
+     type: string
+     description: The value of the workflow variable
+   description:
+     type: string
+     description: Description of the workflow variable
+   _walkoff_type:
+     type: string
+     description: Workflow type for json decoder
+
+CopyWorkflow:
+    type: object
+    properties:
+      playbook_id:
+        $ref: '#/components/schemas/Uuid'
+      workflow_name:
+        type: string
+
+ExecutionElementErrors:
+  description: Errors attached to this ExecutionElement
+  type: array
+  items:
+    type: string

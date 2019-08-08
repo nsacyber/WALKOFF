@@ -1,0 +1,142 @@
+/dashboards:
+  get:
+    tags:
+      - Dashboards
+    summary: Read all dashboards
+    description: Retrieves all dashboards currently stored in the database.
+    operationId: api_gateway.server.endpoints.dashboards.read_all_dashboards
+    parameters:
+      - name: page
+        in: query
+        description: page of data to get
+        required: false
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: array
+              description: A list of the full representation of all dashboards
+              items:
+                $ref: '#/components/schemas/Dashboard'
+      404:
+        description: No dashboards exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  post:
+    tags:
+      - Dashboards
+    summary: Create a dashboard
+    description: Creates a dashboard from the JSON in request body
+    operationId: api_gateway.server.endpoints.dashboards.create_dashboard
+    requestBody:
+      description: The dashboard object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Dashboard'
+    responses:
+      201:
+        description: Workflow created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dashboard'
+      400:
+        description: Workflow already exists.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  put:
+    tags:
+      - Dashboards
+    summary: Update a dashboard
+    description: Updates a whole dashboard using the JSON request body
+    operationId: api_gateway.server.endpoints.dashboards.update_dashboard
+    requestBody:
+      description: The dashboard object to be updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Dashboard'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dashboard]
+              properties:
+                dashboard:
+                  $ref: '#/components/schemas/Dashboard'
+      404:
+        description: Dashboard does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/dashboards/{dashboard}:
+  get:
+    tags:
+      - Dashboards
+    summary: Get a dashboard by id
+    description: Retrieve a single dashboard from database by ID.
+    operationId: api_gateway.server.endpoints.dashboards.read_dashboard
+    parameters:
+    - in: path
+      name: dashboard
+      description: ID of the global to be fetched
+      schema:
+        type: string
+        format: uuid
+      required: true
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dashboard'
+      404:
+        description: No dashboard with that ID exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  delete:
+    tags:
+      - Dashboards
+    summary: Delete a dashboard
+    description: Deletes a dashboard by ID
+    operationId: api_gateway.server.endpoints.dashboards.delete_dashboard
+    parameters:
+    - in: path
+      name: dashboard
+      description: ID of the global to be fetched
+      schema:
+        type: string
+        format: uuid
+      required: true
+    responses:
+      201:
+        description: Workflow updated.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dashboard'
+      404:
+        description: Dashboard does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

@@ -1,0 +1,127 @@
+/roles:
+  get:
+    tags:
+      - Roles
+    summary: Read all roles
+    description: ''
+    operationId: api_gateway.server.endpoints.roles.read_all_roles
+    responses:
+      '200':
+        description: Success
+        content:
+          application/json:
+            schema:
+              description: A list of roles
+              type: array
+              items:
+                $ref: '#/components/schemas/Role'
+  post:
+    tags:
+      - Roles
+    summary: Create a role
+    description: ''
+    operationId: api_gateway.server.endpoints.roles.create_role
+    requestBody:
+      description: The role object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AddRole'
+    responses:
+      201:
+        description: Object created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      400:
+        description: Object exists.
+/roles/{role_id}:
+  get:
+    tags:
+      - Roles
+    summary: Read a role
+    description: ''
+    operationId: api_gateway.server.endpoints.roles.read_role
+    parameters:
+      - name: role_id
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      404:
+        description: Object does not exist.
+  put:
+    tags:
+      - Roles
+    summary: Update a role
+    description: ''
+    operationId: api_gateway.server.endpoints.roles.update_role
+    parameters:
+      - name: role_id
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      description: Updated fields for the role object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Role'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      404:
+        description: Object does not exist.
+  delete:
+    tags:
+      - Roles
+    summary: Delete a role
+    description: ''
+    operationId: api_gateway.server.endpoints.roles.delete_role
+    parameters:
+      - name: role_id
+        in: path
+        description: The name that needs to be fetched.
+        required: true
+        schema:
+          type: string
+    responses:
+      204:
+        description: Success
+      404:
+        description: Object does not exist.
+
+/availableresourceactions:
+    get:
+      tags:
+        - Roles
+      summary: Read all available resource actions
+      description: ''
+      operationId: api_gateway.server.endpoints.roles.read_available_resource_actions
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                description: List of available resource actions
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailableResourceAction'

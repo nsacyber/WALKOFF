@@ -1,0 +1,103 @@
+version: '3.5'
+services:
+  core_umpire:
+    image: "127.0.0.1:5000/umpire:latest"
+#    command: python -m umpire.umpire --log-level=debug
+    build:
+      context: ./
+      dockerfile: umpire/Dockerfile
+    networks:
+      - walkoff_default
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./apps:/app/apps
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    depends_on:
+      - resource_redis
+      - resource_registry
+      - resource_minio
+    secrets:
+      - walkoff_encryption_key
+    configs:
+      - common_env.yml
+
+  core_api_gateway:
+    image: "127.0.0.1:5000/api_gateway:latest"
+    build:
+      context: ./
+      dockerfile: ./api_gateway/Dockerfile
+    networks:
+      - walkoff_default
+#    stop_signal: SIGINT
+#    stop_grace_period: 30s
+    secrets:
+      - walkoff_encryption_key
+    configs:
+      - common_env.yml
+    depends_on:
+      - resource_redis
+      - resource_postgres
+#    volumes:
+#      - ./api_gateway/client/dist:/app/api_gateway/client/dist
+
+  resource_nginx:
+    image: 'bitnami/nginx:latest'
+    networks:
+      - walkoff_default
+    ports:
+      - '8080:8080'
+      - '8081:8081' # Uncomment for unsecure HTTP access to API Gateway
+    volumes:
+      - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
+      - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
+      - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
+    depends_on:
+      - core_api_gateway
+
+  core_worker:
+#    command: python -m worker.worker --log-level=debug
+    image: "127.0.0.1:5000/worker:latest"
+    networks:
+      - walkoff_default
+    build:
+      context: ./
+      dockerfile: ./worker/Dockerfile
+    configs:
+      - common_env.yml
+    deploy:
+      mode: replicated
+      replicas: 0
+      restart_policy:
+        condition: none
+
+  app_sdk:
+    networks:
+      - walkoff_default
+    build:
+      context: ./
+      dockerfile: ./app_sdk/Dockerfile
+    image: "127.0.0.1:5000/walkoff_app_sdk:latest"
+    configs:
+      - common_env.yml
+    deploy:
+      mode: replicated
+      replicas: 0
+      restart_policy:
+        condition: none
+
+configs:
+  common_env.yml:
+    file: ./data/config.yml
+
+secrets:
+  walkoff_encryption_key:
+    external: true
+
+networks:
+  walkoff_default:
+#    driver: overlay
+#    name: walkoff_default
+#    attachable: true
+    external: true

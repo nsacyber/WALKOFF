@@ -1,0 +1,11 @@
+#aiodns
+aiodocker
+aiohttp
+#cchardet
+docker
+docker-compose
+pyyaml
+sqlalchemy
+asteval
+six
+tenacity

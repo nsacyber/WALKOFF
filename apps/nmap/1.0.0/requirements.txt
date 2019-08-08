@@ -1,0 +1,5 @@
+python-libnmap
+networkx
+jinja2
+asgiref
+nmap

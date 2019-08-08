@@ -1,0 +1,163 @@
+/workflows:
+  get:
+    tags:
+      - Workflows
+    summary: Read all workflows in playbook
+    description: ''
+    operationId: api_gateway.server.endpoints.workflows.read_all_workflows
+    parameters:
+      - name: page
+        in: query
+        description: page of data to get
+        required: false
+        schema:
+            type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: array
+              description: The JSON representation of all the workflows meta data
+              items:
+                $ref: '#/components/schemas/WorkflowMetaData'
+      404:
+        description: No workflows exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  post:
+    tags:
+      - Workflows
+    summary: Create a workflow
+    description: ''
+    operationId: api_gateway.server.endpoints.workflows.create_workflow
+    parameters:
+      - in: query
+        name: source
+        description: The ID of the workflow to clone
+        schema:
+          type: string
+          format: uuid
+        required: false
+    requestBody:
+      description: The workflow object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WorkflowJSON'
+    responses:
+      201:
+        description: Workflow created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowJSON'
+
+      400:
+        description: Workflow already exists.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+/workflows/{workflow}:
+  get:
+    tags:
+      - Workflows
+    summary: Read a workflow
+    description: ''
+    operationId: api_gateway.server.endpoints.workflows.read_workflow
+    parameters:
+      - name: workflow
+        in: path
+        description: 'The name or ID of the workflow to get.'
+        required: true
+        schema:
+          type: string
+      - name: mode
+        in: query
+        description: 'Set to export to send as file.'
+        schema:
+          type: string
+          enum: ["export"]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowJSON'
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  put:
+    tags:
+      - Workflows
+    summary: Update a workflow
+    description: ''
+    operationId: api_gateway.server.endpoints.workflows.update_workflow
+    requestBody:
+      description: The fields of the workflow object to be updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WorkflowJSON'
+    parameters:
+      - name: workflow
+        in: path
+        description: 'The name or ID of the workflow to get.'
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workflow]
+              properties:
+                workflow:
+                  $ref: '#/components/schemas/WorkflowJSON'
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      400:
+        description: Workflow already exists.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  delete:
+    tags:
+      - Workflows
+    summary: Delete a workflow
+    description: ''
+    operationId: api_gateway.server.endpoints.workflows.delete_workflow
+    parameters:
+      - name: workflow
+        in: path
+        description: 'The name or ID of the workflow to get.'
+        required: true
+        schema:
+          type: string
+    responses:
+      204:
+        description: Success
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
