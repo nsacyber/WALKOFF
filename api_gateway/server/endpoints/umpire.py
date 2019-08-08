@@ -66,7 +66,7 @@ def update_file():
     r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
 
     if r.status_code == 200:
-        return r.text, HTTPStatus.OK
+        return r.json(), HTTPStatus.OK
     else:
         return "Failed", HTTPStatus.BAD_REQUEST
 
@@ -78,7 +78,7 @@ def get_build_status():
     r = requests.get(url, headers=headers, verify=False)
 
     if r.status_code == 200:
-        return r.text, HTTPStatus.OK
+        return r.json(), HTTPStatus.OK
     else:
         return "Failed", HTTPStatus.BAD_REQUEST
 
@@ -91,7 +91,7 @@ def build_image(app_name, app_version):
     r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
 
     if r.status_code == 200:
-        return r.text, HTTPStatus.OK
+        return r.json(), HTTPStatus.OK
     else:
         return "Failed", HTTPStatus.BAD_REQUEST
 
@@ -103,12 +103,12 @@ def build_status_from_id(build_id):
     r = requests.post(url, headers=headers, verify=False)
 
     if r.status_code == 200:
-        return r.text, HTTPStatus.OK
+        return r.json(), HTTPStatus.OK
     else:
         return "Failed", HTTPStatus.BAD_REQUEST
 
 
-# # @jwt_required
+# @jwt_required
 # def save_file(app_name, app_version):
 #     headers = {'content-type': 'application/json'}
 #     payload = {'app_name': app_name, 'app_version': app_version}
