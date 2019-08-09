@@ -43,7 +43,7 @@ The following section gives a rough approximation of what we are looking to acco
 - Bootloader for automating deployment of WALKOFF.
 - Further stability improvements.
 
-#### 1.0.0-rc.1:
+#### 1.0.0-rc.1 **(Next Step)**:
 
 - Security hardening.
 - Complete unit testing of components and end-to-end testing of a running cluster.
