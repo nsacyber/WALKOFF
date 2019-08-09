@@ -121,6 +121,7 @@ Class | Method | HTTP request | Description
 *UmpireApi* | [**get_build_status**](docs/UmpireApi.md#get_build_status) | **GET** /umpire/build | Gets build status of all current build
 *UmpireApi* | [**get_file_contents**](docs/UmpireApi.md#get_file_contents) | **GET** /umpire/file/{app_name}/{app_version} | Get contents of specified file.
 *UmpireApi* | [**list_all_files**](docs/UmpireApi.md#list_all_files) | **GET** /umpire/files/{app_name}/{app_version} | List all files
+*UmpireApi* | [**save_umpire_file**](docs/UmpireApi.md#save_umpire_file) | **POST** /umpire/save/{app_name}/{app_version} | Pushes image from minio to /apps and overwrites it.
 *UmpireApi* | [**update_file**](docs/UmpireApi.md#update_file) | **POST** /umpire/file_upload | Updates a file in Minio
 *UsersApi* | [**create_user**](docs/UsersApi.md#create_user) | **POST** /users | Create a user
 *UsersApi* | [**delete_user**](docs/UsersApi.md#delete_user) | **DELETE** /users/{user_id} | Delete a user

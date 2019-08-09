@@ -109,13 +109,13 @@ def build_status_from_id(build_id):
 
 
 # @jwt_required
-# def save_file(app_name, app_version):
-#     headers = {'content-type': 'application/json'}
-#     payload = {'app_name': app_name, 'app_version': app_version}
-#     url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/save"
-#     r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
-#
-#     if r.status_code == 200:
-#         return r.text, HTTPStatus.OK
-#     else:
-#         return "Failed", HTTPStatus.BAD_REQUEST
+def save_umpire_file(app_name, app_version):
+    headers = {'content-type': 'application/json'}
+    payload = {'app_name': app_name, 'app_version': app_version}
+    url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/save"
+    r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
+
+    if r.status_code == 200:
+        return r.json(), HTTPStatus.OK
+    else:
+        return r.json(), HTTPStatus.BAD_REQUEST

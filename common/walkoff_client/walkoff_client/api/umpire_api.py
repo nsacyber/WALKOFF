@@ -355,18 +355,18 @@ class UmpireApi(object):
             _request_timeout=local_var_params.get('_request_timeout'),
             collection_formats=collection_formats)
 
-    def get_file_contents(self, app_name, app_version, upload_file, **kwargs):  # noqa: E501
+    def get_file_contents(self, app_name, app_version, file_path, **kwargs):  # noqa: E501
         """Get contents of specified file.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.get_file_contents(app_name, app_version, upload_file, async_req=True)
+        >>> thread = api.get_file_contents(app_name, app_version, file_path, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool: execute request asynchronously
         :param str app_name: The name of the app to list. (required)
         :param str app_version: The version number of the app to list. (required)
-        :param UploadFile upload_file: (required)
+        :param str file_path: Whether or not to delete all workflow statuses, defaults to false (required)
         :param _preload_content: if False, the urllib3.HTTPResponse object will
                                  be returned without reading/decoding response
                                  data. Default is True.
@@ -379,20 +379,20 @@ class UmpireApi(object):
                  returns the request thread.
         """
         kwargs['_return_http_data_only'] = True
-        return self.get_file_contents_with_http_info(app_name, app_version, upload_file, **kwargs)  # noqa: E501
+        return self.get_file_contents_with_http_info(app_name, app_version, file_path, **kwargs)  # noqa: E501
 
-    def get_file_contents_with_http_info(self, app_name, app_version, upload_file, **kwargs):  # noqa: E501
+    def get_file_contents_with_http_info(self, app_name, app_version, file_path, **kwargs):  # noqa: E501
         """Get contents of specified file.  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.get_file_contents_with_http_info(app_name, app_version, upload_file, async_req=True)
+        >>> thread = api.get_file_contents_with_http_info(app_name, app_version, file_path, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool: execute request asynchronously
         :param str app_name: The name of the app to list. (required)
         :param str app_version: The version number of the app to list. (required)
-        :param UploadFile upload_file: (required)
+        :param str file_path: Whether or not to delete all workflow statuses, defaults to false (required)
         :param _return_http_data_only: response data without head status code
                                        and headers
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -409,7 +409,7 @@ class UmpireApi(object):
 
         local_var_params = locals()
 
-        all_params = ['app_name', 'app_version', 'upload_file']  # noqa: E501
+        all_params = ['app_name', 'app_version', 'file_path']  # noqa: E501
         all_params.append('async_req')
         all_params.append('_return_http_data_only')
         all_params.append('_preload_content')
@@ -431,10 +431,10 @@ class UmpireApi(object):
         if ('app_version' not in local_var_params or
                 local_var_params['app_version'] is None):
             raise ApiValueError("Missing the required parameter `app_version` when calling `get_file_contents`")  # noqa: E501
-        # verify the required parameter 'upload_file' is set
-        if ('upload_file' not in local_var_params or
-                local_var_params['upload_file'] is None):
-            raise ApiValueError("Missing the required parameter `upload_file` when calling `get_file_contents`")  # noqa: E501
+        # verify the required parameter 'file_path' is set
+        if ('file_path' not in local_var_params or
+                local_var_params['file_path'] is None):
+            raise ApiValueError("Missing the required parameter `file_path` when calling `get_file_contents`")  # noqa: E501
 
         collection_formats = {}
 
@@ -445,6 +445,8 @@ class UmpireApi(object):
             path_params['app_version'] = local_var_params['app_version']  # noqa: E501
 
         query_params = []
+        if 'file_path' in local_var_params:
+            query_params.append(('file_path', local_var_params['file_path']))  # noqa: E501
 
         header_params = {}
 
@@ -452,14 +454,8 @@ class UmpireApi(object):
         local_var_files = {}
 
         body_params = None
-        if 'upload_file' in local_var_params:
-            body_params = local_var_params['upload_file']
         # HTTP header `Accept`
         header_params['Accept'] = self.api_client.select_header_accept(
-            ['application/json'])  # noqa: E501
-
-        # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.select_header_content_type(  # noqa: E501
             ['application/json'])  # noqa: E501
 
         # Authentication setting
@@ -581,6 +577,120 @@ class UmpireApi(object):
 
         return self.api_client.call_api(
             '/umpire/files/{app_name}/{app_version}', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='WorkflowJSON',  # noqa: E501
+            auth_settings=auth_settings,
+            async_req=local_var_params.get('async_req'),
+            _return_http_data_only=local_var_params.get('_return_http_data_only'),  # noqa: E501
+            _preload_content=local_var_params.get('_preload_content', True),
+            _request_timeout=local_var_params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
+    def save_umpire_file(self, app_name, app_version, **kwargs):  # noqa: E501
+        """Pushes image from minio to /apps and overwrites it.  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.save_umpire_file(app_name, app_version, async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool: execute request asynchronously
+        :param str app_name: The name of the app to list. (required)
+        :param str app_version: The version number of the app to list. (required)
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: WorkflowJSON
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        return self.save_umpire_file_with_http_info(app_name, app_version, **kwargs)  # noqa: E501
+
+    def save_umpire_file_with_http_info(self, app_name, app_version, **kwargs):  # noqa: E501
+        """Pushes image from minio to /apps and overwrites it.  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.save_umpire_file_with_http_info(app_name, app_version, async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool: execute request asynchronously
+        :param str app_name: The name of the app to list. (required)
+        :param str app_version: The version number of the app to list. (required)
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: tuple(WorkflowJSON, status_code(int), headers(HTTPHeaderDict))
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        local_var_params = locals()
+
+        all_params = ['app_name', 'app_version']  # noqa: E501
+        all_params.append('async_req')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        for key, val in six.iteritems(local_var_params['kwargs']):
+            if key not in all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method save_umpire_file" % key
+                )
+            local_var_params[key] = val
+        del local_var_params['kwargs']
+        # verify the required parameter 'app_name' is set
+        if ('app_name' not in local_var_params or
+                local_var_params['app_name'] is None):
+            raise ApiValueError("Missing the required parameter `app_name` when calling `save_umpire_file`")  # noqa: E501
+        # verify the required parameter 'app_version' is set
+        if ('app_version' not in local_var_params or
+                local_var_params['app_version'] is None):
+            raise ApiValueError("Missing the required parameter `app_version` when calling `save_umpire_file`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'app_name' in local_var_params:
+            path_params['app_name'] = local_var_params['app_name']  # noqa: E501
+        if 'app_version' in local_var_params:
+            path_params['app_version'] = local_var_params['app_version']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = []  # noqa: E501
+
+        return self.api_client.call_api(
+            '/umpire/save/{app_name}/{app_version}', 'POST',
             path_params,
             query_params,
             header_params,

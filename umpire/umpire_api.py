@@ -131,3 +131,14 @@ async def build_status_from_id(build_id):
         build_status = await conn.execute('get', get)
         build_status = build_status.decode('utf-8')
         return build_status
+
+
+@app.post("/umpire/save")
+async def save_file(request: Request):
+    app_name = request.app_name
+    version = request.app_version
+    result = await MinioApi.save_file(app_name, version)
+    if result:
+        return "Successful Update to Local Repo"
+    else:
+        return "Failed"
