@@ -126,21 +126,21 @@ def generate_app_composes():
     return composes
 
 
-async def create_encryption_key(docker_client):
+async def create_encryption_key(docker_client, key_name):
     try:
-        await get_secret(docker_client, "walkoff_encryption_key")
+        await get_secret(docker_client, key_name)
     except aiodocker.exceptions.DockerError:
-        logger.info("Creating secret walkoff_encryption_key...")
-        await create_secret(docker_client, "walkoff_encryption_key", base64.urlsafe_b64encode(os.urandom(32)))
+        logger.info(f"Creating secret {key_name}...")
+        await create_secret(docker_client, key_name, base64.urlsafe_b64encode(os.urandom(32)))
     else:
-        logger.info("Skipping secret walkoff_encryption_key creation, it already exists.")
+        logger.info(f"Skipping secret {key_name} creation, it already exists.")
 
 
-async def delete_encryption_key(docker_client):
+async def delete_encryption_key(docker_client, key_name):
     try:
-        await delete_secret(docker_client, "walkoff_encryption_key")
+        await delete_secret(docker_client, key_name)
     except aiodocker.exceptions.DockerError:
-        logger.info("Skipping secret walkoff_encryption_key deletion, it doesn't exist.")
+        logger.info(f"Skipping secret {key_name} deletion, it doesn't exist.")
 
 
 async def check_for_network(docker_client):
@@ -297,10 +297,16 @@ class Bootloader:
     async def up(self):
 
         # Create Walkoff encryption key
-        return_code = await create_encryption_key(self.docker_client)
+        return_code = await create_encryption_key(self.docker_client, "walkoff_encryption_key")
         if return_code:
             logger.exception("Could not create secret walkoff_encryption_key. Exiting.")
             os._exit(return_code)
+
+        # Create internal user key
+        return_code2 = await create_encryption_key(self.docker_client, "walkoff_internal_key")
+        if return_code2:
+            logger.exception("Could not create secret walkoff_internal_key. Exiting.")
+            os._exit(return_code2)
 
         # Set up a subcommand parser
         parser = argparse.ArgumentParser(description="Bring the WALKOFF stack up and initialize it")
@@ -370,11 +376,8 @@ class Bootloader:
                             help="Removes the walkoff_encryption_key secret.")
         parser.add_argument("-r", "--registry", action="store_true",
                             help="Clears the registry bind mount directory.")
-        parser.add_argument("-s", "--skipnetwork", action="store_true",
-                            help="Skip network removal check. Use this if you have attached external services to it.")
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Set log level to debug.")
-        parser.add_argument("-n")
 
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
@@ -402,7 +405,8 @@ class Bootloader:
                 resp = input("Please answer 'yes' or 'no': ")
 
             if resp.lower() == "yes":
-                await delete_encryption_key(self.docker_client)
+                await delete_encryption_key(self.docker_client, "walkoff_encryption_key")
+                await delete_encryption_key(self.docker_client, "walkoff_internal_key")
                 await delete_dir_contents("data/postgres")
 
         if args.registry:

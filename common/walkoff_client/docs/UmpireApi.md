@@ -9,6 +9,7 @@ Method | HTTP request | Description
 [**get_build_status**](UmpireApi.md#get_build_status) | **GET** /umpire/build | Gets build status of all current build
 [**get_file_contents**](UmpireApi.md#get_file_contents) | **GET** /umpire/file/{app_name}/{app_version} | Get contents of specified file.
 [**list_all_files**](UmpireApi.md#list_all_files) | **GET** /umpire/files/{app_name}/{app_version} | List all files
+[**save_umpire_file**](UmpireApi.md#save_umpire_file) | **POST** /umpire/save/{app_name}/{app_version} | Pushes image from minio to /apps and overwrites it.
 [**update_file**](UmpireApi.md#update_file) | **POST** /umpire/file_upload | Updates a file in Minio
 
 
@@ -170,7 +171,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **get_file_contents**
-> WorkflowJSON get_file_contents(app_name, app_version, upload_file)
+> WorkflowJSON get_file_contents(app_name, app_version, file_path)
 
 Get contents of specified file.
 
@@ -187,11 +188,11 @@ from pprint import pprint
 api_instance = walkoff_client.UmpireApi()
 app_name = 'app_name_example' # str | The name of the app to list.
 app_version = 'app_version_example' # str | The version number of the app to list.
-upload_file = walkoff_client.UploadFile() # UploadFile | 
+file_path = 'file_path_example' # str | Whether or not to delete all workflow statuses, defaults to false
 
 try:
     # Get contents of specified file.
-    api_response = api_instance.get_file_contents(app_name, app_version, upload_file)
+    api_response = api_instance.get_file_contents(app_name, app_version, file_path)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling UmpireApi->get_file_contents: %s\n" % e)
@@ -203,7 +204,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **app_name** | **str**| The name of the app to list. | 
  **app_version** | **str**| The version number of the app to list. | 
- **upload_file** | [**UploadFile**](UploadFile.md)|  | 
+ **file_path** | **str**| Whether or not to delete all workflow statuses, defaults to false | 
 
 ### Return type
 
@@ -215,7 +216,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 ### HTTP response details
@@ -259,6 +260,61 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **app_name** | **str**| The name or ID of the app to list. | 
  **app_version** | **str**| The name or ID of the app to list. | 
+
+### Return type
+
+[**WorkflowJSON**](WorkflowJSON.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Success |  -  |
+**404** | Workflow does not exist. |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **save_umpire_file**
+> WorkflowJSON save_umpire_file(app_name, app_version)
+
+Pushes image from minio to /apps and overwrites it.
+
+### Example
+
+```python
+from __future__ import print_function
+import time
+import walkoff_client
+from walkoff_client.rest import ApiException
+from pprint import pprint
+
+# Create an instance of the API class
+api_instance = walkoff_client.UmpireApi()
+app_name = 'app_name_example' # str | The name of the app to list.
+app_version = 'app_version_example' # str | The version number of the app to list.
+
+try:
+    # Pushes image from minio to /apps and overwrites it.
+    api_response = api_instance.save_umpire_file(app_name, app_version)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling UmpireApi->save_umpire_file: %s\n" % e)
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **app_name** | **str**| The name of the app to list. | 
+ **app_version** | **str**| The version number of the app to list. | 
 
 ### Return type
 

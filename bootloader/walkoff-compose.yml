@@ -20,6 +20,7 @@ services:
       - resource_minio
     secrets:
       - walkoff_encryption_key
+      - walkoff_internal_key
     configs:
       - common_env.yml
 
@@ -34,13 +35,14 @@ services:
 #    stop_grace_period: 30s
     secrets:
       - walkoff_encryption_key
+      - walkoff_internal_key
     configs:
       - common_env.yml
     depends_on:
       - resource_redis
       - resource_postgres
-#    volumes:
-#      - ./api_gateway/client/dist:/app/api_gateway/client/dist
+    volumes:
+      - ./api_gateway/client/dist:/app/api_gateway/client/dist
 
   resource_nginx:
     image: 'bitnami/nginx:latest'
@@ -61,6 +63,8 @@ services:
     image: "127.0.0.1:5000/worker:latest"
     networks:
       - walkoff_default
+    secrets:
+      - walkoff_internal_key
     build:
       context: ./
       dockerfile: ./worker/Dockerfile
@@ -94,10 +98,9 @@ configs:
 secrets:
   walkoff_encryption_key:
     external: true
+  walkoff_internal_key:
+    external: true
 
 networks:
   walkoff_default:
-#    driver: overlay
-#    name: walkoff_default
-#    attachable: true
     external: true

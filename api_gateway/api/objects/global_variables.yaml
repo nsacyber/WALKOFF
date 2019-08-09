@@ -12,8 +12,11 @@ GlobalVariable:
     name:
       type: string
       description: The name of the global variable
+    permissions:
+      type: array
+      items:
+        type: object
     value:
-      type: string
 #      oneOf:
 #        - type: "string"
 #        - type: "number"

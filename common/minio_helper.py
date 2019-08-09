@@ -4,6 +4,10 @@ from common.config import config, static
 import logging
 import io
 import aiodocker
+import os
+from os import stat
+from pwd import getpwuid
+from grp import getgrgid
 
 from common.docker_helpers import connect_to_aiodocker, docker_context, stream_docker_log, logger as docker_logger
 import pathlib
@@ -57,9 +61,9 @@ class MinioApi:
                 logger.info("Sending image to be built")
                 dockerfile = "./Dockerfile"
                 log_stream = await docker_client.images.build(fileobj=context, tag=repo, rm=True,
-                                                          forcerm=True, pull=True, stream=True,
-                                                          path_dockerfile=dockerfile,
-                                                          encoding="application/x-tar")
+                                                              forcerm=True, pull=True, stream=True,
+                                                              path_dockerfile=dockerfile,
+                                                              encoding="application/x-tar")
                 logger.info("Docker image building")
                 await stream_docker_log(log_stream)
                 logger.info("Docker image Built")
@@ -93,14 +97,38 @@ class MinioApi:
             minio_client.stat_object("apps-bucket", abs_path)
             found = True
         except Exception as e:
-            pass
+            logger.info("File does not exist, creating a new one.")
 
         if found is True:
             minio_client.remove_object("apps-bucket", abs_path)
+            logger.info("File exists, removing it before creating a new one.")
+
         file_data = io.BytesIO(file_data)
         try:
             minio_client.put_object("apps-bucket", abs_path, file_data, file_size)
-            return True, "Successfully placed file in Minio"
+            r = minio_client.stat_object("apps-bucket", abs_path)
+            return True, str(r)
         except Exception as e:
             return False, str(e)
 
+    @staticmethod
+    async def save_file(app_name, version):
+        temp = []
+        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        objects = minio_client.list_objects("apps-bucket", recursive=True)
+        for obj in objects:
+            size = obj.size
+            p_src = Path(obj.object_name)
+            if p_src.parts[1] == app_name:
+                hold = str(p_src)
+                p_dst = hold[hold.find(app_name):]
+                p_dst = f"./apps/{p_dst}"
+
+                data = minio_client.get_object('apps-bucket', hold)
+                with open(str(p_dst), 'wb') as file_data:
+                    for d in data.stream(size):
+                        file_data.write(d)
+                owner_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_uid
+                group_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_uid
+                os.chown(p_dst, owner_id, group_id)
+        return True

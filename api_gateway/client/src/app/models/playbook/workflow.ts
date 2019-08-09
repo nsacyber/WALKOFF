@@ -106,6 +106,11 @@ export class Workflow extends ExecutionElement {
 	 */
 	is_valid: boolean;
 
+	/**
+	 * Returns role permissions for this workflow
+	 */
+	permissions: any[] = [];
+
 	get nodes(): WorkflowNode[] {
 		return [].concat(this.actions, this.conditions, this.triggers, this.transforms);
 	}

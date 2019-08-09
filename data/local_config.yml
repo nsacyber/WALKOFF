@@ -3,17 +3,18 @@
 
 # Common options
 API_GATEWAY_URI: "http://localhost:8081"
+MINIO: "localhost:9001"
 
 # If API Gateway is being ran outside of the docker network, containers inside the network will need the IP of the docker host.
 # API_GATEWAY_URI: "http://ip_of_host_on_docker0:8081"
 REDIS_URI: "redis://localhost:6379"
 ENCRYPTION_KEY_PATH: "data/local.key"
+INTERNAL_KEY_PATH: "/run/secrets/walkoff_internal_key"
 
 # Worker options
 MAX_WORKER_REPLICAS: "10"
 WORKER_TIMEOUT: "30"
-WALKOFF_USERNAME: "admin"
-WALKOFF_PASSWORD: "admin"
+WALKOFF_USERNAME: "internal_user"
 
 # Umpire options
 APPS_PATH: "./apps"

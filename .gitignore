@@ -37,6 +37,7 @@ data/registry/
 data/postgres/
 data/redis/
 data/portainer/
+data/minio/
 app_sdk/walkoff_app_sdk.egg-info
 venv/
 *.unison.*

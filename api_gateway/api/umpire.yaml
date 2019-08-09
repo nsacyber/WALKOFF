@@ -31,7 +31,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
 
 /umpire/file/{app_name}/{app_version}:
   get:
@@ -71,7 +70,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
 
 /umpire/file_upload:
   post:
@@ -99,7 +97,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
 
 /umpire/build:
   get:
@@ -121,7 +118,7 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
+
 /umpire/build/{app_name}/{app_version}:
   post:
     tags:
@@ -155,7 +152,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
 
 /umpire/build/{build_id}:
   post:
@@ -184,6 +180,38 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
 
+/umpire/save/{app_name}/{app_version}:
+  post:
+      tags:
+        - Umpire
+      summary: Pushes image from minio to /apps and overwrites it.
+      description: ''
+      operationId: api_gateway.server.endpoints.umpire.save_umpire_file
+      parameters:
+        - name: app_name
+          in: path
+          description: 'The name of the app to list.'
+          required: true
+          schema:
+            type: string
+        - name: app_version
+          in: path
+          description: 'The version number of the app to list.'
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowJSON'
+        404:
+          description: Workflow does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 

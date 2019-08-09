@@ -1733,7 +1733,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
 	 */
 	editDescription() {
-		const modalRef = this.modalService.open(MetadataModalComponent);
+		const modalRef = this.modalService.open(MetadataModalComponent, {size: 'lg'});
 		modalRef.componentInstance.existing = true;
 		modalRef.componentInstance.currentTags = this.currentTags;
 		modalRef.componentInstance.existingWorkflows = this.workflows;

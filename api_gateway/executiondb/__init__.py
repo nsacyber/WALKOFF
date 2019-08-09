@@ -54,7 +54,8 @@ class ExecutionDatabase(object):
             self.engine = create_engine(
                 format_db_path(config.DB_TYPE, config.EXECUTION_DB_NAME, config.DB_USERNAME, config.DB_PASSWORD,
                                config.DB_HOST),
-                poolclass=NullPool)
+                poolclass=NullPool, isolation_level="AUTOCOMMIT")
+
             if not database_exists(self.engine.url):
                 try:
                     create_database(self.engine.url)
