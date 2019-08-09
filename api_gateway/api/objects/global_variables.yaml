@@ -17,7 +17,6 @@ GlobalVariable:
       items:
         type: object
     value:
-      type: string
 #      oneOf:
 #        - type: "string"
 #        - type: "number"
