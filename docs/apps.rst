@@ -156,9 +156,9 @@ To edit an existing application, navigate to the App Editor in WALKOFF. Using th
 
 Let's add a new action to the ``hello_world`` app.
 
-**1. Open **``src/app.py``** and start by copying an existing action**
+**1. Open** ``src/app.py`` **and start by copying an existing action**
 
-    .. image:: ../docs/images/vt.png
+    .. image:: ../docs/images/appeditor/copy.PNG
 
 **2. Edit the action as desired and save changes**
 
@@ -166,18 +166,18 @@ Let's add a new action to the ``hello_world`` app.
     If you need to import new Python modules, be sure to add them to ``requirements.txt``.
     If you need to read files, be sure to place them inside ``src`` to make them usable inside the app container.
 
-    .. image:: ../docs/images/vt.png
+    .. image:: ../docs/images/appeditor/refactor.PNG
 
-**3. Open **``api.yaml``** and start by copying an existing action**
+**3. Open** ``api.yaml`` **and start by copying an existing action**
 
-    .. image:: ../docs/images/vt.png
+    .. image:: ../docs/images/appeditor/copyyaml.PNG
 
 **4. Edit the action as desired and save changes**
 
     Any time you see the ``schema`` key, you can use JSON Schema to specify how the parameter or return value should look like.
     A full schema for what is permissible here can be found `here <https://github.com/nsacyber/WALKOFF/blob/master/api_gateway/api/objects/appapi.yaml>`_.
 
-    .. image:: ../docs/images/vt.png
+    .. image:: ../docs/images/appeditor/tolowercase.PNG
 
 **5. Build the image and watch the build logs**
 
@@ -187,60 +187,52 @@ Let's add a new action to the ``hello_world`` app.
 
     .. code-block:: console
 
-    Umpire - INFO:Sending image to be built
-    Umpire - INFO:Docker image building
-    UMPIRE - DEBUG:Step 1/11 : FROM 127.0.0.1:5000/walkoff_app_sdk as base
-    UMPIRE - DEBUG:Pulling from walkoff_app_sdk
-    UMPIRE - DEBUG:Digest: sha256:76c9c7c3d16697d0edd4a3dffb9591c69cff0c6fdf1ca87e092a0f7cbeee34ab
-    UMPIRE - DEBUG:Status: Image is up to date for 127.0.0.1:5000/walkoff_app_sdk:latest
-    UMPIRE - DEBUG:---> 279ce0973000
-    UMPIRE - DEBUG:Step 2/11 : FROM base as builder
-    UMPIRE - DEBUG:---> 279ce0973000
-    UMPIRE - DEBUG:Step 3/11 : RUN mkdir /install
-    UMPIRE - DEBUG:---> Using cache
-    UMPIRE - DEBUG:---> dd8c3a031946
-    UMPIRE - DEBUG:Step 4/11 : WORKDIR /install
-    UMPIRE - DEBUG:---> Using cache
-    UMPIRE - DEBUG:---> fe17dbbc4e04
-    UMPIRE - DEBUG:Step 5/11 : COPY requirements.txt /requirements.txt
-    UMPIRE - DEBUG:---> Using cache
-    UMPIRE - DEBUG:---> 31e89590b9d4
-    UMPIRE - DEBUG:Step 6/11 : RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.txt
-    UMPIRE - DEBUG:---> Using cache
-    UMPIRE - DEBUG:---> ca768328609e
-    UMPIRE - DEBUG:Step 7/11 : FROM base
-    UMPIRE - DEBUG:---> 279ce0973000
-    UMPIRE - DEBUG:Step 8/11 : COPY --from=builder /install /usr/local
-    UMPIRE - DEBUG:---> Using cache
-    UMPIRE - DEBUG:---> 30fd3018eff0
-    UMPIRE - DEBUG:Step 9/11 : COPY src /app
-    UMPIRE - DEBUG:---> cb20500dbc0b
-    UMPIRE - DEBUG:Step 10/11 : WORKDIR /app
-    UMPIRE - DEBUG:---> Running in 98e4322863b3
-    UMPIRE - DEBUG:Removing intermediate container 98e4322863b3
-    UMPIRE - DEBUG:---> b50497e91a92
-    UMPIRE - DEBUG:Step 11/11 : CMD python app.py --log-level DEBUG
-    UMPIRE - DEBUG:---> Running in 1f97d270877f
-    UMPIRE - DEBUG:Removing intermediate container 1f97d270877f
-    UMPIRE - DEBUG:---> ae238196c4e6
-    UMPIRE - DEBUG:Successfully built ae238196c4e6
-    UMPIRE - DEBUG:Successfully tagged 127.0.0.1:5000/walkoff_app_hello_world:1.0.0
-    Umpire - INFO:Docker image Built
-    Umpire - INFO:Pushing image 127.0.0.1:5000/walkoff_app_hello_world:1.0.0.
-    Umpire - INFO:Pushed image 127.0.0.1:5000/walkoff_app_hello_world:1.0.0.
+        Umpire - INFO:Sending image to be built
+        Umpire - INFO:Docker image building
+        UMPIRE - DEBUG:Step 1/11 : FROM 127.0.0.1:5000/walkoff_app_sdk as base
+        UMPIRE - DEBUG:Pulling from walkoff_app_sdk
+        UMPIRE - DEBUG:Digest: sha256:76c9c7c3d16697d0edd4a3dffb9591c69cff0c6fdf1ca87e092a0f7cbeee34ab
+        UMPIRE - DEBUG:Status: Image is up to date for 127.0.0.1:5000/walkoff_app_sdk:latest
+        UMPIRE - DEBUG:---> 279ce0973000
+        UMPIRE - DEBUG:Step 2/11 : FROM base as builder
+        UMPIRE - DEBUG:---> 279ce0973000
+        UMPIRE - DEBUG:Step 3/11 : RUN mkdir /install
+        UMPIRE - DEBUG:---> Using cache
+        UMPIRE - DEBUG:---> dd8c3a031946
+        UMPIRE - DEBUG:Step 4/11 : WORKDIR /install
+        UMPIRE - DEBUG:---> Using cache
+        UMPIRE - DEBUG:---> fe17dbbc4e04
+        UMPIRE - DEBUG:Step 5/11 : COPY requirements.txt /requirements.txt
+        UMPIRE - DEBUG:---> Using cache
+        UMPIRE - DEBUG:---> 31e89590b9d4
+        UMPIRE - DEBUG:Step 6/11 : RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.txt
+        UMPIRE - DEBUG:---> Using cache
+        UMPIRE - DEBUG:---> ca768328609e
+        UMPIRE - DEBUG:Step 7/11 : FROM base
+        UMPIRE - DEBUG:---> 279ce0973000
+        UMPIRE - DEBUG:Step 8/11 : COPY --from=builder /install /usr/local
+        UMPIRE - DEBUG:---> Using cache
+        UMPIRE - DEBUG:---> 30fd3018eff0
+        UMPIRE - DEBUG:Step 9/11 : COPY src /app
+        UMPIRE - DEBUG:---> cb20500dbc0b
+        UMPIRE - DEBUG:Step 10/11 : WORKDIR /app
+        UMPIRE - DEBUG:---> Running in 98e4322863b3
+        UMPIRE - DEBUG:Removing intermediate container 98e4322863b3
+        UMPIRE - DEBUG:---> b50497e91a92
+        UMPIRE - DEBUG:Step 11/11 : CMD python app.py --log-level DEBUG
+        UMPIRE - DEBUG:---> Running in 1f97d270877f
+        UMPIRE - DEBUG:Removing intermediate container 1f97d270877f
+        UMPIRE - DEBUG:---> ae238196c4e6
+        UMPIRE - DEBUG:Successfully built ae238196c4e6
+        UMPIRE - DEBUG:Successfully tagged 127.0.0.1:5000/walkoff_app_hello_world:1.0.0
+        Umpire - INFO:Docker image Built
+        Umpire - INFO:Pushing image 127.0.0.1:5000/walkoff_app_hello_world:1.0.0.
+        Umpire - INFO:Pushed image 127.0.0.1:5000/walkoff_app_hello_world:1.0.0.
 
 **6. Try out your new action in the workflow editor.**
 
+    .. image:: ../docs/images/appeditor/final.PNG
 
-Watch this space for updates - we're currently working on an app editor UI component that should make this much easier.
-
-.. code-block:: console
-
-	app_dir=apps/hello_world/1.0.0
-	app_tag=127.0.0.1:5000/walkoff_app_hello_world:1.0.0
-	docker build -f $app_dir/Dockerfile -t $app_tag $app_dir
-	docker push $app_tag
-	docker service rm walkoff_app_hello_world
 
 Naming and String Requirements:
 '''''''''''''''''''''''''''''''''
