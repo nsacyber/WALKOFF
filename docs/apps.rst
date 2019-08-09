@@ -22,13 +22,15 @@ The minimal directory structure for a WALKOFF application is as follows:
                             +-- your_code.{c, cpp, py,..., etc.}
                             +-- any other files you wish to be accessible in the app container
 
-Development Instructions
--------------------------
+Full Development Instructions
+-----------------------------
 If you would like to follow along by adding a VirusTotal app to your Walkoff instance, follow the **EXAMPLE** bullets at the end of most steps.
+
+Watch this space for an update to the App Editor, which will allow you to create new apps fully from the UI. For now, you can only modify existing apps with it.
 
 **1. Write Python Functions in a Standalone Script**
     * Start by developing your app and its functions in a standalone script outside of WALKOFF – this way you can get basic functionality down before dealing with WALKOFF.
-    * **Note:** all functions that you expect to turn into actions must be written asynchronously (i.e. ``async def function_name()``)
+    * **Note:** all functions that you expect to turn into actions must be written for asyncio (i.e. ``async def function_name()``)
     * **EXAMPLE:** Below is example code that can be used to interact with VirusTotal's Api as a standalone script
  
  	.. code-block:: python
@@ -149,8 +151,86 @@ If you would like to follow along by adding a VirusTotal app to your Walkoff ins
     * **EXAMPLE:** We won't be doing anything here.
 
 Updating Your Application
-''''''''''''''''''''''''''''
-If your application Docker service is already running and you would like to update your app in WALKOFF, run these following commands with the proper substitions for application name ``hello_world``
+''''''''''''''''''''''''''
+To edit an existing application, navigate to the App Editor in WALKOFF. Using this UI, you can edit existing apps, add new files, and build app images.
+
+Let's add a new action to the ``hello_world`` app.
+
+**1. Open **``src/app.py``** and start by copying an existing action**
+
+    .. image:: ../docs/images/vt.png
+
+**2. Edit the action as desired and save changes**
+
+    If you need to add binary dependencies, add it to the Dockerfile.
+    If you need to import new Python modules, be sure to add them to ``requirements.txt``.
+    If you need to read files, be sure to place them inside ``src`` to make them usable inside the app container.
+
+    .. image:: ../docs/images/vt.png
+
+**3. Open **``api.yaml``** and start by copying an existing action**
+
+    .. image:: ../docs/images/vt.png
+
+**4. Edit the action as desired and save changes**
+
+    Any time you see the ``schema`` key, you can use JSON Schema to specify how the parameter or return value should look like.
+    A full schema for what is permissible here can be found `here <https://github.com/nsacyber/WALKOFF/blob/master/api_gateway/api/objects/appapi.yaml>`_.
+
+    .. image:: ../docs/images/vt.png
+
+**5. Build the image and watch the build logs**
+
+    You can watch the Umpire logs to view build status: ``docker service logs -f walkoff_core_umpire```
+
+    The output will look something like this:
+
+    .. code-block:: console
+
+    Umpire - INFO:Sending image to be built
+    Umpire - INFO:Docker image building
+    UMPIRE - DEBUG:Step 1/11 : FROM 127.0.0.1:5000/walkoff_app_sdk as base
+    UMPIRE - DEBUG:Pulling from walkoff_app_sdk
+    UMPIRE - DEBUG:Digest: sha256:76c9c7c3d16697d0edd4a3dffb9591c69cff0c6fdf1ca87e092a0f7cbeee34ab
+    UMPIRE - DEBUG:Status: Image is up to date for 127.0.0.1:5000/walkoff_app_sdk:latest
+    UMPIRE - DEBUG:---> 279ce0973000
+    UMPIRE - DEBUG:Step 2/11 : FROM base as builder
+    UMPIRE - DEBUG:---> 279ce0973000
+    UMPIRE - DEBUG:Step 3/11 : RUN mkdir /install
+    UMPIRE - DEBUG:---> Using cache
+    UMPIRE - DEBUG:---> dd8c3a031946
+    UMPIRE - DEBUG:Step 4/11 : WORKDIR /install
+    UMPIRE - DEBUG:---> Using cache
+    UMPIRE - DEBUG:---> fe17dbbc4e04
+    UMPIRE - DEBUG:Step 5/11 : COPY requirements.txt /requirements.txt
+    UMPIRE - DEBUG:---> Using cache
+    UMPIRE - DEBUG:---> 31e89590b9d4
+    UMPIRE - DEBUG:Step 6/11 : RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.txt
+    UMPIRE - DEBUG:---> Using cache
+    UMPIRE - DEBUG:---> ca768328609e
+    UMPIRE - DEBUG:Step 7/11 : FROM base
+    UMPIRE - DEBUG:---> 279ce0973000
+    UMPIRE - DEBUG:Step 8/11 : COPY --from=builder /install /usr/local
+    UMPIRE - DEBUG:---> Using cache
+    UMPIRE - DEBUG:---> 30fd3018eff0
+    UMPIRE - DEBUG:Step 9/11 : COPY src /app
+    UMPIRE - DEBUG:---> cb20500dbc0b
+    UMPIRE - DEBUG:Step 10/11 : WORKDIR /app
+    UMPIRE - DEBUG:---> Running in 98e4322863b3
+    UMPIRE - DEBUG:Removing intermediate container 98e4322863b3
+    UMPIRE - DEBUG:---> b50497e91a92
+    UMPIRE - DEBUG:Step 11/11 : CMD python app.py --log-level DEBUG
+    UMPIRE - DEBUG:---> Running in 1f97d270877f
+    UMPIRE - DEBUG:Removing intermediate container 1f97d270877f
+    UMPIRE - DEBUG:---> ae238196c4e6
+    UMPIRE - DEBUG:Successfully built ae238196c4e6
+    UMPIRE - DEBUG:Successfully tagged 127.0.0.1:5000/walkoff_app_hello_world:1.0.0
+    Umpire - INFO:Docker image Built
+    Umpire - INFO:Pushing image 127.0.0.1:5000/walkoff_app_hello_world:1.0.0.
+    Umpire - INFO:Pushed image 127.0.0.1:5000/walkoff_app_hello_world:1.0.0.
+
+**6. Try out your new action in the workflow editor.**
+
 
 Watch this space for updates - we're currently working on an app editor UI component that should make this much easier.
 
