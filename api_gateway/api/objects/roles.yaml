@@ -65,6 +65,11 @@ Resource:
         description: Name of the resource
         type: string
         example: playbooks, cases
+      needed_ids:
+        description: Temp string
+        type: array
+        items:
+          type: string
       permissions:
         description: A list of permissions associated with this resource
         example: [create, read, update, delete, execute]

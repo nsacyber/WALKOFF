@@ -1,22 +1,25 @@
 import json
-from copy import deepcopy
 from io import BytesIO
+from copy import deepcopy
 
 from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 from marshmallow import ValidationError
-from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError
 
 from api_gateway import helpers
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.helpers import regenerate_workflow_ids
-# from api_gateway.helpers import strip_device_ids, strip_argument_ids
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
+from api_gateway.server.decorators import with_resource_factory, is_valid_uid, \
     paginate
-from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_input_problem
+from api_gateway.server.problem import unique_constraint_problem, improper_json_problem
+from common.roles_helpers import auth_check, update_permissions, default_permissions
 from http import HTTPStatus
+
+
+import logging
+logger = logging.getLogger(__name__)
 
 workflow_schema = WorkflowSchema()
 
@@ -45,39 +48,57 @@ def create_workflow():
     workflow_id = request.args.get("source")
     workflow_name = data['name']
 
+    try:
+        new_permissions = data['permissions']
+    except:
+        new_permissions = []
+
     if request.files and 'file' in request.files:
         data = json.loads(request.files['file'].read().decode('utf-8'))
 
     if workflow_id:
-        wf = current_app.running_context.execution_db.session.query(Workflow) \
+        wf = current_app.running_context.execution_db.session.query(Workflow)\
             .filter(Workflow.id_ == workflow_id).first()
         if wf.name == workflow_name:
             return unique_constraint_problem('workflow', 'create', workflow_name)
 
-        return copy_workflow(workflow=wf, workflow_name=workflow_name)
+        return copy_workflow(workflow=wf, workflow_name=workflow_name, permissions=new_permissions)
 
     wf2 = current_app.running_context.execution_db.session.query(Workflow) \
         .filter(Workflow.id_ == data['id_']).first()
     if wf2:
         return import_workflow(data)
 
+    else:
+        if new_permissions:
+            update_permissions("workflows", workflow_name, new_permissions=new_permissions)
+        else:
+            default_permissions("workflows", workflow_name)
+
     try:
         workflow = workflow_schema.load(data)
         current_app.running_context.execution_db.session.add(workflow)
         current_app.running_context.execution_db.session.commit()
-        current_app.logger.info(f"Created Workflow {workflow.name} ({workflow.id_})")
+        current_app.logger.info(f" Created Workflow {workflow.name} ({workflow.id_})")
         return workflow_schema.dump(workflow), HTTPStatus.CREATED
     except ValidationError as e:
         current_app.running_context.execution_db.session.rollback()
         return improper_json_problem('workflow', 'create', workflow_name, e.messages)
-    except IntegrityError:  # ToDo: Make sure this fires on duplicate
+    except IntegrityError:
         current_app.running_context.execution_db.session.rollback()
         return unique_constraint_problem('workflow', 'create', workflow_name)
 
 
 def import_workflow(workflow_json):
+    new_permissions = workflow_json['permissions']
+
     regenerate_workflow_ids(workflow_json)
     workflow_json['name'] = workflow_json.get("name")
+
+    if new_permissions:
+        update_permissions("workflows", workflow_json['name'], new_permissions=new_permissions)
+    else:
+        default_permissions("workflows", workflow_json['name'])
 
     try:
         new_workflow = workflow_schema.load(workflow_json)
@@ -90,9 +111,15 @@ def import_workflow(workflow_json):
         return unique_constraint_problem('workflow', 'import', workflow_json['name'])
 
 
-def copy_workflow(workflow, workflow_name):
+# TODO: ADD PERMISSIONS UI TO COPY WORKFLOW
+@permissions_accepted_for_resources(ResourcePermissions('workflows', ['create']))
+def copy_workflow(workflow, permissions, workflow_name=None):
     old_json = workflow_schema.dump(workflow)
     workflow_json = deepcopy(old_json)
+
+    update_check = auth_check(workflow_json["name"], "update", "workflows")
+    if not update_check:
+        return None, HTTPStatus.FORBIDDEN
 
     regenerate_workflow_ids(workflow_json)
 
@@ -101,66 +128,90 @@ def copy_workflow(workflow, workflow_name):
     else:
         workflow_json['name'] = old_json.get("name")
 
+    update_permissions("workflows", workflow_json['name'], permissions)
+
     try:
         new_workflow = workflow_schema.load(workflow_json)
         current_app.running_context.execution_db.session.add(new_workflow)
         current_app.running_context.execution_db.session.commit()
-        current_app.logger.info(f"Workflow {workflow.id_} copied to {new_workflow.id_}")
+        current_app.logger.info(f" Workflow {workflow.id_} copied to {new_workflow.id_}")
         return workflow_schema.dump(new_workflow), HTTPStatus.CREATED
     except IntegrityError:
         current_app.running_context.execution_db.session.rollback()
-        current_app.logger.error(f"Could not copy workflow {workflow_json['name']}. Unique constraint failed")
+        current_app.logger.error(f" Could not copy workflow {workflow_json['name']}. Unique constraint failed")
         return unique_constraint_problem('workflow', 'copy', workflow_json['name'])
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
 @paginate(workflow_schema)
 def read_all_workflows():
     r = current_app.running_context.execution_db.session.query(Workflow).order_by(Workflow.name).all()
     for workflow in r:
-        workflow_schema.dump(workflow)
+        to_read = auth_check(workflow.name, "read", "workflows")
+        if to_read:
+            workflow_schema.dump(workflow)
+        else:
+            r.remove(workflow)
     return r, HTTPStatus.OK
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
 @with_workflow('read', 'workflow')
 def read_workflow(workflow):
-    workflow_json = workflow_schema.dump(workflow)
-    if request.args.get('mode') == "export":
-        f = BytesIO()
-        f.write(json.dumps(workflow_json, sort_keys=True, indent=4, separators=(',', ': ')).encode('utf-8'))
-        f.seek(0)
-        return send_file(f, attachment_filename=workflow.name + '.json', as_attachment=True), HTTPStatus.OK
+    workflow_name = workflow.name
+
+    to_read = auth_check(workflow_name, "read", "workflows")
+
+    if to_read:
+        workflow_json = workflow_schema.dump(workflow)
+        if request.args.get('mode') == "export":
+            f = BytesIO()
+            f.write(json.dumps(workflow_json, sort_keys=True, indent=4, separators=(',', ': ')).encode('utf-8'))
+            f.seek(0)
+            return send_file(f, attachment_filename=workflow.name + '.json', as_attachment=True), HTTPStatus.OK
+        else:
+            return workflow_json, HTTPStatus.OK
     else:
-        return workflow_json, HTTPStatus.OK
+        return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['update']))
 @with_workflow('update', 'workflow')
 def update_workflow(workflow):
     data = request.get_json()
+    old_name = workflow.name
+    new_name = data['name']
 
-    try:
-        workflow_schema.load(data, instance=workflow)
-        current_app.running_context.execution_db.session.commit()
-        current_app.logger.info(f"Updated workflow {workflow.name} ({workflow.id_})")
-        return workflow_schema.dump(workflow), HTTPStatus.OK
-    except ValidationError as e:
-        current_app.running_context.execution_db.session.rollback()
-        return improper_json_problem('workflow', 'update', workflow.id_, e.messages)
-    except IntegrityError:  # ToDo: Make sure this fires on duplicate
-        current_app.running_context.execution_db.session.rollback()
-        return unique_constraint_problem('workflow', 'update', workflow.id_)
+    new_permissions = data['permissions']
+
+    to_update = auth_check(old_name, "update", "workflows")
+    if to_update:
+        auth_check(old_name, "update", "workflows", new_name=new_name, updated_roles=new_permissions)
+        try:
+            workflow_schema.load(data, instance=workflow)
+            current_app.running_context.execution_db.session.commit()
+            current_app.logger.info(f"Updated workflow {workflow.name} ({workflow.id_})")
+            return workflow_schema.dump(workflow), HTTPStatus.OK
+        except ValidationError as e:
+            current_app.running_context.execution_db.session.rollback()
+            return improper_json_problem('workflow', 'update', workflow.id_, e.messages)
+        except IntegrityError:  # ToDo: Make sure this fires on duplicate
+            current_app.running_context.execution_db.session.rollback()
+            return unique_constraint_problem('workflow', 'update', workflow.id_)
+    else:
+        return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['delete']))
 @with_workflow('delete', 'workflow')
 def delete_workflow(workflow):
-    current_app.running_context.execution_db.session.delete(workflow)
-    current_app.logger.info(f"Removed workflow {workflow.name} ({workflow.id_})")
-    current_app.running_context.execution_db.session.commit()
-    return None, HTTPStatus.NO_CONTENT
+    workflow_name = workflow.name
+
+    to_delete = auth_check(workflow_name, "delete", "workflows")
+    if to_delete:
+        current_app.running_context.execution_db.session.delete(workflow)
+        current_app.logger.info(f"Removed workflow {workflow.name} ({workflow.id_})")
+        current_app.running_context.execution_db.session.commit()
+        return None, HTTPStatus.NO_CONTENT
+    else:
+        return None, HTTPStatus.FORBIDDEN

@@ -6,7 +6,7 @@ from uuid import uuid4
 from flask import current_app
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 
-from sqlalchemy import Column, String, JSON, ForeignKey
+from sqlalchemy import Column, String, JSON, ForeignKey, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 
@@ -54,6 +54,7 @@ class GlobalVariable(Base):
     # Columns specific to GlobalVariables
     description = Column(String(255), default="")
     schema_id = Column(UUID(as_uuid=True), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
+    permissions = Column(JSON)
     _walkoff_type = Column(String(80), default="variable")
 
 

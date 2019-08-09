@@ -37,46 +37,27 @@ export class AppService {
 	}
 
 	getFile(appApi: AppApi, file_path: string): Promise<string> {
-		return this.http.post('/umpire/file', { app_name: appApi.name, app_version: appApi.app_version, file_path})
+		return this.http.get(`api/umpire/file/${ appApi.name }/${ appApi.app_version }`, { params: { file_path }})
 			.toPromise()
 			.then(data => data as string)
-
-		// const Key = `apps/${ appApi.name }/${ appApi.app_version }/${ file_path }`;
-		// return this.getS3()
-		// 	.getObject({ Bucket: 'apps-bucket', Key})
-		// 	.promise()
-		// 	.then(data => data.Body.toString())
 	}
 
 	putFile(appApi: AppApi, file_path: string, file_data: string): Promise<any> {
-		return this.http.post('/umpire/file-upload', { app_name: appApi.name, app_version: appApi.app_version, file_path, file_data})
+		return this.http.post('api/umpire/file_upload', { app_name: appApi.name, app_version: appApi.app_version, file_path, file_data})
 			.toPromise()
-
-		// const Key = `apps/${ appApi.name }/${ appApi.app_version }/${ path }`;
-		// return this.getS3()
-		// 	.putObject({ Bucket: 'apps-bucket', Key, Body })
-		// 	.promise()
-		// 	.catch(e => console.log(e))
 	}
 
 	buildImage(appApi: AppApi): Promise<string> {
-		return this.http.post('/umpire/build', { app_name: appApi.name, app_version: appApi.app_version })
+		return this.http.post(`api/umpire/build/${ appApi.name }/${ appApi.app_version }`, { app_name: appApi.name, app_version: appApi.app_version })
 			.toPromise()
 			.then((data: any) => data.build_id)
 	}
 
 	listFiles(appApi: AppApi) : Promise<any> {
-		return this.http.post('/umpire/files', { app_name: appApi.name, app_version: appApi.app_version })
+		return this.http.get(`api/umpire/files/${ appApi.name }/${ appApi.app_version }`)
 			.toPromise()
+			.then(files => (files as string[]).concat('').map(f => 'root/' + f))
 			.then(this.createTree)
-
-
-		// const Prefix = `apps/${ appApi.name }/${ appApi.app_version }/`;
-		// return this.getS3()
-		// 	.listObjectsV2({ Bucket: 'apps-bucket', Prefix})
-		// 	.promise()
-		// 	.then(data => data.Contents.map(c => c.Key.replace(Prefix, '')))
-		// 	.then(this.createTree);
 	}
 
 	createTree(files: string[]) {
@@ -92,13 +73,16 @@ export class AppService {
 			var parent = tree;
 			for (let i = 0; i < arr.length; i++) {
 				let node: any = { title: arr[i] };
+				
+
 				if ( i != arr.length - 1 ) {
 					node.children = [];
 					node.folder = true;
 					node.expanded = true;
+					node.data = { path: arr.slice(1, i + 1).concat('').join('/') }
 				}
 				else {
-					node.data = { path: file }
+					node.data = { path: arr.slice(1).join('/') }
 				}
 
 				let curIndex = parent.findIndex(n => n.title == arr[i])
@@ -114,15 +98,4 @@ export class AppService {
 
 		return tree;
 	}
-
-	// getS3(): S3 {
-	// 	return new S3({
-	// 			accessKeyId: 'walkoff' ,
-	// 			secretAccessKey: 'walkoff123' ,
-	// 			endpoint: 'http://localhost:9001' ,
-	// 			s3ForcePathStyle: true, // needed with minio?
-	// 			signatureVersion: 'v4'
-	// 	});
-	// }
-
 }
