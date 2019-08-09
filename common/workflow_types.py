@@ -224,13 +224,14 @@ class Variable:
     """
     A lightweight class representing a WALKOFF WorkflowVariable or Global
     """
-    __slots__ = ("id_", "name", "value", "description")
+    __slots__ = ("id_", "name", "value", "description", "permissions")
 
-    def __init__(self, id_, name, value, description=None):
+    def __init__(self, id_, name, value, description=None, permissions=None):
         self.id_ = id_
         self.name = name
         self.value = value
         self.description = description
+        self.permissions = permissions
 
     def __eq__(self, other):
         if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:

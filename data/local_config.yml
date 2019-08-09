@@ -3,6 +3,7 @@
 
 # Common options
 API_GATEWAY_URI: "http://localhost:8081"
+MINIO: "localhost:9001"
 
 # If API Gateway is being ran outside of the docker network, containers inside the network will need the IP of the docker host.
 # API_GATEWAY_URI: "http://ip_of_host_on_docker0:8081"

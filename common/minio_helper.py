@@ -61,9 +61,9 @@ class MinioApi:
                 logger.info("Sending image to be built")
                 dockerfile = "./Dockerfile"
                 log_stream = await docker_client.images.build(fileobj=context, tag=repo, rm=True,
-                                                          forcerm=True, pull=True, stream=True,
-                                                          path_dockerfile=dockerfile,
-                                                          encoding="application/x-tar")
+                                                              forcerm=True, pull=True, stream=True,
+                                                              path_dockerfile=dockerfile,
+                                                              encoding="application/x-tar")
                 logger.info("Docker image building")
                 await stream_docker_log(log_stream)
                 logger.info("Docker image Built")
@@ -97,14 +97,17 @@ class MinioApi:
             minio_client.stat_object("apps-bucket", abs_path)
             found = True
         except Exception as e:
-            pass
+            logger.info("File does not exist, creating a new one.")
 
         if found is True:
             minio_client.remove_object("apps-bucket", abs_path)
+            logger.info("File exists, removing it before creating a new one.")
+
         file_data = io.BytesIO(file_data)
         try:
             minio_client.put_object("apps-bucket", abs_path, file_data, file_size)
-            return True, "Successfully placed file in Minio"
+            r = minio_client.stat_object("apps-bucket", abs_path)
+            return True, str(r)
         except Exception as e:
             return False, str(e)
 
@@ -129,5 +132,3 @@ class MinioApi:
                 group_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_uid
                 os.chown(p_dst, owner_id, group_id)
         return True
-
-

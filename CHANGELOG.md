@@ -2,6 +2,40 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [1.0.0-beta.1]
+
+This update introduces a number of new features, including an App Editor in the UI, more granular role-based permissions, 
+and a bootloader for automating deployment of WALKOFF. 
+
+### Added
+* App Editor for editing app files and building Docker images from said apps.
+
+### Changed
+* App version no longer required in app_name in api.tyaml
+* CRUD endpoints now accept resource names as keys when applicable
+* Globals can now be arbitrary JSON (UI support pending)
+* Builtins build location moved to Umpire and is only built once on startup
+
+### Removed
+
+### Security
+* Implemented AES-256 encryption/decryption for Global Variables. Exclusive-access decryption based on account level standing still needs to be implemented in the future. Currently, any GET request to the API gateway will return a decrypted Global Variable, regardless of account.  
+
+### Fixed
+* Workflow import/export
+* Workflow validation (still needs work); workflows can be saved in an incomplete state again
+* Validate workfow name uniqueness when creating workflows
+* Testing suite (still needs expansion)
+* Uniqueness constraints on CRUD operations
+* Dereferencing Global and Workflow variables in workflows
+* Ability to override starting parameters in a workflow execution
+* Ability to update/delete encrypted Global Variables
+* Hide global values by default on Globals tab
+* Default boolean parameters to false
+* Copying and pasting of nodes in workflow editor
+* Accessing action results before conditionals in parameters that follow it
+
+
 ## [1.0.0-alpha.2]
 
 This update includes numerous bugfixes and a number of reintroduced features. 
@@ -66,7 +100,6 @@ server in preparation for a future move to an asynchronous framework. The follow
 ### Removed
 
 * Triggers have been temporarily removed, but are targeted for a near-future 1.1 release.
-
 
 
 ## [0.9.4]

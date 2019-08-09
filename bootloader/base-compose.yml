@@ -85,7 +85,4 @@ secrets:
 
 networks:
   walkoff_default:
-#    driver: overlay
-#    name: walkoff_default
-#    attachable: true
     external: true

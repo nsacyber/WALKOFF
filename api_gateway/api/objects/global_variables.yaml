@@ -12,9 +12,6 @@ GlobalVariable:
     name:
       type: string
       description: The name of the global variable
-    _walkoff_type:
-      type: string
-      description: Workflow type for json decoder
     permissions:
       type: array
       items:
@@ -47,8 +44,6 @@ GlobalVariableTemplate:
     name:
       type: string
       description: The name of the global template
-    _walkoff_type:
-      type: string
     schema:
       type: object
       description: The schema for the global template

@@ -31,7 +31,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
 
 /umpire/file/{app_name}/{app_version}:
   get:
@@ -71,7 +70,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
 
 /umpire/file_upload:
   post:
@@ -99,7 +97,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
 
 /umpire/build:
   get:
@@ -121,7 +118,7 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
+
 /umpire/build/{app_name}/{app_version}:
   post:
     tags:
@@ -155,7 +152,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
 
 /umpire/build/{build_id}:
   post:
@@ -184,7 +180,6 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-    security: []
 
 /umpire/save/{app_name}/{app_version}:
   post:
@@ -219,5 +214,4 @@
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-      security: []
 

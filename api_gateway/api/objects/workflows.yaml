@@ -63,6 +63,7 @@ WorkflowJSON:
       description: Workflow type for json decoder
     permissions:
       type: array
+      nullable: true
       items:
         type: object
 

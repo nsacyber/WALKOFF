@@ -32,7 +32,7 @@ def list_all_files(app_name, app_version):
     if r.status_code == 200:
         return r.json(), HTTPStatus.OK
     else:
-        return "Failed", HTTPStatus.BAD_REQUEST
+        return r.text, HTTPStatus.BAD_REQUEST
 
 
 # @jwt_required
@@ -48,7 +48,7 @@ def get_file_contents(app_name, app_version, file_path):
     if r.status_code == 200:
         return r.json(), HTTPStatus.OK
     else:
-        return "Failed", HTTPStatus.BAD_REQUEST
+        return r.text, HTTPStatus.BAD_REQUEST
 
 
 # @jwt_required
@@ -68,7 +68,7 @@ def update_file():
     if r.status_code == 200:
         return r.json(), HTTPStatus.OK
     else:
-        return "Failed", HTTPStatus.BAD_REQUEST
+        return r.text, HTTPStatus.BAD_REQUEST
 
 
 # @jwt_required
@@ -80,7 +80,7 @@ def get_build_status():
     if r.status_code == 200:
         return r.json(), HTTPStatus.OK
     else:
-        return "Failed", HTTPStatus.BAD_REQUEST
+        return r.text, HTTPStatus.BAD_REQUEST
 
 
 # @jwt_required
@@ -93,7 +93,7 @@ def build_image(app_name, app_version):
     if r.status_code == 200:
         return r.json(), HTTPStatus.OK
     else:
-        return "Failed", HTTPStatus.BAD_REQUEST
+        return r.text, HTTPStatus.BAD_REQUEST
 
 
 # @jwt_required
@@ -105,7 +105,7 @@ def build_status_from_id(build_id):
     if r.status_code == 200:
         return r.json(), HTTPStatus.OK
     else:
-        return "Failed", HTTPStatus.BAD_REQUEST
+        return r.text, HTTPStatus.BAD_REQUEST
 
 
 # @jwt_required

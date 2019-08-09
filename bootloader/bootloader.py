@@ -376,11 +376,8 @@ class Bootloader:
                             help="Removes the walkoff_encryption_key secret.")
         parser.add_argument("-r", "--registry", action="store_true",
                             help="Clears the registry bind mount directory.")
-        parser.add_argument("-s", "--skipnetwork", action="store_true",
-                            help="Skip network removal check. Use this if you have attached external services to it.")
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Set log level to debug.")
-        parser.add_argument("-n")
 
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
