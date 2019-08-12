@@ -146,13 +146,13 @@ def copy_workflow(workflow, permissions, workflow_name=None):
 @paginate(workflow_schema)
 def read_all_workflows():
     r = current_app.running_context.execution_db.session.query(Workflow).order_by(Workflow.name).all()
+    ret = []
     for workflow in r:
         to_read = auth_check(workflow.name, "read", "workflows")
         if to_read:
             workflow_schema.dump(workflow)
-        else:
-            r.remove(workflow)
-    return r, HTTPStatus.OK
+            ret.append(workflow)
+    return ret, HTTPStatus.OK
 
 
 @jwt_required
