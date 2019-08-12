@@ -4,16 +4,18 @@
 <div class="modal-body">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-6">
+            <div class="col-12">
                 <div class="form-group">
                     <label for="name">Name</label>
                     <input name="name" type="text" [(ngModel)]="variable.name" class="form-control">
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-12">
                 <div class="form-group">
                     <label for="value">Default Value</label>
-                    <input name="value" type="text" [(ngModel)]="variable.value" class="form-control">
+                    <div  class="mb-3">
+                        <json-editor #jsonEditor [options]="editorOptionsData" [data]="initialValue" (change)="updateValue($event)"></json-editor>
+                    </div>
                 </div>
             </div>
             <div class="col-12">
