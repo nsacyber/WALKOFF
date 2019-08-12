@@ -73,18 +73,46 @@ def update_permissions(resource_type, resource_indicator, new_permissions):
 
 
 # sets default permissions for given resource type
-def default_permissions(resource_type, resource_indicator):
+def default_permissions(resource_type, resource_indicator, data=None):
     roles = db.session.query(Role).all()
 
-    for role in roles:
-        for resource in db.session.query(Role).filter(Role.name == role.name).first().resources:
-            if resource.name == resource_type:
-                if resource.operations:
-                    role_permissions = [permission.name for permission in resource.permissions]
-                    resource.operations = [Operation(resource_indicator, role_permissions)] + resource.operations
-                    db.session.commit()
-                else:
-                    role_permissions = [permission.name for permission in resource.permissions]
-                    resource.operations = [Operation(resource_indicator, role_permissions)]
-                    db.session.commit()
+    if data:
+        ret = []
 
+    for role in roles:
+        if role.name != "internal_user":
+            for resource in db.session.query(Role).filter(Role.name == role.name).first().resources:
+                if resource.name == resource_type:
+                    if resource.operations:
+                        role_permissions = [permission.name for permission in resource.permissions
+                                            if permission.name != "create"]
+                        if "delete" in role_permissions:
+                            role_permissions = ['read', 'update', 'delete', 'execute']
+                        if "execute" in role_permissions:
+                            role_permissions = ['read', 'execute']
+                        if data:
+                            to_append = {
+                                "permissions": role_permissions,
+                                "role": role.name
+                            }
+                            ret.append(to_append)
+                        resource.operations = [Operation(resource_indicator, role_permissions)] + resource.operations
+                        db.session.commit()
+                    else:
+                        role_permissions = [permission.name for permission in resource.permissions
+                                            if permission.name != "create"]
+                        if "delete" in role_permissions:
+                            role_permissions = ['read', 'update', 'delete', 'execute']
+                        if "execute" in role_permissions:
+                            role_permissions = ['read', 'execute']
+                        if data:
+                            to_append = {
+                                "permissions": role_permissions,
+                                "role": role.name
+                            }
+                            ret.append(to_append)
+                        resource.operations = [Operation(resource_indicator, role_permissions)]
+                        db.session.commit()
+    logger.info(f"THIS IS THE RETURN -> {ret}")
+    if data:
+        data["permissions"] = ret

@@ -52,6 +52,7 @@ def create_workflow():
         new_permissions = data['permissions']
     except:
         new_permissions = []
+        data['permissions'] = []
 
     if request.files and 'file' in request.files:
         data = json.loads(request.files['file'].read().decode('utf-8'))
@@ -63,18 +64,19 @@ def create_workflow():
             return unique_constraint_problem('workflow', 'create', workflow_name)
 
         copy_permissions = wf.permissions
+
         return copy_workflow(workflow=wf, workflow_name=workflow_name, permissions=copy_permissions)
 
     wf2 = current_app.running_context.execution_db.session.query(Workflow) \
         .filter(Workflow.id_ == data['id_']).first()
     if wf2:
-        return import_workflow(data)
+        return import_workflow_and_regenerate_ids(data)
 
     else:
         if new_permissions:
             update_permissions("workflows", workflow_name, new_permissions=new_permissions)
         else:
-            default_permissions("workflows", workflow_name)
+            default_permissions("workflows", workflow_name, data)
 
     try:
         workflow = workflow_schema.load(data)
@@ -90,7 +92,7 @@ def create_workflow():
         return unique_constraint_problem('workflow', 'create', workflow_name)
 
 
-def import_workflow(workflow_json):
+def import_workflow_and_regenerate_ids(workflow_json):
     new_permissions = workflow_json['permissions']
 
     regenerate_workflow_ids(workflow_json)
@@ -112,7 +114,7 @@ def import_workflow(workflow_json):
         return unique_constraint_problem('workflow', 'import', workflow_json['name'])
 
 
-# TODO: ADD PERMISSIONS UI TO COPY WORKFLOW
+# TODO: ADD PERMISSIONS UI TO COPY WORKFLOW (?)
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['create']))
 def copy_workflow(workflow, permissions, workflow_name=None):
     old_json = workflow_schema.dump(workflow)
