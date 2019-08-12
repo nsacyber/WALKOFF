@@ -40,15 +40,16 @@ def auth_check(to_check, permission, resource_name, new_name=None, updated_roles
 
 # deletes operation for specific resource in all roles
 def delete_operation(resource_name, to_check, permission):
-    logger.info(f" Deleted operation for {resource_name} --> ({to_check})")
-    for resource_elem in db.session.query(Resource).filter(Resource.name == resource_name).all():
-        if resource_elem.operations:
-            if to_check in [elem.operation_id for elem in resource_elem.operations]:
-                for elem in resource_elem.operations:
-                    if elem.operation_id == to_check:
-                        if permission in elem.permissions_list:
+    roles = db.session.query(Role).all()
+    for role in roles:
+        for resource_elem in role.resources:
+            if resource_elem.operations:
+                if to_check in [elem.operation_id for elem in resource_elem.operations]:
+                    for elem in resource_elem.operations:
+                        if elem.operation_id == to_check:
                             resource_elem.operations.remove(elem)
                             db.session.commit()
+    logger.info(f" Deleted operation for {resource_name} --> ({to_check})")
 
 
 # updates permissions for specific resource

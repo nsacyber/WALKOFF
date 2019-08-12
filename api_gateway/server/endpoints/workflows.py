@@ -62,7 +62,8 @@ def create_workflow():
         if wf.name == workflow_name:
             return unique_constraint_problem('workflow', 'create', workflow_name)
 
-        return copy_workflow(workflow=wf, workflow_name=workflow_name, permissions=new_permissions)
+        copy_permissions = wf.permissions
+        return copy_workflow(workflow=wf, workflow_name=workflow_name, permissions=copy_permissions)
 
     wf2 = current_app.running_context.execution_db.session.query(Workflow) \
         .filter(Workflow.id_ == data['id_']).first()
