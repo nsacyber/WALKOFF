@@ -83,10 +83,8 @@ def create_user():
     internal_role = Role.query.filter_by(id=1).first()
     internal_user = User.query.filter_by(username="internal_user").first()
     if not internal_user:
-        with open(config.INTERNAL_KEY_PATH, 'rb') as f:
-            key = f.read()
-            internal_pass = str(key)
-        add_user(username='internal_user', password=internal_pass, roles=[1])
+        key = config.get_from_file(config.INTERNAL_KEY_PATH)
+        add_user(username='internal_user', password=key, roles=[2])
     elif internal_role not in internal_user.roles:
         internal_user.roles.append(internal_role)
 

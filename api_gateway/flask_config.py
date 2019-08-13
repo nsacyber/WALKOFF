@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class FlaskConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = format_db_path(config.DB_TYPE, config.SERVER_DB_NAME,
-                                             config.DB_USERNAME, config.DB_PASSWORD,
+                                             config.DB_USERNAME, config.get_from_file(config.POSTGRES_KEY_PATH),
                                              config.DB_HOST)
 
     JWT_BLACKLIST_ENABLED = True
@@ -21,7 +21,6 @@ class FlaskConfig(object):
 
     ITEMS_PER_PAGE = 20
 
-    with open(config.ENCRYPTION_KEY_PATH) as f:
-        SECRET_KEY = f.read()
+    SECRET_KEY = config.get_from_file(config.ENCRYPTION_KEY_PATH)
 
     # ALEMBIC_CONFIG = join('.', 'alembic.ini')
