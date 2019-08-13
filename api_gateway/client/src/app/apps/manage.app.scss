@@ -257,6 +257,16 @@
     border: 1px solid #dee2e6 !important
 }
 
+#tree {
+	position: absolute;
+	width: 100%;
+}
+
 .fancytree-container {
-    height: 700px;
+	height: 100%;
+	overflow-y: auto;
+
+	&:focus {
+		outline: none;
+	}
 }

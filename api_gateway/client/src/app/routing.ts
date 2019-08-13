@@ -13,6 +13,8 @@ import { AppsListComponent } from './apps/apps.list.component';
 import { ManageAppComponent } from './apps/manage.app.component';
 //etc
 
+import { CanDeactivateGuard }    from './can-deactivate.guard';
+
 const routes: Routes = [
 	{ path: '', redirectTo: '/workflows', pathMatch: 'full' },
 	{ path: 'workflows', component: PlaybookComponent },
@@ -23,7 +25,7 @@ const routes: Routes = [
 	{ path: 'settings', component: SettingsComponent },
 	{ path: 'execution', component: ExecutionComponent },
 	{ path: 'apps', component: AppsListComponent },
-	{ path: 'apps/:appId', component: ManageAppComponent },
+	{ path: 'apps/:appId', component: ManageAppComponent, canDeactivate: [CanDeactivateGuard] },
 	{ path: 'report/new', component: ManageReportsComponent },
 	{ path: 'report/:reportId/edit', component: ManageReportsComponent },
 	{ path: 'report/:reportId', component: ReportsComponent },
