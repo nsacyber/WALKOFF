@@ -14,12 +14,13 @@ import { ManageAppComponent } from './apps/manage.app.component';
 //etc
 
 import { CanDeactivateGuard }    from './can-deactivate.guard';
+import { RedirectGuard } from './redirect.guard';
 
 const routes: Routes = [
 	{ path: '', redirectTo: '/workflows', pathMatch: 'full' },
 	{ path: 'workflows', component: PlaybookComponent },
-	{ path: 'workflows/new', component: WorkflowEditorComponent },
-	{ path: 'workflows/:workflowId', component: WorkflowEditorComponent },
+	{ path: 'workflows/new', component: WorkflowEditorComponent, canDeactivate: [CanDeactivateGuard] },
+	{ path: 'workflows/:workflowId', component: WorkflowEditorComponent, canDeactivate: [CanDeactivateGuard] },
 	{ path: 'scheduler', component: SchedulerComponent },
 	{ path: 'globals', component: GlobalsComponent },
 	{ path: 'settings', component: SettingsComponent },
@@ -29,6 +30,7 @@ const routes: Routes = [
 	{ path: 'report/new', component: ManageReportsComponent },
 	{ path: 'report/:reportId/edit', component: ManageReportsComponent },
 	{ path: 'report/:reportId', component: ReportsComponent },
+	{ path: 'logout', canActivate: [RedirectGuard], component: RedirectGuard, data: { externalUrl: '/walkoff/login', logout: true }}
 ];
 
 @NgModule({
