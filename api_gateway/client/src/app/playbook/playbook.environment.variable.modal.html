@@ -13,9 +13,7 @@
             <div class="col-12">
                 <div class="form-group">
                     <label for="value">Default Value</label>
-                    <div  class="mb-3">
-                        <json-editor #jsonEditor [options]="editorOptionsData" [data]="initialValue" (change)="updateValue($event)"></json-editor>
-                    </div>
+                    <json-editor #jsonEditor [options]="editorOptionsData" [data]="variable.value" (change)="updateValue($event)"></json-editor>
                 </div>
             </div>
             <div class="col-12">

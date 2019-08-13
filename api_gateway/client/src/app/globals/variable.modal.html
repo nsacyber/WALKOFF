@@ -13,7 +13,7 @@
             <div class="col-12">
                 <div class="form-group">
                     <label for="value">{{ isGlobal ? 'Value' : 'Default Value'}}</label>
-                    <input name="value" type="text" [(ngModel)]="variable.value" class="form-control">
+                    <json-editor #jsonEditor [options]="editorOptionsData" [data]="initialValue" (change)="updateValue($event)"></json-editor>
                 </div>
             </div>
             <div class="col-12">
