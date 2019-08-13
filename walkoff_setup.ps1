@@ -1,5 +1,5 @@
 echo "Preparing Walkoff Bootloader..."
-#docker build -t walkoff_bootloader -f bootloader/Dockerfile .
+docker build -t walkoff_bootloader -f bootloader/Dockerfile .
 
 echo "Creating walkoff_default network..."
 docker network create --attachable=True --driver=overlay walkoff_default
