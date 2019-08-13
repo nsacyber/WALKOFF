@@ -88,8 +88,8 @@ class GlobalVariableSchema(BaseSchema):
     def validate_global(self, data, **kwargs):
         try:
             if "schema" in data:
-                with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
-                    temp = fernet_decrypt(f.read(), data['value'])
+                key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+                temp = fernet_decrypt(key, data['value'])
                 Draft4Validator(data['schema']['schema']).validate(temp)
 
         except (SchemaError, JSONSchemaValidationError):

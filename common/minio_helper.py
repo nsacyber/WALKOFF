@@ -38,7 +38,8 @@ class MinioApi:
         except Exception as e:
             print(e)
 
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                             secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         objects = minio_client.list_objects("apps-bucket", recursive=True)
         for obj in objects:
             size = obj.size
@@ -72,7 +73,8 @@ class MinioApi:
     @staticmethod
     async def list_files(app_name, version):
         relative_path = []
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                             secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         objects = minio_client.list_objects("apps-bucket", recursive=True)
         for obj in objects:
             p_src = Path(obj.object_name)
@@ -83,14 +85,16 @@ class MinioApi:
 
     @staticmethod
     async def get_file(app_name, version, path):
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                             secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         abs_path = f"apps/{app_name}/{version}/{path}"
         data = minio_client.get_object('apps-bucket', abs_path)
         return data.read()
 
     @staticmethod
     async def update_file(app_name, version, path, file_data, file_size):
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                             secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         abs_path = f"apps/{app_name}/{version}/{path}"
         found = False
         try:
@@ -114,7 +118,8 @@ class MinioApi:
     @staticmethod
     async def save_file(app_name, version):
         temp = []
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                             secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         objects = minio_client.list_objects("apps-bucket", recursive=True)
         for obj in objects:
             size = obj.size
@@ -129,6 +134,6 @@ class MinioApi:
                     for d in data.stream(size):
                         file_data.write(d)
                 owner_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_uid
-                group_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_uid
+                group_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_gid
                 os.chown(p_dst, owner_id, group_id)
         return True

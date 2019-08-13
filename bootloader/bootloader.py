@@ -8,7 +8,6 @@ import os
 import re
 import shutil
 import base64
-from minio import Minio
 from pathlib import Path
 
 import aiodocker
@@ -19,7 +18,8 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from common.config import config, static
 from common.docker_helpers import (create_secret, get_secret, delete_secret, get_network, connect_to_aiodocker,
-                                   docker_context, stream_docker_log, logger as docker_logger, disconnect_from_network)
+                                   docker_context, stream_docker_log, logger as docker_logger, disconnect_from_network,
+                                   update_service, get_replicas)
 
 logging.basicConfig(level=logging.DEBUG, format="{asctime} - {name} - {levelname}:{message}", style='{')
 
@@ -82,7 +82,7 @@ def compose_from_app(path: pathlib.Path, name):
     shared_path = os.getcwd() + "/data/shared"
     final_mount = shared_path + ":/app/shared"
     volumes_mount = {"volumes": [final_mount]}
-    compose["services"] = {name: {**build, **image, ** networks, **deploy, **config_mount,
+    compose["services"] = {name: {**build, **image, **networks, **deploy, **config_mount,
                                   **secret_mount, **volumes_mount, **env_file}}
     return compose
 
@@ -126,18 +126,40 @@ def generate_app_composes():
     return composes
 
 
-async def create_encryption_key(docker_client, key_name):
+async def are_you_sure(prompt):
+    try:
+        resp = input(f"{prompt}\n\nAre you sure? (yes/no): ")
+        while resp.lower() not in ("yes", "no"):
+            resp = input("Please answer 'yes' or 'no': ")
+    except KeyboardInterrupt:
+        return False
+
+    if resp.lower() == "yes":
+        return True
+    else:
+        return False
+
+
+async def create_encryption_key(docker_client, key_name, value=None):
     try:
         await get_secret(docker_client, key_name)
     except aiodocker.exceptions.DockerError:
         logger.info(f"Creating secret {key_name}...")
-        await create_secret(docker_client, key_name, base64.urlsafe_b64encode(os.urandom(32)))
+        try:
+            key = value if value else base64.urlsafe_b64encode(os.urandom(32))
+            await create_secret(docker_client, key_name, key)
+            return key
+        except aiodocker.exceptions.DockerError as e:
+            logger.exception(f"Could not create Docker Secret {key_name}, exiting. Reason: {e}")
+            os._exit(1)
     else:
         logger.info(f"Skipping secret {key_name} creation, it already exists.")
+        return "Key already existed."
 
 
 async def delete_encryption_key(docker_client, key_name):
     try:
+        logger.info(f"Deleting secret {key_name}...")
         await delete_secret(docker_client, key_name)
     except aiodocker.exceptions.DockerError:
         logger.info(f"Skipping secret {key_name} deletion, it doesn't exist.")
@@ -152,16 +174,19 @@ async def check_for_network(docker_client):
 
 
 async def delete_dir_contents(path):
-    for root, dirs, files in os.walk(path):
-        for f in files:
-            os.unlink(os.path.join(root, f))
-        for d in dirs:
-            shutil.rmtree(os.path.join(root, d))
+    logger.info(f"Deleting directory contents of {path}...")
+    try:
+        for root, dirs, files in os.walk(path):
+            for f in files:
+                os.unlink(os.path.join(root, f))
+            for d in dirs:
+                shutil.rmtree(os.path.join(root, d))
+    except Exception as e:
+        logger.exception(f"Could not remove contents in {path}. Reason: {e}")
 
 
 @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
 async def deploy_compose(compose):
-
     try:
         if not isinstance(compose, dict):
             compose = parse_yaml(compose)
@@ -185,8 +210,27 @@ async def deploy_compose(compose):
         raise e
 
 
-async def build_image(docker_client, repo, dockerfile, context_dir, dockerignore):
+@retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
+async def rm_stack(stack_name):
+    try:
+        logger.info("Removing Walkoff stack and related artifacts...")
 
+        proc = await asyncio.create_subprocess_exec("docker", "stack", "rm", stack_name, stderr=asyncio.subprocess.PIPE,
+                                                    stdout=asyncio.subprocess.PIPE)
+
+        await log_proc_output(proc)
+
+        if proc.returncode:
+            raise OSError
+        else:
+            return proc
+
+    except Exception as e:
+        logger.info("Failed to fully remove stack, waiting to try again...")
+        raise e
+
+
+async def build_image(docker_client, repo, dockerfile, context_dir, dockerignore):
     logger.info(f"Building {repo} with {dockerfile} in {context_dir}")
 
     with docker_context(Path(context_dir), dockerignore=dockerignore) as context:
@@ -199,7 +243,6 @@ async def build_image(docker_client, repo, dockerfile, context_dir, dockerignore
 
 
 async def push_image(docker_client, repo):
-
     logger.info(f"Pushing image {repo}.")
 
     try:
@@ -210,6 +253,30 @@ async def push_image(docker_client, repo):
     except aiodocker.exceptions.DockerError as e:
         logger.exception(f"Failed to push image: {e}")
         return False
+
+
+async def force_service_update(docker_client, service_name, image):
+    logger.info(f"Forcing service update for {service_name}...")
+    await update_service(docker_client, service_name, image=image, force=True)
+
+    await asyncio.sleep(3)
+
+    logger.info(f"Scaling {service_name} to 0...")
+    await update_service(docker_client, service_name, image=image, force=True, mode={"replicated": {"Replicas": 0}})
+
+    replicas = 1
+    while replicas > 0:
+        replicas = (await get_replicas(docker_client, service_name))['running']
+        await asyncio.sleep(2)
+
+    logger.info(f"Scaling {service_name} back to 1...")
+    await update_service(docker_client, service_name, image=image, force=True, mode={"replicated": {"Replicas": 1}})
+
+    while replicas < 1:
+        replicas = (await get_replicas(docker_client, service_name))['running']
+        await asyncio.sleep(2)
+
+    logger.info(f"Forced service update for {service_name}.")
 
 
 class Bootloader:
@@ -228,7 +295,7 @@ class Bootloader:
     async def run():
         """ Landing pad to launch primary command and do whatever async init the bootloader needs. """
         # TODO: fill in the helps, and further develop cli with the end user in mind
-        commands = {"up", "build", "down"}
+        commands = {"up", "down", "refresh"}
         parser = argparse.ArgumentParser()
         parser.add_argument("command", choices=commands)
         parser.add_argument("args", nargs=argparse.REMAINDER)
@@ -252,7 +319,7 @@ class Bootloader:
     @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
     async def wait_for_registry(self):
         try:
-            async with self.session.get("http://" + DOCKER_HOST_IP) as resp:
+            async with self.session.get(f"http://{DOCKER_HOST_IP}:5000") as resp:
                 if resp.status == 200:
                     return True
                 else:
@@ -273,40 +340,20 @@ class Bootloader:
             logger.info("Minio not available yet, waiting to try again...")
             raise e
 
-    async def push_to_minio(self):
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
-        flag = False
-        try:
-            buckets = minio_client.list_buckets()
-            for bucket in buckets:
-                if bucket.name == "apps-bucket":
-                    flag = True
-        except:
-            logger.info("Bucket doesn't exist.")
-
-        if flag is False:
-            minio_client.make_bucket("apps-bucket", location="us-east-1")
-
-        files = [x for x in p if x.is_file()]
-        for file in files:
-            path_to_file = str(file)
-            with open(path_to_file, "rb") as file_data:
-                file_stat = os.stat(path_to_file)
-                minio_client.put_object("apps-bucket", path_to_file, file_data, file_stat.st_size)
-
     async def up(self):
 
         # Create Walkoff encryption key
-        return_code = await create_encryption_key(self.docker_client, "walkoff_encryption_key")
-        if return_code:
-            logger.exception("Could not create secret walkoff_encryption_key. Exiting.")
-            os._exit(return_code)
+        wek = await create_encryption_key(self.docker_client, "walkoff_encryption_key")
 
         # Create internal user key
-        return_code2 = await create_encryption_key(self.docker_client, "walkoff_internal_key")
-        if return_code2:
-            logger.exception("Could not create secret walkoff_internal_key. Exiting.")
-            os._exit(return_code2)
+        wik = await create_encryption_key(self.docker_client, "walkoff_internal_key")
+
+        # Create Postgres user password
+        wpk = await create_encryption_key(self.docker_client, "walkoff_postgres_key")
+
+        # Create Minio secret key
+        wmak = await create_encryption_key(self.docker_client, "walkoff_minio_access_key", b"walkoff")
+        wmsk = await create_encryption_key(self.docker_client, "walkoff_minio_secret_key")
 
         # Set up a subcommand parser
         parser = argparse.ArgumentParser(description="Bring the WALKOFF stack up and initialize it")
@@ -314,7 +361,8 @@ class Bootloader:
                             help="Builds and pushes all WALKOFF components to local registry.")
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Set log level to debug.")
-
+        parser.add_argument("-k", "--keys", action="store_true",
+                            help="Prints all keys to STDOUT (dangerous).")
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
 
@@ -323,10 +371,10 @@ class Bootloader:
             docker_logger.setLevel("DEBUG")
 
         logger.info("Creating persistent directories for registry, postgres, portainer...")
-        os.makedirs(Path("data") / "registry" / "reg_data", exist_ok=True)
-        os.makedirs(Path("data") / "postgres" / "pg_data", exist_ok=True)
-        os.makedirs(Path("data") / "portainer" / "prt_data", exist_ok=True)
-        os.makedirs(Path("data") / "minio" / "min_data", exist_ok=True)
+        os.makedirs(static.REGISTRY_DATA_PATH, exist_ok=True)
+        os.makedirs(static.POSTGRES_DATA_PATH, exist_ok=True)
+        os.makedirs(static.PORTAINER_DATA_PATH, exist_ok=True)
+        os.makedirs(static.MINIO_DATA_PATH, exist_ok=True)
 
         # Bring up the base compose with the registry
         logger.info("Deploying base services (registry, postgres, portainer, redis)...")
@@ -351,20 +399,49 @@ class Bootloader:
                               self.dockerignore)
             await push_image(self.docker_client, walkoff_app_sdk["image"])
 
+            builders = []
+            pushers = []
+
             for service_name, service in walkoff_compose["services"].items():
                 if "build" in service:
-                    await build_image(self.docker_client, service["image"],
-                                      service["build"]["dockerfile"],
-                                      service["build"]["context"],
-                                      self.dockerignore)
-                    await push_image(self.docker_client, service["image"])
+                    build_func = build_image(self.docker_client, service["image"],
+                                             service["build"]["dockerfile"],
+                                             service["build"]["context"],
+                                             self.dockerignore)
+                    push_func = push_image(self.docker_client, service["image"])
+                    if args.debug:
+                        await build_func
+                        await push_func
+                    else:
+                        builders.append(build_func)
+                        pushers.append(push_func)
+
+            if not args.debug:
+                logger.info("Building Docker images asynchronously, this could take some time...")
+                await asyncio.gather(*builders)
+                logger.info("Build process complete.")
+                logger.info("Pushing Docker images asynchronously, this could take some time...")
+                await asyncio.gather(*pushers)
+                logger.info("Push process complete.")
 
         await self.wait_for_minio()
-        await self.push_to_minio()
+        # await self.push_to_minio()
 
         logger.info("Deploying Walkoff stack...")
 
         return_code = await deploy_compose(merged_compose)
+
+        if args.keys:
+            if await are_you_sure("You specified -k/--keys, which will print all newly created keys to stdout."):
+                print(f"walkoff_encryption_key:\t\t{wek.decode()}")
+                print(f"walkoff_internal_key:\t\t{wik.decode()}")
+                print(f"walkoff_postgres_key:\t\t{wpk.decode()}")
+                print(f"walkoff_minio_access_key:\t{wmak.decode()}")
+                print(f"walkoff_minio_secret_key:\t{wmsk.decode()}\n\n")
+
+        logger.info("Walkoff stack deployed, it may take a little time to converge. \n"
+                    "Use 'docker stack services walkoff' to check on Walkoff services. \n"
+                    "Web interface should be available at 'https://127.0.0.1:8080' once walkoff_resource_nginx is up.")
 
         return return_code
 
@@ -386,34 +463,59 @@ class Bootloader:
             logger.setLevel("DEBUG")
             docker_logger.setLevel("DEBUG")
 
-        logger.info("Removing Walkoff stack and related artifacts...")
-
-        proc = await asyncio.create_subprocess_exec("docker", "stack", "rm", "walkoff", stderr=asyncio.subprocess.PIPE,
-                                                    stdout=asyncio.subprocess.PIPE)
-
-        await log_proc_output(proc)
+        proc = await rm_stack("walkoff")
 
         # if not args.skipnetwork:
         #     logger.info("Waiting for containers to exit and network to be removed...")
         #     await exponential_wait(check_for_network, [self.docker_client], "Network walkoff_default still exists")
 
         if args.key:
-            resp = input("Deleting encryption key will render database unreadable, and therefore it will be cleared. "
-                         "This will delete all workflows, execution results, globals, users, roles, etc. "
-                         "Are you sure? (yes/no): ")
-            while resp.lower() not in ("yes", "no"):
-                resp = input("Please answer 'yes' or 'no': ")
-
-            if resp.lower() == "yes":
+            if await are_you_sure("Deleting encryption key will render database unreadable, so it will be cleared. "
+                                  "This will delete all workflows, execution results, globals, users, roles, etc. "):
                 await delete_encryption_key(self.docker_client, "walkoff_encryption_key")
                 await delete_encryption_key(self.docker_client, "walkoff_internal_key")
-                await delete_dir_contents("data/postgres")
+                await delete_encryption_key(self.docker_client, "walkoff_postgres_key")
+                await delete_dir_contents(static.POSTGRES_DATA_PATH)
 
         if args.registry:
-            await delete_dir_contents("data/registry")
-            await delete_dir_contents("data/minio/min_data")
+            await delete_dir_contents(static.REGISTRY_DATA_PATH)
+            await delete_dir_contents(static.MINIO_DATA_PATH)
+            await delete_encryption_key(self.docker_client, "walkoff_minio_access_key")
+            await delete_encryption_key(self.docker_client, "walkoff_minio_secret_key")
+
+        logger.info("Walkoff stack removed, it may take a little time to stop all services. "
+                    "It is OK if the walkoff_default network is not fully removed.")
 
         return proc.returncode
+
+    async def refresh(self):
+        parser = argparse.ArgumentParser(description="Rebuild a specific service and force it to update.")
+        parser.add_argument("-s", "--service",
+                            help="Name of the service to rebuild and update. "
+                                 "You can specify a prefix ('walkoff_app' or 'walkoff_core') "
+                                 "to rebuild all in that category.")
+
+        args = parser.parse_args(sys.argv[2:])
+
+        compose = parse_yaml(config.TMP_COMPOSE)['services']
+        service_yaml = compose.get(args.service)
+
+        if service_yaml:
+            if await are_you_sure("Forcing a service to update will disrupt any work it is currently doing. "
+                                  "It is not yet guaranteed that a service will pick back up where it left off. "):
+                if "build" in service_yaml:
+                    await build_image(self.docker_client, service_yaml["image"],
+                                      service_yaml["build"]["dockerfile"],
+                                      service_yaml["build"]["context"],
+                                      self.dockerignore)
+                    await push_image(self.docker_client, service_yaml["image"])
+
+                service_name = f"walkoff_{args.service}"
+                await force_service_update(self.docker_client, service_name, service_yaml["image"])
+        else:
+            services = list(compose.keys())
+            services.sort()
+            logger.exception(f"No such service, valid services: {services}.")
 
 
 if __name__ == "__main__":

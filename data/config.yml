@@ -4,8 +4,13 @@
 API_GATEWAY_URI: "http://core_api_gateway:8080"
 REDIS_URI: "redis://resource_redis:6379"
 MINIO: "resource_minio:9000"
+
+# Key locations
 ENCRYPTION_KEY_PATH: "/run/secrets/walkoff_encryption_key"
 INTERNAL_KEY_PATH: "/run/secrets/walkoff_internal_key"
+POSTGRES_KEY_PATH: "/run/secrets/walkoff_postgres_key"
+MINIO_ACCESS_KEY_PATH: "/run/secrets/walkoff_minio_access_key"
+MINIO_SECRET_KEY_PATH: "/run/secrets/walkoff_minio_secret_key"
 
 # Worker options
 MAX_WORKER_REPLICAS: "10"
@@ -16,8 +21,6 @@ WALKOFF_USERNAME: "internal_user"
 APPS_PATH: "./apps"
 APP_REFRESH: "60"
 SWARM_NETWORK: "walkoff_default"
-APP_PREFIX: "walkoff_app"
-STACK_PREFIX: "walkoff"
 DOCKER_REGISTRY: "127.0.0.1:5000"
 UMPIRE_HEARTBEAT: "1"
 
@@ -27,7 +30,6 @@ DB_HOST: "resource_postgres"
 SERVER_DB_NAME: "walkoff"
 EXECUTION_DB_NAME: "execution"
 DB_USERNAME: "walkoff"
-DB_PASSWORD: "walkoff"
 
 # App options
 MAX_APP_REPLICAS: "10"

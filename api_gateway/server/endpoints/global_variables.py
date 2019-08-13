@@ -47,22 +47,21 @@ global_variable_template_schema = GlobalVariableTemplateSchema()
 @jwt_required
 @paginate(global_variable_schema)
 def read_all_globals():
-    with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
-        key = f.read()
-        ret = []
-        query = current_app.running_context.execution_db.session.query(GlobalVariable).order_by(GlobalVariable.name).all()
+    key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
+    ret = []
+    query = current_app.running_context.execution_db.session.query(GlobalVariable).order_by(GlobalVariable.name).all()
 
-        if request.args.get('to_decrypt') == "false":
-            return query, HTTPStatus.OK
-        else:
-            for global_var in query:
-                to_read = auth_check(str(global_var.id_), "read", "global_variables")
-                if to_read:
-                    temp_var = deepcopy(global_var)
-                    temp_var.value = fernet_decrypt(key, global_var.value)
-                    ret.append(temp_var)
+    if request.args.get('to_decrypt') == "false":
+        return query, HTTPStatus.OK
+    else:
+        for global_var in query:
+            to_read = auth_check(str(global_var.id_), "read", "global_variables")
+            if to_read:
+                temp_var = deepcopy(global_var)
+                temp_var.value = fernet_decrypt(key, global_var.value)
+                ret.append(temp_var)
 
-            return ret, HTTPStatus.OK
+        return ret, HTTPStatus.OK
 
 
 @jwt_required
@@ -77,8 +76,8 @@ def read_global(global_var):
         if request.args.get('to_decrypt') == "false":
             return jsonify(global_json), HTTPStatus.OK
         else:
-            with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
-                return jsonify(fernet_decrypt(f.read(), global_json['value'])), HTTPStatus.OK
+            key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+            return jsonify(fernet_decrypt(key, global_json['value'])), HTTPStatus.OK
     else:
         return None, HTTPStatus.FORBIDDEN
 
@@ -111,8 +110,8 @@ def create_global():
         default_permissions("global_variables", global_id)
 
     try:
-        with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
-            data['value'] = fernet_encrypt(f.read(), data['value'])
+        key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+        data['value'] = fernet_encrypt(key, data['value'])
 
         global_variable = global_variable_schema.load(data)
         current_app.running_context.execution_db.session.add(global_variable)
@@ -139,8 +138,8 @@ def update_global(global_var):
             default_permissions("global_variables", global_id)
 
         try:
-            with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
-                data['value'] = fernet_encrypt(f.read(), data['value'])
+            key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+            data['value'] = fernet_encrypt(key, data['value'])
 
             global_variable_schema.load(data, instance=global_var)
             current_app.running_context.execution_db.session.commit()

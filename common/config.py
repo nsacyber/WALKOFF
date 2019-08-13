@@ -62,9 +62,18 @@ class Static:
     REDIS_WORKFLOW_CONTROL = "workflow-control"
     REDIS_WORKFLOW_CONTROL_GROUP = "workflow-control-group"
 
-    # API Gateway paths
+    # File paths
     API_PATH = Path("api_gateway") / "api"
     CLIENT_PATH = Path("api_gateway") / "client"
+
+    REDIS_DATA_PATH = Path("data") / "redis" / "red_data"
+    POSTGRES_DATA_PATH = Path("data") / "postgres" / "pg_data"
+    PORTAINER_DATA_PATH = Path("data") / "portainer" / "prt_data"
+    REGISTRY_DATA_PATH = Path("data") / "registry" / "reg_data"
+    MINIO_DATA_PATH = Path("data") / "minio" / "min_data"
+
+    SECRET_BASE_PATH = Path("/") / "run" / "secrets"
+
     SWAGGER_URL = "/walkoff/api/docs"
 
     def set_local_hostname(self, hostname):
@@ -83,19 +92,24 @@ class Config:
     # Common options
     API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", f"http://{Static.API_GATEWAY_SERVICE}:8080")
     REDIS_URI = os.getenv("REDIS_URI", f"redis://{Static.REDIS_SERVICE}:6379")
-    ENCRYPTION_KEY_PATH = os.getenv("ENCRYPTION_KEY_PATH", "/run/secrets/walkoff_encryption_key")
-    INTERNAL_KEY_PATH = os.getenv("INTERNAL_KEY_PATH", "/run/secrets/walkoff_internal_key")
     MINIO = os.getenv("MINIO", f"{Static.MINIO_SERVICE}:9000")
+
+    # Key locations
+    ENCRYPTION_KEY_PATH = os.getenv("ENCRYPTION_KEY_PATH", Static.SECRET_BASE_PATH / "walkoff_encryption_key")
+    INTERNAL_KEY_PATH = os.getenv("INTERNAL_KEY_PATH", Static.SECRET_BASE_PATH / "walkoff_internal_key")
+    POSTGRES_KEY_PATH = os.getenv("POSTGRES_KEY_PATH", Static.SECRET_BASE_PATH / "walkoff_postgres_key")
+    MINIO_ACCESS_KEY_PATH = os.getenv("MINIO_SECRET_KEY_PATH", Static.SECRET_BASE_PATH / "walkoff_minio_access_key")
+    MINIO_SECRET_KEY_PATH = os.getenv("MINIO_SECRET_KEY_PATH", Static.SECRET_BASE_PATH / "walkoff_minio_secret_key")
 
     # Worker options
     MAX_WORKER_REPLICAS = os.getenv("MAX_WORKER_REPLICAS", "10")
     WORKER_TIMEOUT = os.getenv("WORKER_TIMEOUT", "30")
     WALKOFF_USERNAME = os.getenv("WALKOFF_USERNAME", '')
-    WALKOFF_PASSWORD = os.getenv("WALKOFF_PASSWORD", '')
 
     # Umpire options
     APPS_PATH = os.getenv("APPS_PATH", "./apps")
     APP_REFRESH = os.getenv("APP_REFRESH", "60")
+    SWARM_NETWORK = os.getenv("SWARM_NETWORK", "walkoff_default")
     DOCKER_REGISTRY = os.getenv("DOCKER_REGISTRY", "127.0.0.1:5000")
     UMPIRE_HEARTBEAT = os.getenv("UMPIRE_HEARTBEAT", "1")
 
@@ -105,7 +119,6 @@ class Config:
     SERVER_DB_NAME = os.getenv("SERVER_DB", "walkoff")
     EXECUTION_DB_NAME = os.getenv("EXECUTION_DB", "execution")
     DB_USERNAME = os.getenv("DB_USERNAME", "")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
     # Bootloader options
     BASE_COMPOSE = os.getenv("BASE_COMPOSE", "./bootloader/base-compose.yml")
@@ -136,6 +149,17 @@ class Config:
         for key, value in y.items():
             if hasattr(self, key.upper()) and not os.getenv(key.upper()):
                 setattr(self, key.upper(), value)
+
+    def dump_config(self, file):
+        with open(file, 'w') as f:
+            yaml.safe_dump(vars(self), f)
+
+    @staticmethod
+    def get_from_file(file_path, mode='r'):
+        with open(file_path, mode) as f:
+            s = f.read().strip()
+
+        return s
 
 
 config = Config()

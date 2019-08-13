@@ -2,14 +2,18 @@
 # Set the CONFIG_PATH environment variable to point to this file in that case.
 
 # Common options
-API_GATEWAY_URI: "http://localhost:8081"
-MINIO: "localhost:9001"
-
 # If API Gateway is being ran outside of the docker network, containers inside the network will need the IP of the docker host.
 # API_GATEWAY_URI: "http://ip_of_host_on_docker0:8081"
+API_GATEWAY_URI: "http://localhost:8081"
 REDIS_URI: "redis://localhost:6379"
-ENCRYPTION_KEY_PATH: "data/local.key"
+MINIO: "localhost:9001"
+
+# Key locations
+ENCRYPTION_KEY_PATH: "/run/secrets/walkoff_encryption_key"
 INTERNAL_KEY_PATH: "/run/secrets/walkoff_internal_key"
+POSTGRES_KEY_PATH: "/run/secrets/walkoff_postgres_key"
+MINIO_ACCESS_KEY_PATH: "/run/secrets/walkoff_minio_access_key"
+MINIO_SECRET_KEY_PATH: "/run/secrets/walkoff_minio_secret_key"
 
 # Worker options
 MAX_WORKER_REPLICAS: "10"
@@ -20,8 +24,6 @@ WALKOFF_USERNAME: "internal_user"
 APPS_PATH: "./apps"
 APP_REFRESH: "60"
 SWARM_NETWORK: "walkoff_default"
-APP_PREFIX: "walkoff_app"
-STACK_PREFIX: "walkoff"
 DOCKER_REGISTRY: "127.0.0.1:5000"
 UMPIRE_HEARTBEAT: "2"
 
@@ -31,7 +33,6 @@ DB_HOST: "localhost"
 SERVER_DB_NAME: "walkoff"
 EXECUTION_DB_NAME: "execution"
 DB_USERNAME: "walkoff"
-DB_PASSWORD: "walkoff"
 
 # App options
 MAX_APP_REPLICAS: "2"
