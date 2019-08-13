@@ -10,7 +10,8 @@ from api_gateway.serverdb import add_user
 from api_gateway.serverdb.user import User
 
 with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(id=user_id).first())
-
+import logging
+logger = logging.getLogger(__name__)
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
@@ -18,7 +19,8 @@ def read_all_users():
     page = request.args.get('page', 1, type=int)
     users = []
     for user in User.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items:
-        if user.username != "internal_user":
+        # check for internal user
+        if user.id != 1:
             users.append(user.as_json())
     return users, HTTPStatus.OK
 
@@ -50,24 +52,33 @@ def create_user():
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 @with_user('read', 'user_id')
 def read_user(user_id):
-    if user_id.username != "internal_user":
+    # check for internal user
+    if user_id.id != 1:
         return user_id.as_json(), HTTPStatus.OK
     return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required
+@permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
 @with_user('update', 'user_id')
 def update_user(user_id):
     data = request.get_json()
     current_user = get_jwt_identity()
 
-    if user_id.username == "internal_user":
+    # check for internal user
+    if user_id.id == 1:
         return None, HTTPStatus.FORBIDDEN
 
     if user_id.id == current_user:
         return update_user_fields(data, user_id)
     else:
-        response = role_update_user_fields(data, user_id, update=True)
+        # check for super_admin, allows ability to update username/password but not roles/active
+        if user_id.id == 2:
+            user_id.set_roles([2])
+            user_id.active = True
+            response = update_user_fields(data, user_id)
+        else:
+            response = role_update_user_fields(data, user_id, update=True)
         if isinstance(response, tuple) and response[1] == HTTPStatus.FORBIDDEN:
             current_app.logger.error(f"User {current_user} does not have permission to update user {user_id.id}")
             return Problem.from_crud_resource(
@@ -79,19 +90,19 @@ def update_user(user_id):
             return response
 
 
-@admin_required
+@permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
 def role_update_user_fields(data, user, update=False):
-    if user.username != "internal_user":
-        if 'roles' in data:
-            user.set_roles([role['id'] for role in data['roles']])
-        if 'active' in data:
-            user.active = data['active']
-        if update:
-            return update_user_fields(data, user)
+    # ensures inability to update roles for super_admin
+    if 'roles' in data and user.id != 2:
+        user.set_roles([role['id'] for role in data['roles']])
+    if 'active' in data and user.id != 2:
+        user.active = data['active']
+    if update:
+        return update_user_fields(data, user)
 
 
 def update_user_fields(data, user):
-    if user.username != "internal_user":
+    if user.id != 1:
         original_username = str(user.username)
         if 'username' in data and data['username']:
             user_db = User.query.filter_by(username=data['username']).first()
@@ -121,13 +132,23 @@ def update_user_fields(data, user):
 @permissions_accepted_for_resources(ResourcePermissions('users', ['delete']))
 @with_user('delete', 'user_id')
 def delete_user(user_id):
-    if user_id.id != get_jwt_identity() and user_id.username != "internal_user":
+    if user_id.id != get_jwt_identity() and user_id.id != 1 and user_id.id != 2:
         db.session.delete(user_id)
         db.session.commit()
         current_app.logger.info(f"User {user_id.username} deleted")
         return None, HTTPStatus.NO_CONTENT
     else:
-        current_app.logger.error(f"Could not delete user {user_id.id}. User is current user.")
-        return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
-                                          'Current user cannot delete self.')
-
+        if user_id.id == get_jwt_identity():
+            current_app.logger.error(f"Could not delete user {user_id.id}. User is current user.")
+            return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
+                                              'Current user cannot delete self.')
+        if user_id.id == 2:
+            current_app.logger.error(f"Could not delete user {user_id.username}. "
+                                     f"You do not have permission to delete Super Admin.")
+            return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
+                                              'A user cannot delete Super Admin.')
+        if user_id.id == 1:
+            current_app.logger.error(f"Could not delete user {user_id.username}. "
+                                     f"You do not have permission to delete WALKOFF's internal user.")
+            return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
+                                              "A user cannot delete WALKOFF's internal user.")

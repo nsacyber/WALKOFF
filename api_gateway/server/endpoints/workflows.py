@@ -114,7 +114,6 @@ def import_workflow_and_regenerate_ids(workflow_json):
         return unique_constraint_problem('workflow', 'import', workflow_json['name'])
 
 
-# TODO: ADD PERMISSIONS UI TO COPY WORKFLOW (?)
 @permissions_accepted_for_resources(ResourcePermissions('workflows', ['create']))
 def copy_workflow(workflow, permissions, workflow_name=None):
     old_json = workflow_schema.dump(workflow)

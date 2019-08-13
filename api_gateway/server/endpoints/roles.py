@@ -17,13 +17,14 @@ with_role = with_resource_factory('role', lambda role_id: Role.query.filter_by(i
 def read_all_roles():
     roles = []
     for role in Role.query.all():
-        if role.id != 2:
+        # hides internal and super_admin roles
+        if role.id != 1 and role.id != 2:
             roles.append(role.as_json())
     return roles, HTTPStatus.OK
 
 
 @jwt_required
-@admin_required
+@permissions_accepted_for_resources(ResourcePermissions('roles', ['create']))
 def create_role():
     json_data = request.get_json()
     if not Role.query.filter_by(name=json_data['name']).first():
@@ -51,17 +52,18 @@ def create_role():
 @permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
 @with_role('read', 'role_id')
 def read_role(role_id):
-    if role_id.id != 2:
+    # check for internal or super_admin
+    if role_id.id != 1 or role_id.id != 2:
         return role_id.as_json(), HTTPStatus.OK
     else:
         return None, HTTPStatus.FORBIDDEN
 
 
 @jwt_required
-@admin_required
+@permissions_accepted_for_resources(ResourcePermissions('roles', ['update']))
 @with_role('update', 'role_id')
 def update_role(role_id):
-    if role_id.id != 2:
+    if role_id.id != 1 and role_id.id != 2:
         json_data = request.get_json()
         if 'name' in json_data:
             new_name = json_data['name']
@@ -81,10 +83,10 @@ def update_role(role_id):
 
 
 @jwt_required
-@admin_required
+@permissions_accepted_for_resources(ResourcePermissions('roles', ['delete']))
 @with_role('delete', 'role_id')
 def delete_role(role_id):
-    if role_id.id != 2:
+    if role_id.id != 1 or role_id.id != 2:
         clear_resources_for_role(role_id.name)
         db.session.delete(role_id)
         db.session.commit()

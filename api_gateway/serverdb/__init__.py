@@ -8,7 +8,7 @@ from api_gateway.serverdb.user import User
 # TODO: Migrate this all to SQLAlchemy for the sanic migration. Probably combine walkoff and execution dbs
 logger = logging.getLogger(__name__)
 
-default_resource_permissions_admin = [
+default_resource_permissions_internal_user = [
     {"name": "app_apis", "permissions": ["create", "read", "update", "delete"]},
     {"name": "settings", "permissions": ["read", "update"]},
     {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
@@ -21,7 +21,20 @@ default_resource_permissions_admin = [
     {"name": "users", "permissions": ["create", "read", "update", "delete"]}
 ]
 
-default_resource_permissions_internal_user = [
+default_resource_permissions_super_admin = [
+    {"name": "app_apis", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "settings", "permissions": ["read", "update"]},
+    {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "workflow_variables", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "workflows", "permissions": ["create", "read", "update", "delete", "execute"]},
+    {"name": "dashboards", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "workflowstatus", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
+    {"name": "users", "permissions": ["create", "read", "update", "delete"]}
+]
+
+default_resource_permissions_admin = [
     {"name": "app_apis", "permissions": ["create", "read", "update", "delete"]},
     {"name": "settings", "permissions": ["read", "update"]},
     {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
@@ -63,26 +76,38 @@ default_resource_permissions_workflow_operator = [
 default_resources = ['app_apis', 'settings', 'global_variables', 'workflows', 'roles', 'scheduler', 'users']
 
 
-def initialize_default_resources_admin():
-    """Initializes the default resources for an admin user"""
-    admin = Role.query.filter(Role.id == 1).first()
-    if not admin:
-        admin = Role("admin", description="Placeholder description", resources=default_resource_permissions_admin)
-        db.session.add(admin)
-    else:
-        admin.set_resources(default_resource_permissions_admin)
-    db.session.commit()
-
-
 def initialize_default_resources_internal_user():
     """Initializes the default resources for an internal user"""
-    internal_user = Role.query.filter(Role.id == 2).first()
+    internal_user = Role.query.filter(Role.id == 1).first()
     if not internal_user:
         internal_user = Role("internal_user", description="Placeholder description",
                              resources=default_resource_permissions_internal_user)
         db.session.add(internal_user)
     else:
         internal_user.set_resources(default_resource_permissions_internal_user)
+    db.session.commit()
+
+
+def initialize_default_resources_super_admin():
+    """Initializes the default resources for an admin user"""
+    super_admin = Role.query.filter(Role.id == 2).first()
+    if not super_admin:
+        super_admin = Role("super_admin", description="Placeholder description",
+                           resources=default_resource_permissions_super_admin)
+        db.session.add(super_admin)
+    else:
+        super_admin.set_resources(default_resource_permissions_super_admin)
+    db.session.commit()
+
+
+def initialize_default_resources_admin():
+    """Initializes the default resources for an admin user"""
+    admin = Role.query.filter(Role.id == 3).first()
+    if not admin:
+        admin = Role("admin", description="Placeholder description", resources=default_resource_permissions_admin)
+        db.session.add(admin)
+    else:
+        admin.set_resources(default_resource_permissions_admin)
     db.session.commit()
 
 
