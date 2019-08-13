@@ -162,7 +162,6 @@ def read_all_workflows():
 @with_workflow('read', 'workflow')
 def read_workflow(workflow):
     workflow_name = workflow.name
-
     to_read = auth_check(workflow_name, "read", "workflows")
 
     if to_read:

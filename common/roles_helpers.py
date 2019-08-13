@@ -74,11 +74,10 @@ def update_permissions(resource_type, resource_indicator, new_permissions):
 
 # sets default permissions for given resource type
 def default_permissions(resource_type, resource_indicator, data=None):
-    roles = db.session.query(Role).all()
-
     if data:
         ret = []
 
+    roles = db.session.query(Role).all()
     for role in roles:
         if role.name != "internal_user":
             for resource in db.session.query(Role).filter(Role.name == role.name).first().resources:
@@ -88,7 +87,7 @@ def default_permissions(resource_type, resource_indicator, data=None):
                                             if permission.name != "create"]
                         if "delete" in role_permissions:
                             role_permissions = ['read', 'update', 'delete', 'execute']
-                        if "execute" in role_permissions:
+                        elif "execute" in role_permissions:
                             role_permissions = ['read', 'execute']
                         if data:
                             to_append = {
@@ -103,7 +102,7 @@ def default_permissions(resource_type, resource_indicator, data=None):
                                             if permission.name != "create"]
                         if "delete" in role_permissions:
                             role_permissions = ['read', 'update', 'delete', 'execute']
-                        if "execute" in role_permissions:
+                        elif "execute" in role_permissions:
                             role_permissions = ['read', 'execute']
                         if data:
                             to_append = {
@@ -113,6 +112,6 @@ def default_permissions(resource_type, resource_indicator, data=None):
                             ret.append(to_append)
                         resource.operations = [Operation(resource_indicator, role_permissions)]
                         db.session.commit()
-    logger.info(f"THIS IS THE RETURN -> {ret}")
+
     if data:
         data["permissions"] = ret
