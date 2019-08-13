@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, OnInit, OnDestroy} from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, OnDestroy, ViewChild} from '@angular/core';
 import 'rxjs/Rx';
 import * as Fuse from 'fuse.js';
 import { saveAs } from 'file-saver';
@@ -26,6 +26,7 @@ import * as CodeMirror from 'codemirror'
 import { createTree } from 'jquery.fancytree';
 import 'jquery.fancytree/dist/modules/jquery.fancytree.edit';
 import 'jquery.fancytree/dist/modules/jquery.fancytree.filter';
+import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
 
 @Component({
 	selector: 'manage-app-component',
@@ -37,15 +38,18 @@ import 'jquery.fancytree/dist/modules/jquery.fancytree.filter';
 	providers: [AuthService, GlobalsService, SettingsService],
 })
 export class ManageAppComponent implements OnInit, OnDestroy {
+    @ViewChild('editorArea', { static: false }) editorArea: CodemirrorComponent;
+
 	workflowsLoaded: boolean = false;
 	workflows: Workflow[] = [];
 	eventSource: any;
 	filterQuery: FormControl = new FormControl();
-	filteredWorkflows: Workflow[] = [];
+    filteredWorkflows: Workflow[] = [];
 
     apps: AppApi[];
     currentApp: AppApi;
     currentFile: string;
+    orginalContent: string;
     content: string;
     filesLoaded = false;
     fileTree: any;
@@ -54,6 +58,8 @@ export class ManageAppComponent implements OnInit, OnDestroy {
         lineNumbers: true,
         //theme: 'ttcn'
     }
+
+    warningCallback: any;
 
 	constructor(
 		private playbookService: PlaybookService, private authService: AuthService,
@@ -104,38 +110,78 @@ export class ManageAppComponent implements OnInit, OnDestroy {
         })
     }
 
+	ngOnDestroy(): void {}
+
+    get fileChanged(): boolean {
+        return this.currentFile && this.orginalContent.localeCompare(this.content) != 0;
+    }
+
+    canDeactivate(): Promise<boolean> | boolean {
+        return this.checkUnsavedChanges(); 
+    }
+
+    async checkUnsavedChanges() : Promise<boolean> {
+        if (!this.fileChanged) return true;
+        return this.utils.confirm('Unsaved changes will be lost. Are you sure?', { alwaysResolve: true });
+    }
+
     async createFile(root: string) {
+        if (!await this.checkUnsavedChanges()) return;
+
         const path = root + await this.utils.prompt('Enter name for new file');
         await this.appService.putFile(this.currentApp, path, '')
         await this.fileTree.reload(await this.appService.listFiles(this.currentApp))
+
+        this.selectTreeNode(path);
+        this.loadFile(path, false)
         this.toastrService.success(`Created <b>${ path }</b>`);
     }
+
+    selectTreeNode(path: string) {
+        const newNode = this.fileTree.findFirst(((n) => path.localeCompare(n.data.path) == 0))
+        this.fileTree.activateKey(newNode.key, { noEvents: true });
+    }
     
-    loadFile(path: string) {
+    async loadFile(path: string, checkUnsaved: boolean = true) {
+        if(checkUnsaved && !await this.checkUnsavedChanges()) 
+            return this.selectTreeNode(this.currentFile);
+
         const filetype = (CodeMirror as any).findModeByFileName(path);
         this.appService.getFile(this.currentApp, path).then(content => {
-            this.content = content;
+            this.orginalContent = this.content = content;
             this.currentFile = path;
             this.options.mode =  filetype ? filetype.mode : 'null';
+            setTimeout(() => {
+                this.editorArea.codeMirror.getDoc().clearHistory();
+                this.editorArea.codeMirrorGlobal.commands.save = (instance) => {
+                    if (instance == this.editorArea.codeMirror)
+                        this.saveFile();
+                }
+            });
         });
     }
 
     saveFile() {
+        if (!this.fileChanged) return;
+        this.orginalContent = this.content;
         this.appService.putFile(this.currentApp, this.currentFile, this.content).then(() => {
             this.toastrService.success(`Saved <b>${ this.currentFile }</b>`);
         });
     }
 
-    buildImage() {
-        this.appService.buildImage(this.currentApp).then(() => {
-            this.toastrService.success(`Building App <b>${this.currentApp.name}</b>`);
-        })
+    async buildImage() {
+        if (!await this.checkUnsavedChanges()) return;
+        this.toastrService.success(`Building App <b>${this.currentApp.name}</b>`);
+        this.appService.buildImage(this.currentApp).then(() => { })
     }
 
-	/**
-	 * Closes our SSEs on component destroy.
-	 */
-	ngOnDestroy(): void {}
+    undo() {
+        this.editorArea.codeMirror.execCommand('undo')
+    }
+
+    redo() {
+        this.editorArea.codeMirror.execCommand('redo')
+    }
 
 	manageApp(app: AppApi): void {
 		this.router.navigateByUrl(`/apps/${ app.id }`);

@@ -102,13 +102,13 @@ export class UtilitiesService {
 		})
 	}
 
-	confirm(message: string, options: {} = {}) : Promise<boolean> {
+	confirm(message: string, options: any = {}) : Promise<boolean> {
 		return new Promise((resolve) => {
 			const defaults = {
 				message,
 				backdrop: true,
 				className: "mt-5 pt-5",
-				callback: (result) => { if(result) resolve(result) } 
+				callback: (result) => { if(result || options.alwaysResolve) resolve(result) } 
 			}
 			bootbox.confirm(Object.assign({}, defaults, options));
 		})
