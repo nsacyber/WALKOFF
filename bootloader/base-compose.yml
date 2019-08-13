@@ -62,7 +62,7 @@ services:
       placement:
         constraints: [node.role==manager]
     volumes:
-      - ./data/postgres/pg_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
 
   resource_portainer:
     image: "portainer/portainer"
@@ -86,3 +86,6 @@ secrets:
 networks:
   walkoff_default:
     external: true
+
+volumes:
+  postgres-data:

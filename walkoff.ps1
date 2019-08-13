@@ -27,6 +27,7 @@ function init {
     # Create encryption key for encrypting globals, server data.
     Write-Host -NoNewline "Creating secret key for encrypting Walkoff data: "
     docker run --rm python:3.7.4-slim-buster python -c "import os, base64; print(base64.urlsafe_b64encode(os.urandom(32)))" | docker secret create walkoff_encryption_key -
+    docker run --rm python:3.7.4-slim-buster python -c "import os, base64; print(base64.urlsafe_b64encode(os.urandom(32)))" | docker secret create walkoff_internal_key -
 
     if (-Not (Test-Path '.\data\portainer' -PathType Container)) {
         Write-Host "Creating directory for persisting Portainer data: "
@@ -86,6 +87,7 @@ function down {
 
     Write-Host -NoNewline "Removing secret walkoff_encryption_key: "
     docker secret rm walkoff_encryption_key
+    docker secret rm walkoff_internal_key
 
     Write-Host "Removing contents of .\data\registry"
     Remove-Item -recurse ".\data\registry\*"
