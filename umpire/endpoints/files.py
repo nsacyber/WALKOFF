@@ -120,7 +120,6 @@ async def update_file(request: UpdateFile):
     success, message = await MinioApi.update_file(request.app_name, request.app_version, request.file_path,
                                                   file_data_bytes, file_size)
     if success:
-        await MinioApi.save_file(request.app_name, request.app_version)
         return f"You have updated {request.file_path}: {message}"
     else:
         raise HTTPException(status_code=400, detail="FILE NOT FOUND")

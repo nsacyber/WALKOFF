@@ -60,14 +60,23 @@ class MinioApi:
             with docker_context(Path(context_dir)) as context:
                 logger.info("Sending image to be built")
                 dockerfile = "./Dockerfile"
-                log_stream = await docker_client.images.build(fileobj=context, tag=repo, rm=True,
-                                                              forcerm=True, pull=True, stream=True,
-                                                              path_dockerfile=dockerfile,
-                                                              encoding="application/x-tar")
-                logger.info("Docker image building")
-                await stream_docker_log(log_stream)
-                logger.info("Docker image Built")
-                await push_image(docker_client, repo)
+                try:
+                    log_stream = await docker_client.images.build(fileobj=context, tag=repo, rm=True,
+                                                                  forcerm=True, pull=True, stream=True,
+                                                                  path_dockerfile=dockerfile,
+                                                                  encoding="application/x-tar")
+                    logger.info("Docker image building")
+                    await stream_docker_log(log_stream)
+                    logger.info("Docker image Built")
+                    # if await push_image(docker_client, repo):
+                    #     return "Docker image built and pushed successfully."
+                    success = await push_image(docker_client, repo)
+                    if success:
+                        return True, "Successfully built and pushed image"
+                    else:
+                        return False, "Failed to push image"
+                except Exception as e:
+                    return False, str(e)
 
     @staticmethod
     async def list_files(app_name, version):
