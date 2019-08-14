@@ -101,7 +101,7 @@ def import_workflow_and_regenerate_ids(workflow_json):
     if new_permissions:
         update_permissions("workflows", workflow_json['name'], new_permissions=new_permissions)
     else:
-        default_permissions("workflows", workflow_json['name'])
+        default_permissions("workflows", workflow_json['name'], data=workflow_json)
 
     try:
         new_workflow = workflow_schema.load(workflow_json)
@@ -187,7 +187,10 @@ def update_workflow(workflow):
 
     to_update = auth_check(old_name, "update", "workflows")
     if to_update:
-        auth_check(old_name, "update", "workflows", new_name=new_name, updated_roles=new_permissions)
+        if new_permissions:
+            auth_check(old_name, "update", "workflows", new_name=new_name, updated_roles=new_permissions)
+        else:
+            default_permissions("workflows", new_name, data=data)
         try:
             workflow_schema.load(data, instance=workflow)
             current_app.running_context.execution_db.session.commit()

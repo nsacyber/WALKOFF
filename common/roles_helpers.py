@@ -28,9 +28,9 @@ def auth_check(to_check, permission, resource_name, new_name=None, updated_roles
                                     return False
                                 else:
                                     if permission == "delete":
-                                        delete_operation(resource_name, to_check, permission)
+                                        delete_operation(resource_name, to_check)
                                     if updated_roles:
-                                        delete_operation(resource_name, to_check, permission)
+                                        delete_operation(resource_name, to_check)
                                         if new_name:
                                             update_permissions(resource_name, new_name, new_permissions=updated_roles)
                                         else:
@@ -42,7 +42,7 @@ def auth_check(to_check, permission, resource_name, new_name=None, updated_roles
 
 
 # deletes operation for specific resource in all roles
-def delete_operation(resource_name, to_check, permission):
+def delete_operation(resource_name, to_check):
     roles = db.session.query(Role).filter(Role.id != 1).all()
     for role in roles:
         for resource_elem in role.resources:
@@ -57,6 +57,7 @@ def delete_operation(resource_name, to_check, permission):
 
 # updates permissions for specific resource
 def update_permissions(resource_type, resource_indicator, new_permissions):
+    # ensures super admin will always have access to the resource
     new_permissions = new_permissions + [{"role": "super_admin", "permissions": ["delete", "execute", "read", "update"]}]
     if new_permissions:
         for role_elem in new_permissions:
@@ -77,7 +78,7 @@ def update_permissions(resource_type, resource_indicator, new_permissions):
 
 
 # sets default permissions for given resource type
-def default_permissions(resource_type, resource_indicator, data=None):
+def default_permissions(resource_type, resource_indicator, data):
     if data:
         ret = []
 
@@ -90,7 +91,7 @@ def default_permissions(resource_type, resource_indicator, data=None):
                                         if permission.name != "create"]
                     if "delete" in role_permissions:
                         role_permissions = ['read', 'update', 'delete', 'execute']
-                    elif "execute" in role_permissions:
+                    elif "execute" in role_permissions and "read" in role_permissions:
                         role_permissions = ['read', 'execute']
                     if data and role.id != 1 and role.id != 2:
                         to_append = {

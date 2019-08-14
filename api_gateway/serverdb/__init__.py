@@ -63,7 +63,7 @@ default_resource_permissions_workflow_developer = [
 default_resource_permissions_workflow_operator = [
     {"name": "app_apis", "permissions": ["read"]},
     {"name": "settings", "permissions": ["read"]},
-    {"name": "global_variables", "permissions": ["read"]},
+    {"name": "global_variables", "permissions": ["execute"]},
     {"name": "workflow_variables", "permissions": ["read", "update"]},
     {"name": "workflows", "permissions": ["read"]},
     {"name": "dashboards", "permissions": ["read", "update"]},
