@@ -1,4 +1,5 @@
 import uuid
+import logging
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -13,6 +14,7 @@ from umpire.app_repo import AppRepo
 BUILD_STATUS_GLOB = "umpire_api_build"
 
 router = APIRouter()
+logger = logging.getLogger("Umpire")
 
 
 # GET http://localhost:2828/build
@@ -38,7 +40,15 @@ class BuildImage(BaseModel):
 # Creates a build for a specified WALKOFF app/version number and sets build status in redis keyed by UUID
 @router.post("/")
 async def build_image(request: BuildImage):
-    await MinioApi.build_image(request.app_name, request.app_version)
+    success, message = await MinioApi.build_image(request.app_name, request.app_version)
+
+    if success:
+        try:
+            saved = await MinioApi.save_file(request.app_name, request.app_version)
+        except Exception as e:
+            return {"build_id": "None", "status": "Failed to save changes locally."}
+    else:
+        return {"build_id": "None", "status": message}
 
     async with aiohttp.ClientSession() as session:
         app_repo = await AppRepo.create(config.APPS_PATH, session)
@@ -48,7 +58,7 @@ async def build_image(request: BuildImage):
     build_id = request.app_name + "." + build_id
     async with connect_to_redis_pool(config.REDIS_URI) as conn:
         await conn.execute('set', redis_key, "BUILDING")
-        ret = {"build_id": build_id}
+        ret = {"build_id": build_id, "status": "Success"}
         return ret
 
 # GET http://localhost:2828/build/build_id

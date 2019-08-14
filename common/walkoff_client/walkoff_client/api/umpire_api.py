@@ -133,7 +133,7 @@ class UmpireApi(object):
             ['application/json'])  # noqa: E501
 
         # Authentication setting
-        auth_settings = []  # noqa: E501
+        auth_settings = ['AuthenticationToken']  # noqa: E501
 
         return self.api_client.call_api(
             '/umpire/build/{app_name}/{app_version}', 'POST',
@@ -239,7 +239,7 @@ class UmpireApi(object):
             ['application/json'])  # noqa: E501
 
         # Authentication setting
-        auth_settings = []  # noqa: E501
+        auth_settings = ['AuthenticationToken']  # noqa: E501
 
         return self.api_client.call_api(
             '/umpire/build/{build_id}', 'POST',
@@ -337,7 +337,7 @@ class UmpireApi(object):
             ['application/json'])  # noqa: E501
 
         # Authentication setting
-        auth_settings = []  # noqa: E501
+        auth_settings = ['AuthenticationToken']  # noqa: E501
 
         return self.api_client.call_api(
             '/umpire/build', 'GET',
@@ -459,7 +459,7 @@ class UmpireApi(object):
             ['application/json'])  # noqa: E501
 
         # Authentication setting
-        auth_settings = []  # noqa: E501
+        auth_settings = ['AuthenticationToken']  # noqa: E501
 
         return self.api_client.call_api(
             '/umpire/file/{app_name}/{app_version}', 'GET',
@@ -573,7 +573,7 @@ class UmpireApi(object):
             ['application/json'])  # noqa: E501
 
         # Authentication setting
-        auth_settings = []  # noqa: E501
+        auth_settings = ['AuthenticationToken']  # noqa: E501
 
         return self.api_client.call_api(
             '/umpire/files/{app_name}/{app_version}', 'GET',
@@ -687,7 +687,7 @@ class UmpireApi(object):
             ['application/json'])  # noqa: E501
 
         # Authentication setting
-        auth_settings = []  # noqa: E501
+        auth_settings = ['AuthenticationToken']  # noqa: E501
 
         return self.api_client.call_api(
             '/umpire/save/{app_name}/{app_version}', 'POST',
@@ -797,7 +797,7 @@ class UmpireApi(object):
             ['application/json'])  # noqa: E501
 
         # Authentication setting
-        auth_settings = []  # noqa: E501
+        auth_settings = ['AuthenticationToken']  # noqa: E501
 
         return self.api_client.call_api(
             '/umpire/file_upload', 'POST',

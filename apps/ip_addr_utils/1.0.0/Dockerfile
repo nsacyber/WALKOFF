@@ -1,5 +1,5 @@
 # Use the Walkoff App SDK as a base image
-FROM 127.0.0.1:5000/walkoff_app_sdk as base
+FROM python:3.7.4-slim-buster as base
 
 # Stage - Install/build Python dependencies
 FROM base as builder
@@ -21,6 +21,8 @@ RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.t
 # Stage - Copy pip packages and source files
 FROM base
 
+COPY --from=127.0.0.1:5000/walkoff_app_sdk /usr/local /usr/local
+COPY --from=127.0.0.1:5000/walkoff_app_sdk /app /app
 COPY --from=builder /install /usr/local
 COPY src /app
 

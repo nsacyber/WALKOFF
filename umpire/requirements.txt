@@ -10,3 +10,4 @@ six
 uvicorn
 tenacity
 pydantic
+email-validator

@@ -20,15 +20,21 @@ Builds image in Minio
 
 ### Example
 
+* Bearer (JWT) Authentication (AuthenticationToken):
 ```python
 from __future__ import print_function
 import time
 import walkoff_client
 from walkoff_client.rest import ApiException
 from pprint import pprint
+configuration = walkoff_client.Configuration()
+# Configure Bearer authorization (JWT): AuthenticationToken
+configuration.access_token = 'YOUR_BEARER_TOKEN'
 
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
-api_instance = walkoff_client.UmpireApi()
+api_instance = walkoff_client.UmpireApi(walkoff_client.ApiClient(configuration))
 app_name = 'app_name_example' # str | The name of the app to list.
 app_version = 'app_version_example' # str | The version number of the app to list.
 
@@ -53,7 +59,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[AuthenticationToken](../README.md#AuthenticationToken)
 
 ### HTTP request headers
 
@@ -75,15 +81,21 @@ Gets build status given a specific ID
 
 ### Example
 
+* Bearer (JWT) Authentication (AuthenticationToken):
 ```python
 from __future__ import print_function
 import time
 import walkoff_client
 from walkoff_client.rest import ApiException
 from pprint import pprint
+configuration = walkoff_client.Configuration()
+# Configure Bearer authorization (JWT): AuthenticationToken
+configuration.access_token = 'YOUR_BEARER_TOKEN'
 
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
-api_instance = walkoff_client.UmpireApi()
+api_instance = walkoff_client.UmpireApi(walkoff_client.ApiClient(configuration))
 build_id = 'build_id_example' # str | The name of the app to list.
 
 try:
@@ -106,7 +118,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[AuthenticationToken](../README.md#AuthenticationToken)
 
 ### HTTP request headers
 
@@ -128,15 +140,21 @@ Gets build status of all current build
 
 ### Example
 
+* Bearer (JWT) Authentication (AuthenticationToken):
 ```python
 from __future__ import print_function
 import time
 import walkoff_client
 from walkoff_client.rest import ApiException
 from pprint import pprint
+configuration = walkoff_client.Configuration()
+# Configure Bearer authorization (JWT): AuthenticationToken
+configuration.access_token = 'YOUR_BEARER_TOKEN'
 
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
-api_instance = walkoff_client.UmpireApi()
+api_instance = walkoff_client.UmpireApi(walkoff_client.ApiClient(configuration))
 
 try:
     # Gets build status of all current build
@@ -155,7 +173,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-No authorization required
+[AuthenticationToken](../README.md#AuthenticationToken)
 
 ### HTTP request headers
 
@@ -177,15 +195,21 @@ Get contents of specified file.
 
 ### Example
 
+* Bearer (JWT) Authentication (AuthenticationToken):
 ```python
 from __future__ import print_function
 import time
 import walkoff_client
 from walkoff_client.rest import ApiException
 from pprint import pprint
+configuration = walkoff_client.Configuration()
+# Configure Bearer authorization (JWT): AuthenticationToken
+configuration.access_token = 'YOUR_BEARER_TOKEN'
 
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
-api_instance = walkoff_client.UmpireApi()
+api_instance = walkoff_client.UmpireApi(walkoff_client.ApiClient(configuration))
 app_name = 'app_name_example' # str | The name of the app to list.
 app_version = 'app_version_example' # str | The version number of the app to list.
 file_path = 'file_path_example' # str | Whether or not to delete all workflow statuses, defaults to false
@@ -212,7 +236,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[AuthenticationToken](../README.md#AuthenticationToken)
 
 ### HTTP request headers
 
@@ -234,15 +258,21 @@ List all files
 
 ### Example
 
+* Bearer (JWT) Authentication (AuthenticationToken):
 ```python
 from __future__ import print_function
 import time
 import walkoff_client
 from walkoff_client.rest import ApiException
 from pprint import pprint
+configuration = walkoff_client.Configuration()
+# Configure Bearer authorization (JWT): AuthenticationToken
+configuration.access_token = 'YOUR_BEARER_TOKEN'
 
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
-api_instance = walkoff_client.UmpireApi()
+api_instance = walkoff_client.UmpireApi(walkoff_client.ApiClient(configuration))
 app_name = 'app_name_example' # str | The name or ID of the app to list.
 app_version = 'app_version_example' # str | The name or ID of the app to list.
 
@@ -267,7 +297,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[AuthenticationToken](../README.md#AuthenticationToken)
 
 ### HTTP request headers
 
@@ -289,15 +319,21 @@ Pushes image from minio to /apps and overwrites it.
 
 ### Example
 
+* Bearer (JWT) Authentication (AuthenticationToken):
 ```python
 from __future__ import print_function
 import time
 import walkoff_client
 from walkoff_client.rest import ApiException
 from pprint import pprint
+configuration = walkoff_client.Configuration()
+# Configure Bearer authorization (JWT): AuthenticationToken
+configuration.access_token = 'YOUR_BEARER_TOKEN'
 
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
-api_instance = walkoff_client.UmpireApi()
+api_instance = walkoff_client.UmpireApi(walkoff_client.ApiClient(configuration))
 app_name = 'app_name_example' # str | The name of the app to list.
 app_version = 'app_version_example' # str | The version number of the app to list.
 
@@ -322,7 +358,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[AuthenticationToken](../README.md#AuthenticationToken)
 
 ### HTTP request headers
 
@@ -344,15 +380,21 @@ Updates a file in Minio
 
 ### Example
 
+* Bearer (JWT) Authentication (AuthenticationToken):
 ```python
 from __future__ import print_function
 import time
 import walkoff_client
 from walkoff_client.rest import ApiException
 from pprint import pprint
+configuration = walkoff_client.Configuration()
+# Configure Bearer authorization (JWT): AuthenticationToken
+configuration.access_token = 'YOUR_BEARER_TOKEN'
 
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
 # Create an instance of the API class
-api_instance = walkoff_client.UmpireApi()
+api_instance = walkoff_client.UmpireApi(walkoff_client.ApiClient(configuration))
 upload_file = walkoff_client.UploadFile() # UploadFile | 
 
 try:
@@ -375,7 +417,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[AuthenticationToken](../README.md#AuthenticationToken)
 
 ### HTTP request headers
 

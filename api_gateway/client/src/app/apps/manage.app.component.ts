@@ -122,7 +122,7 @@ export class ManageAppComponent implements OnInit, OnDestroy {
 
     async checkUnsavedChanges() : Promise<boolean> {
         if (!this.fileChanged) return true;
-        return this.utils.confirm('Unsaved changes will be lost. Are you sure?', { alwaysResolve: true });
+        return this.utils.confirm('Any unsaved changes will be lost. Are you sure?', { alwaysResolve: true });
     }
 
     async createFile(root: string) {

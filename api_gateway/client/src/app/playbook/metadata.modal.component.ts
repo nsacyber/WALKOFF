@@ -21,7 +21,7 @@ export class MetadataModalComponent {
     @Input() existing: boolean = false;
 
     permissionOptions = WorkflowPermission.PERMISSIONS;
-    systemRoles: Role[];
+    systemRoles: Role[] = [];
     newPermission: any = { role: '', permissions: '' };
 
     @ViewChild('myForm', { static: true })

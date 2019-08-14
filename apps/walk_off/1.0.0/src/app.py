@@ -5,7 +5,7 @@ import time
 import logging
 import json
 
-from walkoff_app_sdk.common.config import config
+from common.config import config
 from walkoff_app_sdk.app_base import AppBase
 
 logger = logging.getLogger("apps")
