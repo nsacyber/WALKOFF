@@ -78,7 +78,22 @@ h3 {
 }
 
 #walkoffNav .navbar-nav .dropdown .dropdown-menu a {
-  color: white;
+  color: rgba(255, 255, 255, 0.5);
+
+  &:active {
+    color: #3c8dbc;
+    background-color: #f8f9fa;
+  }
+}
+
+#walkoffNav .navbar-nav .dropdown .dropdown-menu a.active {
+  color: #fff;
+  background-color: unset;
+
+  &:hover {
+    color: #3c8dbc;
+    background-color: #f8f9fa;
+  }
 }
 
 #walkoffNav .navbar-nav .dropdown .dropdown-menu a:hover {
