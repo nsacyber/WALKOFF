@@ -155,7 +155,8 @@ class SSH(AppBase):
                 async with asyncssh.connect(host=host, port=port, username=username, password=password,
                                             known_hosts=None) as conn:
                     logger.info(f"Local file path -> {local_file_name}")
-                    script = open(local_file_path, "r").read()
+                    with open(local_file_path, "r") as f:
+                        script = f.read()
                     cmd = script
                     temp = await conn.run(cmd)
                     output = temp.stdout
