@@ -6,12 +6,12 @@ import aioredis
 import aiohttp
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from walkoff_app_sdk.common.message_types import NodeStatusMessage, message_dumps
-from walkoff_app_sdk.common.workflow_types import workflow_loads, Action, ParameterVariant
-from walkoff_app_sdk.common.async_logger import AsyncLogger, AsyncHandler
-from walkoff_app_sdk.common.helpers import UUID_GLOB, fernet_encrypt, fernet_decrypt
-from walkoff_app_sdk.common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
-from walkoff_app_sdk.common.config import config, static
+from common.message_types import NodeStatusMessage, message_dumps
+from common.workflow_types import workflow_loads, Action, ParameterVariant
+from common.async_logger import AsyncLogger, AsyncHandler
+from common.helpers import UUID_GLOB, fernet_encrypt, fernet_decrypt
+from common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
+from common.config import config, static
 
 
 class HTTPStream:
@@ -123,8 +123,8 @@ class AppBase:
                         params = {}
                         for p in action.parameters:
                             if p.variant == ParameterVariant.GLOBAL:
-                                with open(config.ENCRYPTION_KEY_PATH) as f:
-                                    params[p.name] = fernet_decrypt(f.read(), p.value)
+                                key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+                                params[p.name] = fernet_decrypt(key, p.value)
                             else:
                                 params[p.name] = p.value
                         result = await func(**params)

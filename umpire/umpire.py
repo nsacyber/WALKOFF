@@ -80,9 +80,9 @@ class Umpire:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
             logger.info("Bringing up Umpire API...")
-            os.system("python umpire_api.py &")
+            os.system("uvicorn umpire_api:app --host 0.0.0.0 &")
 
-            logger.info("Umpire is ready!")
+            logger.info("Umpire is initialized!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),
                                  asyncio.create_task(ump.monitor_queues()))
         await ump.shutdown()
@@ -201,14 +201,13 @@ class Umpire:
                 logger.debug(f"Current replicas: {curr_replicas}")
 
                 if replicas_needed > curr_replicas:
-                    logger.info(f"Launching {':'.join([service_name, version])}")
+                    logger.info(f"Launching app {':'.join([service_name, version])}")
 
                 if replicas_needed > curr_replicas > 0:
                     await self.launch_app(service_name, version, replicas_needed)
                 elif replicas_needed > curr_replicas == 0:  # scale to 0 and restart
                     await self.launch_app(service_name, version, 0)
                     await self.launch_app(service_name, version, replicas_needed)
-
 
             for service_name, workload in workloads.items():
                 logger.debug(f"Queued actions for {service_name}: {workload['queued']}")

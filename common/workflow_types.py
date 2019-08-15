@@ -144,7 +144,8 @@ class WorkflowJSONEncoder(json.JSONEncoder):
             workflow_variables = list(o.workflow_variables.values())
             return {"id_": o.id_, "execution_id": o.execution_id, "name": o.name, "start": o.start.id_,
                     "actions": actions, "conditions": conditions, "branches": branches, "transforms": transforms,
-                    "triggers": triggers, "workflow_variables": workflow_variables, "is_valid": o.is_valid,
+                    "triggers": triggers, "workflow_variables": workflow_variables, "permissions": o.permissions,
+                    "is_valid": o.is_valid,
                     "errors": None}
 
         elif isinstance(o, Action):
@@ -223,13 +224,14 @@ class Variable:
     """
     A lightweight class representing a WALKOFF WorkflowVariable or Global
     """
-    __slots__ = ("id_", "name", "value", "description")
+    __slots__ = ("id_", "name", "value", "description", "permissions")
 
-    def __init__(self, id_, name, value, description=None):
+    def __init__(self, id_, name, value, description=None, permissions=None):
         self.id_ = id_
         self.name = name
         self.value = value
         self.description = description
+        self.permissions = permissions
 
     def __eq__(self, other):
         if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
@@ -428,7 +430,7 @@ class Transform(Node):
         parent_symbols = {k: ParentSymbol(accumulator[v.id_]) for k, v in self.format_node_names(parents).items()}
         # children_symbols = {k: ChildSymbol(v.id_) for k, v in self.format_node_names(children).items()}
         syms = make_symbol_table(use_numpy=False, **parent_symbols)
-        aeval = Interpreter(usersyms=syms, no_while=True, no_try=True, no_functiondef=True, no_ifexp=True,
+        aeval = Interpreter(usersyms=syms, no_while=True, no_try=True, no_functiondef=True, no_ifexp=False,
                             no_augassign=True, no_assert=True, no_delete=True, no_raise=True,
                             no_print=True, use_numpy=False, builtins_readonly=True)
 
@@ -510,11 +512,11 @@ class DiGraph:
 # TODO: Maybe look into pooling nodes/branches and sharing them across a workflow to save memory?
 class Workflow(DiGraph):
     __slots__ = ("start", "id_", "is_valid", "name", "execution_id", "workflow_variables", "conditions", "transforms",
-                 "triggers", "actions", "errors", "description", "tags")
+                 "triggers", "actions", "errors", "description", "tags", "permissions")
 
     def __init__(self, name, start, actions: [Action], conditions: [Condition], triggers: [Trigger],
                  transforms: [Transform], branches: [Branch], workflow_variables, id_=None, execution_id=None,
-                 is_valid=None, errors=None, description=None, tags=None):
+                 is_valid=None, errors=None, description=None, tags=None, permissions=None):
         super().__init__(nodes=[*actions, *conditions, *triggers, *transforms], edges=branches)
 
         self.start = start
@@ -530,6 +532,7 @@ class Workflow(DiGraph):
         self.errors = errors if errors is not None else []
         self.description = description
         self.tags = tags if tags is not None else []
+        self.permissions = permissions
 
     def __eq__(self, other):
         if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:

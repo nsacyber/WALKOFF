@@ -30,14 +30,15 @@ def sfloat(value, default):
     except (TypeError, ValueError):
         return default
 
+
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
 async def get_walkoff_auth_header(session, token=None, timeout=5*60):
     url = config.API_GATEWAY_URI.rstrip('/') + '/walkoff/api'
-
-    # TODO: make this secure and don't use default admin user
+    logger.debug("Attempting to refresh WALKOFF JWT")
     if token is None:
+        key = config.get_from_file(config.INTERNAL_KEY_PATH)
         async with session.post(url + "/auth", json={"username": config.WALKOFF_USERNAME,
-                                                     "password": config.WALKOFF_PASSWORD}, timeout=timeout) as resp:
+                                                     "password": key}, timeout=timeout) as resp:
             resp_json = await resp.json()
             token = resp_json["refresh_token"]
             logger.debug("Successfully logged into WALKOFF")

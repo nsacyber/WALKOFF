@@ -10,9 +10,9 @@ enum PermissionEnum {
 
 export class VariablePermission {
 	static readonly NONE  = new VariablePermission(PermissionEnum.NONE, 'No Permission', []);
-	static readonly CAN_USE = new VariablePermission(PermissionEnum.CAN_USE, 'Can use', ['execute']);
-	static readonly CAN_SEE  = new VariablePermission(PermissionEnum.CAN_SEE, 'Can decrypt', ['read', 'execute']);
-	static readonly CAN_EDIT  = new VariablePermission(PermissionEnum.CAN_EDIT, 'Can modify', ['read', 'update', 'delete', 'execute']);
+	static readonly CAN_USE = new VariablePermission(PermissionEnum.CAN_USE, 'Can Use', ['execute']);
+	static readonly CAN_SEE  = new VariablePermission(PermissionEnum.CAN_SEE, 'Can Decrypt', ['read', 'execute']);
+	static readonly CAN_EDIT  = new VariablePermission(PermissionEnum.CAN_EDIT, 'Can Modify', ['read', 'update', 'delete', 'execute']);
 	static readonly PERMISSIONS  = [ VariablePermission.NONE, VariablePermission.CAN_USE, VariablePermission.CAN_SEE, VariablePermission.CAN_EDIT ]
 
 	// private to disallow creating other instances of this type
@@ -31,7 +31,9 @@ export class Variable {
     description?: string;
 
     @Exclude()
-	isHidden: boolean = true;
+    isHidden: boolean = true;
+    
+    permissions: any[] = [];
     
     constructor() {
         this.id = UUID.UUID();

@@ -14,117 +14,65 @@ Python 2.7 and 3.4+
 ## Installation & Usage
 ### pip install
 
-Clone the Repo, then cd to the client and pip install it
+If the python package is hosted on Github, you can install directly from Github
+
 ```sh
-git clone https://github.com/nsacyber/WALKOFF.git
-cd WALKOFF/common/walkoff_client
-pip install .
+pip install git+https://github.com/GIT_USER_ID/GIT_REPO_ID.git
 ```
+(you may need to run `pip` with root permission: `sudo pip install git+https://github.com/GIT_USER_ID/GIT_REPO_ID.git`)
 
 Then import the package:
 ```python
 import walkoff_client 
 ```
 
+### Setuptools
+
+Install via [Setuptools](http://pypi.python.org/pypi/setuptools).
+
+```sh
+python setup.py install --user
+```
+(or `sudo python setup.py install` to install the package for all users)
+
+Then import the package:
+```python
+import walkoff_client
+```
+
 ## Getting Started
 
-Please follow the [installation procedure](#installation--usage) and then try the following to create an example workflow and run it:
+Please follow the [installation procedure](#installation--usage) and then run the following:
 
 ```python
-import urllib3
-from time import sleep
+from __future__ import print_function
+import time
+import walkoff_client
+from walkoff_client.rest import ApiException
+from pprint import pprint
 
-import walkoff_client as walkoff
+configuration = walkoff_client.Configuration()
+# Configure Bearer authorization (JWT): AuthenticationToken
+configuration.access_token = 'YOUR_BEARER_TOKEN'
 
+# Defining host is optional and default to http://localhost/walkoff/api
+configuration.host = "http://localhost/walkoff/api"
+# Create an instance of the API class
+api_instance = walkoff_client.AppsApi(walkoff_client.ApiClient(configuration))
+app_api = walkoff_client.AppApi() # AppApi | The app api object to be created
 
-def main():
-    # Create a config that represents our Walkoff server
-    config = walkoff.Configuration(host="https://192.168.56.101:8080/api")
-
-    # Since Walkoff uses a self-signed certificate, we need to disable certificate verification
-    config.verify_ssl = False
-    config.ssl_ca_cert = None
-    config.assert_hostname = False
-    config.cert_file = None
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-    # Create a base API client with which you will interact with Walkoff
-    api_client = walkoff.ApiClient(configuration=config)
-
-    # Create an authentication API client and log in
-    auth_api = walkoff.AuthorizationApi(api_client)
-    tokens = auth_api.login(walkoff.Authentication(username="admin", password="admin"))
-    config.access_token = tokens.access_token
-
-    # Create a workflow API client and perform your desired actions
-    workflow_api = walkoff.WorkflowsApi(api_client)
-    r = workflow_api.read_all_workflows()
-    print(r)
-
-    workflow = {
-        "_walkoff_type": "workflow",
-        "actions": [
-            {
-                "_walkoff_type": "action",
-                "app_name": "hello_world",
-                "app_version": "1.0.0",
-                "errors": [],
-                "id_": "0871a04e-9caf-6ebe-8c18-3efd016fd304",
-                "is_valid": True,
-                "label": "repeat_back_to_me",
-                "name": "repeat_back_to_me",
-                "parallelized": False,
-                "parameters": [
-                    {
-                        "_walkoff_type": "parameter",
-                        "id_": "0becfa01-5e1a-49c1-981f-2d94b7e839bd",
-                        "name": "call",
-                        "parallelized": False,
-                        "value": "examplevalue",
-                        "variant": "STATIC_VALUE"
-                    }
-                ],
-                "position": {
-                    "_walkoff_type": "position",
-                    "x": 290,
-                    "y": 390
-                },
-                "priority": 3
-            }
-        ],
-        "id_": "abad0f4b-5965-fc5d-b3d5-dcf0c1f61a8d",
-        "name": "ExampleWorkflow",
-        "start": "0871a04e-9caf-6ebe-8c18-3efd016fd304",
-    }
-
-    r2 = workflow_api.create_workflow(workflow)
-
-    print(r2)
-
-    assert len(workflow_api.read_all_workflows()) == 1
-
-    wfq_task = walkoff.ExecuteWorkflow(parameters=[{
-        "_walkoff_type": "parameter",
-        "id_": "0becfa01-5e1a-49c1-981f-2d94b7e839bd",
-        "name": "call",
-        "parallelized": False,
-        "value": "overriding value",
-        "variant": "STATIC_VALUE"
-    }], workflow_id=workflow["id_"])
-
-    workflowqueue_api = walkoff.WorkflowQueueApi(api_client)
-
-    workflowqueue_api.execute_workflow(wfq_task)
-
-
-if __name__ == "__main__":
-    main()
+try:
+    # Create app api
+    api_response = api_instance.create_app_api(app_api)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling AppsApi->create_app_api: %s\n" % e)
 
 ```
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://\<hostname\>/api*
+All URIs are relative to *http://localhost/walkoff/api*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
@@ -168,6 +116,13 @@ Class | Method | HTTP request | Description
 *SettingsApi* | [**update_settings**](docs/SettingsApi.md#update_settings) | **PUT** /settings | Updates the settings
 *SystemApi* | [**read_all_app_names**](docs/SystemApi.md#read_all_app_names) | **GET** /apps | Gets all apps
 *TempInternalApi* | [**update_workflow_status**](docs/TempInternalApi.md#update_workflow_status) | **PATCH** /internal/workflowstatus/{execution_id} | Patch parts of a WorkflowStatusMessage object
+*UmpireApi* | [**build_image**](docs/UmpireApi.md#build_image) | **POST** /umpire/build/{app_name}/{app_version} | Builds image in Minio
+*UmpireApi* | [**build_status_from_id**](docs/UmpireApi.md#build_status_from_id) | **POST** /umpire/build/{build_id} | Gets build status given a specific ID
+*UmpireApi* | [**get_build_status**](docs/UmpireApi.md#get_build_status) | **GET** /umpire/build | Gets build status of all current build
+*UmpireApi* | [**get_file_contents**](docs/UmpireApi.md#get_file_contents) | **GET** /umpire/file/{app_name}/{app_version} | Get contents of specified file.
+*UmpireApi* | [**list_all_files**](docs/UmpireApi.md#list_all_files) | **GET** /umpire/files/{app_name}/{app_version} | List all files
+*UmpireApi* | [**save_umpire_file**](docs/UmpireApi.md#save_umpire_file) | **POST** /umpire/save/{app_name}/{app_version} | Pushes image from minio to /apps and overwrites it.
+*UmpireApi* | [**update_file**](docs/UmpireApi.md#update_file) | **POST** /umpire/file_upload | Updates a file in Minio
 *UsersApi* | [**create_user**](docs/UsersApi.md#create_user) | **POST** /users | Create a user
 *UsersApi* | [**delete_user**](docs/UsersApi.md#delete_user) | **DELETE** /users/{user_id} | Delete a user
 *UsersApi* | [**read_all_users**](docs/UsersApi.md#read_all_users) | **GET** /users | Read all users
@@ -234,6 +189,7 @@ Class | Method | HTTP request | Description
  - [Token](docs/Token.md)
  - [Transform](docs/Transform.md)
  - [Trigger](docs/Trigger.md)
+ - [UploadFile](docs/UploadFile.md)
  - [Widget](docs/Widget.md)
  - [WorkflowJSON](docs/WorkflowJSON.md)
  - [WorkflowMetaData](docs/WorkflowMetaData.md)

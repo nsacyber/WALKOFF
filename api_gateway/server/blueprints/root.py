@@ -10,6 +10,7 @@ from flask import render_template, send_from_directory, Blueprint
 from sqlalchemy.exc import SQLAlchemyError
 
 from common.config import static
+from common.config import config
 from api_gateway.extensions import db
 from api_gateway.server.problem import Problem
 
@@ -26,7 +27,7 @@ def client_app_folder(filename):
 
 # Default route to angular application
 @root_page.route('/', defaults={'path': ''})
-@root_page.route('/walkoff', defaults={'path': ''})
+@root_page.route('/walkoff/', defaults={'path': ''})
 @root_page.route('/walkoff/<path:path>')
 def default(path):
     return send_from_directory(os.path.abspath(static.CLIENT_PATH), "dist/walkoff/index.html")
@@ -53,7 +54,9 @@ def handle_generic_server_error(e):
 @root_page.before_app_first_request
 def create_user():
     from api_gateway.serverdb import add_user, User, Role, initialize_default_resources_admin, \
-        initialize_default_resources_guest
+        initialize_default_resources_internal_user, \
+        initialize_default_resources_workflow_developer, \
+        initialize_default_resources_workflow_operator, initialize_default_resources_super_admin
     from sqlalchemy_utils import database_exists, create_database
 
     if not database_exists(db.engine.url):
@@ -69,15 +72,35 @@ def create_user():
     # script = ScriptDirectory.from_config(alembic_cfg)
     # context.stamp(script, "head")
 
-    # Setup admin and guest roles
+    # Setup internal, super_admin, admin workflow_developer, and workflow_operator roles
+    initialize_default_resources_internal_user()
+    initialize_default_resources_super_admin()
     initialize_default_resources_admin()
-    initialize_default_resources_guest()
+    initialize_default_resources_workflow_developer()
+    initialize_default_resources_workflow_operator()
 
-    # Setup admin user
-    admin_role = Role.query.filter_by(id=1).first()
+    # Setup internal user
+    internal_role = Role.query.filter_by(id=1).first()
+    internal_user = User.query.filter_by(username="internal_user").first()
+    if not internal_user:
+        key = config.get_from_file(config.INTERNAL_KEY_PATH)
+        add_user(username='internal_user', password=key, roles=[2])
+    elif internal_role not in internal_user.roles:
+        internal_user.roles.append(internal_role)
+
+    # Setup Super Admin user
+    super_admin_role = Role.query.filter_by(id=2).first()
+    super_admin_user = User.query.filter_by(username="super_admin").first()
+    if not super_admin_user:
+        add_user(username='super_admin', password='super_admin', roles=[2])
+    elif super_admin_role not in super_admin_user.roles:
+        super_admin_user.roles.append(super_admin_role)
+
+    # Setup Admin user
+    admin_role = Role.query.filter_by(id=3).first()
     admin_user = User.query.filter_by(username="admin").first()
     if not admin_user:
-        add_user(username='admin', password='admin', roles=[1])
+        add_user(username='admin', password='admin', roles=[3])
     elif admin_role not in admin_user.roles:
         admin_user.roles.append(admin_role)
 

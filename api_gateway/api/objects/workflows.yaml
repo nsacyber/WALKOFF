@@ -61,6 +61,11 @@ WorkflowJSON:
     _walkoff_type:
       type: string
       description: Workflow type for json decoder
+    permissions:
+      type: array
+      nullable: true
+      items:
+        type: object
 
 
 WorkflowMetaData:
@@ -335,7 +340,6 @@ WorkflowVariable:
      type: string
      description: The name of the workflow variable
    value:
-     type: string
      description: The value of the workflow variable
    description:
      type: string

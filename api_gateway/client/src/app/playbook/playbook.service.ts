@@ -24,8 +24,6 @@ import 'rxjs/add/operator/map';
 import { Subscriber } from 'rxjs';
 import { ActionType } from '../models/api/actionApi';
 
-import * as S3 from 'aws-sdk/clients/s3';
-
 @Injectable({
 	providedIn: 'root'
 })
@@ -334,25 +332,5 @@ export class PlaybookService {
 	set workflowToCreate(workflow: Workflow) {
 		this.tempStoredWorkflow = workflow;
 	}
-
-	getMinio() {
-
-		var s3  = new S3({
-				accessKeyId: 'walkoff' ,
-				secretAccessKey: 'walkoff123' ,
-				endpoint: 'http://localhost:9001' ,
-				s3ForcePathStyle: true, // needed with minio?
-				signatureVersion: 'v4'
-		});
-
-		s3.listObjects({ Bucket: 'apps-bucket' }, function(err, data) {
-			if (err) console.log(err, err.stack); // an error occurred
-			else     console.log(data);           // successful response
-		  });
-
-	}
-
-
-
 
 }

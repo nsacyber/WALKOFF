@@ -15,6 +15,7 @@ from marshmallow import ValidationError
 
 from common.config import config, static
 from common.message_types import StatusEnum, message_dumps
+from common.roles_helpers import auth_check
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusSchema
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
@@ -67,62 +68,64 @@ def get_workflow_status(execution):
     return workflow_status, HTTPStatus.OK
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['execute']))
 def execute_workflow():
     data = request.get_json()
     workflow_id = data.get("workflow_id")
     execution_id = data.get("execution_id", None)
     workflow = workflow_getter(workflow_id)  # ToDo: should this go under a path param so we can use the decorator
 
-    if not workflow:
-        return dne_problem("workflow", "execute", workflow_id)
+    to_execute = auth_check(workflow.name, "execute", "workflows")
+    if to_execute:
+        if not workflow:
+            return dne_problem("workflow", "execute", workflow_id)
 
-    if not workflow.is_valid:
-        return invalid_input_problem("workflow", "execute", workflow.id_, errors=workflow.errors)
+        if not workflow.is_valid:
+            return invalid_input_problem("workflow", "execute", workflow.id_, errors=workflow.errors)
 
-    workflow = workflow_schema.dump(workflow)
+        workflow = workflow_schema.dump(workflow)
 
-    actions_by_id = {a['id_']: a for a in workflow["actions"]}
-    triggers_by_id = {t['id_']: t for t in workflow["triggers"]}
+        actions_by_id = {a['id_']: a for a in workflow["actions"]}
+        triggers_by_id = {t['id_']: t for t in workflow["triggers"]}
 
-    # TODO: Add validation to all overrides
-    if "start" in data:
-        if data["start"] in actions_by_id or data["start"] in triggers_by_id:
-            workflow["start"] = data["start"]
-        else:
-            return invalid_input_problem("workflow", "execute", workflow.id_,
-                                         errors=["Start override must be an action or a trigger in this workflow."])
+        # TODO: Add validation to all overrides
+        if "start" in data:
+            if data["start"] in actions_by_id or data["start"] in triggers_by_id:
+                workflow["start"] = data["start"]
+            else:
+                return invalid_input_problem("workflow", "execute", workflow.id_,
+                                             errors=["Start override must be an action or a trigger in this workflow."])
 
-    if "workflow_variables" in workflow and "workflow_variables" in data:
-        # TODO: change these on the db model to be keyed by ID
-        # Get workflow variables keyed by ID
+        if "workflow_variables" in workflow and "workflow_variables" in data:
+            # TODO: change these on the db model to be keyed by ID
+            # Get workflow variables keyed by ID
 
-        current_wvs = {wv['id_']: wv for wv in workflow["workflow_variables"]}
-        new_wvs = {wv['id_']: wv for wv in data["workflow_variables"]}
+            current_wvs = {wv['id_']: wv for wv in workflow["workflow_variables"]}
+            new_wvs = {wv['id_']: wv for wv in data["workflow_variables"]}
 
-        # Update workflow variables with new values, ignore ids that didn't already exist
-        override_wvs = {id_: new_wvs[id_] if id_ in new_wvs else current_wvs[id_] for id_ in current_wvs}
-        workflow["workflow_variables"] = list(override_wvs.values())
+            # Update workflow variables with new values, ignore ids that didn't already exist
+            override_wvs = {id_: new_wvs[id_] if id_ in new_wvs else current_wvs[id_] for id_ in current_wvs}
+            workflow["workflow_variables"] = list(override_wvs.values())
 
-    if "parameters" in data:
-        start_id = data.get("start", workflow["start"])
-        if start_id in actions_by_id:
-            parameters_by_name = {p["name"]: p for p in actions_by_id[start_id]["parameters"]}
-            for parameter in data["parameters"]:
-                parameters_by_name[parameter["name"]] = parameter
-            actions_by_id[start_id]["parameters"] = list(parameters_by_name.values())
-            workflow["actions"] = list(actions_by_id.values())
-        else:
-            return invalid_input_problem("workflow", "execute", workflow.id_,
-                                         errors=["Cannot override starting parameters for anything but an action."])
+        if "parameters" in data:
+            start_id = data.get("start", workflow["start"])
+            if start_id in actions_by_id:
+                parameters_by_name = {p["name"]: p for p in actions_by_id[start_id]["parameters"]}
+                for parameter in data["parameters"]:
+                    parameters_by_name[parameter["name"]] = parameter
+                actions_by_id[start_id]["parameters"] = list(parameters_by_name.values())
+                workflow["actions"] = list(actions_by_id.values())
+            else:
+                return invalid_input_problem("workflow", "execute", workflow.id_,
+                                             errors=["Cannot override starting parameters for anything but an action."])
 
-    try:
-        execution_id = execute_workflow_helper(workflow_id, execution_id, workflow)
-        return jsonify({'execution_id': execution_id}), HTTPStatus.ACCEPTED
-    except ValidationError as e:
-        current_app.running_context.execution_db.session.rollback()
-        return improper_json_problem('workflow_status', 'create', workflow['name'], e.messages)
-
+        try:
+            execution_id = execute_workflow_helper(workflow_id, execution_id, workflow)
+            return jsonify({'execution_id': execution_id}), HTTPStatus.ACCEPTED
+        except ValidationError as e:
+            current_app.running_context.execution_db.session.rollback()
+            return improper_json_problem('workflow_status', 'create', workflow['name'], e.messages)
+    else:
+        return None, HTTPStatus.FORBIDDEN
 
 def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
     if not execution_id:

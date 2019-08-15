@@ -8,7 +8,7 @@ from common.workflow_types import workflow_load, Parameter, Node, Action, Point,
 from common.message_types import message_dumps, message_loads, NodeStatusMessage
 
 from common.async_logger import AsyncLogger, AsyncHandler
-from apps.hello_world.1.0.0.src.app import HelloWorld
+# from apps.hello_world.1.0.0.src.app import HelloWorld
 import logging
 import os
 import json

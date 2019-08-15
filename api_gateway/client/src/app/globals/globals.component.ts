@@ -52,7 +52,7 @@ export class GlobalsComponent implements OnInit {
 	 * Spawns a modal for adding a new global. Passes in the app names and apis for usage in the modal.
 	 */
 	addGlobal(): void {
-		const modalRef = this.modalService.open(VariableModalComponent);
+		const modalRef = this.modalService.open(VariableModalComponent, {size: 'lg'});
 		modalRef.componentInstance.isGlobal = true;
 
 		modalRef.result.then(variable => {
@@ -66,7 +66,7 @@ export class GlobalsComponent implements OnInit {
 	 * Spawns a modal for editing an existing global. Passes in the app names and apis for usage in the modal.
 	 */
 	editGlobal(global: Variable): void {
-		const modalRef = this.modalService.open(VariableModalComponent);
+		const modalRef = this.modalService.open(VariableModalComponent, {size: 'lg'});
 		modalRef.componentInstance.isGlobal = true;
 		modalRef.componentInstance.existing = true;
 		modalRef.componentInstance.variable = global.clone();

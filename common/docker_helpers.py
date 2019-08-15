@@ -107,8 +107,8 @@ async def create_secret(client, name, data):
     return await resp.json()
 
 
-async def update_service(client, service_id, version, *, image=None, rollback=None, mode=None):
-    if image is None and rollback is False:
+async def update_service(client, service_id, *, version=None, image=None, rollback=None, mode=None, force=False):
+    if image is None and rollback is False and not force:
         raise ValueError("You need to specify an image.")
 
     inspect_service = await client.services.inspect(service_id)
@@ -120,19 +120,26 @@ async def update_service(client, service_id, version, *, image=None, rollback=No
     if image is not None:
         spec["TaskTemplate"]["ContainerSpec"]["Image"] = image
 
-    params = {"version": version}
+    if force:
+        spec["TaskTemplate"]["ForceUpdate"] = 1
+
+    if version is None:
+        params = {"version": inspect_service["Version"]["Index"]}
+    else:
+        params = {"version": version}
+
     if rollback is True:
         params["rollback"] = "previous"
 
     data = json.dumps(clean_map(spec))
 
-    await client._query_json(
+    resp = await client._query_json(
         "services/{service_id}/update".format(service_id=service_id),  # Todo: fstring
         method="POST",
         data=data,
         params=params,
     )
-    return True
+    return resp
     
 
 async def get_secret(client: aiodocker.Docker, secret_id):

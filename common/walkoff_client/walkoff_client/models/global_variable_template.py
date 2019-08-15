@@ -32,6 +32,7 @@ class GlobalVariableTemplate(object):
                             and the value is json key in definition.
     """
     openapi_types = {
+        'walkoff_type': 'str',
         'description': 'str',
         'id_': 'str',
         'name': 'str',
@@ -39,27 +40,54 @@ class GlobalVariableTemplate(object):
     }
 
     attribute_map = {
+        'walkoff_type': '_walkoff_type',
         'description': 'description',
         'id_': 'id_',
         'name': 'name',
         'schema': 'schema'
     }
 
-    def __init__(self, description=None, id_=None, name=None, schema=None):  # noqa: E501
+    def __init__(self, walkoff_type=None, description=None, id_=None, name=None, schema=None):  # noqa: E501
         """GlobalVariableTemplate - a model defined in OpenAPI"""  # noqa: E501
 
+        self._walkoff_type = None
         self._description = None
         self._id_ = None
         self._name = None
         self._schema = None
         self.discriminator = None
 
+        if walkoff_type is not None:
+            self.walkoff_type = walkoff_type
         if description is not None:
             self.description = description
         if id_ is not None:
             self.id_ = id_
         self.name = name
         self.schema = schema
+
+    @property
+    def walkoff_type(self):
+        """Gets the walkoff_type of this GlobalVariableTemplate.  # noqa: E501
+
+        Workflow type for json decoder  # noqa: E501
+
+        :return: The walkoff_type of this GlobalVariableTemplate.  # noqa: E501
+        :rtype: str
+        """
+        return self._walkoff_type
+
+    @walkoff_type.setter
+    def walkoff_type(self, walkoff_type):
+        """Sets the walkoff_type of this GlobalVariableTemplate.
+
+        Workflow type for json decoder  # noqa: E501
+
+        :param walkoff_type: The walkoff_type of this GlobalVariableTemplate.  # noqa: E501
+        :type: str
+        """
+
+        self._walkoff_type = walkoff_type
 
     @property
     def description(self):

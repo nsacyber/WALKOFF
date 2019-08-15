@@ -32,34 +32,67 @@ class GlobalVariable(object):
                             and the value is json key in definition.
     """
     openapi_types = {
+        'walkoff_type': 'str',
         'description': 'str',
         'id_': 'str',
         'name': 'str',
-        'value': 'str'
+        'permissions': 'list[object]',
+        'value': 'object'
     }
 
     attribute_map = {
+        'walkoff_type': '_walkoff_type',
         'description': 'description',
         'id_': 'id_',
         'name': 'name',
+        'permissions': 'permissions',
         'value': 'value'
     }
 
-    def __init__(self, description=None, id_=None, name=None, value=None):  # noqa: E501
+    def __init__(self, walkoff_type=None, description=None, id_=None, name=None, permissions=None, value=None):  # noqa: E501
         """GlobalVariable - a model defined in OpenAPI"""  # noqa: E501
 
+        self._walkoff_type = None
         self._description = None
         self._id_ = None
         self._name = None
+        self._permissions = None
         self._value = None
         self.discriminator = None
 
+        if walkoff_type is not None:
+            self.walkoff_type = walkoff_type
         if description is not None:
             self.description = description
         if id_ is not None:
             self.id_ = id_
         self.name = name
+        if permissions is not None:
+            self.permissions = permissions
         self.value = value
+
+    @property
+    def walkoff_type(self):
+        """Gets the walkoff_type of this GlobalVariable.  # noqa: E501
+
+        Workflow type for json decoder  # noqa: E501
+
+        :return: The walkoff_type of this GlobalVariable.  # noqa: E501
+        :rtype: str
+        """
+        return self._walkoff_type
+
+    @walkoff_type.setter
+    def walkoff_type(self, walkoff_type):
+        """Sets the walkoff_type of this GlobalVariable.
+
+        Workflow type for json decoder  # noqa: E501
+
+        :param walkoff_type: The walkoff_type of this GlobalVariable.  # noqa: E501
+        :type: str
+        """
+
+        self._walkoff_type = walkoff_type
 
     @property
     def description(self):
@@ -133,13 +166,34 @@ class GlobalVariable(object):
         self._name = name
 
     @property
+    def permissions(self):
+        """Gets the permissions of this GlobalVariable.  # noqa: E501
+
+
+        :return: The permissions of this GlobalVariable.  # noqa: E501
+        :rtype: list[object]
+        """
+        return self._permissions
+
+    @permissions.setter
+    def permissions(self, permissions):
+        """Sets the permissions of this GlobalVariable.
+
+
+        :param permissions: The permissions of this GlobalVariable.  # noqa: E501
+        :type: list[object]
+        """
+
+        self._permissions = permissions
+
+    @property
     def value(self):
         """Gets the value of this GlobalVariable.  # noqa: E501
 
         The value of the global variable  # noqa: E501
 
         :return: The value of this GlobalVariable.  # noqa: E501
-        :rtype: str
+        :rtype: object
         """
         return self._value
 
@@ -150,7 +204,7 @@ class GlobalVariable(object):
         The value of the global variable  # noqa: E501
 
         :param value: The value of this GlobalVariable.  # noqa: E501
-        :type: str
+        :type: object
         """
         if value is None:
             raise ValueError("Invalid value for `value`, must not be `None`")  # noqa: E501

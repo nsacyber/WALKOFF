@@ -52,9 +52,11 @@ class ExecutionDatabase(object):
                                         connect_args={'check_same_thread': False}, poolclass=NullPool)
         else:
             self.engine = create_engine(
-                format_db_path(config.DB_TYPE, config.EXECUTION_DB_NAME, config.DB_USERNAME, config.DB_PASSWORD,
+                format_db_path(config.DB_TYPE, config.EXECUTION_DB_NAME,
+                               config.DB_USERNAME, config.get_from_file(config.POSTGRES_KEY_PATH),
                                config.DB_HOST),
-                poolclass=NullPool)
+                poolclass=NullPool, isolation_level="AUTOCOMMIT")
+
             if not database_exists(self.engine.url):
                 try:
                     create_database(self.engine.url)

@@ -99,17 +99,17 @@
             </button>
         </div>
         <nav class="ml-auto" aria-label="breadcrumb">
-            <ol id="playbookBreadcrumbs" class="breadcrumb py-0 px-3 d-flex align-items-center">
+            <ol id="playbookBreadcrumbs" class="workflow-editor breadcrumb py-0 px-3 d-flex align-items-center">
                 <li class="breadcrumb-item"><a href="" (click)="returnToWorkflows()">Workflows</a></li>
                 <li class="breadcrumb-item d-flex align-items-center">
                     <span>{{ loadedWorkflow?.name }}</span>
+                    <span *ngIf="workflowChanged">*</span>
                     <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" class="" id="currentWorkflowText">
-                        (Incomplete)</label>
+                            [Incomplete]</label>
                     <a id="copy-button" class="ml-1" href="" placement="bottom-right" ngbTooltip="Edit Description"
                         (click)="editDescription()">
                         <i class="fa fa-info-circle"></i>
                     </a>
-
                 </li>
             </ol>
         </nav>

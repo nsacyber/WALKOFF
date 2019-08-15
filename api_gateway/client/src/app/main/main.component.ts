@@ -154,16 +154,6 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	/**
-	 * Calls the auth service logout method and redirects to login
-	 * TODO: should likely roll login into the main component so we don't need to do the location.href.
-	 */
-	logout(): void {
-		this.authService.logout()
-			.then(() => location.href = 'login')
-			.catch(e => console.error(e));
-	}
-
-	/**
 	 * Gets the full message detail from the server and displays the message in a new modal.
 	 * @param event JS event fired from clicking the message link
 	 * @param messageListing Message Listing object to query.

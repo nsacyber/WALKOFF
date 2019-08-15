@@ -19,8 +19,13 @@ import { ChartsModule } from 'ng2-charts';
 import { NgJsonEditorModule } from 'ang-jsoneditor'
 
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import 'codemirror/mode/meta';
 import 'codemirror/mode/shell/shell';
 import 'codemirror/mode/python/python';
+import 'codemirror/mode/xml/xml';
+import 'codemirror/mode/yaml/yaml';
+import 'codemirror/mode/powershell/powershell';
+import 'codemirror/mode/dockerfile/dockerfile';
 import 'codemirror/addon/display/placeholder';
 
 // Custom routing module
@@ -34,6 +39,7 @@ import { MetricsComponent } from './metrics/metrics.component';
 import { SettingsComponent } from './settings/settings.component';
 import { ReportsComponent } from './reports/reports.component';
 import { ExecutionComponent } from './execution/execution.component';
+import { AppsListComponent } from './apps/apps.list.component';
 
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { GlobalsModalComponent } from './globals/globals.modal.component';
@@ -59,6 +65,7 @@ import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 import { WorkflowEditorComponent } from './playbook/workflow.editor.component';
 import { MetadataModalComponent } from './playbook/metadata.modal.component';
 import { ImportModalComponent } from './playbook/import.modal.component';
+import { ManageAppComponent } from './apps/manage.app.component';
 
 @NgModule({
 	imports: [
@@ -99,6 +106,8 @@ import { ImportModalComponent } from './playbook/import.modal.component';
 		SettingsComponent,
 		ReportsComponent,
 		ExecutionComponent,
+		AppsListComponent,
+		ManageAppComponent,
 		//Modals
 		SchedulerModalComponent,
 		GlobalsModalComponent,

@@ -19,7 +19,67 @@
             <div class="col-12">
                 <div class="form-group">
                     <label for="description">Description (optional)</label>
-                    <textarea name="description" rows="4" [(ngModel)]="variable.description" class="form-control"></textarea>
+                    <textarea name="description" rows="4" [(ngModel)]="variable.description"
+                        class="form-control"></textarea>
+                </div>
+            </div>
+            <div *ngIf="isGlobal" class="col-12">
+                <div class="card card-default my-1">
+                    <div class="card-header p-2"  data-toggle="collapse"
+                        data-target="#permission-list">
+                        <span class="card-title my-auto">Restrict Access</span>
+                    </div>
+                    <div id="permission-list" class="collapse show">
+                        <div class="card-body my-auto p-3">
+                            <small class="form-text text-muted pb-3">
+                                By default anyone with access to WALKOFF will have full permissions on this resource.  
+                                You can limit access to only users of specific roles by selecting the role and access level below. 
+                            </small>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Role</th>
+                                        <th scope="col">Permission</th>
+                                        <th scope="col"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let p of variable.permissions">
+                                        <td>{{ getRoleName(p)  }}</td>
+                                        <td>{{ getPermissionDescription(p) }}</td>
+                                        <td><button (click)="deletePermission(p)" class="btn btn-sm btn-danger mx-1"
+                                                ngbTooltip="Remove"><i class="fa fa-times"></i></button></td>
+                                    </tr>
+                                    <tr *ngIf="variable.permissions.length == 0">
+                                        <td class="text-center text-muted" colspan="3">No Role Based Permissions</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="form-group">
+                                
+                                <div class="row">
+                                    <!-- <label class="col-2 col-form-label">Restrict Access:</label> -->
+                                    <div class="col">
+                                        <select class="form-control" [(ngModel)]="newPermission.role">
+                                            <option [ngValue]="''">Select Role...</option>
+                                            <option *ngFor="let r of systemRoles" [ngValue]="r.id" [label]="r.name">{{r.name}}</option>
+                                        </select>
+
+                                    </div>
+                                    <div class="col">
+                                        <select class="form-control" [(ngModel)]="newPermission.permissions">
+                                            <option [ngValue]="''">Select Access Level...</option>
+                                            <option *ngFor="let p of permissionOptions" [ngValue]="p.crud"
+                                                [label]="p.description">{{ p.description }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <button class="btn btn-primary pull-right" (click)="addPermission()">Add New</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

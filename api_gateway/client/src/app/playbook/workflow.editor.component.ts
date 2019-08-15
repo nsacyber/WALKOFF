@@ -85,6 +85,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	roles: Role[];
 
 	//loadedPlaybook: Playbook;
+	originalWorkflow: Workflow;
 	loadedWorkflow: Workflow;
 	playbooks: Playbook[] = [];
 	workflows: Workflow[] = [];
@@ -205,6 +206,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	changed(data: {value: string[]}) {
 		this.tags = data.value;
 	}
+
+	get workflowChanged(): boolean {
+		return this.loadedWorkflow && 
+			(!this.loadedWorkflow.id || JSON.stringify(this.originalWorkflow).localeCompare(JSON.stringify(this.loadedWorkflow)) != 0);
+    }
 
     ///------------------------------------------------------------------------------------------------------
 	/// Console functions
@@ -422,25 +428,34 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			this.playbookService.loadWorkflow(workflow.id)
 				.then(loadedWorkflow => {
 					this.loadedWorkflow = loadedWorkflow;
+					this.originalWorkflow = loadedWorkflow.clone();
 					this.setupGraph();
 				})
 				.catch(e => this.toastrService.error(`Error loading workflow "${workflow.name}": ${e.message}`));
 		} else {
 			this.loadedWorkflow = workflow;
+			this.originalWorkflow = workflow.clone();
 			this.setupGraph();
 		}
 	}
 
 	returnToWorkflows() {
-		this.utils.confirm('Are you sure you? Any unsaved changes will be lost!').then(() => {
-			this.router.navigateByUrl(`/workflows`);
-		})
+		this.router.navigateByUrl(`/workflows`);
 		return false;
 	}
 
 	routeToWorkflow(workflow: Workflow): void {
 		this.router.navigateByUrl(`/workflows/${ workflow.id }`);
 	}
+
+	canDeactivate(): Promise<boolean> | boolean {
+        return this.checkUnsavedChanges(); 
+    }
+
+    async checkUnsavedChanges() : Promise<boolean> {
+        if (!this.workflowChanged) return true;
+        return this.utils.confirm('Any unsaved changes will be lost. Are you sure?', { alwaysResolve: true });
+    }
 
 	setupGraph(options: any = {}): void {
 		// Convert our selection arrays to a string
@@ -908,13 +923,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		if (this.loadedWorkflow.id) {
 			this.playbookService.saveWorkflow(workflowToSave).then(savedWorkflow => {
 				this.loadedWorkflow = savedWorkflow;
+				this.originalWorkflow = savedWorkflow.clone();
 				this.setupGraph();
 				this.toastrService.success(`Saved <b>${ savedWorkflow.name }</b>`);
 			}).catch(e => this.toastrService.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
 		} else {
 			this.playbookService.newWorkflow(workflowToSave).then(savedWorkflow => {
-				//this.loadedWorkflow = savedWorkflow;
-				//this.setupGraph()
+				this.loadedWorkflow = savedWorkflow;
+				this.originalWorkflow = savedWorkflow.clone();
+				
 				this.toastrService.success(`Saved <b>${ savedWorkflow.name }</b>`);
 				this.router.navigateByUrl(`/workflows/${ savedWorkflow.id }`);
 			}).catch(e => this.toastrService.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
@@ -1733,7 +1750,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
 	 */
 	editDescription() {
-		const modalRef = this.modalService.open(MetadataModalComponent);
+		const modalRef = this.modalService.open(MetadataModalComponent, {size: 'lg'});
 		modalRef.componentInstance.existing = true;
 		modalRef.componentInstance.currentTags = this.currentTags;
 		modalRef.componentInstance.existingWorkflows = this.workflows;
