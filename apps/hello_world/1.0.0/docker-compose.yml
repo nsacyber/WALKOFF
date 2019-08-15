@@ -1,6 +1,6 @@
 version: '3.4'
 services:
-  hello_world:
+  basics:
     build:
       context: .
       dockerfile: Dockerfile

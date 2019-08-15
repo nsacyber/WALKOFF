@@ -1,6 +1,6 @@
 walkoff_version: 1.0.0
 app_version: 1.0.0
-name: hello_world
+name: basics
 description: An example of a Walkoff App specification
 contact_info:
   name: Walkoff Team
@@ -33,7 +33,7 @@ actions:
       schema:
         type: object
       example: '{"Walkoff":"Running"}'
-  - name: repeat_back_to_me
+  - name: echo_string
     description: Repeats the call parameter
     parameters:
       - name: call

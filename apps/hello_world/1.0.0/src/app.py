@@ -7,13 +7,13 @@ import json
 from walkoff_app_sdk.app_base import AppBase
 
 
-class HelloWorld(AppBase):
+class Basics(AppBase):
     """
     An example of a Walkoff App.
     Inherit from the AppBase class to have Redis, logging, and console logging set up behind the scenes.
     """
     __version__ = "1.0.0"
-    app_name = "hello_world"  # this needs to match "name" in api.yaml
+    app_name = "basics"  # this needs to match "name" in api.yaml
 
     def __init__(self, redis, logger, console_logger=None):
         """
@@ -43,8 +43,8 @@ class HelloWorld(AppBase):
         this = json.loads(call)
         return this
 
-    async def repeat_back_to_me(self, call):
-        return f"REPEATING: {call}"
+    async def echo_string(self, call):
+        return f"ECHOING: {call}"
 
     async def return_plus_one(self, number):
         return number + 1
@@ -68,4 +68,4 @@ class HelloWorld(AppBase):
 
 
 if __name__ == "__main__":
-    asyncio.run(HelloWorld.run(), debug=True)
+    asyncio.run(Basics.run(), debug=True)

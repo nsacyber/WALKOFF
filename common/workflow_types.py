@@ -430,7 +430,7 @@ class Transform(Node):
         parent_symbols = {k: ParentSymbol(accumulator[v.id_]) for k, v in self.format_node_names(parents).items()}
         # children_symbols = {k: ChildSymbol(v.id_) for k, v in self.format_node_names(children).items()}
         syms = make_symbol_table(use_numpy=False, **parent_symbols)
-        aeval = Interpreter(usersyms=syms, no_while=True, no_try=True, no_functiondef=True, no_ifexp=True,
+        aeval = Interpreter(usersyms=syms, no_while=True, no_try=True, no_functiondef=True, no_ifexp=False,
                             no_augassign=True, no_assert=True, no_delete=True, no_raise=True,
                             no_print=True, use_numpy=False, builtins_readonly=True)
 
