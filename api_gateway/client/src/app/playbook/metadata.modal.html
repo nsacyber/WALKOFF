@@ -69,7 +69,7 @@
                                 <div class="col">
                                     <select class="form-control" name="new-role" [(ngModel)]="newPermission.role">
                                         <option [ngValue]="''">Select Role...</option>
-                                        <option *ngFor="let r of systemRoles" [ngValue]="r.name" [label]="r.name">
+                                        <option *ngFor="let r of systemRoles" [ngValue]="r.id" [label]="r.name">
                                             {{r.name}}</option>
                                     </select>
 

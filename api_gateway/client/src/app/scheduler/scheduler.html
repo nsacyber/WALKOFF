@@ -1,25 +1,35 @@
 <div id="main" class="schedulerMain container-fluid">
-	<h1>Scheduler</h1>
+	<div class="d-flex align-items-center">
+		<nav aria-label="breadcrumb">
+			<ol id="playbookBreadcrumbs" class="breadcrumb">
+				<li class="breadcrumb-item">Scheduler</li>
+			</ol>
+		</nav>
+	</div>
 
 	<div class="row align-items-center mb-3">
 		<div class="col-auto">
-			<button (click)="addScheduledTask()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add To Schedule</button>
+			<button (click)="addScheduledTask()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add To
+				Schedule</button>
 		</div>
 
 		<div class="col">
 			<div class="row">
-				<h4 class="my-auto mr-2">Scheduler <span id="status" class="text-capitalize">{{schedulerStatus}}</span></h4>
-				
-				<button *ngIf="schedulerStatus && schedulerStatus !== 'running'" (click)="changeSchedulerStatus('start')" class="btn btn-primary mx-1"
-					id="startSchedulerBtn" ngbTooltip="Start Scheduler">
+				<h4 class="my-auto mr-2">Scheduler <span id="status" class="text-capitalize">{{schedulerStatus}}</span>
+				</h4>
+
+				<button *ngIf="schedulerStatus && schedulerStatus !== 'running'"
+					(click)="changeSchedulerStatus('start')" class="btn btn-primary mx-1" id="startSchedulerBtn"
+					ngbTooltip="Start Scheduler">
 					<i class="fa fa-play"></i>
 				</button>
-				<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('pause')" class="btn btn-warning mx-1"
-					id="pauseSchedulerBtn" ngbTooltip="Pause Scheduler">
+				<button *ngIf="schedulerStatus && schedulerStatus === 'running'"
+					(click)="changeSchedulerStatus('pause')" class="btn btn-warning mx-1" id="pauseSchedulerBtn"
+					ngbTooltip="Pause Scheduler">
 					<i class="fa fa-pause"></i>
 				</button>
-				<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('stop')" class="btn btn-danger"
-					id="stopSchedulerBtn" ngbTooltip="Stop Scheduler">
+				<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('stop')"
+					class="btn btn-danger" id="stopSchedulerBtn" ngbTooltip="Stop Scheduler">
 					<i class="fa fa-stop"></i>
 				</button>
 			</div>
@@ -30,8 +40,9 @@
 		</div>
 	</div>
 
-	<ngx-datatable #scheduleTable class='material expandable scheduledTasksTable' [columnMode]="'flex'" [rows]="displayScheduledTasks"
-	 [sorts]="[{prop: 'name', dir: 'asc'}]" [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
+	<ngx-datatable #scheduleTable class='material expandable scheduledTasksTable' [columnMode]="'flex'"
+		[rows]="displayScheduledTasks" [sorts]="[{prop: 'name', dir: 'asc'}]" [sortType]="'multi'" [headerHeight]="50"
+		[footerHeight]="50" [rowHeight]="undefined" [limit]="25">
 		<!-- Column Templates -->
 		<ngx-datatable-column name="Name" prop="name" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
@@ -52,7 +63,8 @@
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<button *ngIf="row.status === 'stopped' || row.status === 'paused'" (click)="changeScheduledTaskStatus(row, 'start')" title="Start Scheduled Task"
+				<button *ngIf="row.status === 'stopped' || row.status === 'paused'"
+					(click)="changeScheduledTaskStatus(row, 'start')" title="Start Scheduled Task"
 					class="mr-1 btn btn-primary">
 					<i class="fa fa-play"></i>
 				</button>
@@ -60,7 +72,8 @@
 					class="btn btn-warning">
 					<i class="fa fa-pause"></i>
 				</button>-->
-				<button *ngIf="row.status === 'running' || row.status === 'paused'" (click)="changeScheduledTaskStatus(row, 'stop')" title="Stop Scheduled Task"
+				<button *ngIf="row.status === 'running' || row.status === 'paused'"
+					(click)="changeScheduledTaskStatus(row, 'stop')" title="Stop Scheduled Task"
 					class="mr-1 btn btn-danger">
 					<i class="fa fa-stop"></i>
 				</button>

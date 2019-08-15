@@ -87,3 +87,15 @@ div.jsoneditor-contextmenu ul li button.jsoneditor-selected:focus,
 div.jsoneditor-contextmenu ul li button.jsoneditor-selected:hover {
     background-color: #aecbdc;
 }
+
+#playbookBreadcrumbs {
+	background-color: unset;
+	margin-block-end: unset;
+	padding-inline-start: unset;
+	font-weight: bold;
+	font-size: 2rem;
+
+	a {
+		text-decoration: none;
+	}
+}

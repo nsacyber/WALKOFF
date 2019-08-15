@@ -10,7 +10,10 @@ export class RedirectGuard implements CanActivate {
   constructor(private router: Router, private authService: AuthService) {}
 
   async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
-      if (route.data['logout']) await this.authService.logout();
+      try {
+        if (route.data['logout'])  await this.authService.logout();
+      }
+      catch(e) { console.log(e) }
       window.location.href = route.data['externalUrl'];
       return false;
   }
