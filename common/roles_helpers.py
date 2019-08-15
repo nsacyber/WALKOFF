@@ -81,7 +81,7 @@ def default_permissions(resource_type, resource_indicator, data):
 
     roles = db.session.query(Role).all()
     for role in roles:
-        for resource in role.resources: # db.session.query(Role).filter(Role.name == role.name).first().resources:
+        for resource in role.resources:
             if resource.name == resource_type:
                 if resource.operations:
                     role_permissions = [permission.name for permission in resource.permissions
