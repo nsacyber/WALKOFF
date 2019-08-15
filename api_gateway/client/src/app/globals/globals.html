@@ -1,5 +1,11 @@
 <div id="main" class="globalsMain">
-    <h1>Global Variables</h1>
+    <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol id="playbookBreadcrumbs" class="breadcrumb">
+                <li class="breadcrumb-item">Global Variables</li>
+            </ol>
+        </nav>
+    </div>
 
     <div class="row align-items-center mb-3">
         <div class="col">
@@ -23,7 +29,7 @@
                 <div class="d-flex align-items-center">
                     <span [class.pt-2]="row.isHidden">{{ row.isHidden ? '********************' : row.value }}</span>
                     <button (click)="row.isHidden = !row.isHidden" class="btn btn-link mx-1 p-0">
-                        <i class="fa" [class.fa-eye]="row.isHidden" [class.fa-eye-slash]="!row.isHidden" 
+                        <i class="fa" [class.fa-eye]="row.isHidden" [class.fa-eye-slash]="!row.isHidden"
                             [ngbTooltip]="row.isHidden ? 'Show Value' : 'Hide Value'"></i>
                     </button>
                 </div>
