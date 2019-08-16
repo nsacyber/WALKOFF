@@ -34,7 +34,7 @@ Let's begin by adding a ``hello_world`` action and a ``echo_string`` action from
 
 Ensure that the ``hello_world`` action is set as the starting node by clicking ``Set as Start Action`` in the Action Parameters pane.
 
-.. image:: ../docs/images/add_actions.png
+.. image:: ../docs/images/add_action.png
 
 Configure Options
 '''''''''''''''''
