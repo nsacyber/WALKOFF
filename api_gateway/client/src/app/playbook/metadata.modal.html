@@ -2,7 +2,8 @@
     <h4 class="modal-title">{{ existing ? 'Edit Workflow' : 'Create Workflow' }}</h4>
 </div>
 <div class="modal-body">
-    <form #myForm="ngForm" novalidate>
+    <form #myForm="ngForm" novalidate (ngSubmit)="submit()">
+        <button type="submit" class="d-none"></button>
         <div class="form-group" *ngIf="existing && workflow.id">
             <h6>Workflow ID</h6>
             <input type="text" readonly class="form-control-plaintext px-2" [value]="workflow.id">
@@ -35,7 +36,7 @@
                 <div class="card-header p-2" data-toggle="collapse" data-target="#permission-list">
                     <span class="card-title my-auto">Restrict Access</span>
                 </div>
-                <div id="permission-list" class="collapse show">
+                <div id="permission-list" class="collapse" [class.show]="workflow.permissions.length > 0">
                     <div class="card-body my-auto p-3">
                         <small class="form-text text-muted pb-3">
                             By default anyone with access to WALKOFF will have full permissions on this resource.
@@ -82,8 +83,7 @@
                                     </select>
                                 </div>
                                 <div class="col-2">
-                                    <button class="btn btn-primary pull-right" (click)="addPermission()">Add
-                                        New</button>
+                                    <button class="btn btn-primary pull-right" (click)="addPermission()">Add New</button>
                                 </div>
                             </div>
                         </div>

@@ -375,7 +375,16 @@ else:
     </div>
 
     <div class="bottom-panel fixed-bottom mb-1 pt-1 border-top" [class.show-console]="showConsole">
-        <ngb-tabset destoryOnHide="false" (tabChange)="switchConsoleTabs($event)">
+        <ngb-tabset destoryOnHide="false" activeId="console-tab" (tabChange)="switchConsoleTabs($event)">
+                <ngb-tab id="menu-tab">
+                    <ng-template ngbTabTitle>
+                        <div class="console-tab" (click)="toggleConsole()" [ngbTooltip]="(showConsole ? 'Hide' : 'Show') + ' Console'">
+                            <i class="fa fa-bars" aria-hidden="true"></i>
+                        </div>
+                    </ng-template>
+                    <ng-template ngbTabContent>
+                    </ng-template>
+                </ngb-tab>
             <ngb-tab id="console-tab">
                 <ng-template ngbTabTitle>
                     <div class="console-tab" (click)="toggleConsole()">Console
