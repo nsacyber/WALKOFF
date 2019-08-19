@@ -67,7 +67,8 @@ def get_all_workflow_status():
         workflow = current_app.running_context.execution_db.session.query(Workflow)\
             .filter(Workflow.name == wf_status.name).first()
         to_read = auth_check(wf_status.name, "read", "workflows")
-        if (workflow.creator == curr_user_id) or to_read:
+
+        if (workflow is None) or (workflow.creator == curr_user_id) or to_read:
             ret.append(wf_status)
 
     return ret, HTTPStatus.OK
@@ -83,7 +84,7 @@ def get_workflow_status(execution):
     workflow = current_app.running_context.execution_db.session.query(Workflow) \
         .filter(Workflow.name == workflow_status["name"]).first()
     to_read = auth_check(workflow_status["name"], "read", "workflows")
-    if (workflow.creator == curr_user_id) or to_read:
+    if (workflow is None) or (workflow.creator == curr_user_id) or to_read:
         return workflow_status, HTTPStatus.OK
     else:
         return None, HTTPStatus.FORBIDDEN
