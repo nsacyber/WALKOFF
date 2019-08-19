@@ -3,13 +3,15 @@ from io import BytesIO
 from copy import deepcopy
 
 from flask import request, current_app, send_file
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_claims
 from marshmallow import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from api_gateway import helpers
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.helpers import regenerate_workflow_ids
+from api_gateway.serverdb.user import User
+from api_gateway.extensions import db
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, is_valid_uid, \
     paginate
@@ -47,6 +49,10 @@ def create_workflow():
     data = request.get_json()
     workflow_id = request.args.get("source")
     workflow_name = data['name']
+
+    username = get_jwt_claims().get('username', None)
+    curr_user = db.session.query(User).filter(User.username == username).first()
+    data.update({'creator': curr_user.id})
 
     try:
         new_permissions = data['permissions']
@@ -147,11 +153,14 @@ def copy_workflow(workflow, permissions, workflow_name=None):
 @jwt_required
 @paginate(workflow_schema)
 def read_all_workflows():
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
     r = current_app.running_context.execution_db.session.query(Workflow).order_by(Workflow.name).all()
     ret = []
     for workflow in r:
         to_read = auth_check(workflow.name, "read", "workflows")
-        if to_read:
+        if (workflow.creator == curr_user_id) or to_read:
             workflow_schema.dump(workflow)
             ret.append(workflow)
     return ret, HTTPStatus.OK
@@ -160,10 +169,13 @@ def read_all_workflows():
 @jwt_required
 @with_workflow('read', 'workflow')
 def read_workflow(workflow):
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
     workflow_name = workflow.name
     to_read = auth_check(workflow_name, "read", "workflows")
 
-    if to_read:
+    if (workflow.creator == curr_user_id) or to_read:
         workflow_json = workflow_schema.dump(workflow)
         if request.args.get('mode') == "export":
             f = BytesIO()
@@ -179,6 +191,9 @@ def read_workflow(workflow):
 @jwt_required
 @with_workflow('update', 'workflow')
 def update_workflow(workflow):
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
     data = request.get_json()
     old_name = workflow.name
     new_name = data['name']
@@ -186,7 +201,7 @@ def update_workflow(workflow):
     new_permissions = data['permissions']
 
     to_update = auth_check(old_name, "update", "workflows")
-    if to_update:
+    if (workflow.creator == curr_user_id) or to_update:
         if new_permissions:
             auth_check(old_name, "update", "workflows", new_name=new_name, updated_roles=new_permissions)
         else:
@@ -209,10 +224,13 @@ def update_workflow(workflow):
 @jwt_required
 @with_workflow('delete', 'workflow')
 def delete_workflow(workflow):
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
     workflow_name = workflow.name
 
     to_delete = auth_check(workflow_name, "delete", "workflows")
-    if to_delete:
+    if (workflow.creator == curr_user_id) or to_delete:
         current_app.running_context.execution_db.session.delete(workflow)
         current_app.logger.info(f"Removed workflow {workflow.name} ({workflow.id_})")
         current_app.running_context.execution_db.session.commit()

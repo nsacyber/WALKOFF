@@ -17,7 +17,6 @@ def auth_check(to_check, permission, resource_name, new_name=None, updated_roles
         for resource in role.resources:
             if resource.name == resource_name:
                 if resource.operations:
-                    logger.info(f"resource.operations -> {resource.operations}")
                     if to_check not in [elem.operation_id for elem in resource.operations]:
                         return False
                     else:
@@ -58,7 +57,6 @@ def delete_operation(resource_name, to_check):
 def update_permissions(resource_type, resource_indicator, new_permissions):
     # ensures super admin will always have access to the resource
     new_permissions = [{"role": 2, "permissions": ["delete", "execute", "read", "update"]}] + new_permissions
-    logger.info(f"new permissions ->{new_permissions}")
     if new_permissions:
         for role_elem in new_permissions:
             role_id = role_elem['role']
@@ -115,3 +113,4 @@ def default_permissions(resource_type, resource_indicator, data):
                     db.session.commit()
 
     data["permissions"] = ret
+

@@ -16,6 +16,9 @@ GlobalVariable:
       type: array
       items:
         type: object
+    creator:
+      type: integer
+      description: The User ID of the creator of the global variable
     value:
 #      oneOf:
 #        - type: "string"

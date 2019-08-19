@@ -145,6 +145,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
             return {"id_": o.id_, "execution_id": o.execution_id, "name": o.name, "start": o.start.id_,
                     "actions": actions, "conditions": conditions, "branches": branches, "transforms": transforms,
                     "triggers": triggers, "workflow_variables": workflow_variables, "permissions": o.permissions,
+                    "creator": o.creator,
                     "is_valid": o.is_valid,
                     "errors": None}
 
@@ -224,14 +225,15 @@ class Variable:
     """
     A lightweight class representing a WALKOFF WorkflowVariable or Global
     """
-    __slots__ = ("id_", "name", "value", "description", "permissions")
+    __slots__ = ("id_", "name", "value", "description", "permissions", "creator")
 
-    def __init__(self, id_, name, value, description=None, permissions=None):
+    def __init__(self, id_, name, value, description=None, permissions=None, creator=None):
         self.id_ = id_
         self.name = name
         self.value = value
         self.description = description
         self.permissions = permissions
+        self.creator = creator
 
     def __eq__(self, other):
         if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
@@ -512,11 +514,11 @@ class DiGraph:
 # TODO: Maybe look into pooling nodes/branches and sharing them across a workflow to save memory?
 class Workflow(DiGraph):
     __slots__ = ("start", "id_", "is_valid", "name", "execution_id", "workflow_variables", "conditions", "transforms",
-                 "triggers", "actions", "errors", "description", "tags", "permissions")
+                 "triggers", "actions", "errors", "description", "tags", "permissions", "creator")
 
     def __init__(self, name, start, actions: [Action], conditions: [Condition], triggers: [Trigger],
                  transforms: [Transform], branches: [Branch], workflow_variables, id_=None, execution_id=None,
-                 is_valid=None, errors=None, description=None, tags=None, permissions=None):
+                 is_valid=None, errors=None, description=None, tags=None, permissions=None, creator=None):
         super().__init__(nodes=[*actions, *conditions, *triggers, *transforms], edges=branches)
 
         self.start = start
@@ -533,6 +535,7 @@ class Workflow(DiGraph):
         self.description = description
         self.tags = tags if tags is not None else []
         self.permissions = permissions
+        self.creator = creator
 
     def __eq__(self, other):
         if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:

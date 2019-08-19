@@ -66,6 +66,9 @@ WorkflowJSON:
       nullable: true
       items:
         type: object
+    creator:
+      type: integer
+      description: The User ID of the creator of the global variable
 
 
 WorkflowMetaData:

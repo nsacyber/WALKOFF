@@ -36,8 +36,9 @@ class GlobalVariable(object):
         'description': 'str',
         'id_': 'str',
         'name': 'str',
+        'value': 'object',
         'permissions': 'list[object]',
-        'value': 'object'
+        'creator': 'int'
     }
 
     attribute_map = {
@@ -45,19 +46,21 @@ class GlobalVariable(object):
         'description': 'description',
         'id_': 'id_',
         'name': 'name',
+        'value': 'value',
         'permissions': 'permissions',
-        'value': 'value'
+        'creator': 'creator'
     }
 
-    def __init__(self, walkoff_type=None, description=None, id_=None, name=None, permissions=None, value=None):  # noqa: E501
+    def __init__(self, walkoff_type=None, description=None, id_=None, name=None, value=None, permissions=None, creator=None):  # noqa: E501
         """GlobalVariable - a model defined in OpenAPI"""  # noqa: E501
 
         self._walkoff_type = None
         self._description = None
         self._id_ = None
         self._name = None
-        self._permissions = None
         self._value = None
+        self._permissions = None
+        self._creator = None
         self.discriminator = None
 
         if walkoff_type is not None:
@@ -67,9 +70,11 @@ class GlobalVariable(object):
         if id_ is not None:
             self.id_ = id_
         self.name = name
+        self.value = value
         if permissions is not None:
             self.permissions = permissions
-        self.value = value
+        if creator is not None:
+            self.creator = creator
 
     @property
     def walkoff_type(self):
@@ -210,6 +215,27 @@ class GlobalVariable(object):
             raise ValueError("Invalid value for `value`, must not be `None`")  # noqa: E501
 
         self._value = value
+
+    @property
+    def creator(self):
+        """Gets the creator of this GlobalVariable.  # noqa: E501
+
+
+        :return: The creator of this GlobalVariable.  # noqa: E501
+        :rtype: list[object]
+        """
+        return self.creator
+
+    @creator.setter
+    def creator(self, creator):
+        """Sets the creator of this GlobalVariable.
+
+
+        :param creator: The creator of this GlobalVariable.  # noqa: E501
+        :type: list[object]
+        """
+
+        self._creator = creator
 
     def to_dict(self):
         """Returns the model properties as a dict"""

@@ -13,6 +13,7 @@ with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(i
 import logging
 logger = logging.getLogger(__name__)
 
+
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 def read_all_users():

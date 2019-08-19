@@ -16,6 +16,8 @@ AddUser:
       active:
         description: activate/deactive a user. Active can only be changed by an admin.
         type: boolean
+      resources_created:
+        type: array
 
 EditUser:
     type: object
