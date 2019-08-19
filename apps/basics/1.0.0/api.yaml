@@ -1,0 +1,91 @@
+walkoff_version: 1.0.0
+app_version: 1.0.0
+name: basics
+description: An example of a Walkoff App specification
+contact_info:
+  name: Walkoff Team
+  url: https://github.com/nsacyber/walkoff
+  email: walkoff@nsa.gov
+license_info:
+  name: Creative Commons
+  url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
+actions:
+  - name: hello_world
+    description: Returns Hello World from the hostname the action is run on
+    returns:
+      schema:
+        type: string
+      example: HELLO WORLD FROM host.name
+  - name: random_number
+    description: Returns a random float between 0.0 and 1.0
+    returns:
+      schema:
+        type: number
+  - name: string_to_json
+    description: returns the string output from trigger data if it's in Json format.
+    parameters:
+      - name: call
+        description: string to be converted to json
+        required: true
+        schema:
+          type: string
+    returns:
+      schema:
+        type: object
+      example: '{"Walkoff":"Running"}'
+  - name: echo_string
+    description: Repeats the call parameter
+    parameters:
+      - name: call
+        description: message to repeat
+        required: true
+        schema:
+          type: string
+    returns:
+      schema:
+        type: string
+      example: "REPEATING: Hello world"
+  - name: return_plus_one
+    description: Increments the number parameter by 1
+    parameters:
+      - name: number
+        description: number to increment
+        required: true
+        schema:
+          type: number
+        placeholder: 1
+    returns:
+      schema:
+        type: number
+      example: 2
+  - name: pause
+    description: Pause execution by the seconds parameter
+    parameters:
+      - name: seconds
+        description: seconds to pause for
+        required: true
+        schema:
+          type: number
+  - name: echo_array
+    description: Echo the data parameter
+    parameters:
+      - name: data
+        description: array to echo
+        parallelizable: true
+        required: true
+        schema:
+          type: array
+    returns:
+      schema:
+        type: array
+  - name: echo_json
+    description: echos the given JSON object
+    parameters:
+      - name: data
+        description: The data to echo
+        required: true
+        schema:
+          type: object
+    returns:
+      schema:
+        type: object

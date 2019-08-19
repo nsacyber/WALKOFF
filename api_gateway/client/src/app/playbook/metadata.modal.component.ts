@@ -71,7 +71,7 @@ export class MetadataModalComponent {
             existingPermission.permissions = this.newPermission.permissions : 
             this.workflow.permissions.push(this.newPermission);
         
-        this.workflow.permissions.sort((a, b) => a.role.localeCompare(b.role));
+        this.workflow.permissions.sort((a, b) => this.getRoleName(a).localeCompare(this.getRoleName(b)));
         this.newPermission = { role: '', permissions: '' };
     }
 
@@ -80,7 +80,7 @@ export class MetadataModalComponent {
     }
 
     getRoleName(p: any): string {
-        const role = this.systemRoles.find(role => role.name == p.role);
+        const role = this.systemRoles.find(role => role.id == p.role);
         return role ? role.name : null;
     }
 

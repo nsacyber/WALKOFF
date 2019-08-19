@@ -107,7 +107,7 @@ def create_global():
     if new_permissions:
         update_permissions("global_variables", global_id, new_permissions=new_permissions)
     else:
-        default_permissions("global_variables", global_id)
+        default_permissions("global_variables", global_id, data=data)
 
     try:
         key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
@@ -135,7 +135,7 @@ def update_global(global_var):
         if new_permissions:
             auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
         else:
-            default_permissions("global_variables", global_id)
+            default_permissions("global_variables", global_id, data=data)
 
         try:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')

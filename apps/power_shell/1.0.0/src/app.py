@@ -49,7 +49,8 @@ class PowerShell(AppBase):
                               username=username, password=password)
 
                 with WinRS(wsman) as shell:
-                    script = open(local_file_path, "r").read()
+                    with open(local_file_path, "r") as f:
+                        script = f.read()
                     process = Process(shell, script)
                     process.invoke()
                     results[host] = {"stdout": process.stdout.decode(), "stderr": process.stderr.decode()}
@@ -128,8 +129,8 @@ class PowerShell(AppBase):
                               username=username, password=password)
 
                 with WinRS(wsman) as shell:
-                    # for command in commands:
-                    script = open(local_file_path, "r").read()
+                    with open(local_file_path, "r") as f:
+                        script = f.read()
 
                     process = Process(shell, shell_type, script)
                     process.begin_invoke()  # start the invocation and return immediately
