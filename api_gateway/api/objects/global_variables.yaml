@@ -16,6 +16,8 @@ GlobalVariable:
       type: array
       items:
         type: object
+    access_level:
+      type: integer
     creator:
       type: integer
       description: The User ID of the creator of the global variable

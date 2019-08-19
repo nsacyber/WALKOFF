@@ -41,6 +41,7 @@ class Workflow(Base):
     tags = Column(JSON, default="")
     _walkoff_type = Column(String(80), default=__tablename__)
     permissions = Column(JSON)
+    access_level = Column(Integer)
     creator = Column(Integer, default=2)
 
     actions = relationship("Action", cascade="all, delete-orphan", passive_deletes=True)
