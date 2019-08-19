@@ -15,7 +15,7 @@ from api_gateway.security import permissions_accepted_for_resources, ResourcePer
 from api_gateway.server.decorators import with_resource_factory, paginate
 from api_gateway.server.problem import unique_constraint_problem
 from http import HTTPStatus
-from common.roles_helpers import auth_check, update_permissions, default_permissions
+from common.roles_helpers import auth_check, update_permissions, default_permissions, creator_check
 
 import logging
 logger = logging.getLogger(__name__)
@@ -120,9 +120,9 @@ def create_global():
 
     new_permissions = data['permissions']
     if new_permissions:
-        update_permissions("global_variables", global_id, new_permissions=new_permissions)
+        update_permissions("global_variables", global_id, new_permissions=new_permissions, creator=curr_user.id)
     else:
-        default_permissions("global_variables", global_id, data=data)
+        default_permissions("global_variables", global_id, data=data, creator=curr_user.id)
 
     try:
         key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')

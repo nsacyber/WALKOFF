@@ -15,7 +15,7 @@ from marshmallow import ValidationError
 
 from common.config import config, static
 from common.message_types import StatusEnum, message_dumps
-from common.roles_helpers import auth_check
+from common.roles_helpers import auth_check, creator_check
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
 from api_gateway.serverdb.user import User
 from api_gateway.extensions import db
@@ -64,11 +64,9 @@ def get_all_workflow_status():
     r = current_app.running_context.execution_db.session.query(WorkflowStatus).order_by(WorkflowStatus.name).all()
     ret = []
     for wf_status in r:
-        workflow = current_app.running_context.execution_db.session.query(Workflow)\
-            .filter(Workflow.name == wf_status.name).first()
-        to_read = auth_check(wf_status.name, "read", "workflows")
-
-        if (workflow is None) or (workflow.creator == curr_user_id) or to_read:
+        wf_creator = creator_check(str(wf_status.workflow_id), "workflows")
+        to_read = auth_check(str(wf_status.workflow_id), "read", "workflows")
+        if (wf_creator == curr_user_id) or to_read:
             ret.append(wf_status)
 
     return ret, HTTPStatus.OK
@@ -81,10 +79,10 @@ def get_workflow_status(execution):
     curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
     workflow_status = workflow_status_schema.dump(execution)
-    workflow = current_app.running_context.execution_db.session.query(Workflow) \
-        .filter(Workflow.name == workflow_status["name"]).first()
-    to_read = auth_check(workflow_status["name"], "read", "workflows")
-    if (workflow is None) or (workflow.creator == curr_user_id) or to_read:
+
+    to_read = auth_check(str(workflow_status.workflow_id), "read", "workflows")
+    wf_creator = creator_check(str(workflow_status.workflow_id), "workflows")
+    if (wf_creator == curr_user_id) or to_read:
         return workflow_status, HTTPStatus.OK
     else:
         return None, HTTPStatus.FORBIDDEN
@@ -100,8 +98,9 @@ def execute_workflow():
     username = get_jwt_claims().get('username', None)
     curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
-    to_execute = auth_check(workflow.name, "execute", "workflows")
-    if (workflow.creator == curr_user_id) or to_execute:
+    to_execute = auth_check(str(workflow.id_), "execute", "workflows")
+    wf_creator = creator_check(str(workflow.id_), "workflows")
+    if (wf_creator == curr_user_id) or to_execute:
         if not workflow:
             return dne_problem("workflow", "execute", workflow_id)
 
@@ -194,7 +193,7 @@ def control_workflow(execution):
     workflow = workflow_getter(execution.workflow_id)
     # The resource factory returns the WorkflowStatus model but we want the string of the execution ID
     execution_id = str(execution.execution_id)
-    to_execute = auth_check(workflow.name, "execute", "workflows")
+    to_execute = auth_check(str(workflow.id_), "execute", "workflows")
     username = get_jwt_claims().get('username', None)
     curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
