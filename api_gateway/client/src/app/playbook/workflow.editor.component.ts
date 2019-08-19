@@ -1764,4 +1764,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.workflows.forEach(w => tags = tags.concat(w.tags));
 		return tags.filter((v, i, a) => a.indexOf(v) == i);
 	}
+
+	closeActionSettingMenu() {
+		this.cy.$('this.selectedAction.id').unselect();
+	}
 }

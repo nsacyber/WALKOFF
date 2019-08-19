@@ -163,7 +163,7 @@
                     <h4 class="mb-0">Action Settings</h4>
                     <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary"
                     (click)="setStartNode(selectedAction.id)">Set Start Action</button>
-                    <button class="btn btn-sm btn-danger">Close Settings</button>
+                    <button class="btn btn-sm btn-danger" (click)="closeActionSettingMenu()">Close Settings</button>
                 </div>
 
                 <div class="form-row">
