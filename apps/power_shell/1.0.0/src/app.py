@@ -1,6 +1,7 @@
 import datetime
 import asyncio
 import logging
+import json
 
 from pypsrp.client import Process, SignalCode, WinRS, PowerShell as PS, RunspacePool
 from pypsrp.wsman import WSMan
@@ -8,6 +9,18 @@ from pypsrp.wsman import WSMan
 from walkoff_app_sdk.app_base import AppBase
 
 logging.getLogger("urllib3").setLevel(logging.ERROR)
+
+
+class ObjectEncoder(json.JSONEncoder):
+    def default(self, obj):
+        try:
+            json.dumps(obj)
+            return super(ObjectEncoder, self).default(obj)
+        except:
+            try:
+                return str(obj)
+            except:
+                return "Value from returned PowerShell object is not JSON Serializable."
 
 
 class PowerShell(AppBase):
@@ -123,15 +136,20 @@ class PowerShell(AppBase):
                 with RunspacePool(wsman) as pool:
                     with open(local_file_name, "r") as f:
                         script = f.read()
-
                     ps = PS(pool)
                     ps.add_script(script)
                     ps.invoke()
-
+                    this_result = []
+                    for line in ps.output:
+                        this_result.append({
+                            "name": str(line),
+                            "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
+                            "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
+                        })
                     if ps.had_errors:
-                        results[host] = {"stdout": "", "stderr": ps.output}
+                        results[host] = {"stdout": "", "stderr": this_result}
                     else:
-                        results[host] = {"stdout": ps.output, "stderr": ""}
+                        results[host] = {"stdout": this_result, "stderr": ""}
 
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
