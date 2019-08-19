@@ -64,8 +64,6 @@ def get_all_workflow_status():
     r = current_app.running_context.execution_db.session.query(WorkflowStatus).order_by(WorkflowStatus.name).all()
     ret = []
     for wf_status in r:
-        logger.info(f"The workflow status -> {wf_status}")
-        logger.info(f"The workflow status name -> {wf_status.name}")
         workflow = current_app.running_context.execution_db.session.query(Workflow)\
             .filter(Workflow.name == wf_status.name).first()
         to_read = auth_check(wf_status.name, "read", "workflows")
