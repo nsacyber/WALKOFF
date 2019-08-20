@@ -54,11 +54,15 @@ def create_workflow():
     curr_user = db.session.query(User).filter(User.username == username).first()
     data.update({'creator': curr_user.id})
 
+    # handling old WALKOFF workflow data
     try:
         new_permissions = data['permissions']
+        access_level = data['access_level']
     except:
         new_permissions = []
         data['permissions'] = []
+        access_level = 0
+        data['access_level'] = 0
 
     if request.files and 'file' in request.files:
         data = json.loads(request.files['file'].read().decode('utf-8'))
@@ -81,11 +85,14 @@ def create_workflow():
 
     try:
         workflow = workflow_schema.load(data)
-
-        if new_permissions:
-            update_permissions("workflows", str(workflow.id_), new_permissions=new_permissions, creator=curr_user.id)
-        else:
+        if access_level == 0:
+            update_permissions("workflows", str(workflow.id_),
+                               new_permissions=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}],
+                               creator=curr_user.id)
+        elif access_level == 1:
             default_permissions("workflows", str(workflow.id_), data, creator=curr_user.id)
+        elif access_level == 2:
+            update_permissions("workflows", str(workflow.id_), new_permissions=new_permissions, creator=curr_user.id)
 
         current_app.running_context.execution_db.session.add(workflow)
         current_app.running_context.execution_db.session.commit()
@@ -101,14 +108,15 @@ def create_workflow():
 
 def import_workflow_and_regenerate_ids(workflow_json, creator):
     new_permissions = workflow_json['permissions']
+    access_level = workflow_json['access_level']
 
     regenerate_workflow_ids(workflow_json)
     workflow_json['name'] = workflow_json.get("name")
 
-    if new_permissions:
-        update_permissions("workflows", workflow_json['id_'], new_permissions=new_permissions, creator=creator)
-    else:
+    if access_level == 1:
         default_permissions("workflows", workflow_json['id_'], data=workflow_json, creator=creator)
+    elif access_level == 2:
+        update_permissions("workflows", workflow_json['id_'], new_permissions=new_permissions, creator=creator)
 
     try:
         new_workflow = workflow_schema.load(workflow_json)
@@ -197,13 +205,18 @@ def update_workflow(workflow):
     data = request.get_json()
 
     new_permissions = data['permissions']
+    access_level = data['access_level']
 
     to_update = auth_check(str(workflow.id_), "update", "workflows")
     if (workflow.creator == curr_user_id) or to_update:
-        if new_permissions:
-            auth_check(str(workflow.id_), "update", "workflows", updated_roles=new_permissions)
-        else:
+        if access_level == 0:
+            auth_check(str(workflow.id_), "update", "workflows",
+                       updated_roles=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}])
+        elif access_level == 1:
             default_permissions("workflows", str(workflow.id_), data=data)
+        elif access_level == 2:
+            auth_check(str(workflow.id_), "update", "workflows", updated_roles=new_permissions)
+
         try:
             workflow_schema.load(data, instance=workflow)
             current_app.running_context.execution_db.session.commit()
