@@ -217,7 +217,7 @@
                     <playbook-argument-component
                         *ngFor="let parameterApi of selectedActionApi.parameters; let id = index"
                         [selectedAction]="selectedAction" [loadedWorkflow]="loadedWorkflow"
-                        [argument]="getOrInitializeSelectedActionArgument(parameterApi)" [globals]="globals"
+                        [argument]="getActionArgument(parameterApi)" [globals]="globals"
                         [parameterApi]="parameterApi" [id]="id" [users]="users" [roles]="roles"
                         (createVariable)="onCreateVariable($event)"></playbook-argument-component>
                 </div>
@@ -324,50 +324,6 @@ else:
                     <playbook-conditional-expression-component *ngIf="selectedAction.trigger"
                         [conditionalExpression]="selectedAction.trigger" [appApis]="appApis"
                         [selectedAppName]="selectedAction.app_name" [loadedWorkflow]="loadedWorkflow"
-                        (createVariable)="onCreateVariable($event)"></playbook-conditional-expression-component>
-                </div>
-            </div>
-            <!-- Editor for Branches (edges) -->
-            <div *ngIf="selectedBranchParams && selectedBranchParams.branch && false" class="parametersEditor">
-                <h3>Branch Parameters</h3>
-                <div class="form-group">
-                    <label for="status">Return Type
-                        <i class="fa fa-asterisk required" title="This field is required."></i>
-                    </label>
-                    <select class="form-control" [(ngModel)]="selectedBranchParams.branch.status" name="status">
-                        <option *ngFor="let i of selectedBranchParams.returnTypes" [value]="i.status" [label]="i.status"
-                            [class.failure]="i.failure">{{i.status}}</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="priority">Priority
-                        <i class="fa fa-asterisk required" title="This field is required."></i>
-                    </label>
-                    <input type="number" max="999" min="1" class="form-control"
-                        [(ngModel)]="selectedBranchParams.branch.priority" name="priority" required>
-                </div>
-                <div>
-                    <div class="row">
-                        <div class="col-6">
-                            <h4>Condition</h4>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-group">
-                                <button *ngIf="!selectedBranchParams.branch.condition"
-                                    class="btn btn-primary pull-right"
-                                    (click)="specifyCondition(selectedBranchParams.branch)">
-                                    <i class="fa fa-plus"></i>Specify Condition
-                                </button>
-                                <button *ngIf="selectedBranchParams.branch.condition" class="btn btn-danger pull-right"
-                                    (click)="removeCondition(selectedBranchParams.branch)">
-                                    <i class="fa fa-close"></i>Remove Condition
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <playbook-conditional-expression-component *ngIf="selectedBranchParams.branch.condition"
-                        [conditionalExpression]="selectedBranchParams.branch.condition" [appApis]="appApis"
-                        [selectedAppName]="selectedBranchParams.appName" [loadedWorkflow]="loadedWorkflow"
                         (createVariable)="onCreateVariable($event)"></playbook-conditional-expression-component>
                 </div>
             </div>
