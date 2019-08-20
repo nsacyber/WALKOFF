@@ -73,7 +73,6 @@ def create_workflow():
             return unique_constraint_problem('workflow', 'create', workflow_name)
 
         copy_permissions = wf.permissions
-        logger.info(f"what the heck, this is curr_user.id {curr_user.id}")
         return copy_workflow(workflow=wf, permissions=copy_permissions, workflow_name=workflow_name,
                              creator=curr_user.id)
 
@@ -197,8 +196,6 @@ def read_workflow(workflow):
     curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
     to_read = auth_check(str(workflow.id_), "read", "workflows")
-    logger.info(f"to read -> {to_read}")
-    logger.info(f"workflow creator -> {workflow.creator}")
     if (workflow.creator == curr_user_id) or to_read:
         workflow_json = workflow_schema.dump(workflow)
         if request.args.get('mode') == "export":
@@ -224,8 +221,6 @@ def update_workflow(workflow):
     access_level = data['access_level']
 
     to_update = auth_check(str(workflow.id_), "update", "workflows")
-    logger.info(f"to update -> {to_update}")
-    logger.info(f"workflow creator -> {workflow.creator}")
     if (workflow.creator == curr_user_id) or to_update:
         if access_level == 0:
             auth_check(str(workflow.id_), "update", "workflows",
