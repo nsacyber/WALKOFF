@@ -931,7 +931,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			this.playbookService.newWorkflow(workflowToSave).then(savedWorkflow => {
 				this.loadedWorkflow = savedWorkflow;
 				this.originalWorkflow = savedWorkflow.clone();
-				
+
 				this.toastrService.success(`Saved <b>${ savedWorkflow.name }</b>`);
 				this.router.navigateByUrl(`/workflows/${ savedWorkflow.id }`);
 			}).catch(e => this.toastrService.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
@@ -1661,6 +1661,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	switchConsoleTabs($e: NgbTabChangeEvent) {
+		if ($e.nextId == 'menu-tab' ) return $e.preventDefault();
+
 		this.showConsole = true;
 		const options = { zoom: this.cy.zoom(), pan: this.cy.pan() }
 		setTimeout(() => {

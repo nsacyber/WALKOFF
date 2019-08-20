@@ -1,11 +1,26 @@
 import datetime
 import asyncio
-import os
+import logging
+import json
 
-from pypsrp.client import Process, SignalCode, WinRS
+from pypsrp.client import Process, SignalCode, WinRS, PowerShell as PS, RunspacePool
 from pypsrp.wsman import WSMan
 
 from walkoff_app_sdk.app_base import AppBase
+
+logging.getLogger("urllib3").setLevel(logging.ERROR)
+
+
+class ObjectEncoder(json.JSONEncoder):
+    def default(self, obj):
+        try:
+            json.dumps(obj)
+            return super(ObjectEncoder, self).default(obj)
+        except:
+            try:
+                return str(obj)
+            except:
+                return "Value from returned PowerShell object is not JSON Serializable."
 
 
 class PowerShell(AppBase):
@@ -36,11 +51,6 @@ class PowerShell(AppBase):
         """
 
         results = {}
-        curr_dir = os.getcwd()
-        temp_dir = os.path.join(curr_dir, r'scripts')
-        os.chdir(temp_dir)
-        curr_dir = os.getcwd()
-        local_file_path = os.path.join(curr_dir, local_file_name)
 
         for host in hosts:
             results[host] = ""
@@ -49,7 +59,7 @@ class PowerShell(AppBase):
                               username=username, password=password)
 
                 with WinRS(wsman) as shell:
-                    with open(local_file_path, "r") as f:
+                    with open(local_file_name, "r") as f:
                         script = f.read()
                     process = Process(shell, script)
                     process.invoke()
@@ -114,11 +124,6 @@ class PowerShell(AppBase):
         :return: dict of results with hosts as keys and list of outputs for each specified hosts
         """
         results = {}
-        curr_dir = os.getcwd()
-        temp_dir = os.path.join(curr_dir, r'scripts')
-        os.chdir(temp_dir)
-        curr_dir = os.getcwd()
-        local_file_path = os.path.join(curr_dir, local_file_name)
 
         for host in hosts:
             self.logger.info(f"Executing on {host}")
@@ -128,24 +133,32 @@ class PowerShell(AppBase):
                 wsman = WSMan(host, ssl=server_cert_validation, auth=transport, encryption=message_encryption,
                               username=username, password=password)
 
-                with WinRS(wsman) as shell:
-                    with open(local_file_path, "r") as f:
+                with RunspacePool(wsman) as pool:
+                    with open(local_file_name, "r") as f:
                         script = f.read()
-
-                    process = Process(shell, shell_type, script)
-                    process.begin_invoke()  # start the invocation and return immediately
-                    process.poll_invoke()  # update the output stream
-                    process.end_invoke()  # finally wait until the process is finished
-                    results[host] = {"stdout": process.stdout.decode(), "stderr": process.stderr.decode()}
-                    process.signal(SignalCode.CTRL_C)
+                    ps = PS(pool)
+                    ps.add_script(script)
+                    ps.invoke()
+                    this_result = []
+                    for line in ps.output:
+                        this_result.append({
+                            "name": str(line),
+                            "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
+                            "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
+                        })
+                    if ps.had_errors:
+                        results[host] = {"stdout": "", "stderr": this_result}
+                    else:
+                        results[host] = {"stdout": this_result, "stderr": ""}
 
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
 
         return results
 
-    async def exec_powershell_script(self, hosts, shell_type, arguments, username, password, transport, server_cert_validation,
-                              message_encryption):
+    async def exec_powershell_script(self, hosts, shell_type, arguments, username, password, transport,
+                                     server_cert_validation,
+                                     message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -182,7 +195,6 @@ class PowerShell(AppBase):
                 results[host] = {"stdout": "", "stderr": f"{e}"}
 
         return results
-
 
 if __name__ == "__main__":
     asyncio.run(PowerShell.run())

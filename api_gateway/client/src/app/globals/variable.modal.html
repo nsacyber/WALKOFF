@@ -29,7 +29,7 @@
                         data-target="#permission-list">
                         <span class="card-title my-auto">Restrict Access</span>
                     </div>
-                    <div id="permission-list" class="collapse show">
+                    <div id="permission-list" class="collapse" [class.show]="variable.permissions.length > 0">
                         <div class="card-body my-auto p-3">
                             <small class="form-text text-muted pb-3">
                                 By default anyone with access to WALKOFF will have full permissions on this resource.  

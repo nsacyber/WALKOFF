@@ -1,5 +1,5 @@
 import logging
-import os
+import asyncio
 import sys
 
 import aioredis
@@ -68,6 +68,8 @@ class AppBase:
         app_group = f"{self.app_name}:{self.__version__}"
 
         while True:
+            await asyncio.sleep(1)
+
             streams = await self.redis.keys(f"{UUID_GLOB}:{app_group}", encoding='utf-8')
             aborted = await self.redis.smembers(static.REDIS_ABORTING_WORKFLOWS, encoding="utf-8")
             streams = [s for s in streams if s.split(':')[0] not in aborted]

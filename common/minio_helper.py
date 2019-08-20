@@ -47,10 +47,11 @@ class MinioApi:
             if p_src.parts[1] == app_name:
                 hold = str(p_src)
                 p_dst = hold[hold.find(app_name):]
-                p_dst = f"./temp_apps/{p_dst}"
+                p_dst = Path("temp_apps") / p_dst
+                os.makedirs(p_dst.parent, exist_ok=True)
 
                 data = minio_client.get_object('apps-bucket', hold)
-                with open(str(p_dst), 'wb') as file_data:
+                with open(p_dst, 'wb+') as file_data:
                     for d in data.stream(size):
                         file_data.write(d)
 
@@ -136,10 +137,11 @@ class MinioApi:
             if p_src.parts[1] == app_name:
                 hold = str(p_src)
                 p_dst = hold[hold.find(app_name):]
-                p_dst = f"./apps/{p_dst}"
+                p_dst = Path("apps") / p_dst
+                os.makedirs(p_dst.parent, exist_ok=True)
 
                 data = minio_client.get_object('apps-bucket', hold)
-                with open(str(p_dst), 'wb') as file_data:
+                with open(str(p_dst), 'wb+') as file_data:
                     for d in data.stream(size):
                         file_data.write(d)
                 owner_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_uid
