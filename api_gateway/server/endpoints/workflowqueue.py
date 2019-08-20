@@ -80,8 +80,8 @@ def get_workflow_status(execution):
 
     workflow_status = workflow_status_schema.dump(execution)
 
-    to_read = auth_check(str(workflow_status.workflow_id), "read", "workflows")
-    wf_creator = creator_check(str(workflow_status.workflow_id), "workflows")
+    to_read = auth_check(str(workflow_status['workflow_id']), "read", "workflows")
+    wf_creator = creator_check(str(workflow_status['workflow_id']), "workflows")
     if (wf_creator == curr_user_id) or to_read:
         return workflow_status, HTTPStatus.OK
     else:

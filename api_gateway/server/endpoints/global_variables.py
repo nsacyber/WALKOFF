@@ -121,6 +121,7 @@ def create_global():
     new_permissions = data['permissions']
     access_level = data['access_level']
 
+    # creator only
     if access_level == 0:
         update_permissions("global_variables", global_id,
                            new_permissions=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}],

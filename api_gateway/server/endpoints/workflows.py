@@ -66,7 +66,6 @@ def create_workflow():
 
     if request.files and 'file' in request.files:
         data = json.loads(request.files['file'].read().decode('utf-8'))
-
     if workflow_id:
         wf = current_app.running_context.execution_db.session.query(Workflow)\
             .filter(Workflow.id_ == workflow_id).first()
@@ -74,7 +73,7 @@ def create_workflow():
             return unique_constraint_problem('workflow', 'create', workflow_name)
 
         copy_permissions = wf.permissions
-
+        logger.info(f"what the heck, this is curr_user.id {curr_user.id}")
         return copy_workflow(workflow=wf, permissions=copy_permissions, workflow_name=workflow_name,
                              creator=curr_user.id)
 
@@ -85,12 +84,15 @@ def create_workflow():
 
     try:
         workflow = workflow_schema.load(data)
+        # creator only
         if access_level == 0:
             update_permissions("workflows", str(workflow.id_),
                                new_permissions=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}],
                                creator=curr_user.id)
+        # default permissions
         elif access_level == 1:
             default_permissions("workflows", str(workflow.id_), data, creator=curr_user.id)
+        # user-specified permissions
         elif access_level == 2:
             update_permissions("workflows", str(workflow.id_), new_permissions=new_permissions, creator=curr_user.id)
 
@@ -113,6 +115,10 @@ def import_workflow_and_regenerate_ids(workflow_json, creator):
     regenerate_workflow_ids(workflow_json)
     workflow_json['name'] = workflow_json.get("name")
 
+    if access_level == 0:
+        update_permissions("workflows", workflow_json['id_'],
+                           new_permissions=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}],
+                           creator=creator)
     if access_level == 1:
         default_permissions("workflows", workflow_json['id_'], data=workflow_json, creator=creator)
     elif access_level == 2:
@@ -135,7 +141,7 @@ def copy_workflow(workflow, permissions, workflow_name=None, creator=None):
     workflow_json = deepcopy(old_json)
 
     update_check = auth_check(workflow_json["id_"], "update", "workflows")
-    if not update_check:
+    if (not update_check) and (workflow_json['creator'] != creator):
         return None, HTTPStatus.FORBIDDEN
 
     regenerate_workflow_ids(workflow_json)
@@ -145,7 +151,16 @@ def copy_workflow(workflow, permissions, workflow_name=None, creator=None):
     else:
         workflow_json['name'] = old_json.get("name")
 
-    update_permissions("workflows", workflow_json['id_'], permissions, creator=creator)
+    workflow_json['creator'] = creator
+    access_level = workflow_json['access_level']
+    if access_level == 0:
+        update_permissions("workflows", workflow_json['id_'],
+                           new_permissions=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}],
+                           creator=creator)
+    if access_level == 1:
+        default_permissions("workflows", workflow_json['id_'], data=workflow_json, creator=creator)
+    elif access_level == 2:
+        update_permissions("workflows", workflow_json['id_'], new_permissions=permissions, creator=creator)
 
     try:
         new_workflow = workflow_schema.load(workflow_json)
@@ -182,7 +197,8 @@ def read_workflow(workflow):
     curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
     to_read = auth_check(str(workflow.id_), "read", "workflows")
-
+    logger.info(f"to read -> {to_read}")
+    logger.info(f"workflow creator -> {workflow.creator}")
     if (workflow.creator == curr_user_id) or to_read:
         workflow_json = workflow_schema.dump(workflow)
         if request.args.get('mode') == "export":
@@ -208,6 +224,8 @@ def update_workflow(workflow):
     access_level = data['access_level']
 
     to_update = auth_check(str(workflow.id_), "update", "workflows")
+    logger.info(f"to update -> {to_update}")
+    logger.info(f"workflow creator -> {workflow.creator}")
     if (workflow.creator == curr_user_id) or to_update:
         if access_level == 0:
             auth_check(str(workflow.id_), "update", "workflows",
