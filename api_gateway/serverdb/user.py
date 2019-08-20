@@ -141,3 +141,16 @@ class User(db.Model, TrackModificationsMixIn):
                 "current_login_ip": self.current_login_ip,
                 "login_count": self.login_count})
         return out
+
+    def permission_json(self):
+        """Returns the dictionary representation of a User's permissions.
+
+        Args:
+            with_user_history (bool, optional): Boolean to determine whether or not to include user history in the JSON
+                representation of the User. Defaults to False.
+
+        Returns:
+            (dict): The dictionary representation of a User's permissions.
+        """
+        out = {"roles": [role.as_json() for role in self.roles]}
+        return out

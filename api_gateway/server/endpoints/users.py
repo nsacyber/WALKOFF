@@ -60,6 +60,13 @@ def read_user(user_id):
 
 
 @jwt_required
+def list_permissions():
+    current_id = get_jwt_identity()
+    current_user = User.query.filter_by(id=current_id).first()
+    return current_user.permission_json(), HTTPStatus.OK
+
+
+@jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
 @with_user('update', 'user_id')
 def update_user(user_id):
