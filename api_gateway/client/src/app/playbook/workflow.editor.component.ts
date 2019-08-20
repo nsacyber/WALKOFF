@@ -1767,5 +1767,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 	closeActionSettingMenu() {
 		this.cy.$('this.selectedAction.id').unselect();
+		const options = { zoom: this.cy.zoom(), pan: this.cy.pan() }
+		setTimeout(() => this.setupGraph(options));
 	}
 }

@@ -148,13 +148,13 @@
         </div>
 
         <!-- Actual cytoscape graph editor -->
-        <div class="col-md-7 graphEditorColumn graphArea">
+        <div [ngClass]="selectedAction ? 'col-md-7' : 'col-md-10'" class=" graphEditorColumn graphArea">
             <div id="cy" #cyRef dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow"
                 tabindex="0"></div>
         </div>
 
         <!-- Parameter editors -->
-        <div class="col-md-3 graphEditorColumn">
+        <div [ngClass]="selectedAction ? 'col-md-3' : 'hidden-xs'" class="graphEditorColumn">
             <!-- Editor for Actions -->
             <div *ngIf="!waitingOnData && selectedAction" class="parametersEditor">
                 <div class="d-flex justify-content-between my-2">
