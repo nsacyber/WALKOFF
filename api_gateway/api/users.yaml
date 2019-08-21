@@ -125,3 +125,25 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+
+/users/permissions:
+  get:
+    tags:
+      - Users
+    summary: Get a user's permissions JSON
+    description: ''
+    operationId: api_gateway.server.endpoints.users.list_permissions
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              description: The user object matching the user id inputted
+              $ref: '#/components/schemas/DisplayUser'
+      404:
+        description: Could not display user <username>. User does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

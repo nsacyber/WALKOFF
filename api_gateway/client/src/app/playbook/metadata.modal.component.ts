@@ -6,6 +6,7 @@ import { NgForm, NgModel } from '@angular/forms';
 import { Role } from '../models/role';
 import { SettingsService } from '../settings/settings.service';
 import { ToastrService } from 'ngx-toastr';
+import { PlaybookService } from './playbook.service';
 
 @Component({
     selector: 'metadata-modal-component',
@@ -16,11 +17,10 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class MetadataModalComponent {
     @Input() workflow: Workflow = new Workflow();
-    @Input() existingWorkflows: Workflow[] = [];
-    @Input() currentTags: string[] = [];
     @Input() existing: boolean = false;
 
     permissionOptions = WorkflowPermission.PERMISSIONS;
+    existingWorkflows: Workflow[] = [];
     systemRoles: Role[] = [];
     newPermission: any = { role: '', permissions: '' };
 
@@ -37,10 +37,12 @@ export class MetadataModalComponent {
         placeholder: 'Add Tags...'
     };
 
-    constructor(public activeModal: NgbActiveModal, public settingsService: SettingsService, public toastrService: ToastrService) { }
+    constructor(public activeModal: NgbActiveModal, public playbookService: PlaybookService,
+        public settingsService: SettingsService, public toastrService: ToastrService) { }
 
     ngOnInit(): void {
         this.settingsService.getRoles().then(roles => this.systemRoles = roles);
+        this.playbookService.getWorkflows().then(workflows => this.existingWorkflows = workflows);
     }
 
     tagsChanged($event: any): void {
@@ -88,4 +90,10 @@ export class MetadataModalComponent {
         const permission = this.permissionOptions.find(o => JSON.stringify(o.crud) == JSON.stringify(r.permissions))
         return permission ? permission.description : null;
     }
+
+    get currentTags(): string[] {
+		let tags = this.workflow.tags || [];
+		this.existingWorkflows.forEach(w => tags = tags.concat(w.tags));
+		return tags.filter((v, i, a) => a.indexOf(v) == i);
+	}
 }
