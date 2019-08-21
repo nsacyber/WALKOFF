@@ -448,7 +448,7 @@ class Worker:
 
         if isinstance(node, Action):
             if node.parallelized:
-                node.started_at = str(datetime.datetime.now().isoformat())
+                node.started_at = datetime.datetime.now()
                 params = await self.dereference_params(node)
                 await send_status_update(self.session, self.workflow.execution_id,
                                          NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
@@ -484,7 +484,7 @@ class Worker:
 
                 params = await self.dereference_params(node)
 
-                node.started_at = str(datetime.datetime.now().isoformat())
+                node.started_at = datetime.datetime.now()
                 await send_status_update(self.session, self.workflow.execution_id,
                                          NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
                                                                                started_at=node.started_at,
@@ -501,7 +501,7 @@ class Worker:
                 await self.redis.xadd(stream, {node.execution_id: workflow_dumps(node)})
 
         elif isinstance(node, Condition):
-            node.started_at = str(datetime.datetime.now().isoformat())
+            node.started_at = datetime.datetime.now()
             await send_status_update(self.session, self.workflow.execution_id,
                                      NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
                                                                            started_at=node.started_at,
@@ -516,7 +516,7 @@ class Worker:
             await self.evaluate_condition(node, parents, children)
 
         elif isinstance(node, Transform):
-            node.started_at = str(datetime.datetime.now().isoformat())
+            node.started_at = datetime.datetime.now()
             await send_status_update(self.session, self.workflow.execution_id,
                                      NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
                                                                            started_at=node.started_at,
@@ -543,7 +543,7 @@ class Worker:
                     logger.info(f"Triggered {self.workflow.name} at {node.label}-{self.workflow.execution_id} "
                                 f"with {msg}")
 
-                    node.started_at = str(datetime.datetime.now().isoformat())
+                    node.started_at = datetime.datetime.now()
                     await send_status_update(self.session, self.workflow.execution_id,
                                              NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
                                                                                    started_at=node.started_at))

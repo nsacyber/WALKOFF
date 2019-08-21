@@ -114,7 +114,7 @@ class AppBase:
 
         if hasattr(self, action.name):
             # Tell everyone we started execution
-            action.started_at = str(datetime.datetime.now().isoformat())
+            action.started_at = datetime.datetime.now()
             start_action_msg = NodeStatusMessage.executing_from_node(action, action.execution_id,
                                                                      started_at=action.started_at)
             await self.redis.xadd(results_stream, {action.execution_id: message_dumps(start_action_msg)})
