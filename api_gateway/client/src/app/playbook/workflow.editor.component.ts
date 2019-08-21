@@ -3,7 +3,7 @@ import { Component, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef,
 import { ToastrService } from 'ngx-toastr';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { UUID } from 'angular2-uuid';
-import { Observable } from 'rxjs';
+import { Observable, interval, timer } from 'rxjs';
 import 'rxjs/Rx';
 import { plainToClass, classToClass } from 'class-transformer';
 import { NgbModal, NgbTabChangeEvent } from '@ng-bootstrap/ng-bootstrap';
@@ -852,6 +852,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.cy.on('select', 'node', (e: any) => this.onNodeSelect(e));
 		this.cy.on('select', 'edge', (e: any) => this.onEdgeSelect(e));
 		this.cy.on('unselect', (e: any) => this.onUnselect(e));
+		this.cy.on('select unselect', (e: any) => this.triggerCanvasResize());
 
 		// Configure handlers when nodes/edges are added or removed
 		this.cy.on('add', 'node', (e: any) => this.onNodeAdded(e));
@@ -1570,19 +1571,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 	toggleConsole() {
 		this.showConsole = ! this.showConsole;
-		const options = { zoom: this.cy.zoom(), pan: this.cy.pan() }
-		setTimeout(() => this.setupGraph(options), 255);
+		this.triggerCanvasResize();
 	}
 
 	switchConsoleTabs($e: NgbTabChangeEvent) {
 		if ($e.nextId == 'menu-tab' ) return $e.preventDefault();
 
 		this.showConsole = true;
-		const options = { zoom: this.cy.zoom(), pan: this.cy.pan() }
-		setTimeout(() => {
-			this.setupGraph(options);
-			this.recalculateConsoleTable($e);
-		}, 255);
+		this.triggerCanvasResize();
+		setTimeout(() => this.recalculateConsoleTable($e), 255);
 	}
 
 	/**
@@ -1671,5 +1668,23 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		modalRef.componentInstance.workflow = this.loadedWorkflow.clone();
 		modalRef.result.then(workflow => this.loadedWorkflow = workflow).catch(() => null)
 		return false;
+	}
+
+	closeActionSettingMenu() {
+		this.cy.$('this.selectedAction.id').unselect();
+		this.triggerCanvasResize();
+	}
+
+	triggerCanvasResize() {
+		// const options = { zoom: this.cy.zoom(), pan: this.cy.pan() }
+		// setTimeout(() => this.setupGraph(options), 255);
+		let height, width;
+		timer(0, 50).takeWhile(_ => height != this.cyRef.nativeElement.offsetHeight || width != this.cyRef.nativeElement.offsetWidth)
+		.do(_ => {
+			height = this.cyRef.nativeElement.offsetHeight
+			width = this.cyRef.nativeElement.offsetWidth
+		})
+		.last()
+		.subscribe(_ => window.dispatchEvent(new Event('resize')))	
 	}
 }
