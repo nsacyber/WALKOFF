@@ -23,6 +23,7 @@ class WorkflowStatus(Base):
         completed_at (datetime): Time the Workflow ended
         user (str): The user who initially executed this workflow
         node_statuses (list[NodeStatus]): A list of NodeStatusMessage objects for this WorkflowStatusMessage
+        current_app
     """
     __tablename__ = 'workflow_status'
 
@@ -39,6 +40,9 @@ class WorkflowStatus(Base):
     # TODO: change these on the db model to be keyed by ID (use an association proxy)
     node_statuses = relationship('NodeStatus', backref=backref("execution_id"), passive_deletes=True,
                                  cascade='all, delete-orphan')
+    app_name = Column(String, default="")
+    action_name = Column(String, default="")
+    label = Column(String, default="")
 
 
 class NodeStatus(Base):

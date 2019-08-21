@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import logging
 import sys
 import os
@@ -149,16 +150,17 @@ class Worker:
         self.execution_task.cancel()
 
         # Try to cancel any outstanding actions
-        msgs = [NodeStatusMessage.aborted_from_node(action, action.execution_id,
+        msgs = [NodeStatusMessage.aborted_from_node(action, action.execution_id, started_at=action.started_at,
                                                     parameters=(await self.dereference_params(action)))
-                                                    for action in self.in_process.values()]
+                for action in self.in_process.values()]
         message_tasks = [send_status_update(self.session, self.workflow.execution_id, msg) for msg in msgs]
         await asyncio.gather(*message_tasks, return_exceptions=True)
 
         logger.info("Canceling outstanding tasks...")
         await asyncio.gather(*self.scheduling_tasks, *message_tasks, self.results_getter_task, self.execution_task,
                              return_exceptions=True)
-        logger.info(f"Successfully aborted workflow: {self.workflow.name} ({self.workflow.id_}) as {self.workflow.execution_id}")
+        logger.info(
+            f"Successfully aborted workflow: {self.workflow.name} ({self.workflow.id_}) as {self.workflow.execution_id}")
 
     async def cancel_helper(self, node, to_cancel):
         children = set(self.workflow.successors(node))
@@ -210,7 +212,8 @@ class Worker:
             for parent_id in parents:
                 # check if parent not a child of start action. If not, set accumulator value of invalid parent to None
                 if parents[parent_id] not in self.workflow.get_dependents(self.start_action):
-                    logger.info(f" WARNING! Node {parents[parent_id]} is not a child of the start action {self.start_action}. This node will not run.")
+                    logger.info(
+                        f" WARNING! Node {parents[parent_id]} is not a child of the start action {self.start_action}. This node will not run.")
                     self.accumulator[parent_id] = None
 
                 if node.id_ not in self.parent_map.keys():
@@ -247,7 +250,7 @@ class Worker:
             child_id = condition(parents, children, self.accumulator)
             selected_node = children.pop(child_id)
             status = NodeStatusMessage.success_from_node(condition, self.workflow.execution_id, selected_node.name,
-                                                         parameters={})
+                                                         parameters={}, started_at=condition.started_at)
             logger.info(f"Condition selected node: {selected_node.label}-{self.workflow.execution_id}")
 
             # We preemptively schedule all branches of execution so we must cancel all "false" branches here
@@ -265,12 +268,12 @@ class Worker:
                 ret = error_tuple[0] + "(): " + error_tuple[1]
 
             status = NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id, result=ret,
-                                                         parameters={})
+                                                         parameters={}, started_at=condition.started_at)
         except KeyError as e:
             logger.exception(f"Worker received error for {condition.name}-{self.workflow.execution_id}")
             status = NodeStatusMessage.failure_from_node(condition, self.workflow.execution_id,
                                                          result="ConditionError(): ensure that a non-parent node is selected and that the node name is not a string.",
-                                                         parameters={})
+                                                         parameters={}, started_at=condition.started_at)
 
         except Exception as e:
             logger.exception(f"Something bad happened in Condition evaluation: {e!r}")
@@ -303,7 +306,6 @@ class Worker:
             action_to_parallel_map[act.id_] = new_value
             self.parallel_in_process[act.id_] = act
 
-
         # self.in_process.pop(node.id_)
         exceptions = await asyncio.gather(*schedule_tasks, return_exceptions=True)
 
@@ -319,7 +321,7 @@ class Worker:
 
         # self.accumulator[node.id_] = [self.parallel_accumulator[a] for a in actions]
         status = NodeStatusMessage.success_from_node(node, self.workflow.execution_id, self.accumulator[node.id_],
-                                                     parameters=parameters)
+                                                     parameters=parameters, started_at=node.started_at)
 
         await self.redis.xadd(self.results_stream, {status.execution_id: message_dumps(status)})
 
@@ -328,7 +330,8 @@ class Worker:
         logger.debug(f"Attempting evaluation of: {transform.label}-{self.workflow.execution_id}")
         try:
             result = transform(parents, self.accumulator)  # run transform on parent's result
-            status = NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result, parameters={})
+            status = NodeStatusMessage.success_from_node(transform, self.workflow.execution_id, result, parameters={},
+                                                         started_at=transform.started_at)
             logger.info(f"Transform {transform.label}-succeeded with result: {result}")
 
         except TransformException as e:
@@ -341,6 +344,7 @@ class Worker:
                 ret = error_tuple[0] + "(): " + error_tuple[1]
 
             status = NodeStatusMessage.failure_from_node(transform, self.workflow.execution_id, result=ret,
+                                                         started_at=transform.started_at,
                                                          parameters={})
 
         except Exception as e:
@@ -355,9 +359,15 @@ class Worker:
         logger.debug(f"Echoing data from trigger: {trigger.name}-{self.workflow.execution_id}")
         try:
             result = trigger(trigger_data)
-            tmsg = NodeStatusMessage.success_from_node(trigger, self.workflow.execution_id, result, parameters={})
+            tmsg = NodeStatusMessage.success_from_node(trigger, self.workflow.execution_id, result, parameters={},
+                                                       started_at=trigger.started_at)
             await send_status_update(self.session, self.workflow.execution_id,
                                      tmsg)
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
+                                                                             self.workflow.id_,
+                                                                             self.workflow.name, action_name=trigger.name,
+                                                                             app_name=trigger.app_name, label=trigger.label))
             self.accumulator[trigger.id_] = result
             self.in_process.pop(trigger.id_)
 
@@ -366,7 +376,15 @@ class Worker:
             logger.exception(f"Worker received error for {trigger.name}-{self.workflow.execution_id}")
             await send_status_update(self.session, self.workflow.execution_id,
                                      NodeStatusMessage.failure_from_node(trigger, self.workflow.execution_id,
+                                                                         started_at=trigger.started_at,
                                                                          result=repr(e), parameters={}))
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
+                                                                             self.workflow.id_,
+                                                                             self.workflow.name,
+                                                                             action_name=trigger.name,
+                                                                             app_name=trigger.app_name,
+                                                                             label=trigger.label))
 
     async def get_globals(self):
         url = config.API_GATEWAY_URI.rstrip('/') + '/walkoff/api'
@@ -413,7 +431,7 @@ class Worker:
 
         while not all(parent.id_ in self.accumulator for parent in parents.values()):
             logger.debug(f"Node {node.label}-{self.workflow.execution_id} waiting for parents: {parents.values()}. "
-                        f"Accumulator: {self.accumulator}")
+                         f"Accumulator: {self.accumulator}")
             await asyncio.sleep(1)
 
         logger.info(f"{node.label}-{self.workflow.execution_id} ready to execute.")
@@ -430,10 +448,20 @@ class Worker:
 
         if isinstance(node, Action):
             if node.parallelized:
+                node.started_at = str(datetime.datetime.now().isoformat())
                 params = await self.dereference_params(node)
                 await send_status_update(self.session, self.workflow.execution_id,
                                          NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
+                                                                               started_at=node.started_at,
                                                                                parameters=params))
+
+                await send_status_update(self.session, self.workflow.execution_id,
+                                         WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
+                                                                                 self.workflow.id_,
+                                                                                 self.workflow.name,
+                                                                                 action_name=node.name,
+                                                                                 app_name=node.app_name,
+                                                                                 label=node.label))
                 asyncio.create_task(self.execute_parallel_action(node, params))
 
             else:
@@ -456,21 +484,50 @@ class Worker:
 
                 params = await self.dereference_params(node)
 
+                node.started_at = str(datetime.datetime.now().isoformat())
                 await send_status_update(self.session, self.workflow.execution_id,
                                          NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
+                                                                               started_at=node.started_at,
                                                                                parameters=params))
+
+                await send_status_update(self.session, self.workflow.execution_id,
+                                         WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
+                                                                                 self.workflow.id_,
+                                                                                 self.workflow.name,
+                                                                                 action_name=node.name,
+                                                                                 app_name=node.app_name,
+                                                                                 label=node.label))
+
                 await self.redis.xadd(stream, {node.execution_id: workflow_dumps(node)})
 
         elif isinstance(node, Condition):
+            node.started_at = str(datetime.datetime.now().isoformat())
             await send_status_update(self.session, self.workflow.execution_id,
                                      NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
+                                                                           started_at=node.started_at,
                                                                            parameters={}))
+
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
+                                                                             self.workflow.id_,
+                                                                             self.workflow.name, action_name=node.name,
+                                                                             app_name=node.app_name, label=node.label))
+
             await self.evaluate_condition(node, parents, children)
 
         elif isinstance(node, Transform):
+            node.started_at = str(datetime.datetime.now().isoformat())
             await send_status_update(self.session, self.workflow.execution_id,
                                      NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
+                                                                           started_at=node.started_at,
                                                                            parameters={}))
+
+            await send_status_update(self.session, self.workflow.execution_id,
+                                     WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
+                                                                             self.workflow.id_,
+                                                                             self.workflow.name, action_name=node.name,
+                                                                             app_name=node.app_name, label=node.label))
+
             await self.execute_transform(node, parents)
 
         elif isinstance(node, Trigger):
@@ -484,11 +541,20 @@ class Worker:
                                                       streams=[trigger_stream], count=1, latest_ids=['>'])
 
                     logger.info(f"Triggered {self.workflow.name} at {node.label}-{self.workflow.execution_id} "
-                                 f"with {msg}")
+                                f"with {msg}")
+
+                    node.started_at = str(datetime.datetime.now().isoformat())
+                    await send_status_update(self.session, self.workflow.execution_id,
+                                             NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
+                                                                                   started_at=node.started_at))
 
                     await send_status_update(self.session, self.workflow.execution_id,
-                                             NodeStatusMessage.executing_from_node(node, self.workflow.execution_id))
-
+                                             WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
+                                                                                     self.workflow.id_,
+                                                                                     self.workflow.name,
+                                                                                     action_name=node.name,
+                                                                                     app_name=node.app_name,
+                                                                                     label=node.label))
                     execution_id_trigger_message, stream, id_ = deref_stream_message(msg)
                     execution_id, trigger_message = execution_id_trigger_message
                     trigger_message = message_loads(trigger_message)
@@ -560,13 +626,14 @@ class Worker:
 
                 elif node_message.status == StatusEnum.SUCCESS:
                     self.parallel_accumulator[node_message.node_id] = node_message.result
-                    logger.debug(f"PARALLEL Worker received result for: {node_message.label}-{node_message.execution_id}")
+                    logger.debug(
+                        f"PARALLEL Worker received result for: {node_message.label}-{node_message.execution_id}")
 
                 elif node_message.status == StatusEnum.FAILURE:
                     # self.parallel_accumulator[node_message.node_id] = node_message.result
                     self.parallel_accumulator[node_message.node_id] = None
                     logger.debug(f"PARALLEL Worker received error \"{node_message.result}\" for: {node_message.label}-"
-                                f"{node_message.execution_id}")
+                                 f"{node_message.execution_id}")
 
                 else:
                     logger.error(f"Unknown message status received: {node_message}")

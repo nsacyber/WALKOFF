@@ -61,7 +61,8 @@ class MessageJSONEncoder(json.JSONEncoder):
 
         elif isinstance(o, WorkflowStatusMessage):
             return {"execution_id": o.execution_id, "workflow_id": o.workflow_id, "name": o.name, "status": o.status,
-                    "started_at": o.started_at, "completed_at": o.completed_at, "user": o.user}
+                    "started_at": o.started_at, "completed_at": o.completed_at, "user": o.user,
+                    "app_name": o.app_name, "action_name": o.action_name, "label": o.label}
 
         elif isinstance(o, TriggerMessage):
             return {"trigger_data": o.trigger_data}
@@ -121,9 +122,11 @@ class StatusEnum(enum.Enum):
 
 class WorkflowStatusMessage(object):
     """ Class that formats a WorkflowStatusMessage message """
-    __slots__ = ("execution_id", "workflow_id", "name", "status", "started_at", "completed_at", "user")
+    __slots__ = ("execution_id", "workflow_id", "name", "status", "started_at", "completed_at",
+                 "user", "app_name", "action_name", "label")
 
-    def __init__(self, execution_id, workflow_id, name, started_at=None, completed_at=None, status=None, user=None):
+    def __init__(self, execution_id, workflow_id, name, started_at=None, completed_at=None, status=None,
+                 user=None, app_name=None, action_name=None, label=None):
         self.execution_id = execution_id
         self.workflow_id = workflow_id
         self.name = name
@@ -131,25 +134,37 @@ class WorkflowStatusMessage(object):
         self.started_at = started_at
         self.completed_at = completed_at
         self.user = user
+        self.app_name = app_name
+        self.action_name = action_name
+        self.label = label
 
     @classmethod
-    def execution_pending(cls, execution_id, workflow_id, name, user=None):
-        return cls(execution_id, workflow_id, name, status=StatusEnum.PENDING, user=user)
+    def execution_pending(cls, execution_id, workflow_id, name, user=None, app_name=None, action_name=None, label=None):
+        return cls(execution_id, workflow_id, name, status=StatusEnum.PENDING, user=user,
+                   app_name=app_name, action_name=action_name, label=label)
 
     @classmethod
-    def execution_started(cls, execution_id, workflow_id, name, user=None):
+    def execution_started(cls, execution_id, workflow_id, name, user=None, app_name=None, action_name=None, label=None):
         start_time = datetime.datetime.now()
-        return cls(execution_id, workflow_id, name, started_at=start_time, status=StatusEnum.EXECUTING, user=user)
+        return cls(execution_id, workflow_id, name, started_at=start_time, status=StatusEnum.EXECUTING, user=user,
+                   app_name=app_name, action_name=action_name, label=label)
 
     @classmethod
-    def execution_completed(cls, execution_id, workflow_id, name, user=None):
-        end_time = datetime.datetime.now()
-        return cls(execution_id, workflow_id, name, completed_at=end_time, status=StatusEnum.COMPLETED, user=user)
+    def execution_continued(cls, execution_id, workflow_id, name, user=None, app_name=None, action_name=None, label=None):
+        return cls(execution_id, workflow_id, name, status=StatusEnum.EXECUTING, user=user,
+                   app_name=app_name, action_name=action_name, label=label)
 
     @classmethod
-    def execution_aborted(cls, execution_id, workflow_id, name, user=None):
+    def execution_completed(cls, execution_id, workflow_id, name, user=None, app_name=None, action_name=None, label=None):
         end_time = datetime.datetime.now()
-        return cls(execution_id, workflow_id, name, completed_at=end_time, status=StatusEnum.ABORTED, user=user)
+        return cls(execution_id, workflow_id, name, completed_at=end_time, status=StatusEnum.COMPLETED, user=user,
+                   app_name=app_name, action_name=action_name, label=label)
+
+    @classmethod
+    def execution_aborted(cls, execution_id, workflow_id, name, user=None, app_name=None, action_name=None, label=None):
+        end_time = datetime.datetime.now()
+        return cls(execution_id, workflow_id, name, completed_at=end_time, status=StatusEnum.ABORTED, user=user,
+                   app_name=app_name, action_name=action_name, label=label)
 
 
 class NodeStatusMessage(object):
@@ -178,31 +193,31 @@ class NodeStatusMessage(object):
 
     @classmethod
     def pending_from_node(cls, node, execution_id, parameters=None):
-        return NodeStatusMessage.from_node(node, execution_id, status=StatusEnum.PENDING, parameters=parameters)
+        return cls(node.name, node.id_, node.label, node.app_name, execution_id, status=StatusEnum.PENDING,
+                   parameters=parameters)
 
     @classmethod
-    def executing_from_node(cls, node, execution_id, parameters=None):
-        started_at = datetime.datetime.now()
-        return NodeStatusMessage.from_node(node, execution_id, started_at=started_at, status=StatusEnum.EXECUTING,
-                                           parameters=parameters)
+    def executing_from_node(cls, node, execution_id, parameters=None, started_at=None):
+        return cls(node.name, node.id_, node.label, node.app_name, execution_id, started_at=started_at,
+                   status=StatusEnum.EXECUTING, parameters=parameters)
 
     @classmethod
-    def success_from_node(cls, node, execution_id, result, parameters=None):
+    def success_from_node(cls, node, execution_id, result, parameters=None, started_at=None):
         completed_at = datetime.datetime.now()
-        return NodeStatusMessage.from_node(node, execution_id, result=result, completed_at=completed_at,
-                                           status=StatusEnum.SUCCESS, parameters=parameters)
+        return cls(node.name, node.id_, node.label, node.app_name, execution_id, result=result, started_at=started_at,
+                   completed_at=completed_at, status=StatusEnum.SUCCESS, parameters=parameters)
 
     @classmethod
-    def failure_from_node(cls, node, execution_id, result, parameters=None):
+    def failure_from_node(cls, node, execution_id, result, parameters=None, started_at=None):
         completed_at = datetime.datetime.now()
-        return NodeStatusMessage.from_node(node, execution_id, result=result, completed_at=completed_at,
-                                           status=StatusEnum.FAILURE, parameters=parameters)
+        return cls(node.name, node.id_, node.label, node.app_name, execution_id, result=result, started_at=started_at,
+                   completed_at=completed_at, status=StatusEnum.FAILURE, parameters=parameters)
 
     @classmethod
-    def aborted_from_node(cls, node, execution_id, parameters=None):
+    def aborted_from_node(cls, node, execution_id, parameters=None, started_at=None):
         completed_at = datetime.datetime.now()
-        return NodeStatusMessage.from_node(node, execution_id, result=None, completed_at=completed_at,
-                                           status=StatusEnum.ABORTED, parameters=parameters)
+        return cls(node.name, node.id_, node.label, node.app_name, execution_id, completed_at=completed_at,
+                   started_at=started_at, status=StatusEnum.ABORTED, parameters=parameters)
 
 
 class TriggerMessage(object):

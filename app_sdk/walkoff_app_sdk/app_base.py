@@ -1,3 +1,4 @@
+import datetime
 import logging
 import asyncio
 import sys
@@ -113,7 +114,9 @@ class AppBase:
 
         if hasattr(self, action.name):
             # Tell everyone we started execution
-            start_action_msg = NodeStatusMessage.executing_from_node(action, action.execution_id)
+            action.started_at = str(datetime.datetime.now().isoformat())
+            start_action_msg = NodeStatusMessage.executing_from_node(action, action.execution_id,
+                                                                     started_at=action.started_at)
             await self.redis.xadd(results_stream, {action.execution_id: message_dumps(start_action_msg)})
 
             try:
@@ -131,23 +134,27 @@ class AppBase:
                                 params[p.name] = p.value
                         result = await func(**params)
 
-                    action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result=result)
+                    action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result=result,
+                                                                        started_at=action.started_at)
                     self.logger.debug(f"Executed {action.label}-{action.execution_id} "
                                       f"with result: {result}")
 
                 else:
                     self.logger.error(f"App {self.__class__.__name__}.{action.name} is not callable")
                     action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
-                                                                        result="Action not callable")
+                                                                        result="Action not callable",
+                                                                        started_at=action.started_at)
 
             except Exception as e:
                 self.logger.exception(f"Failed to execute {action.label}-{action.execution_id}")
-                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
+                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e),
+                                                                    started_at=action.started_at)
 
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
             action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
-                                                                result="Action does not exist")
+                                                                result="Action does not exist",
+                                                                started_at=action.started_at)
         await self.redis.xadd(results_stream, {action.execution_id: message_dumps(action_result)})
 
     @classmethod

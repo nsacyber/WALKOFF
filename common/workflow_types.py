@@ -283,15 +283,16 @@ class Node:
 
 
 class Action(Node):
-    __slots__ = ("parameters", "execution_id", "parallelized")
+    __slots__ = ("parameters", "execution_id", "parallelized", "started_at")
 
     def __init__(self, name, position, app_name, app_version, label, priority, parallelized=False, parameters=None,
-                 id_=None, execution_id=None, errors=None, is_valid=None, **kwargs):
+                 id_=None, execution_id=None, errors=None, is_valid=None, started_at=None, **kwargs):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.parameters = parameters if parameters is not None else list()
         self.parallelized = parallelized
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue
+        self.started_at = started_at
 
     def __str__(self):
         return f"Action: {self.label}::{self.id_}"
@@ -309,13 +310,14 @@ class Action(Node):
 
 
 class Condition(Node):
-    __slots__ = ("conditional",)
+    __slots__ = ("conditional", "started_at")
 
     def __init__(self, name, position: Point, app_name, app_version, label, conditional, id_=None, errors=None,
-                 is_valid=None):
+                 is_valid=None, started_at=None):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.conditional = conditional
         self.priority = 3  # Conditions have a fixed, mid valued priority
+        self.started_at = started_at
 
     def __str__(self):
         return f"Condition: {self.label}::{self.id_}"
@@ -364,12 +366,13 @@ class Condition(Node):
 
 
 class Trigger(Node):
-    __slots__ = ("trigger_schema",)
+    __slots__ = ("trigger_schema","started_at")
 
     def __init__(self, name, position: Point, app_name, app_version, label, trigger_schema, id_=None, errors=None,
-                 is_valid=None):
+                 is_valid=None, started_at=None):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.trigger_schema = trigger_schema
+        self.started_at = started_at
 
     def __str__(self):
         return f"Trigger: {self.label}::{self.id_}"
@@ -393,13 +396,14 @@ class Trigger(Node):
 
 
 class Transform(Node):
-    __slots__ = ("transform",)
+    __slots__ = ("transform","started_at")
 
     def __init__(self, name, position: Point, app_name, app_version, label, transform, id_=None,
-                 errors=None, is_valid=None):
+                 errors=None, is_valid=None, started_at=None):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.transform = transform
         self.priority = 3  # Transforms have a fixed, mid valued priority
+        self.started_at = started_at
 
     def __str__(self):
         return f"Transform: {self.label}::{self.id_}"
