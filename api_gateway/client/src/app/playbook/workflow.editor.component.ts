@@ -5,7 +5,6 @@ import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { UUID } from 'angular2-uuid';
 import { Observable } from 'rxjs';
 import 'rxjs/Rx';
-import { saveAs } from 'file-saver';
 import { plainToClass, classToClass } from 'class-transformer';
 import { NgbModal, NgbTabChangeEvent } from '@ng-bootstrap/ng-bootstrap';
 import { FormControl } from '@angular/forms';
@@ -22,7 +21,6 @@ import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 import { UtilitiesService } from '../utilities.service';
 import { GlobalsService } from '../globals/globals.service';
-import { ExecutionService } from '../execution/execution.service';
 import { SettingsService } from '../settings/settings.service';
 
 import { AppApi } from '../models/api/appApi';
@@ -32,17 +30,14 @@ import { ConditionApi } from '../models/api/conditionApi';
 import { TransformApi } from '../models/api/transformApi';
 import { DeviceApi } from '../models/api/deviceApi';
 import { ReturnApi } from '../models/api/returnApi';
-import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
 import { Action } from '../models/playbook/action';
 import { Branch } from '../models/playbook/branch';
 import { GraphPosition } from '../models/playbook/graphPosition';
-import { Global } from '../models/global';
 import { Argument, Variant } from '../models/playbook/argument';
 import { User } from '../models/user';
 import { Role } from '../models/role';
 import { NodeStatus, NodeStatuses } from '../models/execution/nodeStatus';
-import { ConditionalExpression } from '../models/playbook/conditionalExpression';
 import { NodeStatusEvent } from '../models/execution/nodeStatusEvent';
 import { ConsoleLog } from '../models/execution/consoleLog';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
@@ -84,11 +79,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	users: User[];
 	roles: Role[];
 
-	//loadedPlaybook: Playbook;
 	originalWorkflow: Workflow;
 	loadedWorkflow: Workflow;
-	playbooks: Playbook[] = [];
-	workflows: Workflow[] = [];
 	cy: any;
 	edgeHandler: any;
 	ur: any;
@@ -118,9 +110,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	actionFilterControl = new FormControl();
 	actionTypes = ActionType;
 	sseErrorTimeout: any;
-	showConsole: boolean = false
-
-	tags: string[] = [];
+	showConsole: boolean = false;
 
 	conditionalOptions = {
 		tabSize: 4,
@@ -158,18 +148,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Also initialize cytoscape event bindings.
 	 */
 	ngOnInit(): void {
-
-		const cyDummy = cytoscape();
-		if (!cyDummy.clipboard) { clipboard(cytoscape, $); }
-		if (!cyDummy.edgehandles) { cytoscape.use(edgehandles); }
-		if (!cyDummy.gridGuide) { gridGuide(cytoscape, $); }
-		if (!cyDummy.panzoom) { cytoscape.use(panzoom); }
-		if (!cyDummy.undoRedo) { cytoscape.use(undoRedo); }
-
-		this.playbookService.getGlobals().then(globals => this.globals = globals);
-		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
-		this.getPlaybooksWithWorkflows();
-		this._addCytoscapeEventBindings();
+		this.initializeCytoscape();
+		this.initialLoad();
 
 		Observable.interval(30000).subscribe(() => {
 			this.recalculateRelativeTimes();
@@ -187,7 +167,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					.removeClass('no-transition')
 			}, 0);
 		});
-
 	}
 
 	/**
@@ -203,14 +182,115 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
 	}
 
-	changed(data: {value: string[]}) {
-		this.tags = data.value;
+	/**
+	 * Adds keyboard event bindings for cut/copy/paste/etc.
+	 */
+	initializeCytoscape(): void {
+		const cyDummy = cytoscape();
+		if (!cyDummy.clipboard) { clipboard(cytoscape, $); }
+		if (!cyDummy.edgehandles) { cytoscape.use(edgehandles); }
+		if (!cyDummy.gridGuide) { gridGuide(cytoscape, $); }
+		if (!cyDummy.panzoom) { cytoscape.use(panzoom); }
+		if (!cyDummy.undoRedo) { cytoscape.use(undoRedo); }
+		
+		// Handle keyboard presses on graph
+		document.addEventListener('keydown', (e: any) => {
+			// If we aren't "focused" on a body or button tag, don't do anything
+			// to prevent events from being fired while in the parameters editor
+			const tagName = document.activeElement.tagName;
+			if (!(tagName === 'BODY' || tagName === 'BUTTON')) { return; }
+			if (this.cy === null) { return; }
+
+			if (e.which === 46) { // Delete
+				this.removeSelectedNodes();
+			} else if (e.ctrlKey) {
+				//TODO: re-enable undo/redo once we restructure how branches / edges are stored
+				// if (e.which === 90) // 'Ctrl+Z', Undo
+				//     ur.undo();
+				// else if (e.which === 89) // 'Ctrl+Y', Redo
+				//     ur.redo();
+				if (e.which === 67) {
+					// Ctrl + C, Copy
+					this.copy();
+				} else if (e.which === 86) {
+					// Ctrl + V, Paste
+					this.paste();
+				}
+				// else if (e.which === 88) {
+				// 	// Ctrl + X, Cut
+				// 	this.cut();
+				// }
+				// else if (e.which == 65) { // 'Ctrl+A', Select All
+				//     cy.elements().select();
+				//     e.preventDefault();
+				// }
+			}
+		});
 	}
 
-	get workflowChanged(): boolean {
-		return this.loadedWorkflow && 
-			(!this.loadedWorkflow.id || JSON.stringify(this.originalWorkflow).localeCompare(JSON.stringify(this.loadedWorkflow)) != 0);
-    }
+		/**
+	 * Gets a list of all the loaded playbooks along with their workflows.
+	 */
+	async initialLoad(): Promise<void> {
+		this.playbookService.getGlobals().then(globals => this.globals = globals);
+		await this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
+
+		this.activeRoute.params.subscribe(params => {
+			if (params.workflowId) {
+				this.playbookService.loadWorkflow(params.workflowId)
+					.then(workflow => this.loadWorkflow(workflow))
+					.catch(e => this.router.navigateByUrl(`/workflows`))
+			}
+			else {
+				let workflowToCreate: Workflow = this.playbookService.workflowToCreate;
+				if (!workflowToCreate) {
+					return this.router.navigateByUrl(`/workflows`);
+				}
+				this.loadWorkflow(workflowToCreate);
+			}
+		})
+	}
+
+		/**
+	 * Loads a workflow from a given playbook / workflow name pair and calls function to set up graph.
+	 * @param playbook Playbook to load
+	 * @param workflow Workflow to load
+	 */
+	async loadWorkflow(workflow: Workflow): Promise<void> {
+		try {
+			this.selectWorkflow((workflow.id) ? await this.playbookService.loadWorkflow(workflow.id) : workflow)
+		}
+		catch(e) {
+			this.toastrService.error(`Error loading workflow "${workflow.name}": ${e.message}`)
+		}
+	}
+
+	selectWorkflow(workflow) {
+		this.resetSelections();
+		this.initializeActionArguments(workflow);
+		this.loadedWorkflow = workflow;
+		this.originalWorkflow = workflow.clone();
+		this.setupGraph();
+	}
+
+	/**
+	 * Closes the active workflow and clears all relevant variables.
+	 */
+	resetSelections(): void {
+		this.loadedWorkflow = null;
+		this.selectedBranchParams = null;
+		this.selectedAction = null;
+	}
+
+	initializeActionArguments(workflow: Workflow) {
+		workflow.actions.forEach(action => {
+			const actionApi = this.getActionApi(action.app_name, action.app_version, action.action_name);
+			actionApi.parameters.forEach(parameterApi => {
+				const argument = action.arguments.find(a => a.name === parameterApi.name);
+				if (!argument) action.arguments.push(this.getDefaultArgument(parameterApi));
+			})
+		})
+	}
 
     ///------------------------------------------------------------------------------------------------------
 	/// Console functions
@@ -309,8 +389,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.removeClass('executing-highlight');
 						matchingNode.removeClass('awaiting-data-highlight');
-						//incomingEdges.addClass('success-highlight');
-						//incomingEdges.removeClass('executing-highlight');
 						if (nodeType != ActionType.CONDITION) {
 							outgoingEdges.addClass(['success-highlight', 'transitioning']);
 							setTimeout(() => outgoingEdges.removeClass('transitioning'), 500)
@@ -414,29 +492,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				})
 				.catch(e => this.toastrService.error(`Error starting execution of ${this.loadedWorkflow.name}: ${e.message}`));
 		})
-	}
-
-	/**
-	 * Loads a workflow from a given playbook / workflow name pair and calls function to set up graph.
-	 * @param playbook Playbook to load
-	 * @param workflow Workflow to load
-	 */
-	loadWorkflow(workflow: Workflow): void {
-		this.closeWorkflow();
-
-		if (workflow.id) {
-			this.playbookService.loadWorkflow(workflow.id)
-				.then(loadedWorkflow => {
-					this.loadedWorkflow = loadedWorkflow;
-					this.originalWorkflow = loadedWorkflow.clone();
-					this.setupGraph();
-				})
-				.catch(e => this.toastrService.error(`Error loading workflow "${workflow.name}": ${e.message}`));
-		} else {
-			this.loadedWorkflow = workflow;
-			this.originalWorkflow = workflow.clone();
-			this.setupGraph();
-		}
 	}
 
 	returnToWorkflows() {
@@ -684,14 +739,9 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// Enable various Cytoscape extensions
 		// Undo/Redo extension
 		this.ur = this.cy.undoRedo({});
+		this.ur.action('add-walkoff-node', args => this.insertNodes(args), args => this.removeNodes(args));
+		this.ur.action('remove-walkoff-node', args => this.removeNodes(args), args => this.insertNodes(args));
 
-		this.ur.action('add-walkoff-node', (args) => {
-			args.addedNode = this.insertNode(args);
-			return args;
-		}, (args) => {
-			this.cy.elements(`[_id="${ args.addedNode.data._id }"]`).remove();
-			return args;
-		})
 
 		// Panzoom extension
 		this.cy.panzoom({});
@@ -727,7 +777,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					}
 
 					const sourceAction = this.loadedWorkflow.nodes.find(a => a.id === sourceId);
-					const sourceActionApi = this._getAction(sourceAction.app_name, sourceAction.app_version, sourceAction.action_name);
+					const sourceActionApi = this.getActionApi(sourceAction.app_name, sourceAction.app_version, sourceAction.action_name);
 
 					// Get our default status either from the default return if specified, or the first return status
 					let defaultStatus = '';
@@ -742,8 +792,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					newBranch.id = tempId;
 					newBranch.source_id = sourceId;
 					newBranch.destination_id = destinationId;
-					newBranch.status = defaultStatus;
-					newBranch.priority = 1;
 
 					// Add our branch to the actual loadedWorkflow model
 					this.loadedWorkflow.branches.push(newBranch);
@@ -869,16 +917,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	/**
-	 * Closes the active workflow and clears all relevant variables.
-	 */
-	closeWorkflow(): void {
-		// this.loadedPlaybook = null;
-		this.loadedWorkflow = null;
-		this.selectedBranchParams = null;
-		this.selectedAction = null;
-	}
-
-	/**
 	 * Triggers the save action based on the editor option selected.
 	 */
 	save(): void {
@@ -915,81 +953,20 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			if (action.arguments) this._sanitizeArgumentsForSave(action, workflowToSave);
 		});
 
-
-		workflowToSave.branches.forEach(branch => {
-			this._sanitizeExpressionAndChildren(branch.condition);
-		});
-
 		if (this.loadedWorkflow.id) {
 			this.playbookService.saveWorkflow(workflowToSave).then(savedWorkflow => {
-				this.loadedWorkflow = savedWorkflow;
-				this.originalWorkflow = savedWorkflow.clone();
-				this.setupGraph();
+				this.selectWorkflow(savedWorkflow);
 				this.toastrService.success(`Saved <b>${ savedWorkflow.name }</b>`);
 			}).catch(e => this.toastrService.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
 		} else {
 			this.playbookService.newWorkflow(workflowToSave).then(savedWorkflow => {
-				this.loadedWorkflow = savedWorkflow;
-				this.originalWorkflow = savedWorkflow.clone();
-
+				this.selectWorkflow(savedWorkflow);
 				this.toastrService.success(`Saved <b>${ savedWorkflow.name }</b>`);
 				this.router.navigateByUrl(`/workflows/${ savedWorkflow.id }`);
 			}).catch(e => this.toastrService.error(`Error saving workflow ${workflowToSave.name}: ${e.message}`));
 		}
 
 		this.clearExecutionResults();
-	}
-
-	/**
-	 * Gets a list of all the loaded playbooks along with their workflows.
-	 */
-	getPlaybooksWithWorkflows(): void {
-		this.playbookService.getWorkflows()
-			.then(workflows => {
-				this.workflows = workflows;
-				this.activeRoute.params.subscribe(params => {
-					if (params.workflowId) {
-						this.playbookService.loadWorkflow(params.workflowId)
-							.then(workflow => this.loadWorkflow(workflow))
-							.catch(e => this.router.navigateByUrl(`/workflows`))
-					}
-					else {
-						let workflowToCreate: Workflow = this.playbookService.workflowToCreate;
-						if (!workflowToCreate) {
-							return this.router.navigateByUrl(`/workflows`);
-						}
-						this.loadWorkflow(workflowToCreate);
-					}
-				})
-			});
-	}
-
-	_sanitizeExpressionAndChildren(expression: ConditionalExpression): void {
-		if (!expression) { return; }
-
-		if (expression.conditions && expression.conditions.length) {
-			expression.conditions.forEach(condition => {
-				//this._sanitizeArgumentsForSave(condition.arguments);
-
-				// condition.transforms.forEach(transform => {
-				// 	this._sanitizeArgumentsForSave(transform.arguments);
-				// });
-			});
-		}
-
-		if (expression.child_expressions && expression.child_expressions.length) {
-			expression.child_expressions.forEach(childExpr => {
-				childExpr.conditions.forEach(condition => {
-					//this._sanitizeArgumentsForSave(condition.arguments);
-
-					// condition.transforms.forEach(transform => {
-					// 	this._sanitizeArgumentsForSave(transform.arguments);
-					// });
-				});
-
-				this._sanitizeExpressionAndChildren(childExpr);
-			});
-		}
 	}
 
 	/**
@@ -1025,40 +1002,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 	}
 
-	/**
-	 * Specifies a new conditional expression for a given action.
-	 * @param action Action to specify the trigger for
-	 */
-	// specifyTrigger(action: Action): void {
-	// 	if (action.trigger) { return; }
-	// 	action.trigger = new ConditionalExpression();
-	// }
-
-	/**
-	 * Deletes the conditional expression for a given action.
-	 * @param action Action to remove the trigger for
-	 */
-	// removeTrigger(action: Action): void {
-	// 	delete action.trigger;
-	// }
-
-	/**
-	 * Specifies a new conditional expression for a given action.
-	 * @param branch Branch to specify the trigger for
-	 */
-	specifyCondition(branch: Branch): void {
-		if (branch.condition) { return; }
-		branch.condition = new ConditionalExpression();
-	}
-
-	/**
-	 * Specifies a new conditional expression for a given branch.
-	 * @param branch Branch to specify the trigger for
-	 */
-	removeCondition(branch: Branch): void {
-		delete branch.condition;
-	}
-
 	///------------------------------------------------------------------------------------------------------
 	/// Cytoscape functions
 	///------------------------------------------------------------------------------------------------------
@@ -1077,7 +1020,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		const action = this.loadedWorkflow.nodes.find(a => a.id === data._id);
 		if (!action) { return; }
-		const actionApi = this._getAction(action.app_name, action.app_version, action.action_name);
+		const actionApi = this.getActionApi(action.app_name, action.app_version, action.action_name);
 
 		const queryPromises: Array<Promise<any>> = [];
 
@@ -1130,7 +1073,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		this.selectedBranchParams = {
 			branch,
-			returnTypes: this._getAction(sourceAction.app_name, sourceAction.app_version, sourceAction.action_name).returns,
+			returnTypes: this.getActionApi(sourceAction.app_name, sourceAction.app_version, sourceAction.action_name).returns,
 			appName: sourceAction.app_name,
 			actionName: sourceAction.action_name,
 		};
@@ -1196,8 +1139,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param e JS Event fired
 	 */
 	onNodeRemoved(event: any): void {
-		const node = event.target;
-		const data = node.data();
+		const node = event.target, data = node.data();
 
 		// If the start node was deleted, set it to one of the roots of the graph
 		if (data && node.isNode() && this.loadedWorkflow.start === data._id) { this.setStartNode(null); }
@@ -1213,24 +1155,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	handleDropEvent(e: any): void {
 		if (this.cy === null) { return; }
-
-		const appName: string = e.dragData.appName;
-		const actionApi: ActionApi = e.dragData.actionApi;
-
-		// The following coordinates is where the user dropped relative to the
-		// top-left of the graph
-		const dropPosition: GraphPosition = plainToClass(GraphPosition, {
-			x: e.mouseEvent.layerX,
-			y: e.mouseEvent.layerY,
-		});
-
-		this.ur.do('add-walkoff-node', {
-			appName: appName,
-			appVersion: actionApi.app_version,
-			actionName: actionApi.name,
-			location: dropPosition,
-			shouldUseRenderedPosition: true
-		})
+		const nodes = [ this.createWorkflowNode(e.dragData.actionApi, this.createPosition(e.mouseEvent.layerX, e.mouseEvent.layerY)) ];
+		this.ur.do('add-walkoff-node', { nodes })
 	}
 
 	/**
@@ -1241,27 +1167,21 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	handleDoubleClickEvent(actionApi: ActionApi): void {
 		if (this.cy === null) { return; }
-
-		const extent = this.cy.extent();
-
-		const centerGraphPosition = plainToClass(GraphPosition, { x: this.avg(extent.x1, extent.x2), y: this.avg(extent.y1, extent.y2) });
-
-		this.ur.do('add-walkoff-node', {
-			appName: actionApi.app_name,
-			appVersion: actionApi.app_version,
-			actionName: actionApi.name,
-			location: centerGraphPosition,
-			shouldUseRenderedPosition: false
-		})
+		const nodes = [ this.createWorkflowNode(actionApi, this.getCenterPosition()) ];
+		this.ur.do('add-walkoff-node', { nodes })
 	}
 
-	/**
-	 * Simple average function to get the avg. of 2 numbers.
-	 * @param a 1st number
-	 * @param b 2nd number
-	 */
-	avg(a: number, b: number): number {
-		return (a + b) / 2;
+	createPosition(x: number, y: number) : GraphPosition {
+		const pan = this.cy.pan(), zoom = this.cy.zoom();
+		return plainToClass(GraphPosition, {
+			x: (x - pan.x) / zoom,
+			y: (y - pan.y) / zoom,
+		});
+	}
+
+	getCenterPosition(): GraphPosition {
+		const extent = this.cy.extent(), avg = (a: number, b: number) => (a + b) / 2;
+		return plainToClass(GraphPosition, { x: avg(extent.x1, extent.x2), y: avg(extent.y1, extent.y2) });
 	}
 
 	/**
@@ -1271,12 +1191,60 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param location Graph Position, where to create the node
 	 * @param shouldUseRenderedPosition Whether or not to use rendered or "real" graph position
 	 */
-	insertNode({appName, appVersion, actionName, location, shouldUseRenderedPosition, firstTime, addedNode}) {
-		// Grab a new ID for both the ID of the node and the ID of the action in the workflow
-		const newActionUuid = (firstTime) ? UUID.UUID() : addedNode.data._id;
+	insertNodes({nodes = [], branches = []}: { nodes: WorkflowNode[], branches: Branch[] }) {
+		nodes.forEach(node => {
+			this.loadedWorkflow.addNode(node);
+			this.cy.add({ 
+				group: 'nodes', 
+				position: this.utils.cloneDeep(node.position),
+				data: {
+					id: node.id,
+					_id: node.id,
+					label: node.name,
+					isStartNode: node.id === this.loadedWorkflow.start,
+					isParallelized: node instanceof Action && node.parallelized,
+					hasErrors: node.has_errors,
+					type: node.action_type
+				}
+			});
+		});
 
+		branches.forEach(branch => {
+			this.loadedWorkflow.branches.push(branch);
+			this.cy.add({ 
+				group: 'edges', 
+				data: {
+					id: branch.id,
+					_id: branch.id,
+					source: branch.source_id,
+					target: branch.destination_id,
+					hasErrors: branch.has_errors
+				}
+			});
+		});
+
+		return { nodes, branches };
+	}
+
+	removeNodes({nodes = [], branches = []}: { nodes: WorkflowNode[], branches: Branch[] }) {
+		nodes.forEach(node => {
+			this.loadedWorkflow.branches
+				.filter(b => b.source_id === node.id || b.destination_id === node.id)
+				.filter(b => !branches.includes(b))
+				.forEach(b => branches.push(b))
+
+			this.cy.elements(`[_id="${ node.id }"]`).remove();
+		});
+
+		branches.forEach(branch => {
+			this.cy.elements(`[_id="${ branch.id }"]`).remove();
+		});
+
+		return { nodes, branches };
+	}
+
+	createWorkflowNode(actionApi: ActionApi, position: GraphPosition, id: string = null): WorkflowNode {
 		const args: Argument[] = [];
-		const actionApi = this._getAction(appName, appVersion, actionName);
 
 		// TODO: might be able to remove this entirely
 		// due to the argument component auto-initializing default values
@@ -1286,54 +1254,30 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			});
 		}
 
-		const actionType = this._getAction(appName, appVersion, actionName).node_type;
-		const uniqueActionName = this.loadedWorkflow.getNextActionName(actionName);
-
-		let newNode: WorkflowNode;
-		switch(actionType) {
+		let node: WorkflowNode;
+		switch(actionApi.node_type) {
 			case ActionType.CONDITION:
-				newNode = new Condition();
+				node = new Condition();
 				break;
 			case ActionType.TRIGGER:
-				newNode = new Trigger();
+				node = new Trigger();
 				break;
 			case ActionType.TRANSFORM:
-				newNode = new Transform();
+				node = new Transform();
 				break;
 			default:
-				newNode = new Action();
+				node = new Action();
 		}
 
-		newNode.id = newActionUuid;
-		newNode.name = uniqueActionName;
-		newNode.app_name = appName;
-		newNode.app_version = appVersion;
-		newNode.action_name = actionName;
-		newNode.arguments = args;
-		newNode.position = location;
-		this.loadedWorkflow.addNode(newNode);
+		node.id = id ? id : UUID.UUID();
+		node.name = this.loadedWorkflow.getNextActionName(actionApi.name);
+		node.app_name = actionApi.app_name;
+		node.app_version = actionApi.app_version;
+		node.action_name = actionApi.name;
+		node.arguments = args;
+		node.position = position;
 
-		// Add the node with the new ID to the graph in the location dropped into by the mouse.
-		const nodeToBeAdded = {
-			group: 'nodes',
-			data: {
-				id: newActionUuid,
-				_id: newActionUuid,
-				label: uniqueActionName,
-				type: actionType
-			},
-			renderedPosition: null as GraphPosition,
-			position: null as GraphPosition,
-		};
-
-		if (shouldUseRenderedPosition) {
-			nodeToBeAdded.renderedPosition = location;
-		} else { nodeToBeAdded.position = location; }
-
-		//this.ur.do('add', nodeToBeAdded);
-		this.cy.add(nodeToBeAdded);
-
-		return nodeToBeAdded;
+		return node;
 	}
 
 	// TODO: update this to properly "cut" actions from the loadedWorkflow.
@@ -1427,68 +1371,33 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Removes all selected nodes and edges.
 	 */
 	removeSelectedNodes(): void {
-		const selecteds = this.cy.$(':selected');
+		const selected = this.cy.$(':selected'), nodes = [], branches = [];
+
+		selected.nodes().jsons().forEach(i => {
+			const node = this.loadedWorkflow.nodes.find(n => i.data._id == n.id);
+			if (node) nodes.push(node);
+		})
+		selected.edges().jsons().forEach(i => {
+			const branch = this.loadedWorkflow.branches.find(b => i.data._id == b.id);
+			if (branch) branches.push(branch);
+		})
+
 		// Unselect the elements first to remove the parameters editor if need be
 		// Because deleting elements doesn't unselect them for some reason
 		this.cy.elements(':selected').unselect();
-		if (selecteds.length > 0) { this.ur.do('remove', selecteds); }
-	}
-
-	/**
-	 * Adds keyboard event bindings for cut/copy/paste/etc.
-	 */
-	_addCytoscapeEventBindings(): void {
-		// Handle keyboard presses on graph
-		document.addEventListener('keydown', (e: any) => {
-			// If we aren't "focused" on a body or button tag, don't do anything
-			// to prevent events from being fired while in the parameters editor
-			const tagName = document.activeElement.tagName;
-			if (!(tagName === 'BODY' || tagName === 'BUTTON')) { return; }
-			if (this.cy === null) { return; }
-
-			if (e.which === 46) { // Delete
-				this.removeSelectedNodes();
-			} else if (e.ctrlKey) {
-				//TODO: re-enable undo/redo once we restructure how branches / edges are stored
-				// if (e.which === 90) // 'Ctrl+Z', Undo
-				//     ur.undo();
-				// else if (e.which === 89) // 'Ctrl+Y', Redo
-				//     ur.redo();
-				if (e.which === 67) {
-					// Ctrl + C, Copy
-					this.copy();
-				} else if (e.which === 86) {
-					// Ctrl + V, Paste
-					this.paste();
-				}
-				// else if (e.which === 88) {
-				// 	// Ctrl + X, Cut
-				// 	this.cut();
-				// }
-				// else if (e.which == 65) { // 'Ctrl+A', Select All
-				//     cy.elements().select();
-				//     e.preventDefault();
-				// }
-			}
-		});
+		if (selected.length > 0) this.ur.do('remove-walkoff-node', { nodes, branches });
 	}
 
 	///------------------------------------------------------------------------------------------------------
 	/// Utility functions
 	///------------------------------------------------------------------------------------------------------
-	// /**
-	//  * Gets a list of playbook names from our list of playbooks.
-	//  */
-	// getPlaybooks(): string[] {
-	// 	return this.playbooks.map(pb => pb.name);
-	// }
 
 	/**
 	 * Gets an ActionApi object by app and action name
 	 * @param appName App name the action resides under
 	 * @param actionName Name of the ActionApi to query
 	 */
-	_getAction(appName: string, appVersion: string, actionName: string): ActionApi {
+	getActionApi(appName: string, appVersion: string, actionName: string): ActionApi {
 		//return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
 		return this.appApis.find(a => a.name === appName && a.app_version == appVersion)
 				.action_apis.find(a => a.name === actionName);
@@ -1499,7 +1408,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Adds a new argument to the selected action with default values if the argument doesn't exist.
 	 * @param parameterApi Parameter API object relating to the argument to return
 	 */
-	getOrInitializeSelectedActionArgument(parameterApi: ParameterApi): Argument {
+	getActionArgument(parameterApi: ParameterApi): Argument {
 		// Find an existing argument
 		if (!this.selectedAction.arguments) this.selectedAction.arguments = [];
 		let argument = this.selectedAction.arguments.find(a => a.name === parameterApi.name);
@@ -1562,7 +1471,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * @param inputName Name of the action input to query
 	 */
 	getInputApiArgs(appName: string, appVersion: string, actionName: string, inputName: string): ParameterApi {
-		return this._getAction(appName, appVersion, actionName).parameters.find(a => a.name === inputName);
+		return this.getActionApi(appName, appVersion, actionName).parameters.find(a => a.name === inputName);
 	}
 
 	/**
@@ -1644,6 +1553,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		if (status.completed_at) {
 			status.localized_completed_at = this.utils.getLocalTime(status.completed_at);
 		}
+	}
+
+	get workflowChanged(): boolean {
+		return this.loadedWorkflow && 
+			(!this.loadedWorkflow.id || JSON.stringify(this.originalWorkflow).localeCompare(JSON.stringify(this.loadedWorkflow)) != 0);
 	}
 
 	/**
@@ -1754,16 +1668,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	editDescription() {
 		const modalRef = this.modalService.open(MetadataModalComponent, {size: 'lg'});
 		modalRef.componentInstance.existing = true;
-		modalRef.componentInstance.currentTags = this.currentTags;
-		modalRef.componentInstance.existingWorkflows = this.workflows;
 		modalRef.componentInstance.workflow = this.loadedWorkflow.clone();
 		modalRef.result.then(workflow => this.loadedWorkflow = workflow).catch(() => null)
 		return false;
-	}
-
-	get currentTags(): string[] {
-		let tags = this.loadedWorkflow.tags || [];
-		this.workflows.forEach(w => tags = tags.concat(w.tags));
-		return tags.filter((v, i, a) => a.indexOf(v) == i);
 	}
 }

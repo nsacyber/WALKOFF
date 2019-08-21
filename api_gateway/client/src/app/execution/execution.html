@@ -105,8 +105,15 @@
 						[limit]="10">
 						<!-- Column Templates -->
 						<ngx-datatable-column name="ID" prop="node_id" [flexGrow]="3"></ngx-datatable-column>
-						<ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>
-						<ngx-datatable-column name="Action Name" prop="name" [flexGrow]="1"></ngx-datatable-column>
+						<ngx-datatable-column [flexGrow]="1">
+							<ng-template let-column="column" ngx-datatable-header-template>
+								App / Action
+							</ng-template>
+							<ng-template let-row="row" ngx-datatable-cell-template>
+									{{row.app_name}} / {{row.name}}
+							</ng-template>
+						</ngx-datatable-column>
+						<ngx-datatable-column name="Named" prop="label" [flexGrow]="1"></ngx-datatable-column>
 						<ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
 							<ng-template let-row="row" ngx-datatable-cell-template>
 								<span [title]="row.localized_started_at">
