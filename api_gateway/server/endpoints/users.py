@@ -13,6 +13,7 @@ with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(i
 import logging
 logger = logging.getLogger(__name__)
 
+
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 def read_all_users():
@@ -49,17 +50,31 @@ def create_user():
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 @with_user('read', 'user_id')
 def read_user(user_id):
+    current_id = get_jwt_identity()
     # check for internal user
-    if user_id.id != 1:
+    if user_id.id == 1:
+        return None, HTTPStatus.FORBIDDEN
+    if user_id.id == current_id:
         return user_id.as_json(), HTTPStatus.OK
-    return None, HTTPStatus.FORBIDDEN
+    else:
+        return read_user_helper(user_id)
+
+
+@permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
+def read_user_helper(user_id):
+    return user_id.as_json(), HTTPStatus.OK
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
+def list_permissions():
+    current_id = get_jwt_identity()
+    current_user = User.query.filter_by(id=current_id).first()
+    return current_user.permission_json(), HTTPStatus.OK
+
+
+@jwt_required
 @with_user('update', 'user_id')
 def update_user(user_id):
     data = request.get_json()
@@ -70,24 +85,32 @@ def update_user(user_id):
         return None, HTTPStatus.FORBIDDEN
 
     if user_id.id == current_user:
-        return update_user_fields(data, user_id)
-    else:
         # check for super_admin, allows ability to update username/password but not roles/active
         if user_id.id == 2:
             user_id.set_roles([2])
             user_id.active = True
-            response = update_user_fields(data, user_id)
+            return update_user_fields(data, user_id)
+        return update_user_fields(data, user_id)
+    else:
+        # check for super_admin
+        if user_id.id == 2:
+            return None, HTTPStatus.FORBIDDEN
         else:
-            response = role_update_user_fields(data, user_id, update=True)
-        if isinstance(response, tuple) and response[1] == HTTPStatus.FORBIDDEN:
-            current_app.logger.error(f"User {current_user} does not have permission to update user {user_id.id}")
-            return Problem.from_crud_resource(
-                HTTPStatus.FORBIDDEN,
-                'user',
-                'update',
-                f"Current user does not have permission to update user {user_id.id}.")
-        else:
-            return response
+            return update_user_helper(user_id, data, current_user)
+
+
+@permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
+def update_user_helper(user_id, data, current_user):
+    response = role_update_user_fields(data, user_id, update=True)
+    if isinstance(response, tuple) and response[1] == HTTPStatus.FORBIDDEN:
+        current_app.logger.error(f"User {current_user} does not have permission to update user {user_id.id}")
+        return Problem.from_crud_resource(
+            HTTPStatus.FORBIDDEN,
+            'user',
+            'update',
+            f"Current user does not have permission to update user {user_id.id}.")
+    else:
+        return response
 
 
 @permissions_accepted_for_resources(ResourcePermissions('users', ['update']))

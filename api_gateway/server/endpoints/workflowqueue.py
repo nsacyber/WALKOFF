@@ -15,8 +15,10 @@ from marshmallow import ValidationError
 
 from common.config import config, static
 from common.message_types import StatusEnum, message_dumps
-from common.roles_helpers import auth_check
+from common.roles_helpers import auth_check, creator_check
 from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
+from api_gateway.serverdb.user import User
+from api_gateway.extensions import db
 from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusSchema
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
@@ -54,18 +56,37 @@ completed_statuses = (StatusEnum.ABORTED, StatusEnum.COMPLETED)
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
 @paginate(workflow_status_schema)  # ToDo: make this summary
 def get_all_workflow_status():
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
     r = current_app.running_context.execution_db.session.query(WorkflowStatus).order_by(WorkflowStatus.name).all()
-    return r, HTTPStatus.OK
+    ret = []
+    for wf_status in r:
+        wf_creator = creator_check(str(wf_status.workflow_id), "workflows")
+        to_read = auth_check(str(wf_status.workflow_id), "read", "workflows")
+        if (wf_creator == curr_user_id) or to_read:
+            ret.append(wf_status)
+
+    return ret, HTTPStatus.OK
+
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['read']))
 @with_workflow_status('control', 'execution')
 def get_workflow_status(execution):
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
     workflow_status = workflow_status_schema.dump(execution)
-    return workflow_status, HTTPStatus.OK
+
+    to_read = auth_check(str(workflow_status['workflow_id']), "read", "workflows")
+    wf_creator = creator_check(str(workflow_status['workflow_id']), "workflows")
+    if (wf_creator == curr_user_id) or to_read:
+        return workflow_status, HTTPStatus.OK
+    else:
+        return None, HTTPStatus.FORBIDDEN
+
 
 @jwt_required
 def execute_workflow():
@@ -74,8 +95,12 @@ def execute_workflow():
     execution_id = data.get("execution_id", None)
     workflow = workflow_getter(workflow_id)  # ToDo: should this go under a path param so we can use the decorator
 
-    to_execute = auth_check(workflow.name, "execute", "workflows")
-    if to_execute:
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
+    to_execute = auth_check(str(workflow.id_), "execute", "workflows")
+    wf_creator = creator_check(str(workflow.id_), "workflows")
+    if (wf_creator == curr_user_id) or to_execute:
         if not workflow:
             return dne_problem("workflow", "execute", workflow_id)
 
@@ -127,6 +152,7 @@ def execute_workflow():
     else:
         return None, HTTPStatus.FORBIDDEN
 
+
 def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
     if not execution_id:
         execution_id = str(uuid.uuid4())
@@ -159,7 +185,6 @@ def execute_workflow_helper(workflow_id, execution_id=None, workflow=None):
 
 
 @jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('workflows', ['execute']))
 @with_workflow_status('control', "execution")
 def control_workflow(execution):
     data = request.get_json()
@@ -168,54 +193,61 @@ def control_workflow(execution):
     workflow = workflow_getter(execution.workflow_id)
     # The resource factory returns the WorkflowStatus model but we want the string of the execution ID
     execution_id = str(execution.execution_id)
+    to_execute = auth_check(str(workflow.id_), "execute", "workflows")
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
     # TODO: add in pause/resume here. Workers need to store and recover state for this
-    if status == 'abort':
-        logger.info(f"User '{get_jwt_claims().get('username', None)}' aborting workflow: {execution_id}")
-        message = {"execution_id": execution_id, "status": status, "workflow": workflow_schema.dumps(workflow)}
-        current_app.running_context.cache.smove(static.REDIS_PENDING_WORKFLOWS,
-                                                static.REDIS_ABORTING_WORKFLOWS, execution_id)
-        current_app.running_context.cache.xadd(static.REDIS_WORKFLOW_CONTROL, message)
+    if (workflow.creator == curr_user_id) or to_execute:
+        if status == 'abort':
+            logger.info(f"User '{get_jwt_claims().get('username', None)}' aborting workflow: {execution_id}")
+            message = {"execution_id": execution_id, "status": status, "workflow": workflow_schema.dumps(workflow)}
+            current_app.running_context.cache.smove(static.REDIS_PENDING_WORKFLOWS,
+                                                    static.REDIS_ABORTING_WORKFLOWS, execution_id)
+            current_app.running_context.cache.xadd(static.REDIS_WORKFLOW_CONTROL, message)
 
-        return None, HTTPStatus.NO_CONTENT
-    elif status == 'trigger':
-        if execution.status not in (StatusEnum.PENDING, StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA):
-            return invalid_input_problem("workflow", "trigger", execution_id,
-                                         errors=["Workflow must be in a running state to accept triggers."])
+            return None, HTTPStatus.NO_CONTENT
+        elif status == 'trigger':
+            if execution.status not in (StatusEnum.PENDING, StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA):
+                return invalid_input_problem("workflow", "trigger", execution_id,
+                                             errors=["Workflow must be in a running state to accept triggers."])
 
-        trigger_id = data.get('trigger_id')
-        if not trigger_id:
-            return invalid_input_problem("workflow", "trigger", execution_id,
-                                         errors=["ID of the trigger must be specified in trigger_id."])
-        seen = False
-        for trigger in workflow.triggers:
-            if str(trigger.id_) == trigger_id:
-                seen = True
+            trigger_id = data.get('trigger_id')
+            if not trigger_id:
+                return invalid_input_problem("workflow", "trigger", execution_id,
+                                             errors=["ID of the trigger must be specified in trigger_id."])
+            seen = False
+            for trigger in workflow.triggers:
+                if str(trigger.id_) == trigger_id:
+                    seen = True
 
-        if not seen:
-            return invalid_input_problem("workflow", "trigger", execution_id,
-                                         errors=[f"trigger_id {trigger_id} was not found in this workflow."])
+            if not seen:
+                return invalid_input_problem("workflow", "trigger", execution_id,
+                                             errors=[f"trigger_id {trigger_id} was not found in this workflow."])
 
-        trigger_stream = f"{execution_id}-{trigger_id}:triggers"
+            trigger_stream = f"{execution_id}-{trigger_id}:triggers"
 
-        try:
-            info = current_app.running_context.cache.xinfo_stream(trigger_stream)
-            stream_length = info["length"]
-        except Exception:
-            stream_length = 0
+            try:
+                info = current_app.running_context.cache.xinfo_stream(trigger_stream)
+                stream_length = info["length"]
+            except Exception:
+                stream_length = 0
 
-        if stream_length > 0:
-            return invalid_input_problem("workflow", "trigger", execution_id,
-                                         errors=[f"This trigger has already received data."])
+            if stream_length > 0:
+                return invalid_input_problem("workflow", "trigger", execution_id,
+                                             errors=[f"This trigger has already received data."])
 
-        trigger_data = data.get('trigger_data')
-        logger.info(f"User '{get_jwt_claims().get('username', None)}' triggering workflow: {execution_id} at trigger "
-                    f"{trigger_id} with data {trigger_data}")
+            trigger_data = data.get('trigger_data')
+            logger.info(f"User '{get_jwt_claims().get('username', None)}' triggering workflow: {execution_id} at trigger "
+                        f"{trigger_id} with data {trigger_data}")
 
-        current_app.running_context.cache.xadd(trigger_stream,
-                                               {execution_id: message_dumps({"trigger_data": trigger_data})})
+            current_app.running_context.cache.xadd(trigger_stream,
+                                                   {execution_id: message_dumps({"trigger_data": trigger_data})})
 
-        return jsonify({"trigger_stream": trigger_stream}), HTTPStatus.OK
+            return jsonify({"trigger_stream": trigger_stream}), HTTPStatus.OK
+    else:
+        return None, HTTPStatus.FORBIDDEN
+
 
 # ToDo: make these clear db endpoints for more resources
 def clear_workflow_status(all_=False, days=30):

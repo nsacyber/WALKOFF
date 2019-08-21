@@ -32,7 +32,7 @@ class Condition(Base):
 
 
     # Columns specific to Condition model
-    conditional = Column(String(512), nullable=False)
+    conditional = Column(String(), nullable=False)
     children = []
 
     def __init__(self, **kwargs):

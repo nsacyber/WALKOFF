@@ -158,8 +158,6 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 	createWorkflow(): void {
 		const modalRef = this.modalService.open(MetadataModalComponent, {size: 'lg'});
 		modalRef.componentInstance.workflow = new Workflow();
-		modalRef.componentInstance.currentTags = this.currentTags;
-		modalRef.componentInstance.existingWorkflows = this.workflows;
 		modalRef.result.then(workflow => {
 			this.playbookService.workflowToCreate = workflow;
 			this.router.navigateByUrl(`/workflows/new`);
@@ -174,8 +172,6 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 		const modalRef = this.modalService.open(MetadataModalComponent, {size: 'lg'});
 		modalRef.componentInstance.existing = true;
 		modalRef.componentInstance.workflow = workflow;
-		modalRef.componentInstance.currentTags = this.currentTags;
-		modalRef.componentInstance.existingWorkflows = this.workflows;
 		modalRef.result.then(w => {
 			this.playbookService.saveWorkflow(w)
 				.then(w => this.toastrService.success(`Updated <b>${workflow.name}</b>`))

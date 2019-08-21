@@ -152,6 +152,14 @@ export class Workflow extends ExecutionElement {
 		this.branches = this.branches.filter(b => !(b.source_id === nodeId || b.destination_id === nodeId));
 	}
 
+	addBranch(branch: Branch) {
+		this.branches.push(branch)
+	}
+
+	removeBranch(branchId: string) {
+		this.branches = this.branches.filter(b => b.id !== branchId);
+	}
+
 	deleteVariable(deletedVariable: EnvironmentVariable) {
 		this.environment_variables = this.environment_variables.filter(variable => variable.id !== deletedVariable.id);
 		this.all_arguments.filter(arg => arg.value == deletedVariable.id).forEach(arg => arg.value = '');

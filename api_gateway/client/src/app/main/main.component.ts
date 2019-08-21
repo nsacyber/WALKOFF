@@ -66,7 +66,6 @@ export class MainComponent implements OnInit, OnDestroy {
 	 * Set up an SSE for handling new notifications.
 	 */
 	ngOnInit(): void {
-
 		this.currentUser = this.authService.getAndDecodeAccessToken().user_claims.username;
 		this.reportService.reportsChange.subscribe(reports => this.reports = reports);
 		// this.getInitialNotifications();

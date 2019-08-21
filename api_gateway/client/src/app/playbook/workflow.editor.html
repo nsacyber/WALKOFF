@@ -148,22 +148,23 @@
         </div>
 
         <!-- Actual cytoscape graph editor -->
-        <div [ngClass]="selectedAction ? 'col-md-7' : 'col-md-10'" class=" graphEditorColumn graphArea">
+        <div class="graphEditorColumn graphArea px-0 col">
             <div id="cy" #cyRef dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow"
                 tabindex="0"></div>
         </div>
 
         <!-- Parameter editors -->
-        <div [ngClass]="selectedAction ? 'col-md-3' : 'hidden-xs'" class="graphEditorColumn">
-            <!-- Editor for Actions -->
+        <div [class.col-md-3]="selectedAction" class="graphEditorColumn shadow">
             <div *ngIf="!waitingOnData && selectedAction" class="parametersEditor">
                 <div class="d-flex justify-content-between my-2">
-                </div>
-                <div class="d-flex justify-content-between my-2">
                     <h4 class="mb-0">Action Settings</h4>
-                    <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary"
-                    (click)="setStartNode(selectedAction.id)">Set Start Action</button>
-                    <button class="btn btn-sm btn-danger" (click)="closeActionSettingMenu()">Close Settings</button>
+                    <div>
+                        <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary mr-2"
+                            (click)="setStartNode(selectedAction.id)">Set Start Action</button>
+                        <button class="btn btn-sm btn-danger" (click)="closeActionSettingMenu()" ngbTooltip="Close Settings">
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="form-row">
@@ -219,7 +220,7 @@
                     <playbook-argument-component
                         *ngFor="let parameterApi of selectedActionApi.parameters; let id = index"
                         [selectedAction]="selectedAction" [loadedWorkflow]="loadedWorkflow"
-                        [argument]="getOrInitializeSelectedActionArgument(parameterApi)" [globals]="globals"
+                        [argument]="getActionArgument(parameterApi)" [globals]="globals"
                         [parameterApi]="parameterApi" [id]="id" [users]="users" [roles]="roles"
                         (createVariable)="onCreateVariable($event)"></playbook-argument-component>
                 </div>
@@ -329,55 +330,20 @@ else:
                         (createVariable)="onCreateVariable($event)"></playbook-conditional-expression-component>
                 </div>
             </div>
-            <!-- Editor for Branches (edges) -->
-            <div *ngIf="selectedBranchParams && selectedBranchParams.branch && false" class="parametersEditor">
-                <h3>Branch Parameters</h3>
-                <div class="form-group">
-                    <label for="status">Return Type
-                        <i class="fa fa-asterisk required" title="This field is required."></i>
-                    </label>
-                    <select class="form-control" [(ngModel)]="selectedBranchParams.branch.status" name="status">
-                        <option *ngFor="let i of selectedBranchParams.returnTypes" [value]="i.status" [label]="i.status"
-                            [class.failure]="i.failure">{{i.status}}</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="priority">Priority
-                        <i class="fa fa-asterisk required" title="This field is required."></i>
-                    </label>
-                    <input type="number" max="999" min="1" class="form-control"
-                        [(ngModel)]="selectedBranchParams.branch.priority" name="priority" required>
-                </div>
-                <div>
-                    <div class="row">
-                        <div class="col-6">
-                            <h4>Condition</h4>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-group">
-                                <button *ngIf="!selectedBranchParams.branch.condition"
-                                    class="btn btn-primary pull-right"
-                                    (click)="specifyCondition(selectedBranchParams.branch)">
-                                    <i class="fa fa-plus"></i>Specify Condition
-                                </button>
-                                <button *ngIf="selectedBranchParams.branch.condition" class="btn btn-danger pull-right"
-                                    (click)="removeCondition(selectedBranchParams.branch)">
-                                    <i class="fa fa-close"></i>Remove Condition
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <playbook-conditional-expression-component *ngIf="selectedBranchParams.branch.condition"
-                        [conditionalExpression]="selectedBranchParams.branch.condition" [appApis]="appApis"
-                        [selectedAppName]="selectedBranchParams.appName" [loadedWorkflow]="loadedWorkflow"
-                        (createVariable)="onCreateVariable($event)"></playbook-conditional-expression-component>
-                </div>
-            </div>
         </div>
     </div>
 
     <div class="bottom-panel fixed-bottom mb-1 pt-1 border-top" [class.show-console]="showConsole">
-        <ngb-tabset destoryOnHide="false" (tabChange)="switchConsoleTabs($event)">
+        <ngb-tabset destoryOnHide="false" activeId="console-tab" (tabChange)="switchConsoleTabs($event)">
+                <ngb-tab id="menu-tab">
+                    <ng-template ngbTabTitle>
+                        <div class="console-tab" (click)="toggleConsole()" [ngbTooltip]="(showConsole ? 'Hide' : 'Show') + ' Console'">
+                            <i class="fa fa-bars" aria-hidden="true"></i>
+                        </div>
+                    </ng-template>
+                    <ng-template ngbTabContent>
+                    </ng-template>
+                </ngb-tab>
             <ngb-tab id="console-tab">
                 <ng-template ngbTabTitle>
                     <div class="console-tab" (click)="toggleConsole()">Console
