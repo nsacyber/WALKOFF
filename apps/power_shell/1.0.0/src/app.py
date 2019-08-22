@@ -141,11 +141,14 @@ class PowerShell(AppBase):
                     ps.invoke()
                     this_result = []
                     for line in ps.output:
-                        this_result.append({
-                            "name": str(line),
-                            "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
-                            "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
-                        })
+                        if type(line) is str:
+                            this_result.append(line)
+                        else:
+                            this_result.append({
+                                "types": line.types,
+                                "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
+                                "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
+                            })
                     if ps.had_errors:
                         results[host] = {"stdout": "", "stderr": this_result}
                     else:

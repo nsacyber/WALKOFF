@@ -1,0 +1,195 @@
+walkoff_version: 1.0.0
+app_version: 1.0.0
+name: mitre_attack
+description: A mitre attack framework app that has premade scripts Mitre Attack.
+contact_info:
+  name: Walkoff Team
+  url: https://github.com/nsacyber/walkoff
+  email: walkoff@nsa.gov
+license_info:
+  name: Creative Commons
+  url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
+actions:
+  - name: set_timestamp
+    description: Outputs the timestamp at the time of this action's execution
+    returns:
+      schema:
+        type: string
+  - name: account_manipulation
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: scheduled_tasks
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: pass_the_hash_one
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: modify_existing_service
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: accessibility_features
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+    returns:
+      schema:
+        type: string
