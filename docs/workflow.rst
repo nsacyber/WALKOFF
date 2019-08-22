@@ -64,6 +64,9 @@ In this tutorial, we will explore the different components of the Workflow Edito
 
 Toolbar
 ''''''''
+
+.. image:: ../docs/images/toolbar.png
+
 From left to right, the buttons in the toolbar are:
 
 +-----------------------+-----------------------------------------------+
@@ -126,6 +129,51 @@ If you navigate to the Applications tab at the top toolbar of Walkoff you will b
 If you want to make edits to any file, you can do that in the file editor that is displayed above. If you would like you can make changes to multiple files, just make sure to hit the save icon before navigating away from the page. This will save the current file to minio. At this point minio is prepared to build using the newly saved files once you click the "Rebuild Image" button. This will pull what is in Minio and rebuild the images based off of those files. Once a successful image is built, Walkoff will copy the files from Minio into your working directory such that those files are visible locally. 
 
 *NOTE: You can undo and redo changes made in the app editor using the symbols next to the save button*
+
+|br|
+
+.. _role-user-label:
+
+User and Role Creation
+-----------------------
+WALKOFF allows for role-based user creation. By default, WALKOFF has three pre-built roles: ``super_admin``, ``admin``, ``workflow_developer``, and ``workflow_operator``. 
+	* The ``super_admin`` role is a singular immutable account.  This role has the ability to delete/create new users and is given full access to  all resources created by any user on WALKOFF. Newly created users cannot be given this role; this account cannot be deleted and its role cannot be changed.
+	* The ``admin`` role by default is given the same control over WALKOFF as the ``super_admin`` role. However, newly created users can be given this role, and this role may be edited. Furthermore, other users with differing roles may hide workflows and global variables from this role tier.
+	* The ``workflow_developer`` role is given the ability to create, update, and delete workflows, global_variables, workflow_variables, dashboards, and schedules. This role does not have the ability to change WALKOFF settings, add new users or roles. 
+	* The ``workflow_operator`` role by default is only given the ability to read all WALKOFF resources aside from workflow_variables, which they may update and utilize, and workflows, which they may execute.
+
+Creating a User
+'''''''''''''''''
+In order to create a new user, you must be logged in as a user with user creation permission (by default, this permission is given to admin level and above roles).
+	* First, navigate to the ``settings`` tab on the WALKOFF toolbar and click on ``users``.
+	
+.. image:: ../docs/images/user_creation1.PNG
+
+	* From this page, click on the ``create user`` button. Fill in the desired username, password, and role tier for this account and click ``Add User`` to oomplete your user creation.
+	
+.. image:: ../docs/images/user_creation2.PNG
+
+Creating a Role
+'''''''''''''''''
+In order to create a new user, you must be logged in as a user with role creation permission (by default, this permission is given to admin level and above roles).
+	* First, navigate to the ``settings`` tab on the WALKOFF toolbar and click on ``users``.
+	
+.. image:: ../docs/images/user_creation1.PNG
+
+	* From this page, click on the ``role settings`` tab.
+	
+.. image:: ../docs/images/role_creation1.PNG
+
+	* Fill in the desired role name and optional description.
+
+.. image:: ../docs/images/role_creation3.PNG
+
+	* Select the resource(s) to which you would like to give this role access. After selecting, click ``Add Resource``. Then, select which specific permissions you would like to add. 
+	
+.. image:: ../docs/images/role_creation2.PNG
+
+	* After resource selection, click ``Add Role`` to complete your role creation. 
+
 
 |br|
 
