@@ -119,7 +119,7 @@ App Editor
 ----------
 .. image:: ../docs/images/appeditor/applications.png
 
-If you navigate to the Applications tab at the top toolbar of Walkoff you will be directed to a page in which youcan Manage applications. If you click on the button named Edit Application on the desired app you wish to edit, it will take you to a new page that will contain the file tree on the left side of the page. At this point, you can click app.py and the file contents will be displayed on the right as seen below.
+If you navigate to the Applications tab at the top toolbar of Walkoff you will be directed to a page in which you can manage applications. If you click on the button named Edit Application on the desired app you wish to edit, it will take you to a new page that will contain the file tree on the left side of the page. At this point, you can click app.py and the file contents will be displayed on the right as seen below.
 
 .. image:: ../docs/images/appeditor/file_tree.png
 
