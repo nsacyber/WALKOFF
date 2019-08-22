@@ -261,6 +261,251 @@ actions:
           type: string
           enum: ["auto", "always", "never"]
         required: true
+  - name: get_memory_kansa
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_dns_cache_kansa
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_netstat_kansa
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_arp_kansa
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_proc_dump_kansa
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_procs_n_modules_kansa
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_procs_wmi_kansa
+    description: Executes the powershell script on remote devices based on script file passed in.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
     returns:
       schema:
         type: string
