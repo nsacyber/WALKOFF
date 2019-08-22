@@ -18,7 +18,7 @@ Create Global
 '''''''''''''
 Before we create a workflow, we will create a global variable that our actions will use.
 
-In the top navigation bar, click on ``Settings``, then ``Globals``, then ``Add Global``. Fill out the required fields for this example and set the value to any string of your choice. Then click ``Save`` in the dialog box. If nothing is populated in the globals table, then verify that you created your encryption key as described in :ref:`deploying-walkoff-label`.
+In the top navigation bar, click on ``Settings``, then ``Globals``, then ``Add Global``. Fill out the required fields for this example and set the value to any string of your choice. Then click ``Save`` in the dialog box. If nothing is populated in the globals table, then verify that you created your encryption key as described in :ref:`deploying_walkoff_label`.  :ref:`role_user_label`.
 
 .. image:: ../docs/images/create_global.png
 
@@ -132,7 +132,7 @@ If you want to make edits to any file, you can do that in the file editor that i
 
 |br|
 
-.. _role-user-label:
+.. _role_user_label:
 
 User and Role Creation
 -----------------------
