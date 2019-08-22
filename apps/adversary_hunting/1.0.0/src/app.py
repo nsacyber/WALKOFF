@@ -34,9 +34,32 @@ class AdversaryHunting(AppBase):
         timestamp = '{:%Y-%m-%d_%H-%M-%S}'.format(datetime.datetime.now())
         return timestamp
 
+    async def run_script(self, wsman, script):
+        with RunspacePool(wsman) as pool:
+            with open(script) as f:
+                script = f.read()
+
+            ps = PS(pool)
+            ps.add_script(script).add_argument("localhost")
+            ps.invoke()
+            this_result = []
+            for line in ps.output:
+                this_result.append({
+                    "name": str(line),
+                    "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
+                    "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
+                })
+
+            self.logger.info(this_result)
+
+            if ps.had_errors:
+                return {"stdout": "", "stderr": this_result}
+            else:
+                return {"stdout": this_result, "stderr": ""}
+
     async def get_dll_info(self, hosts, username, password, transport,
-                                               server_cert_validation,
-                                               message_encryption):
+                           server_cert_validation,
+                           message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -60,23 +83,7 @@ class AdversaryHunting(AppBase):
                 wsman = WSMan(host, ssl=server_cert_validation, auth=transport, encryption=message_encryption,
                               username=username, password=password)
 
-                with RunspacePool(wsman) as pool:
-                    with open("scripts/Get-DLLInfo.ps1", "r") as f:
-                        script = f.read()
-                    ps = PS(pool)
-                    ps.add_script(script).add_argument("localhost")
-                    ps.invoke()
-                    this_result = []
-                    for line in ps.output:
-                        this_result.append({
-                            "name": str(line),
-                            "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
-                            "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
-                        })
-                    if ps.had_errors:
-                        results[host] = {"stdout": "", "stderr": this_result}
-                    else:
-                        results[host] = {"stdout": this_result, "stderr": ""}
+                results[host] = await self.run_script(wsman, "scripts/Get-DLLInfo.ps1")
 
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
@@ -84,7 +91,7 @@ class AdversaryHunting(AppBase):
         return results
 
     async def get_installed_apps(self, hosts, username, password, transport, server_cert_validation,
-                                               message_encryption):
+                                 message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -108,23 +115,7 @@ class AdversaryHunting(AppBase):
                 wsman = WSMan(host, ssl=server_cert_validation, auth=transport, encryption=message_encryption,
                               username=username, password=password)
 
-                with RunspacePool(wsman) as pool:
-                    with open("scripts/Get-InstalledApps.ps1", "r") as f:
-                        script = f.read()
-                    ps = PS(pool)
-                    ps.add_script(script).add_argument("localhost")
-                    ps.invoke()
-                    this_result = []
-                    for line in ps.output:
-                        this_result.append({
-                            "name": str(line),
-                            "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
-                            "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
-                        })
-                    if ps.had_errors:
-                        results[host] = {"stdout": "", "stderr": this_result}
-                    else:
-                        results[host] = {"stdout": this_result, "stderr": ""}
+                results[host] = await self.run_script(wsman, "scripts/Get-InstalledApps.ps1")
 
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
@@ -132,7 +123,7 @@ class AdversaryHunting(AppBase):
         return results
 
     async def get_netstat(self, hosts, username, password, transport, server_cert_validation,
-                                               message_encryption):
+                          message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -156,23 +147,7 @@ class AdversaryHunting(AppBase):
                 wsman = WSMan(host, ssl=server_cert_validation, auth=transport, encryption=message_encryption,
                               username=username, password=password)
 
-                with RunspacePool(wsman) as pool:
-                    with open("scripts/Get-NetStat.ps1", "r") as f:
-                        script = f.read()
-                    ps = PS(pool)
-                    ps.add_script(script).add_argument("localhost")
-                    ps.invoke()
-                    this_result = []
-                    for line in ps.output:
-                        this_result.append({
-                            "name": str(line),
-                            "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
-                            "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
-                        })
-                    if ps.had_errors:
-                        results[host] = {"stdout": "", "stderr": this_result}
-                    else:
-                        results[host] = {"stdout": this_result, "stderr": ""}
+                results[host] = await self.run_script(wsman, "scripts/Get-NetStat.ps1")
 
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
@@ -180,7 +155,7 @@ class AdversaryHunting(AppBase):
         return results
 
     async def get_network_adapter(self, hosts, username, password, transport, server_cert_validation,
-                                               message_encryption):
+                                  message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -204,23 +179,7 @@ class AdversaryHunting(AppBase):
                 wsman = WSMan(host, ssl=server_cert_validation, auth=transport, encryption=message_encryption,
                               username=username, password=password)
 
-                with RunspacePool(wsman) as pool:
-                    with open("scripts/Get-NetworkAdapter.ps1", "r") as f:
-                        script = f.read()
-                    ps = PS(pool)
-                    ps.add_script(script).add_argument("localhost")
-                    ps.invoke()
-                    this_result = []
-                    for line in ps.output:
-                        this_result.append({
-                            "name": str(line),
-                            "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
-                            "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
-                        })
-                    if ps.had_errors:
-                        results[host] = {"stdout": "", "stderr": this_result}
-                    else:
-                        results[host] = {"stdout": this_result, "stderr": ""}
+                results[host] = await self.run_script(wsman, "scripts/Get-NetworkAdapter.ps1")
 
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
@@ -228,7 +187,7 @@ class AdversaryHunting(AppBase):
         return results
 
     async def get_processes(self, hosts, username, password, transport, server_cert_validation,
-                                               message_encryption):
+                            message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -252,23 +211,7 @@ class AdversaryHunting(AppBase):
                 wsman = WSMan(host, ssl=server_cert_validation, auth=transport, encryption=message_encryption,
                               username=username, password=password)
 
-                with RunspacePool(wsman) as pool:
-                    with open("scripts/Get-Processes.ps1", "r") as f:
-                        script = f.read()
-                    ps = PS(pool)
-                    ps.add_script(script).add_argument("localhost")
-                    ps.invoke()
-                    this_result = []
-                    for line in ps.output:
-                        this_result.append({
-                            "name": str(line),
-                            "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
-                            "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
-                        })
-                    if ps.had_errors:
-                        results[host] = {"stdout": "", "stderr": this_result}
-                    else:
-                        results[host] = {"stdout": this_result, "stderr": ""}
+                results[host] = await self.run_script(wsman, "scripts/Get-Processes.ps1")
 
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
@@ -276,7 +219,7 @@ class AdversaryHunting(AppBase):
         return results
 
     async def get_scheduled_task(self, hosts, username, password, transport, server_cert_validation,
-                                               message_encryption):
+                                 message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -300,23 +243,7 @@ class AdversaryHunting(AppBase):
                 wsman = WSMan(host, ssl=server_cert_validation, auth=transport, encryption=message_encryption,
                               username=username, password=password)
 
-                with RunspacePool(wsman) as pool:
-                    with open("scripts/Get-ScheduledTask.ps1", "r") as f:
-                        script = f.read()
-                    ps = PS(pool)
-                    ps.add_script(script).add_argument("localhost")
-                    ps.invoke()
-                    this_result = []
-                    for line in ps.output:
-                        this_result.append({
-                            "name": str(line),
-                            "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
-                            "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
-                        })
-                    if ps.had_errors:
-                        results[host] = {"stdout": "", "stderr": this_result}
-                    else:
-                        results[host] = {"stdout": this_result, "stderr": ""}
+                results[host] = await self.run_script(wsman, "scripts/Get-ScheduledTask.ps1")
 
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
@@ -324,7 +251,7 @@ class AdversaryHunting(AppBase):
         return results
 
     async def get_services(self, hosts, username, password, transport, server_cert_validation,
-                                               message_encryption):
+                           message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -348,23 +275,7 @@ class AdversaryHunting(AppBase):
                 wsman = WSMan(host, ssl=server_cert_validation, auth=transport, encryption=message_encryption,
                               username=username, password=password)
 
-                with RunspacePool(wsman) as pool:
-                    with open("scripts/Get-Services.ps1", "r") as f:
-                        script = f.read()
-                    ps = PS(pool)
-                    ps.add_script(script).add_argument("localhost")
-                    ps.invoke()
-                    this_result = []
-                    for line in ps.output:
-                        this_result.append({
-                            "name": str(line),
-                            "adapted_properties": json.loads(json.dumps(line.adapted_properties, cls=ObjectEncoder)),
-                            "extended_properties": json.loads(json.dumps(line.extended_properties, cls=ObjectEncoder))
-                        })
-                    if ps.had_errors:
-                        results[host] = {"stdout": "", "stderr": this_result}
-                    else:
-                        results[host] = {"stdout": this_result, "stderr": ""}
+                results[host] = await self.run_script(wsman, "scripts/Get-Services.ps1")
 
             except Exception as e:
                 results[host] = {"stdout": "", "stderr": f"{e}"}
