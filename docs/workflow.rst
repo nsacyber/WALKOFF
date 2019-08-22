@@ -149,7 +149,7 @@ In order to create a new user, you must be logged in as a user with user creatio
 	
 .. image:: ../docs/images/user_creation1.PNG
 
-	* From this page, click on the ``create user`` button. Fill in the desired username, password, and role tier for this account and click ``Add User`` to oomplete your user creation.
+* From this page, click on the ``create user`` button. Fill in the desired username, password, and role tier for this account and click ``Add User`` to oomplete your user creation.
 	
 .. image:: ../docs/images/user_creation2.PNG
 
@@ -160,19 +160,20 @@ In order to create a new user, you must be logged in as a user with role creatio
 	
 .. image:: ../docs/images/user_creation1.PNG
 
-	* From this page, click on the ``role settings`` tab.
+* From this page, click on the ``role settings`` tab.
 	
+
 .. image:: ../docs/images/role_creation1.PNG
 
-	* Fill in the desired role name and optional description.
+* Fill in the desired role name and optional description.
 
 .. image:: ../docs/images/role_creation3.PNG
 
-	* Select the resource(s) to which you would like to give this role access. After selecting, click ``Add Resource``. Then, select which specific permissions you would like to add. 
+* Select the resource(s) to which you would like to give this role access. After selecting, click ``Add Resource``. Then, select which specific permissions you would like to add. 
 	
 .. image:: ../docs/images/role_creation2.PNG
 
-	* After resource selection, click ``Add Role`` to complete your role creation. 
+* After resource selection, click ``Add Role`` to complete your role creation. 
 
 
 |br|
