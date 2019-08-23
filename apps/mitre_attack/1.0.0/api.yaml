@@ -16,7 +16,7 @@ actions:
       schema:
         type: string
   - name: account_manipulation
-    description: Returns events regarding account objects being changed as well as account names being changed
+    description: Collect events that correlate with changes to account objects on systems and the domain.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -51,7 +51,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: scheduled_tasks
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Monitors scheduled task creation from common utilities using command-line invocation. 
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -86,7 +86,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: pass_the_hash_one
-    description: Searches event logs for successful logons, logon attempts, and failed logon attempts
+    description: Audits all logon and credential use events and review for discrepancies. 
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -121,7 +121,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: modify_existing_service
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Looks for changes to service Registry entries that do not correlate with known software, patch cycles, etc. 
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -156,7 +156,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: accessibility_features
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Return changes to accessibility utility binaries or binary paths that do not correlate with known software, patch cycles, etc., which are suspicious. Command line invocation of tools capable of modifying the Registry for associated keys are also suspicious.
     parameters:
       - name: hosts
         description: list of hosts to execute on
