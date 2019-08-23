@@ -15,9 +15,8 @@ actions:
     returns:
       schema:
         type: string
-      example: Hopefully this works.
   - name: get_dll_info
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Gathers every path  that has a space in the directory name, where a .dll exists, and a list of the “Known DLLs” from the Windows registry
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -52,7 +51,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_installed_apps
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Identifies potentially unauthorized or malicious software installed on a list of target systems. Queries WMI and retrieves registry information pertaining to installed applications.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -87,7 +86,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_netstat
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Identifies anomalous network connections on targeted systems. Enumerates all network connection on targeted systems.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -122,7 +121,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_network_adapter
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Identifies any network adapters that could be used for covert communication or VPN tunneling. Enumerates the physical and virtual network adapters connected to each of the targeted systems.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -157,7 +156,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_processes
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Identifies one-off processes/child processes or processes with “abnormal” characteristics or data.  Queries the win32_Processes from WMI  and retrieves info from the Get-NetTCPConnection information. 
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -192,7 +191,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_scheduled_task
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Identifies non-authorized scheduled tasks that may exist on targeted systems. Enumerates the scheduled tasks for each targeted system.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -227,7 +226,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_services
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Identifies any authorized or malicious Services that have been added or modified on targeted systems. Enumerates the Services installed on targeted systems.
     parameters:
       - name: hosts
         description: list of hosts to execute on
