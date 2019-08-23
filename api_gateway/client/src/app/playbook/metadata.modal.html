@@ -31,64 +31,79 @@
             <select2 [data]="currentTags" [value]="workflow.tags" [options]="tagSelectOptions"
                 (valueChanged)="tagsChanged($event)"></select2>
         </div>
-        <div class="form-group">
-            <div class="card card-default my-1">
-                <div class="card-header p-2" data-toggle="collapse" data-target="#permission-list">
-                    <span class="card-title my-auto">Restrict Access</span>
+        <div class="card">
+            <div class="card-header h6">
+                Permissions
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <h6>Who can access workflow?</h6>
+                    <select class="form-control" name="access_level" [(ngModel)]="workflow.access_level">
+                        <option [ngValue]="1" label="Everyone">Everyone</option>
+                        <option [ngValue]="2" label="Role Based">Role Based</option>
+                        <option [ngValue]="0" label="Only Me">Only Me</option>
+                    </select>
+                    <small class="form-text text-muted pl-1">
+                        <span *ngIf="workflow.access_level == 0">
+                            Only you have access to this workflow.
+                        </span>
+                        <span *ngIf="workflow.access_level == 1">
+                            By default everyone whose role has valid workflow permissions will have access to this
+                            workflow.
+                        </span>
+                        <span *ngIf="workflow.access_level == 2">
+                            Only users of the roles specified below will have access to this workflow.
+                        </span>
+                    </small>
                 </div>
-                <div id="permission-list" class="collapse" [class.show]="workflow.permissions.length > 0">
-                    <div class="card-body my-auto p-3">
-                        <small class="form-text text-muted pb-3">
-                            By default anyone with access to WALKOFF will have full permissions on this resource.
-                            You can limit access to only users of specific roles by selecting the role and access level
-                            below.
-                        </small>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Role</th>
-                                    <th scope="col">Permission</th>
-                                    <th scope="col"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let p of workflow.permissions">
-                                    <td>{{ getRoleName(p)  }}</td>
-                                    <td>{{ getPermissionDescription(p) }}</td>
-                                    <td><button (click)="deletePermission(p)" class="btn btn-sm btn-danger mx-1"
-                                            ngbTooltip="Remove"><i class="fa fa-times"></i></button></td>
-                                </tr>
-                                <tr *ngIf="workflow.permissions.length == 0">
-                                    <td class="text-center text-muted" colspan="3">No Role Based Permissions</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div class="form-group">
-
-                            <div class="row">
-                                <!-- <label class="col-2 col-form-label">Restrict Access:</label> -->
-                                <div class="col">
-                                    <select class="form-control" name="new-role" [(ngModel)]="newPermission.role">
-                                        <option [ngValue]="''">Select Role...</option>
-                                        <option *ngFor="let r of systemRoles" [ngValue]="r.id" [label]="r.name">
-                                            {{r.name}}</option>
-                                    </select>
-
-                                </div>
-                                <div class="col">
-                                    <select class="form-control" name="new-permission" [(ngModel)]="newPermission.permissions">
-                                        <option [ngValue]="''">Select Access Level...</option>
-                                        <option *ngFor="let p of permissionOptions" [ngValue]="p.crud"
-                                            [label]="p.description">{{ p.description }}</option>
-                                    </select>
-                                </div>
-                                <div class="col-2">
-                                    <button class="btn btn-primary pull-right" (click)="addPermission()">Add New</button>
-                                </div>
-                            </div>
+                <div *ngIf="workflow.access_level == 2" class="form-group">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">Role</th>
+                                <th scope="col">Permission</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let p of workflow.permissions">
+                                <td>{{ getRoleName(p)  }}</td>
+                                <td>{{ getPermissionDescription(p) }}</td>
+                                <td><button type="button" (click)="deletePermission(p)"
+                                        class="btn btn-sm btn-danger mx-1" ngbTooltip="Remove"><i
+                                            class="fa fa-times"></i></button></td>
+                            </tr>
+                            <tr *ngIf="workflow.permissions.length == 0">
+                                <td class="text-center text-muted" colspan="3">No Role Based Permissions
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="form-group row">
+                        <div class="col">
+                            <select class="form-control" name="new-role" [(ngModel)]="newPermission.role">
+                                <option [ngValue]="''">Role...</option>
+                                <option *ngFor="let r of systemRoles" [ngValue]="r.id" [label]="r.name">
+                                    {{r.name}}</option>
+                            </select>
                         </div>
+                        <div class="col pl-0 mr-3">
+                            <select class="form-control" name="new-permission" [(ngModel)]="newPermission.permissions">
+                                <option [ngValue]="''">Permission...</option>
+                                <option *ngFor="let p of permissionOptions" [ngValue]="p.crud" [label]="p.description">
+                                    {{ p.description }}</option>
+                            </select>
+                        </div>
+                        <div class="col-1">
+                            <button type="button" ngbTooltip="Add New" class="btn btn-primary pull-right"
+                                (click)="addPermission()">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
+
             </div>
         </div>
     </form>

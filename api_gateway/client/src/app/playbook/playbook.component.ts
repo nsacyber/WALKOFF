@@ -156,7 +156,7 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
 	 */
 	createWorkflow(): void {
-		const modalRef = this.modalService.open(MetadataModalComponent, {size: 'lg'});
+		const modalRef = this.modalService.open(MetadataModalComponent);
 		modalRef.componentInstance.workflow = new Workflow();
 		modalRef.result.then(workflow => {
 			this.playbookService.workflowToCreate = workflow;
@@ -169,7 +169,7 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 	 */
 	async editDescription(workflow: Workflow): Promise<void> {
 		workflow = await this.playbookService.loadWorkflow(workflow.id);
-		const modalRef = this.modalService.open(MetadataModalComponent, {size: 'lg'});
+		const modalRef = this.modalService.open(MetadataModalComponent);
 		modalRef.componentInstance.existing = true;
 		modalRef.componentInstance.workflow = workflow;
 		modalRef.result.then(w => {

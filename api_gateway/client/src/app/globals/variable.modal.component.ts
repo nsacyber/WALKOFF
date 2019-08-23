@@ -56,4 +56,9 @@ export class VariableModalComponent implements OnInit {
         const permission = this.permissionOptions.find(o => JSON.stringify(o.crud) == JSON.stringify(r.permissions))
         return permission ? permission.description : null;
     }
+
+    submit() {
+        if (this.variable.access_level != 2) this.variable.permissions = [];
+        this.activeModal.close(this.variable)
+    }
 }

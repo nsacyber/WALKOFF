@@ -1641,7 +1641,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	onCreateVariable(argument: Argument) {
 		const modalRef = this.modalService.open(PlaybookEnvironmentVariableModalComponent);
 		modalRef.result.then(variable => {
-			console.log(this.loadedWorkflow.environment_variables, variable)
 			if (!this.loadedWorkflow.environment_variables) this.loadedWorkflow.environment_variables = [];
 			this.loadedWorkflow.environment_variables.push(variable);
 			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
@@ -1652,7 +1651,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	workflowVariablesModal() {
 		const modalRef = this.modalService.open(PlaybookEnvironmentVariableModalComponent);
 		modalRef.result.then(variable => {
-			console.log(this.loadedWorkflow.environment_variables, variable)
 			if (!this.loadedWorkflow.environment_variables) this.loadedWorkflow.environment_variables = [];
 			this.loadedWorkflow.environment_variables.push(variable);
 			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
@@ -1663,7 +1661,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
 	 */
 	editDescription() {
-		const modalRef = this.modalService.open(MetadataModalComponent, {size: 'lg'});
+		const modalRef = this.modalService.open(MetadataModalComponent);
 		modalRef.componentInstance.existing = true;
 		modalRef.componentInstance.workflow = this.loadedWorkflow.clone();
 		modalRef.result.then(workflow => this.loadedWorkflow = workflow).catch(() => null)
