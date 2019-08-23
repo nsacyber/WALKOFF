@@ -119,24 +119,24 @@ def create_global():
     data.update({'creator': curr_user.id})
 
     new_permissions = data['permissions']
-    # access_level = data['access_level']
-    #
-    # # creator only
-    # if access_level == 0:
-    #     update_permissions("global_variables", global_id,
-    #                        new_permissions=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}],
-    #                        creator=curr_user.id)
-    # # default permissions
-    # elif access_level == 1:
-    #     default_permissions("global_variables", global_id, data=data, creator=curr_user.id)
-    # # user-specified permissions
-    # elif access_level == 2:
-    #     update_permissions("global_variables", global_id, new_permissions=new_permissions, creator=curr_user.id)
+    access_level = data['access_level']
 
-    if new_permissions:
-        update_permissions("global_variables", global_id, new_permissions=new_permissions, creator=curr_user.id)
-    else:
+    # creator only
+    if access_level == 0:
+        update_permissions("global_variables", global_id,
+                           new_permissions=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}],
+                           creator=curr_user.id)
+    # default permissions
+    elif access_level == 1:
         default_permissions("global_variables", global_id, data=data, creator=curr_user.id)
+    # user-specified permissions
+    elif access_level == 2:
+        update_permissions("global_variables", global_id, new_permissions=new_permissions, creator=curr_user.id)
+
+    # if new_permissions:
+    #     update_permissions("global_variables", global_id, new_permissions=new_permissions, creator=curr_user.id)
+    # else:
+    #     default_permissions("global_variables", global_id, data=data, creator=curr_user.id)
 
     try:
         key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
@@ -160,21 +160,21 @@ def update_global(global_var):
     global_id = data["id_"]
 
     new_permissions = data['permissions']
-    # access_level = data['access_level']
+    access_level = data['access_level']
 
     to_update = auth_check(global_id, "update", "global_variables")
     if (global_var.creator == curr_user_id) or to_update:
-        # if access_level == 0:
-        #     auth_check(global_id, "update", "global_variables",
-        #                updated_roles=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}])
-        # if access_level == 1:
-        #     default_permissions("global_variables", global_id, data=data)
-        # elif access_level == 2:
-        #     auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
-        if new_permissions:
-            auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
-        else:
+        if access_level == 0:
+            auth_check(global_id, "update", "global_variables",
+                       updated_roles=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}])
+        if access_level == 1:
             default_permissions("global_variables", global_id, data=data)
+        elif access_level == 2:
+            auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
+        # if new_permissions:
+        #     auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
+        # else:
+        #     default_permissions("global_variables", global_id, data=data)
         try:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
             data['value'] = fernet_encrypt(key, data['value'])
