@@ -261,7 +261,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_memory_kansa
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Allows a user to dump the live memory on systems identified as needing more analysis.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -296,7 +296,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_dns_cache_kansa
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Acquires DNS cache entries from the target host.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -331,7 +331,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_netstat_kansa
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Acquired acquires netstat -naob output and reformats on the target as tsv output.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -366,7 +366,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_arp_kansa
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Acquies ARP Table
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -401,7 +401,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_proc_dump_kansa
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Acquires memory dump of the specified process. Uses Sysinternal's procdump.exe to write a dmp file to disk. That file is read into a memory stream and compressed using GZipStream, then Base64 encoded and stored in an object property and returned.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -436,7 +436,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_procs_n_modules_kansa
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Enumerates all running processes and their loaded modules. Post data collection, analysis can be run against this data to find possible DLL Search Order Hijacking.
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -471,7 +471,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: get_procs_wmi_kansa
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Acquires various details about running processes, including commandline arguments, process start time, parent process id and md5 hash of the processes image as found on disk.
     parameters:
       - name: hosts
         description: list of hosts to execute on
