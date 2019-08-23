@@ -16,7 +16,7 @@ actions:
       schema:
         type: string
   - name: account_manipulation
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Returns events regarding account objects being changed as well as account names being changed
     parameters:
       - name: hosts
         description: list of hosts to execute on
@@ -86,7 +86,7 @@ actions:
           enum: ["auto", "always", "never"]
         required: true
   - name: pass_the_hash_one
-    description: Executes the powershell script on remote devices based on script file passed in.
+    description: Searches event logs for successful logons, logon attempts, and failed logon attempts
     parameters:
       - name: hosts
         description: list of hosts to execute on
