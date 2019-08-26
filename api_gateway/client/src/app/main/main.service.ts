@@ -6,6 +6,7 @@ import { Message } from '../models/message/message';
 import { MessageListing } from '../models/message/messageListing';
 import { UtilitiesService } from '../utilities.service';
 import { ReportService } from '../reports/report.service';
+import { User } from '../models/user';
 
 @Injectable()
 export class MainService {
@@ -41,6 +42,14 @@ export class MainService {
 			.toPromise()
 			.then((data) => plainToClass(Message, data))
 			.catch(this.utils.handleResponseError);
+	}
+
+	/**
+	 * Grabs username from API endpoint to fill out users info
+	 * @param username
+	 */
+	getUser(username: User):  Promise<User>{
+		return this.http.get('api/users/personal/${username}')
 	}
 
 }
