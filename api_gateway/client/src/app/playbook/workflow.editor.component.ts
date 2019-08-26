@@ -51,6 +51,7 @@ import { Condition } from '../models/playbook/condition';
 import { Trigger } from '../models/playbook/trigger';
 import { WorkflowNode } from '../models/playbook/WorkflowNode';
 import { Transform } from '../models/playbook/transform';
+import { VariableModalComponent } from '../globals/variable.modal.component';
 
 @Component({
 	selector: 'workflow-editor-component',
@@ -139,7 +140,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		private playbookService: PlaybookService, private authService: AuthService,
 		private toastrService: ToastrService, private activeRoute: ActivatedRoute,
 		private cdr: ChangeDetectorRef, private utils: UtilitiesService,
-		private modalService: NgbModal, private router: Router
+		private modalService: NgbModal, private router: Router,
+		private globalsService: GlobalsService
 	) {}
 
 	/**
@@ -232,7 +234,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Gets a list of all the loaded playbooks along with their workflows.
 	 */
 	async initialLoad(): Promise<void> {
-		this.playbookService.getGlobals().then(globals => this.globals = globals);
+		// this.playbookService.getGlobals().then(globals => this.globals = globals);
+		this.globalsService.globalsChange.subscribe(globals => this.globals = globals);
 		await this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
 
 		this.activeRoute.params.subscribe(params => {
@@ -1655,6 +1658,49 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			this.loadedWorkflow.environment_variables.push(variable);
 			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
 		}).catch(() => null)
+	}
+
+	/**
+	 * Spawns a modal for adding a new global. Passes in the app names and apis for usage in the modal.
+	 */
+	addGlobal(): void {
+		const modalRef = this.modalService.open(VariableModalComponent);
+		modalRef.componentInstance.isGlobal = true;
+
+		modalRef.result.then(variable => {
+			this.globalsService.addGlobal(variable).then(() => {
+				this.toastrService.success(`Added <b>${variable.name}</b>`);
+			})
+		}, () => null)
+	}
+
+	/**
+	 * Spawns a modal for editing an existing global. Passes in the app names and apis for usage in the modal.
+	 */
+	editGlobal(global: Variable): void {
+		const modalRef = this.modalService.open(VariableModalComponent);
+		modalRef.componentInstance.isGlobal = true;
+		modalRef.componentInstance.existing = true;
+		modalRef.componentInstance.variable = global.clone();
+		
+		modalRef.result.then(variable => {
+			this.globalsService.editGlobal(variable).then(() => {
+				this.toastrService.success(`Updated <b>${variable.name}</b>`);
+			})
+		}, () => null)
+	}
+
+	/**
+	 * After user confirmation, will delete a given global from the database.
+	 * Removes it from our list of globals to display.
+	 * @param globalToDelete Global to delete
+	 */
+	async deleteGlobal(globalToDelete: Variable) {
+		await this.utils.confirm(`Are you sure you want to delete <b>${ globalToDelete.name }</b>?`);
+		this.globalsService
+			.deleteGlobal(globalToDelete)
+			.then(() => this.toastrService.success(`Deleted <b>${ globalToDelete.name }</b>`))
+			.catch(e => this.toastrService.error(`Error deleting <b>${ e.message }</b>`));
 	}
 
 	/**
