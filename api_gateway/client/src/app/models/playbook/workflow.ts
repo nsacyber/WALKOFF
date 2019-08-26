@@ -107,6 +107,11 @@ export class Workflow extends ExecutionElement {
 	is_valid: boolean;
 
 	/**
+	 * Returns access_level for this workflow
+	 */
+	access_level: number = 1;
+
+	/**
 	 * Returns role permissions for this workflow
 	 */
 	permissions: any[] = [];

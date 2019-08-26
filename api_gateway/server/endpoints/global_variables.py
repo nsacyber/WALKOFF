@@ -133,6 +133,11 @@ def create_global():
     elif access_level == 2:
         update_permissions("global_variables", global_id, new_permissions=new_permissions, creator=curr_user.id)
 
+    # if new_permissions:
+    #     update_permissions("global_variables", global_id, new_permissions=new_permissions, creator=curr_user.id)
+    # else:
+    #     default_permissions("global_variables", global_id, data=data, creator=curr_user.id)
+
     try:
         key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
         data['value'] = fernet_encrypt(key, data['value'])
@@ -166,6 +171,10 @@ def update_global(global_var):
             default_permissions("global_variables", global_id, data=data)
         elif access_level == 2:
             auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
+        # if new_permissions:
+        #     auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
+        # else:
+        #     default_permissions("global_variables", global_id, data=data)
         try:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
             data['value'] = fernet_encrypt(key, data['value'])

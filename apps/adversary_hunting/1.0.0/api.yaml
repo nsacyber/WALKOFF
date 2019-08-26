@@ -1,0 +1,510 @@
+walkoff_version: 1.0.0
+app_version: 1.0.0
+name: adversary_hunting
+description: A power shell app that can run commands on a remote host.
+contact_info:
+  name: Walkoff Team
+  url: https://github.com/nsacyber/walkoff
+  email: walkoff@nsa.gov
+license_info:
+  name: Creative Commons
+  url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
+actions:
+  - name: set_timestamp
+    description: Outputs the timestamp at the time of this action's execution
+    returns:
+      schema:
+        type: string
+  - name: get_dll_info
+    description: Gathers every path  that has a space in the directory name, where a .dll exists, and a list of the “Known DLLs” from the Windows registry
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_installed_apps
+    description: Identifies potentially unauthorized or malicious software installed on a list of target systems. Queries WMI and retrieves registry information pertaining to installed applications.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_netstat
+    description: Identifies anomalous network connections on targeted systems. Enumerates all network connection on targeted systems.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_network_adapter
+    description: Identifies any network adapters that could be used for covert communication or VPN tunneling. Enumerates the physical and virtual network adapters connected to each of the targeted systems.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_processes
+    description: Identifies one-off processes/child processes or processes with “abnormal” characteristics or data.  Queries the win32_Processes from WMI  and retrieves info from the Get-NetTCPConnection information. 
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_scheduled_task
+    description: Identifies non-authorized scheduled tasks that may exist on targeted systems. Enumerates the scheduled tasks for each targeted system.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_services
+    description: Identifies any authorized or malicious Services that have been added or modified on targeted systems. Enumerates the Services installed on targeted systems.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_memory_kansa
+    description: Allows a user to dump the live memory on systems identified as needing more analysis.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_dns_cache_kansa
+    description: Acquires DNS cache entries from the target host.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_netstat_kansa
+    description: Acquired acquires netstat -naob output and reformats on the target as tsv output.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_arp_kansa
+    description: Acquies ARP Table
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_proc_dump_kansa
+    description: Acquires memory dump of the specified process. Uses Sysinternal's procdump.exe to write a dmp file to disk. That file is read into a memory stream and compressed using GZipStream, then Base64 encoded and stored in an object property and returned.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_procs_n_modules_kansa
+    description: Enumerates all running processes and their loaded modules. Post data collection, analysis can be run against this data to find possible DLL Search Order Hijacking.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+  - name: get_procs_wmi_kansa
+    description: Acquires various details about running processes, including commandline arguments, process start time, parent process id and md5 hash of the processes image as found on disk.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        required: true
+        schema:
+          type: array
+      - name: username
+        description: Username for remote host
+        required: true
+        schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        schema:
+          type: string
+      - name: transport
+        description: transport type
+        schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+    returns:
+      schema:
+        type: string

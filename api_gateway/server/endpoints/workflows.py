@@ -94,6 +94,10 @@ def create_workflow():
         # user-specified permissions
         elif access_level == 2:
             update_permissions("workflows", str(workflow.id_), new_permissions=new_permissions, creator=curr_user.id)
+        # if new_permissions:
+        #     update_permissions("workflows", str(workflow.id_), new_permissions=new_permissions, creator=curr_user.id)
+        # else:
+        #     default_permissions("workflows", str(workflow.id_), data, creator=curr_user.id)
 
         current_app.running_context.execution_db.session.add(workflow)
         current_app.running_context.execution_db.session.commit()
@@ -122,6 +126,11 @@ def import_workflow_and_regenerate_ids(workflow_json, creator):
         default_permissions("workflows", workflow_json['id_'], data=workflow_json, creator=creator)
     elif access_level == 2:
         update_permissions("workflows", workflow_json['id_'], new_permissions=new_permissions, creator=creator)
+
+    # if new_permissions:
+    #     update_permissions("workflows", workflow_json['id_'], new_permissions=new_permissions, creator=creator)
+    # else:
+    #     default_permissions("workflows", workflow_json['id_'], data=workflow_json, creator=creator)
 
     try:
         new_workflow = workflow_schema.load(workflow_json)
@@ -160,6 +169,10 @@ def copy_workflow(workflow, permissions, workflow_name=None, creator=None):
         default_permissions("workflows", workflow_json['id_'], data=workflow_json, creator=creator)
     elif access_level == 2:
         update_permissions("workflows", workflow_json['id_'], new_permissions=permissions, creator=creator)
+    # if permissions:
+    #     update_permissions("workflows", workflow_json['id_'], new_permissions=permissions, creator=creator)
+    # else:
+    #     default_permissions("workflows", workflow_json['id_'], data=workflow_json, creator=creator)
 
     try:
         new_workflow = workflow_schema.load(workflow_json)
@@ -229,6 +242,10 @@ def update_workflow(workflow):
             default_permissions("workflows", str(workflow.id_), data=data)
         elif access_level == 2:
             auth_check(str(workflow.id_), "update", "workflows", updated_roles=new_permissions)
+        # if new_permissions:
+        #     auth_check(str(workflow.id_), "update", "workflows", updated_roles=new_permissions)
+        # else:
+        #     default_permissions("workflows", str(workflow.id_), data=data)
 
         try:
             workflow_schema.load(data, instance=workflow)

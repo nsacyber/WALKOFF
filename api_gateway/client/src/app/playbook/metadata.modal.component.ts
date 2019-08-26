@@ -60,10 +60,15 @@ export class MetadataModalComponent {
             this.workflowNameModel.control.setErrors({'unique': true});
         }
 
-        if (this.myForm.valid) this.activeModal.close(this.workflow);
+        if (this.myForm.valid) {
+            if (this.workflow.access_level != 2) this.workflow.permissions = [];
+            
+            this.activeModal.close(this.workflow);
+        }
     }
 
     addPermission() {
+        console.log('what')
         if (!this.getRoleName(this.newPermission) || !this.getPermissionDescription(this.newPermission)) {
             return this.toastrService.error('Select a role and permission');
         }

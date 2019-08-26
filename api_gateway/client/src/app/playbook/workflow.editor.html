@@ -106,7 +106,7 @@
                     <span *ngIf="workflowChanged">*</span>
                     <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" class="" id="currentWorkflowText">
                             [Incomplete]</label>
-                    <a id="copy-button" class="ml-1" href="" placement="bottom-right" ngbTooltip="Edit Description"
+                    <a id="copy-button" class="ml-1" href="" placement="bottom-right" ngbTooltip="Edit Settings"
                         (click)="editDescription()">
                         <i class="fa fa-info-circle"></i>
                     </a>
@@ -148,20 +148,23 @@
         </div>
 
         <!-- Actual cytoscape graph editor -->
-        <div class="col-md-7 graphEditorColumn graphArea">
+        <div class="graphEditorColumn graphArea px-0 col">
             <div id="cy" #cyRef dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow"
                 tabindex="0"></div>
         </div>
 
         <!-- Parameter editors -->
-        <div class="col-md-3 graphEditorColumn">
-            <!-- Editor for Actions -->
+        <div [class.col-md-3]="selectedAction" class="graphEditorColumn shadow">
             <div *ngIf="!waitingOnData && selectedAction" class="parametersEditor">
                 <div class="d-flex justify-content-between my-2">
                     <h4 class="mb-0">Action Settings</h4>
-                    <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary"
-                        (click)="setStartNode(selectedAction.id)">Set Start Action</button>
-
+                    <div>
+                        <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-sm btn-primary mr-2"
+                            (click)="setStartNode(selectedAction.id)">Set Start Action</button>
+                        <button class="btn btn-sm btn-danger" (click)="closeActionSettingMenu()" ngbTooltip="Close Settings">
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="form-row">
