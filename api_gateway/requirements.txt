@@ -36,3 +36,5 @@ jsonpatch
 asteval
 cryptography
 tenacity
+pycrypto
+

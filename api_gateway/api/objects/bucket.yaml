@@ -1,0 +1,75 @@
+AddBucket:
+    type: object
+    required: [name]
+    properties:
+      name:
+        description: Name of the bucket event
+        type: string
+        example: administrative_bucket
+      description:
+        description: Description of the bucket
+        type: string
+        example: This bucket stores log files
+      triggers:
+        description: List of triggers for bucket
+        type: array
+        items:
+          $ref: '#/components/schemas/BucketTrigger'
+
+AddTrigger:
+    type: object
+    properties:
+      prefix:
+        description: File filter prefix
+        type: string
+        example: "my-prefix/"
+      suffix:
+        description: File filter suffix
+        type: string
+        example: "*.suffix"
+      type:
+        description: Type of event to use for this bucket
+        type: string
+        enum: ["s3:ObjectCreated:*", "s3:ObjectRemoved:*", "s3:ObjectAccessed:*"]
+        example: "s3:ObjectCreated:*"
+      workflow_id:
+        description: ID of workflow to execute
+        type: string
+
+Bucket:
+    type: object
+    required: [name]
+    properties:
+      name:
+        description: Name of the bucket event
+        type: string
+        example: administrative_bucket
+      description:
+        description: Description of the bucket
+        type: string
+        example: This bucket stores log files
+      triggers:
+        description: List of triggers for bucket
+        type: array
+        items:
+          $ref: '#/components/schemas/BucketTrigger'
+
+BucketTrigger:
+    type: object
+    properties:
+      type:
+        description: Type of event to use for this bucket
+        type: string
+        enum: ["s3:ObjectCreated:*", "s3:ObjectRemoved:*", "s3:ObjectAccessed:*"]
+        example: "s3:ObjectCreated:*"
+      prefix:
+        description: File filter prefix
+        type: string
+        example: "my-prefix/"
+      suffix:
+        description: File filter suffix
+        type: string
+        example: "*.suffix"
+      workflow:
+        description: ID of workflow to execute
+        type: string
