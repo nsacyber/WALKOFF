@@ -119,7 +119,7 @@
     <!-- Graph editor -->
     <div class="row graphEditorRow" [class.show-console]="showConsole">
         <!-- Column for app/action display for drag and drop -->
-        <div class="col-md-2 graphEditorColumn">
+        <div class="col-md-2 graphEditorColumn graphEditorActionPanel">
             <div class="panel-group" id="accordion" #accordion [hidden]="!loadedWorkflow">
                 <div class="card my-1">
                     <input class="form-control" placeholder="Filter Actions..." [formControl]="actionFilterControl" />

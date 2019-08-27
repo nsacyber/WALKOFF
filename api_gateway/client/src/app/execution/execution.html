@@ -105,7 +105,7 @@
 						[limit]="10">
 						<!-- Column Templates -->
 						<ngx-datatable-column name="ID" prop="node_id" [flexGrow]="3"></ngx-datatable-column>
-						<ngx-datatable-column [flexGrow]="1">
+						<ngx-datatable-column [flexGrow]="2">
 							<ng-template let-column="column" ngx-datatable-header-template>
 								App / Action
 							</ng-template>
@@ -134,7 +134,7 @@
 								{{getFriendlyJSON(row.parameters)}}
 							</ng-template>
 						</ngx-datatable-column>
-						<ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="4">
+						<ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="3">
 							<ng-template let-row="row" ngx-datatable-cell-template>
 								{{getFriendlyJSON(row.result)}}
 							</ng-template>
