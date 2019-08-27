@@ -16,6 +16,11 @@ import { GenericObject } from '../models/genericObject';
 import { ReportService } from '../reports/report.service';
 import { Report } from '../models/report/report';
 
+import { SettingsUserModalComponent } from '../settings/settings.user.modal.component';
+import { WorkingUser } from '../models/workingUser';
+import { User } from '../models/user';
+import { getDefaultService } from 'selenium-webdriver/edge';
+
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
 
@@ -200,5 +205,18 @@ export class MainComponent implements OnInit, OnDestroy {
 		modalRef.result
 			.then((result) => null,
 			(error) => { if (error) { this.toastrService.error(error.message); } });
+	}
+
+	/**
+	 * Edit User Settings Modal 
+	 */
+	async editUser() {
+		const user = await this.mainService.getUser(this.currentUser)
+		const modalRef = this.modalService.open(SettingsUserModalComponent);
+		modalRef.componentInstance.title = `Edit User: ${user.username}`;
+		modalRef.componentInstance.submitText = 'Save Changes';
+		modalRef.componentInstance.workingUser = WorkingUser.fromUser(user);
+
+		this._handleModalClose(modalRef);
 	}
 }

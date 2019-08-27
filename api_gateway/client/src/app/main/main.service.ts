@@ -48,8 +48,11 @@ export class MainService {
 	 * Grabs username from API endpoint to fill out users info
 	 * @param username
 	 */
-	getUser(username: User):  Promise<User>{
-		return this.http.get('api/users/personal/${username}')
+	getUser(username: string):  Promise<User>{
+		return this.http.get(`users/personal_data/${username}`)
+			.toPromise()
+			.then((data) => plainToClass(User, data))
+			.catch(this.utils.handleResponseError);
 	}
 
 }

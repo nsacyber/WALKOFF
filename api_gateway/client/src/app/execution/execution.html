@@ -19,9 +19,9 @@
 				Execute Workflow
 			</button>
 			<button *ngIf="selectedWorkflow && selectedWorkflow.referenced_variables.length > 0"
-				(click)="openVariableModal()" title="Edit Workflow Variables" class="btn btn-outline-primary mx-1">
-				<i class="fa fa-cog"></i>
-				Edit Workflow Variables
+				(click)="openVariableModal()" title="Edit Local Variables" class="btn btn-outline-primary mx-1">
+				<i class="fa fa-play-circle-o"></i>
+				Override Local Variables
 			</button>
 		</div>
 		<div class="col col-lg-4 my-1 my-lg-none">
