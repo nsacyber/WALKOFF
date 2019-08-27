@@ -134,8 +134,6 @@ def update_personal_user(username):
             username.active = True
             return update_user_fields(data, username)
         else:
-            username.set_roles(username.roles)
-            username.active = True
             return update_user_fields(data, username)
     else:
         return Problem.from_crud_resource(
@@ -166,6 +164,13 @@ def update_user_fields(data, user):
             else:
                 return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
                                f"Username {data['username']} is already taken.")
+        elif 'new_username' in data and data['new_username']:
+            user_db = User.query.filter_by(username=data['old_username']).first()
+            if user_db is None or user_db.id == user.id:
+                user.username = data['new_username']
+            else:
+                return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
+                               f"Username {data['new_username']} is already taken.")
         if 'old_password' in data and 'password' in data:
             if user.verify_password(data['old_password']):
                 user.password = data['password']
