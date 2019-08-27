@@ -3504,7 +3504,7 @@ var MainService = /** @class */ (function () {
      * @param username
      */
     MainService.prototype.getUser = function (username) {
-        return this.http.get("users/personal_data/" + username)
+        return this.http.get("api/users/personal_data/" + username)
             .toPromise()
             .then(function (data) { return Object(class_transformer__WEBPACK_IMPORTED_MODULE_3__["plainToClass"])(_models_user__WEBPACK_IMPORTED_MODULE_7__["User"], data); })
             .catch(this.utils.handleResponseError);

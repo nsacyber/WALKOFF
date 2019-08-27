@@ -49,7 +49,7 @@ export class MainService {
 	 * @param username
 	 */
 	getUser(username: string):  Promise<User>{
-		return this.http.get(`users/personal_data/${username}`)
+		return this.http.get(`api/users/personal_data/${username}`)
 			.toPromise()
 			.then((data) => plainToClass(User, data))
 			.catch(this.utils.handleResponseError);
