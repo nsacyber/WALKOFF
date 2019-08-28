@@ -299,11 +299,12 @@ class Umpire:
             workflow = workflow_loads(msg[0][2][b"workflow"])
 
             executing_workflows = await self.redis.xpending(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP)
+            status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
+            await send_status_update(self.session, execution_id, status)
 
             if executing_workflows[0] < 1:
                 status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
                 await send_status_update(self.session, execution_id, status)
-
             else:
                 # Kill worker
                 try:
