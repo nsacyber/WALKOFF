@@ -176,7 +176,6 @@ class Umpire:
             for execution_id, app_name, version in streams:
                 stream = f"{execution_id}:{app_name}:{version}"
                 group = f"{app_name}:{version}"
-
                 try:
                     executing_work = (await self.redis.xpending(stream=stream, group_name=group))[0]
                     total_work = await xlen(self.redis, stream)
@@ -299,8 +298,6 @@ class Umpire:
             workflow = workflow_loads(msg[0][2][b"workflow"])
 
             executing_workflows = await self.redis.xpending(static.REDIS_WORKFLOW_QUEUE, static.REDIS_WORKFLOW_GROUP)
-            status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
-            await send_status_update(self.session, execution_id, status)
 
             if executing_workflows[0] < 1:
                 status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
@@ -324,6 +321,10 @@ class Umpire:
                     _, app_name, version = stream.split(':')
                     app_group = f"{app_name}:{version}"
                     executing_apps = (await self.redis.xpending(stream, app_group))[3]
+                    await self.redis.delete(stream)
+
+                    status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
+                    await send_status_update(self.session, execution_id, status)
 
                     if executing_apps is None:
                         break
@@ -331,7 +332,6 @@ class Umpire:
                     for app, _ in executing_apps:
                         container = await self.docker_client.containers.get(app.decode())
                         await container.kill(signal="SIGKILL")
-                    await self.redis.delete(stream)
                 await self.redis.delete(f"{execution_id}:results")
             await self.redis.xack(stream=stream, group_name=static.REDIS_WORKFLOW_CONTROL_GROUP, id=id_)
             await xdel(self.redis, stream=stream, id_=id_)

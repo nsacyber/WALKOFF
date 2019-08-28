@@ -110,10 +110,7 @@ class Worker:
 
                 try:
                     worker.execution_task = asyncio.create_task(worker.execute_workflow())
-                    logger.info("hi3")
-                    logger.info(worker.execution_task)
                     await asyncio.gather(worker.execution_task)
-                    logger.info("hi2")
 
                 except asyncio.CancelledError:
                     logger.info(f"Aborting {log_msg}")
