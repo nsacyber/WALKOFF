@@ -19,7 +19,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from common.config import config, static
 from common.docker_helpers import (create_secret, get_secret, delete_secret, get_network, connect_to_aiodocker,
                                    docker_context, stream_docker_log, logger as docker_logger, disconnect_from_network,
-                                   update_service, get_replicas)
+                                   update_service, get_replicas, remove_volume)
 
 logging.basicConfig(level=logging.DEBUG, format="{asctime} - {name} - {levelname}:{message}", style='{')
 
@@ -342,6 +342,9 @@ class Bootloader:
 
     async def up(self):
 
+        #Create Postgres Volume
+        self.docker_client.volumes.create("postgres-data")
+
         # Create Walkoff encryption key
         wek = await create_encryption_key(self.docker_client, "walkoff_encryption_key")
 
@@ -453,6 +456,7 @@ class Bootloader:
                             help="Removes the walkoff_encryption_key secret.")
         parser.add_argument("-r", "--registry", action="store_true",
                             help="Clears the registry bind mount directory.")
+        parser.add_argument("-v", "--volume", action="store_true", help="Clears the postgresql volume")
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Set log level to debug.")
 
@@ -482,6 +486,10 @@ class Bootloader:
             await delete_dir_contents(static.MINIO_DATA_PATH)
             await delete_encryption_key(self.docker_client, "walkoff_minio_access_key")
             await delete_encryption_key(self.docker_client, "walkoff_minio_secret_key")
+
+        if args.volume:
+            await remove_volume("walkoff_postgres-data", wait=True)
+
 
         logger.info("Walkoff stack removed, it may take a little time to stop all services. "
                     "It is OK if the walkoff_default network is not fully removed.")
