@@ -160,39 +160,29 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
-#  patch:
-#    tags:
-#      - Scheduler
-#    summary: Abort a scheduled task
-#    description: ''
-#    operationId: api_gateway.server.endpoints.scheduler.control_scheduled_task
-#    requestBody:
-#      required: true
-#      content:
-#        application/json:
-#          schema:
-#            $ref: '#/components/schemas/ControlWorkflow'
-#    parameters:
-#      - name: execution
-#        in: path
-#        description: The ID of the execution to get.
-#        required: true
-#        schema:
-#          type: string
-#          format: uuid
-#    responses:
-#      204:
-#        description: Success.
-#      404:
-#        description: Workflow does not exist.
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/Error'
-#      400:
-#        description: Invalid input error.
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/Error'
-
+  patch:
+    tags:
+      - Scheduler
+    summary: Stop a scheduled task
+    operationId: api_gateway.server.endpoints.scheduler.control_scheduled_task
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ControlScheduledTask'
+    responses:
+      204:
+        description: Success
+      404:
+        description: Scheduled task does not exist
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      400:
+        description: Invalid input error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

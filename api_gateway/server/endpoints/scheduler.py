@@ -130,19 +130,19 @@ def update_scheduled_task(scheduled_task_id):
 @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['delete']))
 @with_task('delete', 'scheduled_task_id')
 def delete_scheduled_task(scheduled_task_id):
-        db.session.delete(scheduled_task_id)
-        db.session.commit()
-        return None, HTTPStatus.NO_CONTENT
+    db.session.delete(scheduled_task_id)
+    db.session.commit()
+    return None, HTTPStatus.NO_CONTENT
 
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['execute']))
 @with_task('control', 'scheduled_task_id')
 def control_scheduled_task(scheduled_task_id):
-        action = request.get_json()['action']
-        if action == 'start':
-            scheduled_task_id.start()
-        elif action == 'stop':
-            scheduled_task_id.stop()
-        db.session.commit()
-        return {}, HTTPStatus.OK
+    action = request.get_json()['action']
+    if action == 'start':
+        scheduled_task_id.start()
+    elif action == 'stop':
+        scheduled_task_id.stop()
+    db.session.commit()
+    return {}, HTTPStatus.OK
