@@ -234,7 +234,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Gets a list of all the loaded playbooks along with their workflows.
 	 */
 	async initialLoad(): Promise<void> {
-		// this.playbookService.getGlobals().then(globals => this.globals = globals);
 		this.globalsService.globalsChange.subscribe(globals => this.globals = globals);
 		await this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
 
@@ -845,7 +844,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		this.cy.add(elements);
 
-		if(!options.zoom || !options.pan) setImmediate(() => this.cy.fit(null, 50));
+		if(!options.zoom || !options.pan) setImmediate(() => this.cy.fit(null, 75));
 
 		this.setStartNode(this.loadedWorkflow.start);
 
