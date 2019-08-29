@@ -56,7 +56,7 @@ export class MainProfileModalComponent {
 			return;
 		}
 
-		if (!this.editPersonalUser.old_password) {
+		if (!this.editPersonalUser.password) {
 			this.editPersonalUser.password = this.editPersonalUser.old_password;
 		}
 

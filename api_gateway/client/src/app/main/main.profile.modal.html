@@ -4,13 +4,13 @@
 <div id="userModalBody" class="modal-body">
 	<div class="container-fluid">
 		<form #userForm="ngForm" (ngSubmit)="submit()">
-			<div *ngIf="user" class="row justify-content-center">
-				<div class="col-5">
+			<div *ngIf="user" class="row">
+				<div class="col">
 					<div class="form-group">
 						<label for="username">
 							Username <i class="fa fa-asterisk required" title="This field is required."></i>
 						</label>
-						<input type="text" class="form-control" [class.is-invalid]="username.touched && username.invalid" [(ngModel)]="editPersonalUser.old_username" name="username" #username="ngModel" required>
+						<input type="text" class="form-control" [class.is-invalid]="username.touched && username.invalid" [(ngModel)]="editPersonalUser.new_username" name="username" #username="ngModel" required>
 						<div class="invalid-feedback">
 							Username is required.
 						</div>
