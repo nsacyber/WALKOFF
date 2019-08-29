@@ -4,6 +4,7 @@
 <div id="userModalBody" class="modal-body">
 	<div class="container-fluid">
 		<form #userForm="ngForm" (ngSubmit)="submit()">
+		<button type=“submit” style="display: none;"></button>
 			<div *ngIf="user" class="row">
 				<div class="col">
 					<div class="form-group">

@@ -205,16 +205,22 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
 			.then((result) => null,
-			(error) => { if (error) { this.toastrService.error(error.message); } });
+			(error) => { if (error) {
+				 this.toastrService.error(error.message); 
+				} 
+			});
 	}
 
 	/**
-	 * Edit User Settings Modal 
+	 * Edit User Profile Modal 
 	 */
 	editUser() {
 		const modalRef = this.modalService.open(MainProfileModalComponent);
 		modalRef.componentInstance.username = this.currentUser;
-		modalRef.result.then(user => this.toastrService.success('Updated Profile'), () => null)
+		modalRef.result.then(user => {
+			this.currentUser = user.username;
+			this.toastrService.success('Updated Profile')
+		}, () => null)
 
 		return false;
 	}
