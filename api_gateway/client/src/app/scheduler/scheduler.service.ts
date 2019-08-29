@@ -52,7 +52,7 @@ export class SchedulerService {
 	}
 
 	editScheduledTask(scheduledTask: ScheduledTask): Promise<ScheduledTask> {
-		return this.http.put('api/scheduledtasks', scheduledTask)
+		return this.http.put(`api/scheduledtasks/${ scheduledTask.id }`, scheduledTask)
 			.toPromise()
 			.then((data: object) => plainToClass(ScheduledTask, data))
 			.catch(this.utils.handleResponseError);
@@ -66,7 +66,7 @@ export class SchedulerService {
 	}
 
 	changeScheduledTaskStatus(scheduledTaskId: number, actionName: string): Promise<void> {
-		return this.http.patch('api/scheduledtasks', { id: scheduledTaskId, action: actionName })
+		return this.http.patch(`api/scheduledtasks/${ scheduledTaskId }`, { action: actionName })
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
