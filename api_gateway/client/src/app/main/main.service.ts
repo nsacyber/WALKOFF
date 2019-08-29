@@ -55,4 +55,11 @@ export class MainService {
 			.catch(this.utils.handleResponseError);
 	}
 
+	updateUser(data: any):  Promise<User>{
+		return this.http.put(`api/users/personal_data/${data.old_username}`, data)
+			.toPromise()
+			.then((data) => plainToClass(User, data))
+			//.catch(this.utils.handleResponseError);
+	}
+
 }

@@ -20,6 +20,7 @@ import { SettingsUserModalComponent } from '../settings/settings.user.modal.comp
 import { WorkingUser } from '../models/workingUser';
 import { User } from '../models/user';
 import { getDefaultService } from 'selenium-webdriver/edge';
+import { MainProfileModalComponent } from './main.profile.modal.component';
 
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
@@ -211,11 +212,9 @@ export class MainComponent implements OnInit, OnDestroy {
 	 * Edit User Settings Modal 
 	 */
 	async editUser() {
-		const user = await this.mainService.getUser(this.currentUser)
-		const modalRef = this.modalService.open(SettingsUserModalComponent);
-		modalRef.componentInstance.title = `Edit User: ${user.username}`;
-		modalRef.componentInstance.submitText = 'Save Changes';
-		modalRef.componentInstance.workingUser = WorkingUser.fromUser(user);
+		const modalRef = this.modalService.open(MainProfileModalComponent);
+		modalRef.componentInstance.username = this.currentUser;
+		modalRef.result.then(user => this.toastrService.success('Updated Profile'))
 
 		this._handleModalClose(modalRef);
 	}
