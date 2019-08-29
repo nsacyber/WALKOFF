@@ -23,11 +23,11 @@
 					ngbTooltip="Start Scheduler">
 					<i class="fa fa-play"></i>
 				</button>
-				<button *ngIf="schedulerStatus && schedulerStatus === 'running'"
+				<!-- <button *ngIf="schedulerStatus && schedulerStatus === 'running'"
 					(click)="changeSchedulerStatus('pause')" class="btn btn-warning mx-1" id="pauseSchedulerBtn"
 					ngbTooltip="Pause Scheduler">
 					<i class="fa fa-pause"></i>
-				</button>
+				</button> -->
 				<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('stop')"
 					class="btn btn-danger" id="stopSchedulerBtn" ngbTooltip="Stop Scheduler">
 					<i class="fa fa-stop"></i>
@@ -63,20 +63,20 @@
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<button *ngIf="row.status === 'stopped' || row.status === 'paused'"
+				<!-- <button *ngIf="row.status === 'stopped' || row.status === 'paused'"
 					(click)="changeScheduledTaskStatus(row, 'start')" title="Start Scheduled Task"
 					class="mr-1 btn btn-primary">
 					<i class="fa fa-play"></i>
 				</button>
-				<!--<button *ngIf="row.status === 'running''" (click)="changeScheduledTaskStatus(row, 'pause')" title="Pause Scheduled Task"
+				<button *ngIf="row.status === 'running''" (click)="changeScheduledTaskStatus(row, 'pause')" title="Pause Scheduled Task"
 					class="btn btn-warning">
 					<i class="fa fa-pause"></i>
-				</button>-->
+				</button>
 				<button *ngIf="row.status === 'running' || row.status === 'paused'"
 					(click)="changeScheduledTaskStatus(row, 'stop')" title="Stop Scheduled Task"
 					class="mr-1 btn btn-danger">
 					<i class="fa fa-stop"></i>
-				</button>
+				</button> -->
 				<button (click)="editScheduledTask(row)" class="mr-1 btn btn-primary" title="Edit Scheduled Task">
 					<i class="fa fa-edit"></i>
 				</button>
