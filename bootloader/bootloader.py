@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import base64
+import zipfile
 from pathlib import Path
 
 import aiodocker
@@ -116,7 +117,19 @@ def generate_app_composes():
     # TODO: Probably find a way to incorporate the app repo in here as well to eliminate mounting files to umpire
     composes = []
     for app in pathlib.Path(config.APPS_PATH).iterdir():
+        if not app.is_dir():
+            try:
+                zip_ref = zipfile.ZipFile(app, 'r')
+                zip_ref.extractall(config.APPS_PATH)
+                zip_ref.close()
+                os.remove(app)
+            except Exception as e:
+                logger.error(f"Zip error: {e}")
+                continue
+
+    for app in pathlib.Path(config.APPS_PATH).iterdir():
         #  grabs only directories and ignores all __* directories i.e. __pycache__
+
         if app.is_dir() and not re.fullmatch(r"(__.*)", app.name):
             for version in app.iterdir():
                 # grabs all valid version directories of form "v0.12.3.45..."

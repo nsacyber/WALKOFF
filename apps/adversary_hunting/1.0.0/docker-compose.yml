@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: 127.0.0.1:5000/walkoff_app_power_shell:1.0.0
+    image: 127.0.0.1:5000/walkoff_app_adversary_hunting:1.0.0
     env_file:
       - env.txt
     configs:
