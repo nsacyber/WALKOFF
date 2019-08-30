@@ -127,20 +127,24 @@ def update_personal_user(username):
             'update',
             f"Current user does not have permission to update user {username.id}.")
 
-    if username.id == current_user:
-        # allow ability to update username/password but not roles/active
-        if username.id == 2:
-            username.set_roles([2])
-            username.active = True
-            return update_user_fields(data, username)
+    # check password
+    if username.verify_password(data['old_password']):
+        if username.id == current_user:
+            # allow ability to update username/password but not roles/active
+            if username.id == 2:
+                username.set_roles([2])
+                username.active = True
+                return update_user_fields(data, username)
+            else:
+                return update_user_fields(data, username)
         else:
-            return update_user_fields(data, username)
+            return Problem.from_crud_resource(
+                HTTPStatus.FORBIDDEN,
+                'user',
+                'update',
+                f"Current user does not have permission to update user {username.id}.")
     else:
-        return Problem.from_crud_resource(
-            HTTPStatus.FORBIDDEN,
-            'user',
-            'update',
-            f"Current user does not have permission to update user {username.id}.")
+        return None, HTTPStatus.FORBIDDEN
 
 
 @permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
@@ -171,7 +175,9 @@ def update_user_fields(data, user):
             else:
                 return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
                                f"Username {data['new_username']} is already taken.")
-        if 'old_password' in data and 'password' in data:
+        if 'old_password' in data and 'password' in data and \
+                data['old_password'] != "" and data['password'] != "":
+            logger.info("go there")
             if user.verify_password(data['old_password']):
                 user.password = data['password']
             else:
