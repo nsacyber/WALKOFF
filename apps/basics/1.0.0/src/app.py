@@ -44,7 +44,7 @@ class Basics(AppBase):
         return this
 
     async def echo_string(self, call):
-        return f"A,B,C\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6"
+        return f"ECHOING: {call}"
 
     async def return_plus_one(self, number):
         return number + 1
