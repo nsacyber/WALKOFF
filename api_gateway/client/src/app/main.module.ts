@@ -49,6 +49,7 @@ import { SettingsRoleModalComponent } from './settings/settings.roles.modal.comp
 import { SettingsTimeoutModalComponent } from './settings/settings.timeout.modal.component';
 import { ExecutionVariableModalComponent } from './execution/execution.variable.modal.component';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook/playbook.environment.variable.modal.component';
+import { MainProfileModalComponent } from './main/main.profile.modal.component';
 
 import { PlaybookArgumentComponent } from './playbook/playbook.argument.component';
 import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
@@ -112,6 +113,7 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		SchedulerModalComponent,
 		GlobalsModalComponent,
 		VariableModalComponent,
+		MainProfileModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		SettingsTimeoutModalComponent,
@@ -151,6 +153,7 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		SchedulerModalComponent,
 		GlobalsModalComponent,
 		VariableModalComponent,
+		MainProfileModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		SettingsTimeoutModalComponent,
