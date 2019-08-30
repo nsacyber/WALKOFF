@@ -354,9 +354,9 @@ class Bootloader:
             raise e
 
     async def up(self):
-
-        #Create Postgres Volume
-        self.docker_client.volumes.create("postgres-data")
+        data = {"name": "postgres-data"}
+        # Create Postgres Volume
+        await self.docker_client.volumes.create(data)
 
         # Create Walkoff encryption key
         wek = await create_encryption_key(self.docker_client, "walkoff_encryption_key")
