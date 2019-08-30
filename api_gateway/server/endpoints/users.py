@@ -175,8 +175,8 @@ def update_user_fields(data, user):
             else:
                 return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
                                f"Username {data['new_username']} is already taken.")
-        if data['old_password'] != "" and data['password'] != "" and \
-                'old_password' in data and 'password' in data:
+        if 'old_password' in data and 'password' in data and \
+                data['old_password'] != "" and data['password'] != "":
             logger.info("go there")
             if user.verify_password(data['old_password']):
                 user.password = data['password']
