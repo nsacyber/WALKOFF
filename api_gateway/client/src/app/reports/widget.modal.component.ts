@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ReportWidget } from '../models/report/reportWidget';
 import { ExecutionService } from '../execution/execution.service';
 import { PlaybookService } from '../playbook/playbook.service';
+import { WorkflowStatuses } from '../models/execution/workflowStatus';
 
 @Component({
     selector: 'widget-modal-component',
@@ -44,7 +45,7 @@ export class WidgetModalComponent implements OnInit {
         const workflowId = this.widget.options.workflow;
         const workflowStatuses = await this.executionService.getAllWorkflowStatuses();
         this.executions = [{id: 'latest', text: 'Latest'}].concat(workflowStatuses
-                            .filter(status => status.workflow_id == workflowId && status.status == 'completed')
+                            .filter(status => status.workflow_id == workflowId && status.status == WorkflowStatuses.COMPLETED)
                             .map(status => ({ id: status.execution_id, text: status.completed_at_local})))
 
         this.widget.options.execution = 'latest';
