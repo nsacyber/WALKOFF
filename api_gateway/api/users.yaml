@@ -125,3 +125,87 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+
+/users/permissions:
+  get:
+    tags:
+      - Users
+    summary: Get a user's permissions JSON
+    description: ''
+    operationId: api_gateway.server.endpoints.users.list_permissions
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              description: The user object matching the user id inputted
+              $ref: '#/components/schemas/DisplayUser'
+      404:
+        description: Could not display user <username>. User does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/users/personal_data/{username}:
+  parameters:
+    - name: username
+      in: path
+      description: The username of the user to be fetched
+      required: true
+      schema:
+        type: string
+  get:
+    tags:
+      - Users
+    summary: Get personal user data
+    description: ''
+    operationId: api_gateway.server.endpoints.users.read_personal_user
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              description: The user object matching the username inputted
+              $ref: '#/components/schemas/DisplayUser'
+      404:
+        description: Could not display user <username>. User does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+  put:
+    tags:
+      - Users
+    summary: Update personal user data
+    description: ''
+    operationId: api_gateway.server.endpoints.users.update_personal_user
+    requestBody:
+      description: Updated fields for the user object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EditPersonalUser'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              description: The updated user.
+              $ref: '#/components/schemas/DisplayUser'
+      400:
+        description: Invalid password
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      404:
+        description: Could not edit user <username>. User does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

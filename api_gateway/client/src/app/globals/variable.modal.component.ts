@@ -39,7 +39,7 @@ export class VariableModalComponent implements OnInit {
             existingPermission.permissions = this.newPermission.permissions : 
             this.variable.permissions.push(this.newPermission);
         
-        this.variable.permissions.sort((a, b) => a.role.localeCompare(b.role));
+        this.variable.permissions.sort((a, b) => this.getRoleName(a).localeCompare(this.getRoleName(b)));
         this.newPermission = { role: '', permissions: '' };
     }
 
@@ -48,12 +48,17 @@ export class VariableModalComponent implements OnInit {
     }
 
     getRoleName(p: any): string {
-        const role = this.systemRoles.find(role => role.name == p.role);
+        const role = this.systemRoles.find(role => role.id == p.role);
         return role ? role.name : null;
     }
 
     getPermissionDescription(r: any): string {
         const permission = this.permissionOptions.find(o => JSON.stringify(o.crud) == JSON.stringify(r.permissions))
         return permission ? permission.description : null;
+    }
+
+    submit() {
+        if (this.variable.access_level != 2) this.variable.permissions = [];
+        this.activeModal.close(this.variable)
     }
 }

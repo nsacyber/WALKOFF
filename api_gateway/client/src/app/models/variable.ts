@@ -32,6 +32,8 @@ export class Variable {
 
     @Exclude()
     isHidden: boolean = true;
+
+    access_level: number = 1;
     
     permissions: any[] = [];
     

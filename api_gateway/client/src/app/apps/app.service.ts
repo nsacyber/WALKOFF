@@ -21,6 +21,7 @@ export class AppService {
 		return this.http.get('api/apps/apis')
 			.toPromise()
 			.then((data: any[]) => plainToClass(AppApi, data))
+			.then((appApis: AppApi[]) => appApis.filter(a => a.name !== 'Builtin'))
 			.then((appApis: AppApi[]) => {
 				appApis.forEach(app => app.action_apis.map(action => {
 					action.app_name = app.name;

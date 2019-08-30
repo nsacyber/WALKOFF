@@ -33,7 +33,7 @@ class Transform(Base):
     children = []
 
     # Columns specific to Transform model
-    transform = Column(String(512), nullable=False)
+    transform = Column(String(), nullable=False)
 
     def __init__(self, **kwargs):
         super(Transform, self).__init__(**kwargs)

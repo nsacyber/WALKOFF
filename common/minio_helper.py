@@ -38,7 +38,8 @@ class MinioApi:
         except Exception as e:
             print(e)
 
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                             secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         objects = minio_client.list_objects("apps-bucket", recursive=True)
         for obj in objects:
             size = obj.size
@@ -46,10 +47,11 @@ class MinioApi:
             if p_src.parts[1] == app_name:
                 hold = str(p_src)
                 p_dst = hold[hold.find(app_name):]
-                p_dst = f"./temp_apps/{p_dst}"
+                p_dst = Path("temp_apps") / p_dst
+                os.makedirs(p_dst.parent, exist_ok=True)
 
                 data = minio_client.get_object('apps-bucket', hold)
-                with open(str(p_dst), 'wb') as file_data:
+                with open(p_dst, 'wb+') as file_data:
                     for d in data.stream(size):
                         file_data.write(d)
 
@@ -60,19 +62,29 @@ class MinioApi:
             with docker_context(Path(context_dir)) as context:
                 logger.info("Sending image to be built")
                 dockerfile = "./Dockerfile"
-                log_stream = await docker_client.images.build(fileobj=context, tag=repo, rm=True,
-                                                              forcerm=True, pull=True, stream=True,
-                                                              path_dockerfile=dockerfile,
-                                                              encoding="application/x-tar")
-                logger.info("Docker image building")
-                await stream_docker_log(log_stream)
-                logger.info("Docker image Built")
-                await push_image(docker_client, repo)
+                try:
+                    log_stream = await docker_client.images.build(fileobj=context, tag=repo, rm=True,
+                                                                  forcerm=True, pull=True, stream=True,
+                                                                  path_dockerfile=dockerfile,
+                                                                  encoding="application/x-tar")
+                    logger.info("Docker image building")
+                    await stream_docker_log(log_stream)
+                    logger.info("Docker image Built")
+                    # if await push_image(docker_client, repo):
+                    #     return "Docker image built and pushed successfully."
+                    success = await push_image(docker_client, repo)
+                    if success:
+                        return True, "Successfully built and pushed image"
+                    else:
+                        return False, "Failed to push image"
+                except Exception as e:
+                    return False, str(e)
 
     @staticmethod
     async def list_files(app_name, version):
         relative_path = []
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                             secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         objects = minio_client.list_objects("apps-bucket", recursive=True)
         for obj in objects:
             p_src = Path(obj.object_name)
@@ -83,14 +95,16 @@ class MinioApi:
 
     @staticmethod
     async def get_file(app_name, version, path):
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                             secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         abs_path = f"apps/{app_name}/{version}/{path}"
         data = minio_client.get_object('apps-bucket', abs_path)
         return data.read()
 
     @staticmethod
     async def update_file(app_name, version, path, file_data, file_size):
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                             secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         abs_path = f"apps/{app_name}/{version}/{path}"
         found = False
         try:
@@ -114,7 +128,8 @@ class MinioApi:
     @staticmethod
     async def save_file(app_name, version):
         temp = []
-        minio_client = Minio(config.MINIO, access_key='walkoff', secret_key='walkoff123', secure=False)
+        minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                             secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         objects = minio_client.list_objects("apps-bucket", recursive=True)
         for obj in objects:
             size = obj.size
@@ -122,13 +137,14 @@ class MinioApi:
             if p_src.parts[1] == app_name:
                 hold = str(p_src)
                 p_dst = hold[hold.find(app_name):]
-                p_dst = f"./apps/{p_dst}"
+                p_dst = Path("apps") / p_dst
+                os.makedirs(p_dst.parent, exist_ok=True)
 
                 data = minio_client.get_object('apps-bucket', hold)
-                with open(str(p_dst), 'wb') as file_data:
+                with open(str(p_dst), 'wb+') as file_data:
                     for d in data.stream(size):
                         file_data.write(d)
                 owner_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_uid
-                group_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_uid
+                group_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_gid
                 os.chown(p_dst, owner_id, group_id)
         return True

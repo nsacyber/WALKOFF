@@ -64,8 +64,10 @@ class Operation(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     operation_id = db.Column(db.String(255), nullable=False)
     permissions_list = db.Column(ARRAY(db.String(255)))
+    creator = db.Column(db.Integer)
     resource_id = db.Column(db.Integer, db.ForeignKey('resource.id'))
 
-    def __init__(self, operation_id, permissions_list):
+    def __init__(self, operation_id, permissions_list, creator):
         self.operation_id = operation_id
         self.permissions_list = permissions_list
+        self.creator = creator

@@ -6,7 +6,7 @@ from uuid import uuid4
 from flask import current_app
 from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 
-from sqlalchemy import Column, String, JSON, ForeignKey, ARRAY
+from sqlalchemy import Column, String, JSON, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 
@@ -55,6 +55,8 @@ class GlobalVariable(Base):
     description = Column(String(255), default="")
     schema_id = Column(UUID(as_uuid=True), ForeignKey('global_variable_template.id_', ondelete='CASCADE'))
     permissions = Column(JSON)
+    access_level = Column(Integer)
+    creator = Column(Integer, default=2)
     _walkoff_type = Column(String(80), default="variable")
 
 
@@ -88,8 +90,8 @@ class GlobalVariableSchema(BaseSchema):
     def validate_global(self, data, **kwargs):
         try:
             if "schema" in data:
-                with open(config.ENCRYPTION_KEY_PATH, 'rb') as f:
-                    temp = fernet_decrypt(f.read(), data['value'])
+                key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+                temp = fernet_decrypt(key, data['value'])
                 Draft4Validator(data['schema']['schema']).validate(temp)
 
         except (SchemaError, JSONSchemaValidationError):

@@ -154,7 +154,7 @@ Deploying WALKOFF in a Windows environment
 
 		Home <self>
 		Interface Overview <interface.rst>
-		Workflow Development <workflow.rst>
+		Walkoff Development <workflow.rst>
 		Prepackaged Applications <prepackaged_apps.rst>
 		Application Development <apps.rst>
 		API Gateway <api.rst>

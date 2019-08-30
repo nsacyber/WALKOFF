@@ -19,8 +19,7 @@ RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.t
 FROM base
 
 COPY --from=builder /install /usr/local
-COPY ./app_sdk/walkoff_app_sdk/__init__.py /app/walkoff_app_sdk/__init__.py
-COPY ./app_sdk/walkoff_app_sdk/app_base.py /app/walkoff_app_sdk/app_base.py
-COPY ./app_sdk/walkoff_app_sdk/common /app/walkoff_app_sdk/common
+COPY ./app_sdk/walkoff_app_sdk /app/walkoff_app_sdk
+COPY ./common /app/common
 
 # No CMD/ENTRYPOINT because this image should never run alone

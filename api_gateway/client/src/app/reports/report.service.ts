@@ -74,8 +74,8 @@ export class ReportService {
     }
 
     async getWidgetMetadata(widget: ReportWidget) {
-        const testData = "A,B,C\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6";
-        return widget.setMetadata(await this.parseResult(testData))
+        // const testData = "A,B,C\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6";
+        // return widget.setMetadata(await this.parseResult(testData))
 
         const options = widget.options;
         if (options.workflow && options.execution && options.action) {

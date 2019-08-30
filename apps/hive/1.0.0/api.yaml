@@ -11,10 +11,57 @@ license_info:
   url: https://github.com/nsacyber/WALKOFF/blob/master/LICENSE.md
 actions:
   - name: create_case
-    description: creates a hive case
+    description: Create a case in The Hive
     parameters:
-      - name: log_data
-        description: log data to generate custom fields
+      - name: url
+        description: URL of TheHive
+        schema:
+          type: string
+        required: true
+      - name: api_key
+        description: API key to access TheHive
+        schema:
+          type: string
+        required: true
+      - name: title
+        description: Title of the case
+        schema:
+          type: string
+        required: true
+      - name: description
+        description: Description of the case
+        schema:
+          type: string
+      - name: tlp
+        description: "New TLP (0: white; 1: green; 2: amber; 3: red)"
+        placeholder: 2
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 3
+      - name: severity
+        description: "New Severity (1: low; 2: medium; 3: high)"
+        placeholder: 1
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 3
+      - name: tags
+        description: Tags on the case
+        schema:
+          type: array
+          items:
+            type: string
+    returns:
+      description: "Created Case ID"
+      schema:
+        type: string
+
+  - name: update_case
+    description: Update a case in The Hive by case_id. You can use "action output" to reference it from create_case
+    parameters:
+      - name: case_id
+        description: case_id to update. Can be referenced from the action output of create_case
         schema:
           type: string
         required: true
@@ -29,52 +76,51 @@ actions:
           type: string
         required: true
       - name: title
-        description: log data to generate custom fields
+        description: New title of the case
         schema:
           type: string
-        required: true
       - name: description
-        description: log data to generate custom fields
+        description: New description of the case
         schema:
           type: string
       - name: tlp
-        description: API key to access TheHive
+        description: "New TLP (0: white; 1: green; 2: amber; 3: red)"
+        placeholder: 2
         schema:
           type: integer
+          minimum: 0
+          maximum: 3
       - name: severity
-        description: log data to generate custom fields
+        description: "New Severity (1: low; 2: medium; 3: high)"
+        placeholder: 1
         schema:
           type: integer
+          minimum: 0
+          maximum: 3
       - name: tags
-        description: log data to generate custom fields
+        description: New tags on the case
         schema:
           type: array
-        required: true
-      - name: tasks
-        description: log data to generate custom fields
-        schema:
-          type: array
-        required: true
-    returns:
-      schema:
-        type: object
-  - name: update_case
-    description: Updates case data as well as severity, ensure case_id exists. By default, data to be placed in the hive should be stored as the value for key "walkoff" being passed in under log_data
-    parameters:
-      - name: log_data
-        description: log data to generate custome fields
-        schema:
-          type: object
-        required: true
-      - name: id
-        description: id for case you wish to update. If you created a case you would like to update in the same workflow, use the output of create_case
+          items:
+            type: string
+      - name: tags_mode
+        description: Whether to append or replace the list of tags on the case
         schema:
           type: string
+          enum: ['append', 'replace']
         required: true
-      - name: severity
-        description: Severity of threat. Cases will be create with severity level 1, increase/decrease accordingly.
+    returns:
+      description: "Updated Case ID"
+      schema:
+        type: string
+
+  - name: close_case
+    description: Closes a case in TheHive
+    parameters:
+      - name: case_id
+        description: ID of case to close
         schema:
-          type: integer
+          type: string
         required: true
       - name: url
         description: URL of TheHive
@@ -86,47 +132,294 @@ actions:
         schema:
           type: string
         required: true
-  - name: close_case
-    description: Closes a case in TheHive
+      - name: resolution_status
+        description: Resolution status of the case to close.
+        schema:
+          type: string
+          enum: ['TruePositive', 'FalsePositive', 'Indeterminate']
+        required: true
+      - name: impact_status
+        description: Impact status of the case to close. The impact status is only captured when resolution status is TruePositive
+        schema:
+          type: string
+          enum: ['NoImpact', 'WithImpact']
+        required: true
+      - name: summary
+        description: Explanation of why the case was closed.
+        schema:
+          type: string
+        required: true
+      - name: tags
+        description: Tags on the case
+        schema:
+          type: array
+          items:
+            type: string
+      - name: tags_mode
+        description: Whether to append or replace the list of tags on the case
+        schema:
+          type: string
+          enum: ['append', 'replace']
+        required: true
+    returns:
+      description: "Closed Case ID"
+      schema:
+        type: string
+
+  - name: create_case_task
+    description: Add a human task to a case by case_id. You can use "action output" to reference it from create_case
     parameters:
-    - name: case_id
-      description: ID of case to close
+      - name: case_id
+        description: case_id to add the task to. Can be referenced from the action output of create_case
+        schema:
+          type: string
+        required: true
+      - name: url
+        description: URL of TheHive
+        schema:
+          type: string
+        required: true
+      - name: api_key
+        description: API key to access TheHive
+        schema:
+          type: string
+        required: true
+      - name: data
+        description: List of titles and descriptions of the task
+        parallelizable: true
+        schema:
+          type: array
+          items:
+            type: object
+            schema:
+              title:
+                type: string
+              description:
+                type: string
+    returns:
+      description: "Created Case Task ID"
       schema:
         type: string
-      required: true
-    - name: url
-      description: URL of TheHive
+
+  - name: create_case_observable
+    description: Add an observable to a case by case_id. You can use "action output" to reference it from create_case
+    parameters:
+      - name: case_id
+        description: case_id to add the observable to. Can be referenced from the action output of create_case
+        schema:
+          type: string
+        required: true
+      - name: url
+        description: URL of TheHive
+        schema:
+          type: string
+        required: true
+      - name: api_key
+        description: API key to access TheHive
+        schema:
+          type: string
+        required: true
+      - name: data_type
+        description: Type of observable
+        placeholder: other
+        schema:
+          type: string
+          enum:
+            - autonomous-system
+            - domain
+            - file
+            - filename
+            - fqdn
+            - hash
+            - ip
+            - mail
+            - mail_subject
+            - other
+            - regexp
+            - registry
+            - uri_path
+            - url
+            - user-agent
+      - name: data
+        description: content of the observable
+        schema:
+          type: array
+          items:
+            type: string
+      - name: description
+        description: description of the observable
+        schema:
+          type: string
+      - name: tlp
+        description: "New TLP (0: white; 1: green; 2: amber; 3: red)"
+        placeholder: 0
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 3
+      - name: is_ioc
+        description: Is this observable an indicator of compromise?
+        schema:
+          type: boolean
+      - name: is_sighted
+        description: Has this observable been sighted in the system?
+        schema:
+          type: boolean
+      - name: tags
+        description: New tags on the observable
+        schema:
+          type: array
+          items:
+            type: string
+    returns:
+      description: "Created Case Observable ID"
       schema:
         type: string
-      required: true
-    - name: api_key
-      description: API key to access TheHive
+
+  - name: update_case_task
+    description: Update a case task by task_id.
+    parameters:
+      - name: url
+        description: URL of TheHive
+        schema:
+          type: string
+        required: true
+      - name: api_key
+        description: API key to access TheHive
+        schema:
+          type: string
+        required: true
+      - name: task_id
+        description: task_id to update
+        schema:
+          type: string
+        required: true
+      - name: title
+        description: Title of the task
+        schema:
+          type: string
+      - name: description
+        description: Description of the task
+        schema:
+          type: string
+      - name: status
+        description: Status of the task
+        schema:
+          type: string
+          enum: ["Waiting", "InProgress", "Completed", "Cancel"]
+      - name: flag
+        description: whether to flag the task
+        schema:
+          type: boolean
+    returns:
+      description: "Updated Case Task ID"
       schema:
         type: string
-      required: true
-    - name: resolution_status
-      description: Resolution status of the case to close.
+
+  - name: update_case_observable
+    description: Update a case task by case_id and obs_id.
+    parameters:
+      - name: url
+        description: URL of TheHive
+        schema:
+          type: string
+        required: true
+      - name: api_key
+        description: API key to access TheHive
+        schema:
+          type: string
+        required: true
+      - name: case_id
+        description: case_id the observable belongs to
+        schema:
+          type: string
+        required: true
+      - name: obs_id
+        description: obs_id to update
+        schema:
+          type: string
+        required: true
+      - name: description
+        description: description of the observable
+        schema:
+          type: string
+      - name: tlp
+        description: "New TLP (0: white; 1: green; 2: amber; 3: red)"
+        placeholder: 0
+        schema:
+          type: integer
+          minimum: 0
+          maximum: 3
+      - name: is_ioc
+        description: Is this observable an indicator of compromise?
+        schema:
+          type: boolean
+      - name: is_sighted
+        description: Has this observable been sighted in the system?
+        schema:
+          type: boolean
+      - name: tags
+        description: New tags on the observable
+        schema:
+          type: array
+          items:
+            type: string
+      - name: tags_mode
+        description: Whether to append or replace the list of tags on the case
+        schema:
+          type: string
+          enum: ['append', 'replace']
+        required: true
+    returns:
+      description: "Updated Case Task ID"
       schema:
         type: string
-        enum: ['TruePositive', 'FalsePositive', 'Indeterminate']
-      required: true
-    - name: impact_status
-      description: Impact status of the case to close. The impact status is only captured when resolution status is TruePositive
+
+  - name: lock_hive_user
+    description: Locks user account in TheHive.
+    parameters:
+      - name: url
+        description: URL of TheHive
+        schema:
+          type: string
+        required: true
+      - name: api_key
+        description: API key to access TheHive
+        schema:
+          type: string
+        required: true
+      - name: users
+        schema:
+          type: array
+          items:
+            type: string
+        description: User IDs
+        required: true
+    returns:
       schema:
-        type: string
-        enum: ['NoImpact', 'WithImpact']
-      required: true
-    - name: tags
-      description: Tags to add to the case once closed. Comma separated string.
-      schema:
-        type: string
-      required: true
-    - name: summary
-      description: Explanation of why the case was closed.
-      schema:
-        type: string
-        enum: ['Case closed by WALKOFF']
-      required: true
+        type: object
+
+  - name: unlock_hive_user
+    description: Unlocks user account in TheHive.
+    parameters:
+      - name: url
+        description: URL of TheHive
+        schema:
+          type: string
+        required: true
+      - name: api_key
+        description: API key to access TheHive
+        schema:
+          type: string
+        required: true
+      - name: users
+        schema:
+          type: array
+          items:
+            type: string
+        description: User IDs
+        parallelizable: true
+        required: true
     returns:
       schema:
         type: object

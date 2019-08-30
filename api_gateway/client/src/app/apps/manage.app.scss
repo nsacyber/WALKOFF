@@ -19,18 +19,6 @@
 	}
 }
 
-#playbookBreadcrumbs {
-	background-color: unset;
-	margin-block-end: unset;
-	padding-inline-start: unset;
-	font-weight: bold;
-	font-size: 1.5rem;
-
-	a {
-		text-decoration: none;
-	}
-}
-
 .workflow-card {
 	height: 100%;
 	max-height: 300px;
@@ -253,10 +241,20 @@
 }
 
 .CodeMirror {
-    min-height: 750px;
+    min-height: 725px;
     border: 1px solid #dee2e6 !important
 }
 
+#tree {
+	position: absolute;
+	width: 100%;
+}
+
 .fancytree-container {
-    height: 700px;
+	height: 100%;
+	overflow-y: auto;
+
+	&:focus {
+		outline: none;
+	}
 }

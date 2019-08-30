@@ -21,6 +21,8 @@ services:
     secrets:
       - walkoff_encryption_key
       - walkoff_internal_key
+      - walkoff_minio_access_key
+      - walkoff_minio_secret_key
     configs:
       - common_env.yml
 
@@ -36,6 +38,7 @@ services:
     secrets:
       - walkoff_encryption_key
       - walkoff_internal_key
+      - walkoff_postgres_key
     configs:
       - common_env.yml
     depends_on:
@@ -50,7 +53,7 @@ services:
       - walkoff_default
     ports:
       - '8080:8080'
-      - '8081:8081' # Uncomment for unsecure HTTP access to API Gateway
+#      - '8081:8081' # Uncomment for unsecure HTTP access to API Gateway
     volumes:
       - ./nginx/walkoff.conf:/opt/bitnami/nginx/conf/server_blocks/walkoff.conf:ro
       - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
@@ -99,6 +102,12 @@ secrets:
   walkoff_encryption_key:
     external: true
   walkoff_internal_key:
+    external: true
+  walkoff_postgres_key:
+    external: true
+  walkoff_minio_access_key:
+    external: true
+  walkoff_minio_secret_key:
     external: true
 
 networks:

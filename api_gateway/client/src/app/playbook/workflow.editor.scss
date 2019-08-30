@@ -9,7 +9,7 @@
     color: crimson;
 }
 
-#playbookBreadcrumbs {
+#playbookBreadcrumbs.workflow-editor {
 	background-color: unset;
 	margin-block-end: unset;
 	padding-inline-start: unset;
@@ -86,6 +86,12 @@
 	&.graphArea {
 		overflow: hidden;
 	}
+}
+
+.workflowEditorMain .graphEditorActionPanel {
+	-webkit-box-flex: 0;
+    flex: 0 0 20%;
+    max-width: 20%;
 }
 
 .workflowEditorMain .playbook-heading {
@@ -266,6 +272,10 @@
 		.console-tab {
 			padding: 0.5rem 1rem;
 		}
+	}
+
+	#menu-tab {
+		border: unset;
 	}
 }
 

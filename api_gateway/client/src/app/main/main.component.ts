@@ -16,6 +16,12 @@ import { GenericObject } from '../models/genericObject';
 import { ReportService } from '../reports/report.service';
 import { Report } from '../models/report/report';
 
+import { SettingsUserModalComponent } from '../settings/settings.user.modal.component';
+import { WorkingUser } from '../models/workingUser';
+import { User } from '../models/user';
+import { getDefaultService } from 'selenium-webdriver/edge';
+import { MainProfileModalComponent } from './main.profile.modal.component';
+
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
 
@@ -66,7 +72,6 @@ export class MainComponent implements OnInit, OnDestroy {
 	 * Set up an SSE for handling new notifications.
 	 */
 	ngOnInit(): void {
-
 		this.currentUser = this.authService.getAndDecodeAccessToken().user_claims.username;
 		this.reportService.reportsChange.subscribe(reports => this.reports = reports);
 		// this.getInitialNotifications();
@@ -154,16 +159,6 @@ export class MainComponent implements OnInit, OnDestroy {
 	}
 
 	/**
-	 * Calls the auth service logout method and redirects to login
-	 * TODO: should likely roll login into the main component so we don't need to do the location.href.
-	 */
-	logout(): void {
-		this.authService.logout()
-			.then(() => location.href = 'login')
-			.catch(e => console.error(e));
-	}
-
-	/**
 	 * Gets the full message detail from the server and displays the message in a new modal.
 	 * @param event JS event fired from clicking the message link
 	 * @param messageListing Message Listing object to query.
@@ -210,6 +205,22 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
 			.then((result) => null,
-			(error) => { if (error) { this.toastrService.error(error.message); } });
+			(error) => { if (error) {
+				 this.toastrService.error(error.message); 
+				} 
+			});
+	}
+
+	/**
+	 * Edit User Profile Modal 
+	 */
+	editUser() {
+		const modalRef = this.modalService.open(MainProfileModalComponent);
+		modalRef.componentInstance.username = this.currentUser;
+		modalRef.result.then(username => {
+			this.currentUser = username;
+			this.toastrService.success('Updated Profile')
+		}, () => null)
+		return false;
 	}
 }

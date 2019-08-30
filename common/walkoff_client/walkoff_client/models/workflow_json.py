@@ -42,6 +42,7 @@ class WorkflowJSON(object):
         'id_': 'str',
         'is_valid': 'bool',
         'name': 'str',
+        'permissions': 'list[object]',
         'start': 'str',
         'tags': 'list[str]',
         'transforms': 'list[Transform]',
@@ -60,6 +61,7 @@ class WorkflowJSON(object):
         'id_': 'id_',
         'is_valid': 'is_valid',
         'name': 'name',
+        'permissions': 'permissions',
         'start': 'start',
         'tags': 'tags',
         'transforms': 'transforms',
@@ -67,7 +69,7 @@ class WorkflowJSON(object):
         'workflow_variables': 'workflow_variables'
     }
 
-    def __init__(self, walkoff_type=None, actions=None, branches=None, conditions=None, description=None, errors=None, execution_id=None, id_=None, is_valid=None, name=None, start=None, tags=None, transforms=None, triggers=None, workflow_variables=None):  # noqa: E501
+    def __init__(self, walkoff_type=None, actions=None, branches=None, conditions=None, description=None, errors=None, execution_id=None, id_=None, is_valid=None, name=None, permissions=None, start=None, tags=None, transforms=None, triggers=None, workflow_variables=None):  # noqa: E501
         """WorkflowJSON - a model defined in OpenAPI"""  # noqa: E501
 
         self._walkoff_type = None
@@ -80,6 +82,7 @@ class WorkflowJSON(object):
         self._id_ = None
         self._is_valid = None
         self._name = None
+        self._permissions = None
         self._start = None
         self._tags = None
         self._transforms = None
@@ -106,6 +109,7 @@ class WorkflowJSON(object):
         if is_valid is not None:
             self.is_valid = is_valid
         self.name = name
+        self.permissions = permissions
         if start is not None:
             self.start = start
         if tags is not None:
@@ -348,6 +352,27 @@ class WorkflowJSON(object):
             raise ValueError("Invalid value for `name`, must not be `None`")  # noqa: E501
 
         self._name = name
+
+    @property
+    def permissions(self):
+        """Gets the permissions of this WorkflowJSON.  # noqa: E501
+
+
+        :return: The permissions of this WorkflowJSON.  # noqa: E501
+        :rtype: list[object]
+        """
+        return self._permissions
+
+    @permissions.setter
+    def permissions(self, permissions):
+        """Sets the permissions of this WorkflowJSON.
+
+
+        :param permissions: The permissions of this WorkflowJSON.  # noqa: E501
+        :type: list[object]
+        """
+
+        self._permissions = permissions
 
     @property
     def start(self):

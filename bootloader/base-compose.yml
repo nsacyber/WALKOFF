@@ -27,8 +27,8 @@ services:
     image: "redis"
     networks:
       - walkoff_default
-#    ports:
-#      - "6379:6379"
+    ports:
+      - "6379:6379"
     command: redis-server --port 6379
 #    volumes:
 #      - /path/to/persistent/dir/redis:/data
@@ -47,9 +47,12 @@ services:
       placement:
         constraints: [node.role==manager]
     environment:
-      MINIO_ACCESS_KEY: walkoff
-      MINIO_SECRET_KEY: walkoff123
+      - "MINIO_ACCESS_KEY_FILE=walkoff_minio_access_key"
+      - "MINIO_SECRET_KEY_FILE=walkoff_minio_secret_key"
     command: server /data
+    secrets:
+      - walkoff_minio_access_key
+      - walkoff_minio_secret_key
 
   resource_postgres:
     image: "postgres"
@@ -57,12 +60,14 @@ services:
       - walkoff_default
     environment:
       - "POSTGRES_USER=walkoff"
-      - "POSTGRES_PASSWORD=walkoff"
+      - "POSTGRES_PASSWORD_FILE=/run/secrets/walkoff_postgres_key"
     deploy:
       placement:
         constraints: [node.role==manager]
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    secrets:
+      - walkoff_postgres_key
 
   resource_portainer:
     image: "portainer/portainer"
@@ -80,7 +85,11 @@ configs:
     file: ./data/config.yml
 
 secrets:
-  encryption_key:
+  walkoff_postgres_key:
+    external: true
+  walkoff_minio_access_key:
+    external: true
+  walkoff_minio_secret_key:
     external: true
 
 networks:

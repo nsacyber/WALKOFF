@@ -1,27 +1,13 @@
 import json
-from copy import deepcopy
-from io import BytesIO
 import requests
 
 from common.config import static
 from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
-from marshmallow import ValidationError
-from sqlalchemy import exists, and_
-from sqlalchemy.exc import IntegrityError
-
-from api_gateway import helpers
-from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
-from api_gateway.helpers import regenerate_workflow_ids
-# from api_gateway.helpers import strip_device_ids, strip_argument_ids
-from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
-    paginate
-from api_gateway.server.problem import unique_constraint_problem, improper_json_problem, invalid_input_problem
 from http import HTTPStatus
 
 
-# @jwt_required
+@jwt_required
 def list_all_files(app_name, app_version):
 
     headers = {'content-type': 'application/json'}
@@ -35,7 +21,7 @@ def list_all_files(app_name, app_version):
         return r.text, HTTPStatus.BAD_REQUEST
 
 
-# @jwt_required
+@jwt_required
 def get_file_contents(app_name, app_version, file_path):
 
     # data = request.get_json()
@@ -51,7 +37,7 @@ def get_file_contents(app_name, app_version, file_path):
         return r.text, HTTPStatus.BAD_REQUEST
 
 
-# @jwt_required
+@jwt_required
 def update_file():
 
     data = request.get_json()
@@ -71,7 +57,7 @@ def update_file():
         return r.text, HTTPStatus.BAD_REQUEST
 
 
-# @jwt_required
+@jwt_required
 def get_build_status():
     headers = {'content-type': 'application/json'}
     url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/build"
@@ -83,7 +69,7 @@ def get_build_status():
         return r.text, HTTPStatus.BAD_REQUEST
 
 
-# @jwt_required
+@jwt_required
 def build_image(app_name, app_version):
     headers = {'content-type': 'application/json'}
     payload = {'app_name': app_name, 'app_version': app_version}
@@ -96,7 +82,7 @@ def build_image(app_name, app_version):
         return r.text, HTTPStatus.BAD_REQUEST
 
 
-# @jwt_required
+@jwt_required
 def build_status_from_id(build_id):
     headers = {'content-type': 'application/json'}
     url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/build/{build_id}"
@@ -108,7 +94,7 @@ def build_status_from_id(build_id):
         return r.text, HTTPStatus.BAD_REQUEST
 
 
-# @jwt_required
+@jwt_required
 def save_umpire_file(app_name, app_version):
     headers = {'content-type': 'application/json'}
     payload = {'app_name': app_name, 'app_version': app_version}
