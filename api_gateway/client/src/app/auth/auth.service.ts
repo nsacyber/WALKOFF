@@ -25,7 +25,7 @@ export class AuthService {
 			.then((tokens: { access_token: string, refresh_token: string }) => {
 				sessionStorage.setItem(ACCESS_TOKEN_NAME, tokens.access_token);
 				sessionStorage.setItem(REFRESH_TOKEN_NAME, tokens.refresh_token);
-				location.href = '/';
+				// location.href = '/';
 			})
 			.catch(this.utils.handleResponseError);
 	}

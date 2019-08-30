@@ -217,11 +217,10 @@ export class MainComponent implements OnInit, OnDestroy {
 	editUser() {
 		const modalRef = this.modalService.open(MainProfileModalComponent);
 		modalRef.componentInstance.username = this.currentUser;
-		modalRef.result.then(user => {
-			this.currentUser = user.username;
+		modalRef.result.then(username => {
+			this.currentUser = username;
 			this.toastrService.success('Updated Profile')
 		}, () => null)
-
 		return false;
 	}
 }

@@ -7,6 +7,7 @@ import { UtilitiesService } from '../utilities.service';
 
 import { WorkingUser } from '../models/workingUser';
 import { User } from '../models/user';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
 	selector: 'main-profile',
@@ -32,10 +33,9 @@ export class MainProfileModalComponent {
 
 	passwordConfirm :string = '';
 
-
 	constructor(
 		private mainService: MainService, public activeModal: NgbActiveModal,
-		private toastrService: ToastrService, ) {
+		private toastrService: ToastrService, private authService: AuthService) {
 	}
 
 	ngOnInit(): void {
@@ -47,23 +47,33 @@ export class MainProfileModalComponent {
 			})
 	}
 
-
-
-	submit(): void {
+	async submit(): Promise<void> {
 		const validationMessage = this.validate();
 		if (validationMessage) {
 			this.toastrService.error(validationMessage);
 			return;
 		}
 
-		if (!this.editPersonalUser.password) {
-			this.editPersonalUser.password = this.editPersonalUser.old_password;
+		// Copy formData before sending to prevent modifying the form
+		const profileData = Object.assign({}, this.editPersonalUser);
+		if (!profileData.password) {
+			profileData.password = profileData.old_password;
 		}
 
-		this.mainService
-			.updateUser(this.editPersonalUser)
-			.then(user => this.activeModal.close(user))
-			.catch(e => this.toastrService.error(e.error.detail));
+		try {
+			// Update the user profile
+			await this.mainService.updateUser(profileData);
+
+			// If user name has changed / log the user back in
+			if (profileData.old_username != profileData.new_username)
+				await this.authService.login(profileData.new_username, profileData.password);
+
+			// Close the modal
+			this.activeModal.close(profileData.new_username);
+		}
+		catch(e) {
+			this.toastrService.error(e.error ? e.error.detail : 'Current Password is incorrect.');
+		}
 	}
 
 	validate(): string {
