@@ -66,6 +66,11 @@ class Basics(AppBase):
         await self.console_logger.info(f"Echoing JSON: {data}")
         return data
 
+    async def sample_report_data(self):
+        message = f"Alpha,Beta,Charlie\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6"
+        self.logger.info(message)
+        await self.console_logger.info(message)
+        return message
 
 if __name__ == "__main__":
     asyncio.run(Basics.run(), debug=True)
