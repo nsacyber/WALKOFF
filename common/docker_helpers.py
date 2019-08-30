@@ -5,6 +5,7 @@ import json
 import copy
 import base64
 import tarfile
+import time
 from io import BytesIO
 from pathlib import Path
 from contextlib import contextmanager, asynccontextmanager
@@ -141,6 +142,24 @@ async def update_service(client, service_id, *, version=None, image=None, rollba
     )
     return resp
     
+async def remove_volume(volume: str, wait: bool = False):
+        client = docker.from_env()
+        if wait:
+            bl = client.containers.list(filters={"name": "walkoff_bootloader"})
+            list = set(client.containers.list()) - set(bl)
+            while len(list):
+                list = set(client.containers.list()) - set(bl)
+                print("Waiting for containers to close:", list)
+                time.sleep(1)
+                continue
+
+        #Brief pause to allow for cleanup
+        time.sleep(1)
+        client.volumes.get(volume).remove()
+
+
+
+
 
 async def get_secret(client: aiodocker.Docker, secret_id):
     resp = await client._query(f"secrets/{secret_id}")
