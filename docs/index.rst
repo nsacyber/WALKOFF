@@ -85,8 +85,8 @@ Deploying WALKOFF in a Unix environment
 
        ./walkoff.sh down
 
-       # If removing encryption key (and persistent data), stored images, and verbose output is desired:
-       ./walkoff.sh down --key --registry --debug
+       # If removing encryption key, stored images, verbose output, and postgres volume is desired:
+       ./walkoff.sh down --key --registry --debug --volume
 
 
 Deploying WALKOFF in a Windows environment
