@@ -145,6 +145,8 @@ class WorkflowJSONEncoder(json.JSONEncoder):
             return {"id_": o.id_, "execution_id": o.execution_id, "name": o.name, "start": o.start.id_,
                     "actions": actions, "conditions": conditions, "branches": branches, "transforms": transforms,
                     "triggers": triggers, "workflow_variables": workflow_variables, "permissions": o.permissions,
+                    "access_level": o.access_level,
+                    "creator": o.creator,
                     "is_valid": o.is_valid,
                     "errors": None}
 
@@ -224,14 +226,16 @@ class Variable:
     """
     A lightweight class representing a WALKOFF WorkflowVariable or Global
     """
-    __slots__ = ("id_", "name", "value", "description", "permissions")
+    __slots__ = ("id_", "name", "value", "description", "permissions", "access_level", "creator")
 
-    def __init__(self, id_, name, value, description=None, permissions=None):
+    def __init__(self, id_, name, value, description=None, permissions=None, access_level=None, creator=None):
         self.id_ = id_
         self.name = name
         self.value = value
         self.description = description
         self.permissions = permissions
+        self.access_level = access_level
+        self.creator = creator
 
     def __eq__(self, other):
         if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:
@@ -279,15 +283,16 @@ class Node:
 
 
 class Action(Node):
-    __slots__ = ("parameters", "execution_id", "parallelized")
+    __slots__ = ("parameters", "execution_id", "parallelized", "started_at")
 
     def __init__(self, name, position, app_name, app_version, label, priority, parallelized=False, parameters=None,
-                 id_=None, execution_id=None, errors=None, is_valid=None, **kwargs):
+                 id_=None, execution_id=None, errors=None, is_valid=None, started_at=None, **kwargs):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.parameters = parameters if parameters is not None else list()
         self.parallelized = parallelized
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue
+        self.started_at = started_at
 
     def __str__(self):
         return f"Action: {self.label}::{self.id_}"
@@ -305,13 +310,14 @@ class Action(Node):
 
 
 class Condition(Node):
-    __slots__ = ("conditional",)
+    __slots__ = ("conditional", "started_at")
 
     def __init__(self, name, position: Point, app_name, app_version, label, conditional, id_=None, errors=None,
-                 is_valid=None):
+                 is_valid=None, started_at=None):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.conditional = conditional
         self.priority = 3  # Conditions have a fixed, mid valued priority
+        self.started_at = started_at
 
     def __str__(self):
         return f"Condition: {self.label}::{self.id_}"
@@ -360,12 +366,13 @@ class Condition(Node):
 
 
 class Trigger(Node):
-    __slots__ = ("trigger_schema",)
+    __slots__ = ("trigger_schema","started_at")
 
     def __init__(self, name, position: Point, app_name, app_version, label, trigger_schema, id_=None, errors=None,
-                 is_valid=None):
+                 is_valid=None, started_at=None):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.trigger_schema = trigger_schema
+        self.started_at = started_at
 
     def __str__(self):
         return f"Trigger: {self.label}::{self.id_}"
@@ -389,13 +396,14 @@ class Trigger(Node):
 
 
 class Transform(Node):
-    __slots__ = ("transform",)
+    __slots__ = ("transform","started_at")
 
     def __init__(self, name, position: Point, app_name, app_version, label, transform, id_=None,
-                 errors=None, is_valid=None):
+                 errors=None, is_valid=None, started_at=None):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.transform = transform
         self.priority = 3  # Transforms have a fixed, mid valued priority
+        self.started_at = started_at
 
     def __str__(self):
         return f"Transform: {self.label}::{self.id_}"
@@ -512,11 +520,12 @@ class DiGraph:
 # TODO: Maybe look into pooling nodes/branches and sharing them across a workflow to save memory?
 class Workflow(DiGraph):
     __slots__ = ("start", "id_", "is_valid", "name", "execution_id", "workflow_variables", "conditions", "transforms",
-                 "triggers", "actions", "errors", "description", "tags", "permissions")
+                 "triggers", "actions", "errors", "description", "tags", "permissions", "access_level", "creator")
 
     def __init__(self, name, start, actions: [Action], conditions: [Condition], triggers: [Trigger],
                  transforms: [Transform], branches: [Branch], workflow_variables, id_=None, execution_id=None,
-                 is_valid=None, errors=None, description=None, tags=None, permissions=None):
+                 is_valid=None, errors=None, description=None, tags=None, permissions=None, access_level=None,
+                 creator=None):
         super().__init__(nodes=[*actions, *conditions, *triggers, *transforms], edges=branches)
 
         self.start = start
@@ -533,6 +542,8 @@ class Workflow(DiGraph):
         self.description = description
         self.tags = tags if tags is not None else []
         self.permissions = permissions
+        self.access_level = access_level
+        self.creator = creator
 
     def __eq__(self, other):
         if isinstance(other, self.__class__) and self.__slots__ == other.__slots__:

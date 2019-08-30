@@ -144,6 +144,17 @@ h3 {
   border-bottom: none;
 }
 
+#userModalBody .required {
+	color: crimson;
+	margin-left: 5px;
+}
+
+#userModalBody input[type=checkbox].form-control,
+#userModalBody input[type=radio].form-control {
+	width: 34px;
+	margin: 0 5px;
+}
+
 .footer {
   position: absolute;
   bottom: 0;

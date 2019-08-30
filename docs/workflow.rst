@@ -3,8 +3,9 @@
 .. |br| raw:: html
 
   <br />
-
-Workflow Development
+  
+====================
+Walkoff Development
 ====================
 In this page we will discuss the workflow editor, how to create a workflow, and the tools available to you.
 
@@ -17,27 +18,27 @@ Create Global
 '''''''''''''
 Before we create a workflow, we will create a global variable that our actions will use.
 
-In the top navigation bar, click on ``Globals``, then ``Add Global``. Fill out the required fields for this example and set the value to any string of your choice. Then click ``Save`` in the dialog box. If nothing is populated in the globals table, then verify that you created your encryption key as described in :ref:`deploying-walkoff-label`.
+In the top navigation bar, click on ``Settings``, then ``Globals``, then ``Add Global``. Fill out the required fields for this example and set the value to any string of your choice. Here, you may also opt to restrict access to your variable using role-based permissions as described in :ref:`role-user-label`. Then click ``Save`` in the dialog box. If nothing is populated in the globals table, then verify that you created your encryption key as described in :ref:`deploying-walkoff-label`.
 
 .. image:: ../docs/images/create_global.png
 
 Create Workflow
 '''''''''''''''
-In the top navigation bar, click ``Workflows`` to return to the main Workflow page. Then, near the top of the page, click the ``Create New`` button. Enter a name for a new workflow (and optionally tags and a description), then click "Continue".
+In the top navigation bar, click ``Workflows`` to return to the main Workflow page. Then, near the top of the page, click the ``Create New`` button. Enter a name for a new workflow (and, optionally, tags and description). Here, you may also opt to restrict access to your variable using role-based permissions as described in :ref:`role-user-label`. Finally, click ``Continue``.
 
 .. image:: ../docs/images/create_workflow.png
 
 Add Actions to Workspace
 ''''''''''''''''''''''''
-Let's begin by adding a ``hello_world`` action and a ``repeat_back_to_me`` action from the HelloWorld app. Expand the ``hello_world`` app by clicking on the app name in the left pane. Then, double-click, or click and drag the desired actions into the workspace.
+Let's begin by adding a ``hello_world`` action and a ``echo_string`` action from the HelloWorld app. Expand the ``basics`` app by clicking on the app name in the left pane. Then, double-click, or click and drag the desired actions into the workspace.
 
 Ensure that the ``hello_world`` action is set as the starting node by clicking ``Set as Start Action`` in the Action Parameters pane.
 
-.. image:: ../docs/images/add_actions.png
+.. image:: ../docs/images/add_action.png
 
 Configure Options
 '''''''''''''''''
-Some actions will have inputs; some required, some optional. In this case, the ``repeat_back_to_me`` action has a required parameter, but the ``hello_world`` action does not. Set the ``repeat_back_to_me`` parameter's type to ``global`` from the drop down and select the global that you created in the previous examples. The action will reference this global to echo the string.
+Some actions will have inputs; some required, some optional. In this case, the ``echo_string`` action has a required parameter, but the ``hello_world`` action does not. Set the ``echo_string`` parameter's type to ``global`` from the drop down and select the global that you created in the previous examples. The action will reference this global to echo the string.
 
 Finally, connect the actions together by clicking and dragging from the top of the hello_world action to the top of the pause action. You can also right-click and drag from one action to the other.
 
@@ -47,15 +48,11 @@ Save and Execute Workflow
 '''''''''''''''''''''''''
 Using the buttons in the toolbar, save, then execute the workflow. Workflows must be saved before execution in order for the execution to use the current state of the workflow.
 
-.. image:: ../docs/images/save_and_execute.png
-
-
-
 Examine Results:
 ''''''''''''''''
 Check the results of your workflow under the ``Execution`` tab below your workflow. These results can also be viewed later under the ``Execution`` tab at the top of the screen. If everything was configured properly, you can expect to see results similar to what is shown below.
 
-.. image:: ../docs/images/results.PNG
+.. image:: ../docs/images/results.png
 
 |br|
 
@@ -67,6 +64,9 @@ In this tutorial, we will explore the different components of the Workflow Edito
 
 Toolbar
 ''''''''
+
+.. image:: ../docs/images/toolbar.png
+
 From left to right, the buttons in the toolbar are:
 
 +-----------------------+-----------------------------------------------+
@@ -78,18 +78,18 @@ From left to right, the buttons in the toolbar are:
 +-----------------------+-----------------------------------------------+
 | Delete Selected Nodes	| Deletes the selected Node or Branch           |
 +-----------------------+-----------------------------------------------+
-| Copy		            | Copies the selected Node                      |
+| Copy		        | Copies the selected Node                      |
 +-----------------------+-----------------------------------------------+
-| Paste		            | Pastes the previously copied or cut Node      |
+| Paste		        | Pastes the previously copied or cut Node      |
 +-----------------------+-----------------------------------------------+
-| Execute Workflow	    | Schedules the Workflow for execution          |
+| Execute Workflow      | Schedules the Workflow for execution          |
 +-----------------------+-----------------------------------------------+
 | Clear Execution    	| Clears highlighting and results of 	        |
-| Results		        | executed nodes 			                   	|
+| Results	        | executed nodes 			        |
 +-----------------------+-----------------------------------------------+
-| Edit Description	    | Edit the description of the current workflow	|
+| Edit Description	| Edit the description of the current workflow	|
 +-----------------------+-----------------------------------------------+
-| Create Variable	    | Create and edit workflow-scoped variables     |
+| Create Variable	| Create and edit workflow-scoped variables     |
 +-----------------------+-----------------------------------------------+
 
 Highlighting
@@ -115,6 +115,65 @@ When an action is connected to more than one subsequent action, all of those act
 Editing Actions
 '''''''''''''''
 When an Action is selected, its properties will appear in the right pane. These include the App it came from, the Action it will perform, and the Name of the Action (separate from its unique ID). You can also set the starting Action of the Workflow in this pane.
+
+|br|
+
+App Editor
+----------
+.. image:: ../docs/images/appeditor/applications.png
+
+If you navigate to the Applications tab at the top toolbar of Walkoff you will be directed to a page in which you can manage applications. If you click on the button named Edit Application on the desired app you wish to edit, it will take you to a new page that will contain the file tree on the left side of the page. At this point, you can click app.py and the file contents will be displayed on the right as seen below.
+
+.. image:: ../docs/images/appeditor/file_tree.png
+
+If you want to make edits to any file, you can do that in the file editor that is displayed above. If you would like you can make changes to multiple files, just make sure to hit the save icon before navigating away from the page. This will save the current file to minio. At this point minio is prepared to build using the newly saved files once you click the "Rebuild Image" button. This will pull what is in Minio and rebuild the images based off of those files. Once a successful image is built, Walkoff will copy the files from Minio into your working directory such that those files are visible locally. 
+
+*NOTE: You can undo and redo changes made in the app editor using the symbols next to the save button*
+
+|br|
+
+.. _role-user-label:
+
+User and Role Creation
+-----------------------
+WALKOFF allows for role-based user creation. By default, WALKOFF has three pre-built roles: ``super_admin``, ``admin``, ``workflow_developer``, and ``workflow_operator``. 
+	* The ``super_admin`` role is a singular immutable account.  This role has the ability to delete/create new users and is given full access to  all resources created by any user on WALKOFF. Newly created users cannot be given this role; this account cannot be deleted and its role cannot be changed.
+	* The ``admin`` role by default is given the same control over WALKOFF as the ``super_admin`` role. However, newly created users can be given this role, and this role may be edited. Furthermore, other users with differing roles may hide workflows and global variables from this role tier.
+	* The ``workflow_developer`` role is given the ability to create, update, and delete workflows, global_variables, workflow_variables, dashboards, and schedules. This role does not have the ability to change WALKOFF settings, add new users or roles. 
+	* The ``workflow_operator`` role by default is only given the ability to read all WALKOFF resources aside from workflow_variables, which they may update and utilize, and workflows, which they may execute.
+
+Creating a User
+'''''''''''''''''
+In order to create a new user, you must be logged in as a user with user creation permission (by default, this permission is given to admin level and above roles).
+	* First, navigate to the ``settings`` tab on the WALKOFF toolbar and click on ``users``.
+	
+.. image:: ../docs/images/user_creation1.PNG
+
+* From this page, click on the ``create user`` button. Fill in the desired username, password, and role tier for this account and click ``Add User`` to oomplete your user creation.
+	
+.. image:: ../docs/images/user_creation2.PNG
+
+Creating a Role
+'''''''''''''''''
+In order to create a new user, you must be logged in as a user with role creation permission (by default, this permission is given to admin level and above roles).
+	* First, navigate to the ``settings`` tab on the WALKOFF toolbar and click on ``users``.
+	
+.. image:: ../docs/images/user_creation1.PNG
+
+* From this page, click on the ``role settings`` tab.
+	
+
+.. image:: ../docs/images/role_creation1.PNG
+
+* Fill in the desired role name and optional description.
+
+.. image:: ../docs/images/role_creation3.PNG
+
+* Select the resource(s) to which you would like to give this role access. After selecting, click ``Add Resource``. Then, select which specific permissions you would like to add. 
+	
+.. image:: ../docs/images/role_creation2.PNG
+
+* After resource selection, click ``Add Role`` to complete your role creation. 
 
 
 |br|
@@ -164,8 +223,6 @@ Conditions are used to select one (or no) branch from many to execute based on t
 	Refer to nodes by their label, replacing spaces with underscores. Access their results by using `<node_label>.result`. You must then assign `selected_node` to the label of one of the nodes directly following the condition.
 
     A graphical editor for this will be added at a later date.
-
-.. image:: ../docs/images/conditional.png
 
 Parallel Action
 ~~~~~~~~~~~~~~~

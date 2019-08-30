@@ -60,6 +60,7 @@ export class VariableModalComponent implements OnInit {
       return this.toastrService.error("Select a role and permission");
     }
 
+<<<<<<< HEAD
     const existingPermission = this.variable.permissions.find(
       p => p.role == this.newPermission.role
     );
@@ -91,3 +92,10 @@ export class VariableModalComponent implements OnInit {
     return permission ? permission.description : null;
   }
 }
+=======
+    submit() {
+        if (this.variable.access_level != 2) this.variable.permissions = [];
+        this.activeModal.close(this.variable)
+    }
+}
+>>>>>>> 87392d3b62f2d4cfcd63498dda1bb678bcc41399

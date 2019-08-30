@@ -1,5 +1,5 @@
 from flask import current_app, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_claims
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
 
@@ -8,12 +8,14 @@ from common.helpers import fernet_encrypt, fernet_decrypt
 from api_gateway import helpers
 from api_gateway.executiondb.global_variable import (GlobalVariable, GlobalVariableSchema,
                                                      GlobalVariableTemplate, GlobalVariableTemplateSchema)
+from api_gateway.serverdb.user import User
+from api_gateway.extensions import db
 
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory, paginate
 from api_gateway.server.problem import unique_constraint_problem
 from http import HTTPStatus
-from common.roles_helpers import auth_check, update_permissions, default_permissions
+from common.roles_helpers import auth_check, update_permissions, default_permissions, creator_check
 
 import logging
 logger = logging.getLogger(__name__)
@@ -47,6 +49,9 @@ global_variable_template_schema = GlobalVariableTemplateSchema()
 @jwt_required
 @paginate(global_variable_schema)
 def read_all_globals():
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
     key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
     ret = []
     query = current_app.running_context.execution_db.session.query(GlobalVariable).order_by(GlobalVariable.name).all()
@@ -56,7 +61,7 @@ def read_all_globals():
     else:
         for global_var in query:
             to_read = auth_check(str(global_var.id_), "read", "global_variables")
-            if to_read:
+            if (global_var.creator == curr_user_id) or to_read:
                 temp_var = deepcopy(global_var)
                 temp_var.value = fernet_decrypt(key, global_var.value)
                 ret.append(temp_var)
@@ -67,10 +72,13 @@ def read_all_globals():
 @jwt_required
 @with_global_variable("read", "global_var")
 def read_global(global_var):
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
     global_id = str(global_var.id_)
     to_read = auth_check(global_id, "read", "global_variables")
 
-    if to_read:
+    if (global_var.creator == curr_user_id) or to_read:
         global_json = global_variable_schema.dump(global_var)
 
         if request.args.get('to_decrypt') == "false":
@@ -85,10 +93,13 @@ def read_global(global_var):
 @jwt_required
 @with_global_variable("delete", "global_var")
 def delete_global(global_var):
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
     global_id = str(global_var.id_)
     to_delete = auth_check(global_id, "delete", "global_variables")
 
-    if to_delete:
+    if (global_var.creator == curr_user_id) or to_delete:
         current_app.running_context.execution_db.session.delete(global_var)
         current_app.logger.info(f"Global_variable removed {global_var.name}")
         current_app.running_context.execution_db.session.commit()
@@ -103,16 +114,33 @@ def create_global():
     data = request.get_json()
     global_id = data['id_']
 
+    username = get_jwt_claims().get('username', None)
+    curr_user = db.session.query(User).filter(User.username == username).first()
+    data.update({'creator': curr_user.id})
+
     new_permissions = data['permissions']
-    if new_permissions:
-        update_permissions("global_variables", global_id, new_permissions=new_permissions)
-    else:
-        default_permissions("global_variables", global_id, data=data)
+    access_level = data['access_level']
+
+    # creator only
+    if access_level == 0:
+        update_permissions("global_variables", global_id,
+                           new_permissions=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}],
+                           creator=curr_user.id)
+    # default permissions
+    elif access_level == 1:
+        default_permissions("global_variables", global_id, data=data, creator=curr_user.id)
+    # user-specified permissions
+    elif access_level == 2:
+        update_permissions("global_variables", global_id, new_permissions=new_permissions, creator=curr_user.id)
+
+    # if new_permissions:
+    #     update_permissions("global_variables", global_id, new_permissions=new_permissions, creator=curr_user.id)
+    # else:
+    #     default_permissions("global_variables", global_id, data=data, creator=curr_user.id)
 
     try:
         key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
         data['value'] = fernet_encrypt(key, data['value'])
-
         global_variable = global_variable_schema.load(data)
         current_app.running_context.execution_db.session.add(global_variable)
         current_app.running_context.execution_db.session.commit()
@@ -125,22 +153,31 @@ def create_global():
 @jwt_required
 @with_global_variable("update", "global_var")
 def update_global(global_var):
+    username = get_jwt_claims().get('username', None)
+    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+
     data = request.get_json()
     global_id = data["id_"]
 
     new_permissions = data['permissions']
+    access_level = data['access_level']
 
     to_update = auth_check(global_id, "update", "global_variables")
-    if to_update:
-        if new_permissions:
-            auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
-        else:
+    if (global_var.creator == curr_user_id) or to_update:
+        if access_level == 0:
+            auth_check(global_id, "update", "global_variables",
+                       updated_roles=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}])
+        if access_level == 1:
             default_permissions("global_variables", global_id, data=data)
-
+        elif access_level == 2:
+            auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
+        # if new_permissions:
+        #     auth_check(global_id, "update", "global_variables", updated_roles=new_permissions)
+        # else:
+        #     default_permissions("global_variables", global_id, data=data)
         try:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
             data['value'] = fernet_encrypt(key, data['value'])
-
             global_variable_schema.load(data, instance=global_var)
             current_app.running_context.execution_db.session.commit()
             return global_variable_schema.dump(global_var), HTTPStatus.OK
