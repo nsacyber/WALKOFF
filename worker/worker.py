@@ -111,6 +111,7 @@ class Worker:
                 try:
                     worker.execution_task = asyncio.create_task(worker.execute_workflow())
                     await asyncio.gather(worker.execution_task)
+
                 except asyncio.CancelledError:
                     logger.info(f"Aborting {log_msg}")
                     status = WorkflowStatusMessage.execution_aborted(worker.workflow.execution_id,
@@ -379,7 +380,7 @@ class Worker:
                                                                          started_at=trigger.started_at,
                                                                          result=repr(e), parameters={}))
             await send_status_update(self.session, self.workflow.execution_id,
-                                     WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
+                                     WorkflowStatusMessage.execution_completed(self.workflow.execution_id,
                                                                              self.workflow.id_,
                                                                              self.workflow.name,
                                                                              action_name=trigger.name,

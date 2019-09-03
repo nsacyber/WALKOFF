@@ -86,16 +86,16 @@ Deploying WALKOFF
        # Windows PowerShell
        .\walkoff.ps1 down
 
-       # If removing encryption key (and persistent data), stored images, and verbose output is desired:
-       .\walkoff.ps1 down --key --registry --debug
+       # If removing encryption key, stored images, verbose output, and postgres volume is desired:
+       .\walkoff.ps1 down --key --registry --debug --volume
 
     .. code-block:: console
 
        # Unix shell
        ./walkoff.sh down
 
-       # If removing encryption key (and persistent data), stored images, and verbose output is desired:
-       ./walkoff.sh down --key --registry --debug
+       # If removing encryption key, stored images, verbose output, and postgres volume is desired:
+       ./walkoff.sh down --key --registry --debug --volume
 
 
 |br|

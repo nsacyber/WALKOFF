@@ -16,6 +16,12 @@ import { GenericObject } from '../models/genericObject';
 import { ReportService } from '../reports/report.service';
 import { Report } from '../models/report/report';
 
+import { SettingsUserModalComponent } from '../settings/settings.user.modal.component';
+import { WorkingUser } from '../models/workingUser';
+import { User } from '../models/user';
+import { getDefaultService } from 'selenium-webdriver/edge';
+import { MainProfileModalComponent } from './main.profile.modal.component';
+
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
 
@@ -199,6 +205,22 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
 			.then((result) => null,
-			(error) => { if (error) { this.toastrService.error(error.message); } });
+			(error) => { if (error) {
+				 this.toastrService.error(error.message); 
+				} 
+			});
+	}
+
+	/**
+	 * Edit User Profile Modal 
+	 */
+	editUser() {
+		const modalRef = this.modalService.open(MainProfileModalComponent);
+		modalRef.componentInstance.username = this.currentUser;
+		modalRef.result.then(username => {
+			this.currentUser = username;
+			this.toastrService.success('Updated Profile')
+		}, () => null)
+		return false;
 	}
 }
