@@ -13,3 +13,4 @@ m2r
 minio
 uvicorn
 fastapi
+
