@@ -13,13 +13,17 @@
             <div class="col-12">
                 <div class="form-group">
                     <label for="value">{{ isGlobal ? 'Value' : 'Default Value'}}</label>
-                    <json-editor #jsonEditor [options]="editorOptionsData" [data]="initialValue" (change)="updateValue($event)"></json-editor>
+                    <json-editor #jsonEditor [options]="editorOptionsData" [data]="initialValue"></json-editor>
+                    <small class="form-text text-info pl-1">
+                        <i class="fa fa-exclamation-circle pr-1" aria-hidden="true"></i>
+                        If JSON is invalid, results will be saved as a string
+                    </small>
                 </div>
             </div>
             <div class="col-12">
                 <div class="form-group">
                     <label for="description">Description (optional)</label>
-                    <textarea name="description" rows="4" [(ngModel)]="variable.description"
+                    <textarea name="description" rows="3" [(ngModel)]="variable.description"
                         class="form-control"></textarea>
                 </div>
             </div>

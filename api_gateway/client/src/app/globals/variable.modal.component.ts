@@ -16,6 +16,7 @@ export class VariableModalComponent implements OnInit {
   @Input() variable: Variable = new Variable();
   @Input() isGlobal: boolean = false;
   @ViewChild("jsonEditor", { static: true }) jsonEditor: JsonEditorComponent;
+  initialValue: string;
   existing: boolean = false;
   hasPermissions: boolean = true;
   permissionOptions = VariablePermission.PERMISSIONS;
@@ -38,14 +39,16 @@ export class VariableModalComponent implements OnInit {
     navigationBar: false,
     statusBar: false,
     enableSort: false,
-    enableTransform: false
+    enableTransform: false,
+    onChange: () => {
+      try {
+        this.variable.value = this.jsonEditor.get() as any;
+      }
+      catch(e) {
+        this.variable.value = this.jsonEditor.getText();
+      }
+    }
   };
-
-  initialValue;
-
-  updateValue($event: any): void {
-    this.variable.value = $event;
-  }
 
   ngOnInit(): void {
     this.settingsService.getRoles().then(roles => (this.systemRoles = roles));

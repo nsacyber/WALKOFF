@@ -13,6 +13,7 @@ export class PlaybookEnvironmentVariableModalComponent {
   @Input() existing: boolean = false;
   @ViewChild('jsonEditor', { static: true }) jsonEditor: JsonEditorComponent;
 
+  initialValue: string;
   editorOptionsData: any = {
 		mode: 'code',
 		modes: ['code', 'tree'],
@@ -23,19 +24,21 @@ export class PlaybookEnvironmentVariableModalComponent {
 		statusBar: false,
 		enableSort: false,
 		enableTransform: false,
+		onChange: () => {
+			try {
+			  	this.variable.value = this.jsonEditor.get() as any;
+			}
+			catch(e) {
+				this.variable.value = this.jsonEditor.getText();
+			}
+		}
 	}
 
 	
 	constructor(public activeModal: NgbActiveModal) {}
-	
-	initialValue;
 
 	ngOnInit(): void {
-    this.initialValue = this.variable.value;
-	}
-	
-	updateValue($event: any): void {
-    this.variable.value = $event;
+    	this.initialValue = this.variable.value;
 	}
 	
 }
