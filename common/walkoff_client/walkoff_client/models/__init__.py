@@ -62,6 +62,7 @@ from walkoff_client.models.task_trigger import TaskTrigger
 from walkoff_client.models.token import Token
 from walkoff_client.models.transform import Transform
 from walkoff_client.models.trigger import Trigger
+from walkoff_client.models.upload_file import UploadFile
 from walkoff_client.models.widget import Widget
 from walkoff_client.models.workflow_json import WorkflowJSON
 from walkoff_client.models.workflow_meta_data import WorkflowMetaData

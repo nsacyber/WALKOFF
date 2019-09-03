@@ -1,0 +1,25 @@
+version: '3.4'
+services:
+  basics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: 127.0.0.1:5000/walkoff_app_basics:1.0.0
+    env_file:
+      - env.txt
+    configs:
+      - common_env.yml
+    deploy:
+      mode: replicated
+      replicas: 10
+      restart_policy:
+        condition: none
+    restart: "no"
+    secrets:
+      - secret1
+
+secrets:
+  secret1:
+    file: ./secret_data
+    labels:
+      foo: bar

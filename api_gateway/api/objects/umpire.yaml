@@ -1,0 +1,15 @@
+UploadFile:
+  type: object
+  required: [file_path]
+  properties:
+    app_name:
+      description: The action to take on the executing workflow
+      type: string
+    app_version:
+      description: Version number of the directory they would like to write to
+      type: string
+    file_path:
+      description: Path to the file they would like to overwrite or create
+      type: string
+    file_data:
+      description: The data that will be sent to the trigger

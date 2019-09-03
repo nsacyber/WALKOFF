@@ -80,9 +80,9 @@ class Umpire:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
             logger.info("Bringing up Umpire API...")
-            os.system("python umpire_api.py &")
+            os.system("uvicorn umpire_api:app --host 0.0.0.0 &")
 
-            logger.info("Umpire is ready!")
+            logger.info("Umpire is initialized!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),
                                  asyncio.create_task(ump.monitor_queues()))
         await ump.shutdown()
@@ -176,7 +176,6 @@ class Umpire:
             for execution_id, app_name, version in streams:
                 stream = f"{execution_id}:{app_name}:{version}"
                 group = f"{app_name}:{version}"
-
                 try:
                     executing_work = (await self.redis.xpending(stream=stream, group_name=group))[0]
                     total_work = await xlen(self.redis, stream)
@@ -201,14 +200,13 @@ class Umpire:
                 logger.debug(f"Current replicas: {curr_replicas}")
 
                 if replicas_needed > curr_replicas:
-                    logger.info(f"Launching {':'.join([service_name, version])}")
+                    logger.info(f"Launching app {':'.join([service_name, version])}")
 
                 if replicas_needed > curr_replicas > 0:
                     await self.launch_app(service_name, version, replicas_needed)
                 elif replicas_needed > curr_replicas == 0:  # scale to 0 and restart
                     await self.launch_app(service_name, version, 0)
                     await self.launch_app(service_name, version, replicas_needed)
-
 
             for service_name, workload in workloads.items():
                 logger.debug(f"Queued actions for {service_name}: {workload['queued']}")
@@ -304,7 +302,6 @@ class Umpire:
             if executing_workflows[0] < 1:
                 status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
                 await send_status_update(self.session, execution_id, status)
-
             else:
                 # Kill worker
                 try:
@@ -324,6 +321,10 @@ class Umpire:
                     _, app_name, version = stream.split(':')
                     app_group = f"{app_name}:{version}"
                     executing_apps = (await self.redis.xpending(stream, app_group))[3]
+                    await self.redis.delete(stream)
+
+                    status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
+                    await send_status_update(self.session, execution_id, status)
 
                     if executing_apps is None:
                         break
@@ -331,7 +332,6 @@ class Umpire:
                     for app, _ in executing_apps:
                         container = await self.docker_client.containers.get(app.decode())
                         await container.kill(signal="SIGKILL")
-                    await self.redis.delete(stream)
                 await self.redis.delete(f"{execution_id}:results")
             await self.redis.xack(stream=stream, group_name=static.REDIS_WORKFLOW_CONTROL_GROUP, id=id_)
             await xdel(self.redis, stream=stream, id_=id_)

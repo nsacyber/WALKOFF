@@ -57,6 +57,8 @@ paths:
   $ref: ./workflows.yaml
   $ref: ./dashboards.yaml
   $ref: ./results.yaml
+  $ref: ./umpire.yaml
+
 
 security:
   - AuthenticationToken: []
@@ -75,6 +77,7 @@ components:
     $ref: ./objects/workflows.yaml
     $ref: ./objects/dashboard.yaml
     $ref: ./objects/results.yaml
+    $ref: ./objects/umpire.yaml
 
   securitySchemes:
     AuthenticationToken:

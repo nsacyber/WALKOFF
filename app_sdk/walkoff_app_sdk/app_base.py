@@ -1,17 +1,18 @@
+import datetime
 import logging
-import os
+import asyncio
 import sys
 
 import aioredis
 import aiohttp
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from walkoff_app_sdk.common.message_types import NodeStatusMessage, message_dumps
-from walkoff_app_sdk.common.workflow_types import workflow_loads, Action, ParameterVariant
-from walkoff_app_sdk.common.async_logger import AsyncLogger, AsyncHandler
-from walkoff_app_sdk.common.helpers import UUID_GLOB, fernet_encrypt, fernet_decrypt
-from walkoff_app_sdk.common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
-from walkoff_app_sdk.common.config import config, static
+from common.message_types import NodeStatusMessage, message_dumps
+from common.workflow_types import workflow_loads, Action, ParameterVariant
+from common.async_logger import AsyncLogger, AsyncHandler
+from common.helpers import UUID_GLOB, fernet_encrypt, fernet_decrypt
+from common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
+from common.config import config, static
 
 
 class HTTPStream:
@@ -68,6 +69,8 @@ class AppBase:
         app_group = f"{self.app_name}:{self.__version__}"
 
         while True:
+            await asyncio.sleep(1)
+
             streams = await self.redis.keys(f"{UUID_GLOB}:{app_group}", encoding='utf-8')
             aborted = await self.redis.smembers(static.REDIS_ABORTING_WORKFLOWS, encoding="utf-8")
             streams = [s for s in streams if s.split(':')[0] not in aborted]
@@ -111,7 +114,9 @@ class AppBase:
 
         if hasattr(self, action.name):
             # Tell everyone we started execution
-            start_action_msg = NodeStatusMessage.executing_from_node(action, action.execution_id)
+            action.started_at = datetime.datetime.now()
+            start_action_msg = NodeStatusMessage.executing_from_node(action, action.execution_id,
+                                                                     started_at=action.started_at)
             await self.redis.xadd(results_stream, {action.execution_id: message_dumps(start_action_msg)})
 
             try:
@@ -123,29 +128,33 @@ class AppBase:
                         params = {}
                         for p in action.parameters:
                             if p.variant == ParameterVariant.GLOBAL:
-                                with open(config.ENCRYPTION_KEY_PATH) as f:
-                                    params[p.name] = fernet_decrypt(f.read(), p.value)
+                                key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+                                params[p.name] = fernet_decrypt(key, p.value)
                             else:
                                 params[p.name] = p.value
                         result = await func(**params)
 
-                    action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result=result)
+                    action_result = NodeStatusMessage.success_from_node(action, action.execution_id, result=result,
+                                                                        started_at=action.started_at)
                     self.logger.debug(f"Executed {action.label}-{action.execution_id} "
                                       f"with result: {result}")
 
                 else:
                     self.logger.error(f"App {self.__class__.__name__}.{action.name} is not callable")
                     action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
-                                                                        result="Action not callable")
+                                                                        result="Action not callable",
+                                                                        started_at=action.started_at)
 
             except Exception as e:
                 self.logger.exception(f"Failed to execute {action.label}-{action.execution_id}")
-                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e))
+                action_result = NodeStatusMessage.failure_from_node(action, action.execution_id, result=repr(e),
+                                                                    started_at=action.started_at)
 
         else:
             self.logger.error(f"App {self.__class__.__name__} has no method {action.name}")
             action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
-                                                                result="Action does not exist")
+                                                                result="Action does not exist",
+                                                                started_at=action.started_at)
         await self.redis.xadd(results_stream, {action.execution_id: message_dumps(action_result)})
 
     @classmethod

@@ -106,6 +106,16 @@ export class Workflow extends ExecutionElement {
 	 */
 	is_valid: boolean;
 
+	/**
+	 * Returns access_level for this workflow
+	 */
+	access_level: number = 1;
+
+	/**
+	 * Returns role permissions for this workflow
+	 */
+	permissions: any[] = [];
+
 	get nodes(): WorkflowNode[] {
 		return [].concat(this.actions, this.conditions, this.triggers, this.transforms);
 	}
@@ -145,6 +155,14 @@ export class Workflow extends ExecutionElement {
 		this.triggers = this.triggers.filter(a => a.id !== nodeId);
 		this.transforms = this.transforms.filter(a => a.id !== nodeId);
 		this.branches = this.branches.filter(b => !(b.source_id === nodeId || b.destination_id === nodeId));
+	}
+
+	addBranch(branch: Branch) {
+		this.branches.push(branch)
+	}
+
+	removeBranch(branchId: string) {
+		this.branches = this.branches.filter(b => b.id !== branchId);
 	}
 
 	deleteVariable(deletedVariable: EnvironmentVariable) {

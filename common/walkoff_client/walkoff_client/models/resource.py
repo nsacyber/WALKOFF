@@ -34,20 +34,23 @@ class Resource(object):
     openapi_types = {
         'id': 'int',
         'name': 'str',
+        'needed_ids': 'list[str]',
         'permissions': 'list[str]'
     }
 
     attribute_map = {
         'id': 'id',
         'name': 'name',
+        'needed_ids': 'needed_ids',
         'permissions': 'permissions'
     }
 
-    def __init__(self, id=None, name=None, permissions=None):  # noqa: E501
+    def __init__(self, id=None, name=None, needed_ids=None, permissions=None):  # noqa: E501
         """Resource - a model defined in OpenAPI"""  # noqa: E501
 
         self._id = None
         self._name = None
+        self._needed_ids = None
         self._permissions = None
         self.discriminator = None
 
@@ -55,6 +58,8 @@ class Resource(object):
             self.id = id
         if name is not None:
             self.name = name
+        if needed_ids is not None:
+            self.needed_ids = needed_ids
         if permissions is not None:
             self.permissions = permissions
 
@@ -105,6 +110,29 @@ class Resource(object):
         """
 
         self._name = name
+
+    @property
+    def needed_ids(self):
+        """Gets the needed_ids of this Resource.  # noqa: E501
+
+        Temp string  # noqa: E501
+
+        :return: The needed_ids of this Resource.  # noqa: E501
+        :rtype: list[str]
+        """
+        return self._needed_ids
+
+    @needed_ids.setter
+    def needed_ids(self, needed_ids):
+        """Sets the needed_ids of this Resource.
+
+        Temp string  # noqa: E501
+
+        :param needed_ids: The needed_ids of this Resource.  # noqa: E501
+        :type: list[str]
+        """
+
+        self._needed_ids = needed_ids
 
     @property
     def permissions(self):

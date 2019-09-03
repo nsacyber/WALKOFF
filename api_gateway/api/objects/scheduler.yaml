@@ -72,3 +72,17 @@ TaskTrigger:
     args:
       type: object
       description: Arguments for the trigger.
+
+ControlScheduledTask:
+  type: object
+  description: Start/Stop of Scheduled Task
+  required: [action]
+  properties:
+    id:
+      description: Id of scheduled task to perform action on
+      type: integer
+      example: date
+    action:
+      description: Arguments for the trigger
+      type: string
+      enum: [start, stop]

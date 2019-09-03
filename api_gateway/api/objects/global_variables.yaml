@@ -12,8 +12,17 @@ GlobalVariable:
     name:
       type: string
       description: The name of the global variable
+    permissions:
+      type: array
+      items:
+        type: object
+    access_level:
+      type: integer
+      nullable: true
+    creator:
+      type: integer
+      description: The User ID of the creator of the global variable
     value:
-      type: string
 #      oneOf:
 #        - type: "string"
 #        - type: "number"

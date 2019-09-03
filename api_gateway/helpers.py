@@ -197,7 +197,6 @@ def regenerate_workflow_ids(workflow):
         prev_id = action['id_']
         action['id_'] = str(uuid4())
         id_mapping[prev_id] = action['id_']
-        action['position']['id_'] = str(uuid4())
         for param in workflow.get('parameters', []):
             param['id_'] = str(uuid4())
 
@@ -206,14 +205,18 @@ def regenerate_workflow_ids(workflow):
         prev_id = condition['id_']
         condition['id_'] = str(uuid4())
         id_mapping[prev_id] = condition['id_']
-        condition['position']['id_'] = str(uuid4())
 
     transforms = workflow.get('transforms', [])
     for transform in transforms:
         prev_id = transform['id_']
         transform['id_'] = str(uuid4())
         id_mapping[prev_id] = transform['id_']
-        transform['position']['id_'] = str(uuid4())
+
+    triggers = workflow.get('triggers', [])
+    for trigger in triggers:
+        prev_id = trigger['id_']
+        trigger['id_'] = str(uuid4())
+        id_mapping[prev_id] = trigger['id_']
 
     workflow_variables = workflow.get('workflow_variables', [])
     for workflow_variable in workflow_variables:
@@ -221,8 +224,11 @@ def regenerate_workflow_ids(workflow):
         workflow_variable['id_'] = str(uuid4())
         id_mapping[prev_id] = workflow_variable['id_']
 
-    for action in actions:
-        regenerate_ids(action, id_mapping, regenerate_id=False)
+    tags = workflow.get('tags', [])
+    id_mapping["tags"] = tags
+
+    # for action in actions:
+    #     regenerate_ids(action, id_mapping, regenerate_id=False)
 
     # ToDo: These will be needed if condition/transform parameters are changed to be more like actions
     # for condition in conditions:
@@ -237,6 +243,7 @@ def regenerate_workflow_ids(workflow):
         regenerate_ids(branch, id_mapping)
 
     workflow['start'] = id_mapping[workflow['start']]
+
 
 
 def regenerate_ids(json_in, id_mapping=None, regenerate_id=True, is_arguments=False):

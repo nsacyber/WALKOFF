@@ -77,15 +77,30 @@ h3 {
   background-color: #3c8dbc;
 }
 
-#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedReport {
-  color: white;
+#walkoffNav .navbar-nav .dropdown .dropdown-menu a {
+  color: rgba(255, 255, 255, 0.5);
+
+  &:active {
+    color: #3c8dbc;
+    background-color: #f8f9fa;
+  }
 }
 
-#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedReport:hover {
+#walkoffNav .navbar-nav .dropdown .dropdown-menu a.active {
+  color: #fff;
+  background-color: unset;
+
+  &:hover {
+    color: #3c8dbc;
+    background-color: #f8f9fa;
+  }
+}
+
+#walkoffNav .navbar-nav .dropdown .dropdown-menu a:hover {
   color: #3c8dbc;
 }
 
-#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedReport span {
+#walkoffNav .navbar-nav .dropdown .dropdown-menu a span {
   margin-left: 5px;
 }
 
@@ -127,6 +142,17 @@ h3 {
 
 #walkoffNav .navbar-nav .messages-menu table tr:last-child {
   border-bottom: none;
+}
+
+#userModalBody .required {
+	color: crimson;
+	margin-left: 5px;
+}
+
+#userModalBody input[type=checkbox].form-control,
+#userModalBody input[type=radio].form-control {
+	width: 34px;
+	margin: 0 5px;
 }
 
 .footer {

@@ -1,0 +1,217 @@
+/umpire/files/{app_name}/{app_version}:
+  get:
+    tags:
+      - Umpire
+    summary: List all files
+    description: ''
+    operationId: api_gateway.server.endpoints.umpire.list_all_files
+    parameters:
+      - name: app_name
+        in: path
+        description: 'The name or ID of the app to list.'
+        required: true
+        schema:
+          type: string
+      - name: app_version
+        in: path
+        description: 'The name or ID of the app to list.'
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowJSON'
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/umpire/file/{app_name}/{app_version}:
+  get:
+    tags:
+      - Umpire
+    summary: Get contents of specified file.
+    operationId: api_gateway.server.endpoints.umpire.get_file_contents
+    parameters:
+      - name: app_name
+        in: path
+        description: 'The name of the app to list.'
+        required: true
+        schema:
+          type: string
+      - name: app_version
+        in: path
+        description: 'The version number of the app to list.'
+        required: true
+        schema:
+          type: string
+      - name: file_path
+        in: query
+        description: Whether or not to delete all workflow statuses, defaults to false
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowJSON'
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/umpire/file_upload:
+  post:
+    tags:
+      - Umpire
+    summary: Updates a file in Minio
+    description: ''
+    operationId: api_gateway.server.endpoints.umpire.update_file
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UploadFile'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowJSON'
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/umpire/build:
+  get:
+    tags:
+      - Umpire
+    summary: Gets build status of all current build
+    description: ''
+    operationId: api_gateway.server.endpoints.umpire.get_build_status
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowJSON'
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/umpire/build/{app_name}/{app_version}:
+  post:
+    tags:
+      - Umpire
+    summary: Builds image in Minio
+    description: ''
+    operationId: api_gateway.server.endpoints.umpire.build_image
+    parameters:
+      - name: app_name
+        in: path
+        description: 'The name of the app to list.'
+        required: true
+        schema:
+          type: string
+      - name: app_version
+        in: path
+        description: 'The version number of the app to list.'
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowJSON'
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/umpire/build/{build_id}:
+  post:
+    tags:
+      - Umpire
+    summary: Gets build status given a specific ID
+    description: ''
+    operationId: api_gateway.server.endpoints.umpire.build_status_from_id
+    parameters:
+      - name: build_id
+        in: path
+        description: 'The name of the app to list.'
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowJSON'
+      404:
+        description: Workflow does not exist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+
+/umpire/save/{app_name}/{app_version}:
+  post:
+      tags:
+        - Umpire
+      summary: Pushes image from minio to /apps and overwrites it.
+      description: ''
+      operationId: api_gateway.server.endpoints.umpire.save_umpire_file
+      parameters:
+        - name: app_name
+          in: path
+          description: 'The name of the app to list.'
+          required: true
+          schema:
+            type: string
+        - name: app_version
+          in: path
+          description: 'The version number of the app to list.'
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowJSON'
+        404:
+          description: Workflow does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+

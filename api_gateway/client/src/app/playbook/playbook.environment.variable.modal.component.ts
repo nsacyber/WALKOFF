@@ -1,7 +1,8 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ViewChild} from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
+import { JsonEditorComponent } from 'ang-jsoneditor';
 
 @Component({
   selector: 'playbook-environment-variable-modal-component',
@@ -9,7 +10,19 @@ import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 })
 export class PlaybookEnvironmentVariableModalComponent {
   @Input() variable: EnvironmentVariable = new EnvironmentVariable();
-  existing: boolean = false;
+  @ViewChild('jsonEditor', { static: true }) jsonEditor: JsonEditorComponent;
+
+  editorOptionsData: any = {
+		mode: 'code',
+		modes: ['code', 'tree'],
+		history: false,
+		search: false,
+		// mainMenuBar: false,
+		navigationBar: false,
+		statusBar: false,
+		enableSort: false,
+		enableTransform: false,
+	}
 
   constructor(public activeModal: NgbActiveModal) {}
 }

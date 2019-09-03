@@ -115,7 +115,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 		this.valueTypes = [
 			{ id: Variant.STATIC_VALUE, name: 'Static Value'},
 			{ id: Variant.ACTION_RESULT, name: 'Action Output'},
-			{ id: Variant.WORKFLOW_VARIABLE, name: 'Workflow Variable'},
+			{ id: Variant.WORKFLOW_VARIABLE, name: 'Local'},
 			{ id: Variant.GLOBAL, name: 'Global'}
 		];
 

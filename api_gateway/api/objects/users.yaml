@@ -16,6 +16,8 @@ AddUser:
       active:
         description: activate/deactive a user. Active can only be changed by an admin.
         type: boolean
+      resources_created:
+        type: array
 
 EditUser:
     type: object
@@ -43,6 +45,27 @@ EditUser:
       roles:
         description: A new list of role IDs that this user will possess. Roles can only be assigned by an admin.
         $ref: '#/components/schemas/RoleIdList'
+
+EditPersonalUser:
+    type: object
+    required: [old_username]
+    properties:
+      old_username:
+        description: Old username of the user
+        type: string
+        example: administrator1
+      new_username:
+        description: New username of the user
+        type: string
+        example: administrator2
+      old_password:
+        description: Previous password for the user
+        type: string
+        example: password123
+      password:
+        description: New password for the user
+        type: string
+        example: password321
 
 DisplayUser:
     type: object

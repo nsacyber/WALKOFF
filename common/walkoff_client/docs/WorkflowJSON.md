@@ -13,6 +13,7 @@ Name | Type | Description | Notes
 **id_** | **str** | A 32-bit hexadecimal string representing a globally unique identifier | [optional] 
 **is_valid** | **bool** | Is this workflow able to be run? | [optional] 
 **name** | **str** | The name of the workflow. | 
+**permissions** | **list[object]** |  | [optional] 
 **start** | **str** | A 32-bit hexadecimal string representing a globally unique identifier | [optional] 
 **tags** | **list[str]** | Tag for workflow | [optional] 
 **transforms** | [**list[Transform]**](Transform.md) | Transform nodes in workflow | [optional] 

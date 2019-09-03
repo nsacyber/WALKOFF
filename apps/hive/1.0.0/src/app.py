@@ -2,37 +2,13 @@ import logging
 import asyncio
 import json
 import os
+import time
+
 from thehive4py.api import TheHiveApi
-from thehive4py.models import Case, CaseObservable
+from thehive4py.models import CaseHelper, CaseTask, CaseObservable
 from walkoff_app_sdk.app_base import AppBase
 
 logger = logging.getLogger("apps")
-
-
-def create_observable(case_id, api, message, obs_data, typ='other', ioc=False):
-
-    tags = [message, typ]
-    r = api.create_case_observable(case_id, CaseObservable(dataType=typ, message=message, tags=tags, ioc=ioc,
-                                                           sighted=False,
-                                                           data=obs_data))
-    return r
-
-
-def obs_pol(case_id, api, data, log):
-    for k, v in data.items():
-        if k.startswith('idm_'):
-            typ = 'idm'
-        elif k.startswith('kong_'):
-            typ = 'kong'
-        elif k.startswith('free_ipa_'):
-            typ = 'free_ipa'
-        elif k.startswith('bro_'):
-            typ = 'bro'
-        else:
-            typ = 'other'
-        log.info("adding case observable: {}".format(k))
-        create_observable(case_id, api, k, str(v), typ)
-    return
 
 
 class Hive(AppBase):
@@ -42,147 +18,225 @@ class Hive(AppBase):
     def __init__(self, redis, logger, console_logger=None):
         super().__init__(redis, logger, console_logger)
 
-    async def create_case(self, log_data, url, api_key, title, description="", tlp=1, severity=1, tags=[], tasks=[]):
-        self.logger.info('Creating a case in TheHive')
-        self.logger.info('TheHive URL: {}'.format(url))
-        self.logger.info('TheHive API key: {}'.format(api_key))
+    async def create_case(self, url, api_key, title, description="", tlp=2, severity=1, tags=None):
+        tags = tags if tags else []
 
-        if isinstance(log_data, str):
-            log_data = json.loads(log_data)
-
-        if url.startswith('http://'):
-            pass
-        elif url.startswith('https://'):
-            url = url.replace('https://', 'http://')
-        else:
-            url = 'http://'+url
-
-        # dir_path = os.path.dirname(os.path.realpath(__file__))
-        # rel_path = 'Case-Template__' + case_template + '.json'
-        # file_path = os.path.join(dir_path, rel_path)
-        api = TheHiveApi(url, api_key)
-
-        self.logger.info('TheHive API connected')
-
-        # with open(file_path) as f:
-        #     template = json.load(f)
-
-        # self.logger.info('Loaded Case Template: {}'.format(case_template))
-
-        data = log_data
-        # tags = template['tags']
-        tags = ['Walkoff']
-
-        exec_id = self.current_execution_id
-
-        # tags.append('walkoff_execution_id: ' + str(exec_id))
-
-        try:
-            user_id = data.get('user', None)
-            tags.append('user_id: ' + str(user_id))
-        except:
-            self.logger.debug('No user ID')
-
-        case = Case(title=title,
-                    description=description,
-                    tlp=tlp,
-                    severity=severity,
-                    tags=tags,
-                    tasks=tasks)
-        # case = api.case.create(title='From TheHive4Py', description='N/A', tlp=3, flag=True,
-        #                        tags=['TheHive4Py', 'sample'], tasks=[])
-        response = api.create_case(case)
-
-        if response.status_code == 201:
-            # self.logger.info(json.dumps(response.json(), indent=4, sort_keys=True))
-            case_id = response.json()['id']
-            self.logger.info('created case: {}'.format(case_id))
-        else:
-            self.logger.info('failed to create case')
-            self.logger.info('ko: {}/{}'.format(response.status_code, response.text))
-            return 'Failed'
-        log = self.logger
-        obs_pol(case_id, api, data, log)
-        return case_id
-
-    async def update_case(self, log_data, id, severity, url, api_key):
-        self.logger.info('Updating a case in TheHive')
-        self.logger.info('TheHive URL: {}'.format(url))
-        self.logger.info('TheHive API key: {}'.format(api_key))
-
-        input = log_data.get("walkoff")
-        self.logger.info('The data: {}'.format(input))
-
-        if isinstance(input, str):
-            input = json.loads(input)
-
-        if url.startswith('http://'):
-            pass
-        elif url.startswith('https://'):
-            url = url.replace('https://', 'http://')
-        else:
-            url = 'http://'+url
+        if not url.startswith("http"):
+            url = f"http://{url}"
 
         api = TheHiveApi(url, api_key)
-        hive_case = api.case(id)
+        self.logger.info('Creating a case in TheHive...')
+        case_helper = CaseHelper(api)
+        tags.append(f"walkoff_execution_id: {self.current_execution_id}")
 
-        self.logger.info('TheHive API connected')
+        case_kwargs = {
+            "tlp": tlp,
+            "severity": severity,
+            "tags": tags if tags is not None else []
+        }
 
-        data = input
-        tags = ['Walkoff']
+        return case_helper.create(title, description, **case_kwargs).id
 
-        try:
-            user_id = data.get('user', None)
-            tags.append('user_id: ' + str(user_id))
-        except:
-            self.logger.debug('No user ID')
+    async def update_case(self, case_id, url, api_key, title=None, description=None, tlp=None, severity=None,
+                          tags=None, tags_mode="append"):
 
-        hive_case.severity = severity
-        # case = api.case.create(title='From TheHive4Py', description='N/A', tlp=3, flag=True,
-        #                        tags=['TheHive4Py', 'sample'], tasks=[])
-        response = api.update_case(hive_case)
+        self.logger.info(f'Updating case {case_id} in TheHive...')
 
-        if response.status_code == 200:
-            case_id = response.json()['id']
-            self.logger.info('Updated case: {}'.format(case_id))
-        else:
-            return response.status_code
+        if not url.startswith("http"):
+            url = f"http://{url}"
 
-        log = self.logger
-        obs_pol(id, api, data, log)
-        return case_id
-
-    async def close_case(self, case_id, url, api_key, resolution_status, impact_status, tags, summary):
-        # if url.startswith('http://'):
-        #     pass
-        # elif url.startswith('https://'):
-        #     url = url.replace('https://', 'http://')
-        # else:
-        #     url = 'http://'+url
-
-        self.logger.info('closing case: {}'.format(case_id))
         api = TheHiveApi(url, api_key)
-        hive_case = api.case(case_id)
+        case_helper = CaseHelper(api)
 
-        hive_case.status = 'Resolved'
-        hive_case.resolutionStatus = resolution_status
+        case_kwargs = {}
+        if title:
+            case_kwargs["title"] = title
+        if description:
+            case_kwargs["description"] = description
+        if tlp:
+            case_kwargs["tlp"] = tlp
+        if severity:
+            case_kwargs["severity"] = severity
+        if tags is not None:
+            if tags_mode == "append":
+                tags = case_helper(case_id).tags + tags
+            case_kwargs["tags"] = tags
 
-        hive_case.impactStatus = 'NotApplicable'
-        if impact_status == 'TruePositive':
-            hive_case.impactStatus = impact_status
+        return case_helper.update(case_id, **case_kwargs).id
 
-        hive_case.tags = tags.split(',')
-        hive_case.summary = summary
+    async def close_case(self, case_id, url, api_key, resolution_status, impact_status, summary, tags=None,
+                         tags_mode="append"):
+        self.logger.info(f'Closing case {case_id} in TheHive...')
 
-        response = api.update_case(hive_case, ['status', 'resolutionStatus', 'impactStatus', 'tags', 'summary'])
+        if not url.startswith("http"):
+            url = f"http://{url}"
 
-        if response.status_code == 200:
-            self.logger.info('closed case: {}'.format(case_id))
+        api = TheHiveApi(url, api_key)
+        case_helper = CaseHelper(api)
+
+        case_kwargs = {"status": "Resolved",
+                       "resolutionStatus": resolution_status,
+                       "impactStatus": impact_status,
+                       "summary": summary}
+
+        if tags is not None:
+            if tags_mode == "append":
+                tags = case_helper(case_id).tags + tags
+            case_kwargs["tags"] = tags
+
+        return case_helper.update(case_id, **case_kwargs).id
+
+    async def create_case_task(self, case_id, url, api_key, data=None):
+
+        self.logger.info(f'Creating task for {case_id} in TheHive...')
+
+        if not url.startswith("http"):
+            url = f"http://{url}"
+
+        api = TheHiveApi(url, api_key)
+
+        results = {}
+        for item in data:
+            try:
+                title = item["title"]
+                description = item["description"]
+                startDate = time.time_ns() // 1000000
+                task = CaseTask(title=title, description=description, startDate=startDate)
+
+                r = api.create_case_task(case_id, task)
+
+                if r.status_code == 201:
+                    results[title] = r.json()
+                else:
+                    raise IOError(r.text)
+            except Exception as e:
+                self.console_logger.info(f"Failed to create task with input {item} because: {e}")
+
+        return results
+
+    async def update_case_task(self, url, api_key, task_id, title=None, description=None, status=None, flag=None):
+        self.logger.info(f'Updating task {task_id} in TheHive...')
+
+        if not url.startswith("http"):
+            url = f"http://{url}"
+
+        api = TheHiveApi(url, api_key)
+        task = CaseTask(**api.get_case_task(task_id).json())
+        task.id = task_id
+
+        if title:
+            task.title = title
+        if description:
+            task.description = description
+        if status:
+            task.status = status
+        if flag is not None:
+            task.flag = flag
+        r = api.update_case_task(task)
+
+        if r.status_code == 200:
+            return r.json()
         else:
-            self.logger.info('failed to close case: {}'.format(case_id))
-            self.logger.info('ko: {}/{}'.format(response.status_code, response.text))
-        return case_id
+            raise IOError(r.text)
+
+    async def create_case_observable(self, case_id, url, api_key, data_type, data, description=None, tlp=0,
+                                     is_ioc=False, is_sighted=False, tags=None):
+
+        tags = tags if tags is not None else []
+
+        self.logger.info(f'Creating observable for {case_id} in TheHive...')
+
+        if not url.startswith("http"):
+            url = f"http://{url}"
+
+        api = TheHiveApi(url, api_key)
+
+        obs = CaseObservable(dataType=data_type,
+                             message=description,
+                             tlp=tlp,
+                             tags=tags,
+                             ioc=is_ioc,
+                             sighted=is_sighted,
+                             data=data)
+
+        r = api.create_case_observable(case_id, obs)
+
+        if r.status_code == 201:
+            return r.json()
+        else:
+            raise IOError(r.text)
+
+    async def update_case_observable(self, url, api_key, case_id, obs_id, description=None, tlp=0,
+                                     is_ioc=False, is_sighted=False, tags=None, tags_mode=None):
+        self.logger.info(f'Updating observable {obs_id} in case {case_id} in TheHive...')
+
+        if not url.startswith("http"):
+            url = f"http://{url}"
+
+        api = TheHiveApi(url, api_key)
+        obs_list = api.get_case_observables(case_id).json()
+        obs_json = [obs for obs in obs_list if obs["id"] == obs_id][0]
+        obs = CaseObservable(**obs_json)
+        obs.id = obs_id
+
+        if description:
+            obs.description = description
+        if tlp:
+            obs.tlp = tlp
+        if is_ioc is not None:
+            obs.ioc = is_ioc
+        if is_sighted is not None:
+            obs.sighted = is_sighted
+        if tags is not None:
+            if tags_mode == "append":
+                tags = obs.tags + tags
+            obs.tags = tags
+
+        r = api.update_case_observables(obs)
+
+        if r.status_code == 200:
+            return r.json()
+        else:
+            raise IOError(r.text)
+
+    async def lock_hive_user(self, url, api_key, users):
+
+        if not url.startswith("http"):
+            url = f"http://{url}"
+
+        api = TheHiveApi(url, api_key)
+        result = {}
+
+        for user in users:
+            self.logger.info(f'Locking user {user} in TheHive...')
+            r = api.do_patch(f'/api/user/{user}', **{'status': "Locked"})
+
+            if r.status_code == 200:
+                result[user] = r.json()
+            else:
+                self.logger.info(f'Error locking user {user} in TheHive: {r.text()}')
+
+        return result
+
+    async def unlock_hive_user(self, url, api_key, users):
+
+        if not url.startswith("http"):
+            url = f"http://{url}"
+
+        api = TheHiveApi(url, api_key)
+        result = {}
+
+        for user in users:
+            self.logger.info(f'Unlocking user {user} in TheHive...')
+            r = api.do_patch(f'/api/user/{user}', **{'status': "Ok"})
+
+            if r.status_code == 200:
+                result[user] = r.json()
+            else:
+                self.logger.info(f'Error Unlocking user {user} in TheHive: {r.text()}')
+
+        return result
 
 
 if __name__ == "__main__":
-    asyncio.run(Hive.run())
+    asyncio.run(Hive.run(), debug=True)

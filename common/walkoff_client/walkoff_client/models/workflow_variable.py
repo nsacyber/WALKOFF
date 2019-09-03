@@ -36,7 +36,7 @@ class WorkflowVariable(object):
         'description': 'str',
         'id_': 'str',
         'name': 'str',
-        'value': 'str'
+        'value': 'object'
     }
 
     attribute_map = {
@@ -167,7 +167,7 @@ class WorkflowVariable(object):
         The value of the workflow variable  # noqa: E501
 
         :return: The value of this WorkflowVariable.  # noqa: E501
-        :rtype: str
+        :rtype: object
         """
         return self._value
 
@@ -178,7 +178,7 @@ class WorkflowVariable(object):
         The value of the workflow variable  # noqa: E501
 
         :param value: The value of this WorkflowVariable.  # noqa: E501
-        :type: str
+        :type: object
         """
         if value is None:
             raise ValueError("Invalid value for `value`, must not be `None`")  # noqa: E501

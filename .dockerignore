@@ -2,9 +2,11 @@
 .idea
 api_gateway/client/node_modules
 docs
-data/portainer
-data/postgres
-data/registry
+data/registry/
+data/postgres/
+data/redis/
+data/portainer/
+data/minio/
 testing
 __pycache__
 **/__pycache__

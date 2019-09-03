@@ -47,21 +47,21 @@ export class ReportService {
     }
 
     deleteReport(report: Report) {
-        return this.http.delete(`/api/dashboards/${ report.id }`)
+        return this.http.delete(`api/dashboards/${ report.id }`)
             .toPromise()
             .then((data) => this.emitChange(data))
             .catch(this.utils.handleResponseError);
     }
 
     getReports() : Promise<Report[]> {
-        return this.http.get('/api/dashboards')
+        return this.http.get('api/dashboards')
 			.toPromise()
 			.then((data) => plainToClass(Report, data))
             .catch(this.utils.handleResponseError);
     }
 
     getReport(id: string) : Promise<Report> {
-        return this.http.get(`/api/dashboards/${ id }`)
+        return this.http.get(`api/dashboards/${ id }`)
 			.toPromise()
 			.then((data: object) => plainToClass(Report, data))
 			.catch(this.utils.handleResponseError);
@@ -74,8 +74,8 @@ export class ReportService {
     }
 
     async getWidgetMetadata(widget: ReportWidget) {
-        const testData = "A,B,C\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6";
-        return widget.setMetadata(await this.parseResult(testData))
+        // const testData = "A,B,C\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6";
+        // return widget.setMetadata(await this.parseResult(testData))
 
         const options = widget.options;
         if (options.workflow && options.execution && options.action) {
