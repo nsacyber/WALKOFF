@@ -30,7 +30,7 @@ In the top navigation bar, click ``Workflows`` to return to the main Workflow pa
 
 Add Actions to Workspace
 ''''''''''''''''''''''''
-Let's begin by adding a ``hello_world`` action and a ``echo_string`` action from the HelloWorld app. Expand the ``basics`` app by clicking on the app name in the left pane. Then, double-click, or click and drag the desired actions into the workspace.
+Let's begin by adding a ``hello_world`` action and a ``echo_string`` action from the ``Basics`` app. Expand the ``basics`` app by clicking on the app name in the left pane. Then, double-click, or click and drag the desired actions into the workspace.
 
 Ensure that the ``hello_world`` action is set as the starting node by clicking ``Set as Start Action`` in the Action Parameters pane.
 
