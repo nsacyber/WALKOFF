@@ -2,6 +2,8 @@ from flask import current_app, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_claims
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
+from uuid import uuid4
+
 
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
@@ -112,14 +114,14 @@ def delete_global(global_var):
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["create"]))
 def create_global():
     data = request.get_json()
-    global_id = data['id_']
+    global_id = data.get('id_', str(uuid4()))
 
     username = get_jwt_claims().get('username', None)
     curr_user = db.session.query(User).filter(User.username == username).first()
     data.update({'creator': curr_user.id})
 
-    new_permissions = data['permissions']
-    access_level = data['access_level']
+    new_permissions = data.get('permissions', None)
+    access_level = data.get('access_level', 1)
 
     # creator only
     if access_level == 0:
