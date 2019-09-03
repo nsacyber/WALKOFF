@@ -70,13 +70,13 @@ Deploying WALKOFF
        # If verbose output is desired:
        ./walkoff.sh up --build --debug
 
-#. Navigate to the default IP and port. The default IP and the port can be changed by altering the port NGINX is exposed on (the right-hand port) in the top-level `docker-compose.yml`. Note that you should use HTTPS, and allow the self-signed certificate when prompted.
+#. Navigate to the default IP and port. The default port can be changed by altering the port NGINX is exposed on (the right-hand port) in `bootloader/walkoff-compose.yml`. Note that you should use HTTPS, and allow the self-signed certificate when prompted.
 
     .. code-block:: console
 
        https://127.0.0.1:8080
 
-#. The default username is "admin" and password is "admin." These can and should be changed upon initial login.
+#. The default username is "admin" and password is "admin". These can and should be changed upon initial login.
 
 
 #. To stop WALKOFF, use the bootloader:
