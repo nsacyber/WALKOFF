@@ -142,10 +142,10 @@ def fernet_encrypt(key, string):
 
 def fernet_decrypt(key, string):
     from cryptography.fernet import Fernet
-
+    s = Fernet(key).decrypt(string.encode()).decode()
     try:
-        to_dec = json.loads(string)
+        r = json.loads(s)
     except (TypeError, json.decoder.JSONDecodeError):
-        to_dec = string
+        r = s
 
-    return Fernet(key).decrypt(to_dec.encode()).decode()
+    return r

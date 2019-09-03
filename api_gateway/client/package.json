@@ -40,7 +40,7 @@
     "@swimlane/ngx-datatable": "^15.0.2",
     "@types/bootbox": "^4.4.36",
     "@types/jquery": "^3.3.30",
-    "ang-jsoneditor": "^1.8.0",
+    "ang-jsoneditor": "^1.8.2",
     "angular-gridster2": "^8.0.0",
     "angular2-uuid": "^1.1.1",
     "bootbox": "^5.2.0",
