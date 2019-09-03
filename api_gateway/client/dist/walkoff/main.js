@@ -8072,6 +8072,7 @@ var PlaybookEnvironmentVariableModalComponent = /** @class */ (function () {
     function PlaybookEnvironmentVariableModalComponent(activeModal) {
         this.activeModal = activeModal;
         this.variable = new _models_playbook_environmentVariable__WEBPACK_IMPORTED_MODULE_3__["EnvironmentVariable"]();
+        this.existing = false;
         this.editorOptionsData = {
             mode: 'code',
             modes: ['code', 'tree'],
@@ -8096,6 +8097,9 @@ var PlaybookEnvironmentVariableModalComponent = /** @class */ (function () {
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])()
     ], PlaybookEnvironmentVariableModalComponent.prototype, "variable", void 0);
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Input"])()
+    ], PlaybookEnvironmentVariableModalComponent.prototype, "existing", void 0);
     tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ViewChild"])('jsonEditor', { static: true })
     ], PlaybookEnvironmentVariableModalComponent.prototype, "jsonEditor", void 0);

@@ -10,6 +10,7 @@ import { JsonEditorComponent } from 'ang-jsoneditor';
 })
 export class PlaybookEnvironmentVariableModalComponent {
   @Input() variable: EnvironmentVariable = new EnvironmentVariable();
+  @Input() existing: boolean = false;
   @ViewChild('jsonEditor', { static: true }) jsonEditor: JsonEditorComponent;
 
   editorOptionsData: any = {
