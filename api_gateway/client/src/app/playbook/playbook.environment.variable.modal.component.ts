@@ -24,5 +24,17 @@ export class PlaybookEnvironmentVariableModalComponent {
 		enableTransform: false,
 	}
 
-  constructor(public activeModal: NgbActiveModal) {}
+	
+	constructor(public activeModal: NgbActiveModal) {}
+	
+	initialValue;
+
+	ngOnInit(): void {
+    this.initialValue = this.variable.value;
+	}
+	
+	updateValue($event: any): void {
+    this.variable.value = $event;
+	}
+	
 }

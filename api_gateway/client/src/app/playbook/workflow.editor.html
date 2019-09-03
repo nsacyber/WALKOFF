@@ -463,6 +463,11 @@ else:
                         <ngx-datatable-column name="ID" prop="id" [sortable]="false" [flexGrow]="2">
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Default Value" prop="value" [sortable]="false" [flexGrow]="2">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <div class="d-flex align-items-center">
+                                    <span>{{ row.value | json }}</span>
+                                </div>
+                            </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Description" prop="description" [sortable]="false" [flexGrow]="3">
                         </ngx-datatable-column>
@@ -504,8 +509,9 @@ else:
                         <ngx-datatable-column name="Value" prop="value" [flexGrow]="3" [sortable]="false">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <div class="d-flex align-items-center">
-                                    <span
-                                        [class.pt-2]="row.isHidden">{{ row.isHidden ? '********************' : row.value }}</span>
+                                    <span [class.pt-2]="row.isHidden"> 
+                                        {{ row.isHidden ? '********************' : row.value | json }} 
+                                    </span>
                                     <button (click)="row.isHidden = !row.isHidden" class="btn btn-link mx-1 p-0">
                                         <i class="fa" [class.fa-eye]="row.isHidden" [class.fa-eye-slash]="!row.isHidden"
                                             [ngbTooltip]="row.isHidden ? 'Show Value' : 'Hide Value'"></i>
