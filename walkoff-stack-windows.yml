@@ -113,6 +113,7 @@ services:
     - walkoff_default
     secrets:
     - walkoff_encryption_key
+    - walkoff_internal_key
 #    volumes:
 #    - .\api_gateway\client\dist\walkoff:/app/api_gateway/client/dist/walkoff
 
@@ -135,6 +136,7 @@ services:
     - walkoff_default
     secrets:
     - walkoff_encryption_key
+    - walkoff_internal_key
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - ./apps:/app/apps
@@ -147,6 +149,7 @@ services:
     - common_env.yml
     secrets:
     - walkoff_encryption_key
+    - walkoff_internal_key
     deploy:
       mode: replicated
       replicas: 0
@@ -324,6 +327,8 @@ networks:
 
 secrets:
   walkoff_encryption_key:
+    external: true
+  walkoff_internal_key:
     external: true
 
 volumes:

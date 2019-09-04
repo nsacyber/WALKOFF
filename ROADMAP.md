@@ -46,10 +46,12 @@ The following section gives a rough approximation of what we are looking to acco
 #### 1.0.0-rc.1 **(Next Step)**:
 
 - Security hardening.
-- Complete unit testing of components and end-to-end testing of a running cluster.
+- Complete unit testing of components (maybe) and end-to-end testing of a running cluster.
 - Validation of WALKOFF running and scaling to large production workloads on multiple Docker Swarm nodes.
 - Dashboards for monitoring and working with WALKOFF outside of Docker CLI
 - Resource-aware scaling of apps and workflows.
+- API Gateway transitioned to FastAPI async framework.
+- Worker self-healing and error correction to prevent stale work or hangups.
 
 #### 1.1.0:
 

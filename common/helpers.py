@@ -1,4 +1,5 @@
 import logging
+import json
 
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -130,9 +131,21 @@ async def send_status_update(session, execution_id, message, headers=None):
 
 def fernet_encrypt(key, string):
     from cryptography.fernet import Fernet
-    return Fernet(key).encrypt(string.encode()).decode()
+
+    if type(string) is not str:
+        to_enc = json.dumps(string)
+    else:
+        to_enc = string
+
+    return Fernet(key).encrypt(to_enc.encode()).decode()
 
 
 def fernet_decrypt(key, string):
     from cryptography.fernet import Fernet
-    return Fernet(key).decrypt(string.encode()).decode()
+    s = Fernet(key).decrypt(string.encode()).decode()
+    try:
+        r = json.loads(s)
+    except (TypeError, json.decoder.JSONDecodeError):
+        r = s
+
+    return r
