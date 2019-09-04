@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 default_resource_permissions_internal_user = [
     {"name": "app_apis", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "apps", "permissions": ["create", "read", "update", "delete"]},
     {"name": "settings", "permissions": ["read", "update"]},
     {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
     {"name": "workflow_variables", "permissions": ["create", "read", "update", "delete"]},
@@ -23,6 +24,7 @@ default_resource_permissions_internal_user = [
 
 default_resource_permissions_super_admin = [
     {"name": "app_apis", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "apps", "permissions": ["create", "read", "update", "delete"]},
     {"name": "settings", "permissions": ["read", "update"]},
     {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
     {"name": "workflow_variables", "permissions": ["create", "read", "update", "delete"]},
@@ -34,8 +36,10 @@ default_resource_permissions_super_admin = [
     {"name": "users", "permissions": ["create", "read", "update", "delete"]}
 ]
 
+
 default_resource_permissions_admin = [
     {"name": "app_apis", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "apps", "permissions": ["create", "read", "update", "delete"]},
     {"name": "settings", "permissions": ["read", "update"]},
     {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
     {"name": "workflow_variables", "permissions": ["create", "read", "update", "delete"]},
@@ -45,10 +49,25 @@ default_resource_permissions_admin = [
     {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
     {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
     {"name": "users", "permissions": ["create", "read", "update", "delete"]}
+]
+
+default_resource_permissions_app_developer = [
+    {"name": "app_apis", "permissions": ["read"]},
+    {"name": "apps", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "settings", "permissions": ["read"]},
+    {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "workflow_variables", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "workflows", "permissions": ["create", "read", "update", "delete", "execute"]},
+    {"name": "dashboards", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "workflowstatus", "permissions": ["read"]},
+    {"name": "roles", "permissions": ["read"]},
+    {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
+    {"name": "users", "permissions": ["read"]}
 ]
 
 default_resource_permissions_workflow_developer = [
     {"name": "app_apis", "permissions": ["read"]},
+    {"name": "apps", "permissions": []},
     {"name": "settings", "permissions": ["read"]},
     {"name": "global_variables", "permissions": ["create", "read", "update", "delete"]},
     {"name": "workflow_variables", "permissions": ["create", "read", "update", "delete"]},
@@ -62,6 +81,7 @@ default_resource_permissions_workflow_developer = [
 
 default_resource_permissions_workflow_operator = [
     {"name": "app_apis", "permissions": ["read"]},
+    {"name": "apps", "permissions": []},
     {"name": "settings", "permissions": ["read"]},
     {"name": "global_variables", "permissions": ["execute"]},
     {"name": "workflow_variables", "permissions": ["read", "update"]},
@@ -73,7 +93,7 @@ default_resource_permissions_workflow_operator = [
     {"name": "users", "permissions": ["read"]}
 ]
 
-default_resources = ['app_apis', 'settings', 'global_variables', 'workflows', 'roles', 'scheduler', 'users']
+default_resources = ['app_apis', 'apps', 'settings', 'global_variables', 'workflows', 'roles', 'scheduler', 'users']
 
 
 def initialize_default_resources_internal_user():
@@ -89,7 +109,7 @@ def initialize_default_resources_internal_user():
 
 
 def initialize_default_resources_super_admin():
-    """Initializes the default resources for an admin user"""
+    """Initializes the default resources for a super admin user"""
     super_admin = Role.query.filter(Role.id == 2).first()
     if not super_admin:
         super_admin = Role("super_admin", description="Placeholder description",
@@ -111,9 +131,21 @@ def initialize_default_resources_admin():
     db.session.commit()
 
 
+def initialize_default_resources_app_developer():
+    """Initializes the default resources for an app developer"""
+    app_developer = Role.query.filter(Role.id == 4).first()
+    if not app_developer:
+        app_developer = Role("app_developer", description="Placeholder description",
+                                  resources=default_resource_permissions_app_developer)
+        db.session.add(app_developer)
+    else:
+        app_developer.set_resources(default_resource_permissions_app_developer)
+    db.session.commit()
+
+
 def initialize_default_resources_workflow_developer():
-    """Initializes the default resources for a guest user"""
-    workflow_developer = Role.query.filter(Role.name == "workflow_developer").first()
+    """Initializes the default resources for a workflow developer"""
+    workflow_developer = Role.query.filter(Role.id == 5).first()
     if not workflow_developer:
         workflow_developer = Role("workflow_developer", description="Placeholder description",
                                   resources=default_resource_permissions_workflow_developer)
@@ -124,8 +156,8 @@ def initialize_default_resources_workflow_developer():
 
 
 def initialize_default_resources_workflow_operator():
-    """Initializes the default resources for a guest user"""
-    workflow_operator = Role.query.filter(Role.name == "workflow_operator").first()
+    """Initializes the default resources for a workflow operator"""
+    workflow_operator = Role.query.filter(Role.id == 6).first()
     if not workflow_operator:
         workflow_operator = Role("workflow_operator", description="Placeholder description",
                                  resources=default_resource_permissions_workflow_operator)
