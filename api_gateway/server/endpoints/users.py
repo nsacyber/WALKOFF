@@ -2,7 +2,7 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from api_gateway.extensions import db
-from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
+from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory
 from api_gateway.server.problem import Problem
 from http import HTTPStatus
