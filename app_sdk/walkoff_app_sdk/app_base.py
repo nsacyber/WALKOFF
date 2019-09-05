@@ -155,6 +155,7 @@ class AppBase:
             action_result = NodeStatusMessage.failure_from_node(action, action.execution_id,
                                                                 result="Action does not exist",
                                                                 started_at=action.started_at)
+
         await self.redis.xadd(results_stream, {action.execution_id: message_dumps(action_result)})
 
     @classmethod
