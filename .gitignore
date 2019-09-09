@@ -25,6 +25,11 @@ api_gateway/api/client_api.yaml
 api_gateway/client/node_modules/
 api_gateway/client/build/
 api_gateway/client/coverage/
+api/api/composed_api.yaml
+api/api/client_api.yaml
+api/client/node_modules/
+api/client/build/
+api/client/coverage/
 !apps/*.py
 !interfaces/*.py
 !interfaces/*.pytests/tmp/*
