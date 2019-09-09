@@ -15,6 +15,7 @@ async def run_before_everything():
 _app = FastAPI()
 
 # Include routers here
+_app.include_router()
 _app.include_router(example.router,
                     prefix="/example",
                     tags=["example"],
