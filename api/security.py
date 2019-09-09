@@ -15,8 +15,9 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 from api.fastapi_config import FastApiConfig
 #from api_gateway.serverdb import User
+# from api_gateway.serverdb.tokens import is_token_revoked
+# import api_gateway
 from api_gateway.serverdb.tokens import is_token_revoked
-import api_gateway
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
@@ -26,30 +27,50 @@ JWT DECORATORS
 """
 
 
-def jwt_required(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        verify_jwt_in_request()
-        return fn(*args, **kwargs)
-
-    return wrapper
-
-
-def verify_jwt_in_request():
-    return True
-
-
 def jwt_refresh_token_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        verify_jwt_refresh_token_in_request()
+        verify_jwt_refresh_token_in_request(kwargs['refresh_token'])
         return fn(*args, **kwargs)
 
     return wrapper
 
 
-def verify_jwt_refresh_token_in_request():
+def verify_jwt_refresh_token_in_request(request):
+    decoded_token = get_raw_jwt(request)
+
+    verify_token_in_decoded(decoded_token, request_type='refresh')
+    verify_token_not_blacklisted(decoded_token, request_type='refresh')
     return True
+
+
+def verify_token_in_decoded(decoded_token, request_type):
+    if decoded_token['type'] != request_type:
+        raise jwt.exceptions.InvalidTokenError('Only {} tokens are allowed'.format(request_type))
+
+
+def verify_token_not_blacklisted(decoded_token, request_type):
+    if not FastApiConfig.JWT_BLACKLIST_ENABLED:
+        return
+    if request_type == 'access':
+        if is_token_blacklisted(decoded_token):
+            raise RevokedTokenError('Token has been revoked')
+    if request_type == 'refresh':
+        if is_token_blacklisted(decoded_token):
+            raise RevokedTokenError('Token has been revoked')
+
+
+def token_is_revoked_loader():
+    return json.dumps({'error': 'Token is revoked'}), HTTPStatus.UNAUTHORIZED
+
+
+def is_token_blacklisted(decoded_token):
+    return is_token_revoked(decoded_token)
+
+
+def expired_token_callback():
+    return {'error': 'Token expired'}, HTTPStatus.UNAUTHORIZED
+
 
 
 """
@@ -97,16 +118,17 @@ def decode_token(to_decode):
 
 
 def get_raw_jwt(request):
-    header = request.headers["Authorization"]
-    return True
+    auth_header = request.headers['Authorization']
+    jwt_token = auth_header[7:]
+    return decode_token(jwt_token)
 
 
-def get_jwt_identity():
-    return True
+def get_jwt_identity(request):
+    return get_raw_jwt(request).get("identity", "")
 
 
 def get_jwt_claims(request):
-    return get_raw_jwt(request).get("user_claims")
+    return get_raw_jwt(request).get("user_claims", "")
 
 
 def add_claims_to_access_token(user_id):
@@ -116,21 +138,7 @@ def add_claims_to_access_token(user_id):
     #return {'roles': [role.id for role in user.roles], 'username': user.username} if user is not None else {}
 
 
-# @jwt.revoked_token_loader
-# def token_is_revoked_loader():
-#     return json.dumps({'error': 'Token is revoked'}), HTTPStatus.UNAUTHORIZED
-#
-#
-# @jwt.token_in_blacklist_loader
-# def is_token_blacklisted(decoded_token):
-#     return is_token_revoked(decoded_token)
-#
-#
-# @jwt.expired_token_loader
-# def expired_token_callback():
-#     return {'error': 'Token expired'}, HTTPStatus.UNAUTHORIZED
-#
-#
+
 # def permissions_accepted_for_resources(*resource_permissions):
 #     return _permissions_decorator(resource_permissions)
 #

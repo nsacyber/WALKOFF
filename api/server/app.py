@@ -6,7 +6,7 @@ from starlette.responses import JSONResponse
 
 from api.server.endpoints import appapi
 from api.server.db import DBEngine, get_db
-
+from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted
 from common.config import config, static
 
 logger = logging.getLogger("API")
@@ -31,6 +31,27 @@ async def db_session_middleware(request: Request, call_next):
         request.state.db.close()
 
     return response
+
+
+@_app.middleware("http")
+async def jwt_requested(request: Request, call_next):
+    try:
+        decoded_token = get_raw_jwt(request)
+        verify_token_in_decoded(decoded_token, request_type='access')
+        verify_token_not_blacklisted(decoded_token, request_type='access')
+        #response = await call_next(request)
+    finally:
+        response = await call_next(request)
+    return response
+
+
+    return response
+    # except Exception as e:
+    #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
+    # finally:
+    #     request.state.db.close()
+    #
+    # return response
 
 
 # Include routers here
