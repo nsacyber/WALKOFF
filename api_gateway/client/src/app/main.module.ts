@@ -66,6 +66,9 @@ import { WorkflowEditorComponent } from './playbook/workflow.editor.component';
 import { MetadataModalComponent } from './playbook/metadata.modal.component';
 import { ImportModalComponent } from './playbook/import.modal.component';
 import { ManageAppComponent } from './apps/manage.app.component';
+import { BucketsModalComponent } from './buckets/buckets.modal.component';
+import { TriggersModalComponent } from './buckets/triggers.modal.component';
+import { BucketsComponent } from './buckets/buckets.component';
 
 @NgModule({
 	imports: [
@@ -108,10 +111,13 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		ExecutionComponent,
 		AppsListComponent,
 		ManageAppComponent,
+		BucketsComponent,
 		//Modals
 		SchedulerModalComponent,
 		GlobalsModalComponent,
 		VariableModalComponent,
+		BucketsModalComponent,
+		TriggersModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		SettingsTimeoutModalComponent,
@@ -151,6 +157,8 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		SchedulerModalComponent,
 		GlobalsModalComponent,
 		VariableModalComponent,
+		BucketsModalComponent,
+		TriggersModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		SettingsTimeoutModalComponent,

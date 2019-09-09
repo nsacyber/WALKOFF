@@ -15,12 +15,14 @@ import { ManageAppComponent } from './apps/manage.app.component';
 
 import { CanDeactivateGuard }    from './can-deactivate.guard';
 import { RedirectGuard } from './redirect.guard';
+import { BucketsComponent } from './buckets/buckets.component';
 
 const routes: Routes = [
 	{ path: '', redirectTo: '/workflows', pathMatch: 'full' },
 	{ path: 'workflows', component: PlaybookComponent },
 	{ path: 'workflows/new', component: WorkflowEditorComponent, canDeactivate: [CanDeactivateGuard] },
 	{ path: 'workflows/:workflowId', component: WorkflowEditorComponent, canDeactivate: [CanDeactivateGuard] },
+	{ path: 'settings/buckets', component: BucketsComponent },
 	{ path: 'settings/scheduler', component: SchedulerComponent },
 	{ path: 'settings/globals', component: GlobalsComponent },
 	{ path: 'settings/users', component: SettingsComponent },
