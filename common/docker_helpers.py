@@ -141,24 +141,26 @@ async def update_service(client, service_id, *, version=None, image=None, rollba
         params=params,
     )
     return resp
-    
+
+
 async def remove_volume(volume: str, wait: bool = False):
-        client = docker.from_env()
-        if wait:
-            bl = client.containers.list(filters={"name": "walkoff_bootloader"})
+    client = docker.from_env()
+    if wait:
+        bl = client.containers.list(filters={"name": "walkoff_bootloader"})
+        list = set(client.containers.list()) - set(bl)
+        while len(list):
             list = set(client.containers.list()) - set(bl)
-            while len(list):
-                list = set(client.containers.list()) - set(bl)
-                print("Waiting for containers to close:", list)
-                time.sleep(1)
-                continue
+            logger.info(f"Waiting for containers to close: {list}")
+            time.sleep(1)
+            continue
 
-        #Brief pause to allow for cleanup
-        time.sleep(1)
+    # Brief pause to allow for cleanup
+    time.sleep(1)
+
+    try:
         client.volumes.get(volume).remove()
-
-
-
+    except docker.errors.NotFound:
+        logger.info(f"Skipping removal of {volume}, it doesn't exist.")
 
 
 async def get_secret(client: aiodocker.Docker, secret_id):
@@ -245,6 +247,7 @@ async def get_containers(docker_client, service, short_ids=False):
     :param service: The docker id of the service
     :return: a set of the running containers
     """
+
     def get_container_id(task_spec):
         return task_spec["Status"]["ContainerStatus"]["ContainerID"]
 
@@ -295,6 +298,7 @@ async def load_secrets(docker_client, project):
             secret_references.append(SecretReference(secret_id=secret_id, secret_name=secret.source,
                                                      uid=secret.uid, gid=secret.gid, mode=secret.mode))
     return secret_references
+
 
 def connect_to_docker():
     client = docker.from_env(environment=load_docker_env())

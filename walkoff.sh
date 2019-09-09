@@ -1,12 +1,22 @@
 #!/bin/bash
 
-#echo "Preparing Walkoff Bootloader..."
+BUILDARG="^-[a-zA-Z]*b|--build"
+if [[ $1 == "up" ]]; then
+  for var in "$@"
+  do
+    if [[ $var =~ $BUILDARG ]]; then
+      echo "Preparing WALKOFF Bootloader..."
+      docker build -t walkoff_bootloader -f bootloader/Dockerfile .
+    fi
+  done
+fi
 
-#docker build -t walkoff_bootloader -f bootloader/Dockerfile .
+echo "Starting WALKOFF Bootloader..."
 
-echo "Starting Walkoff Bootloader..."
-
-[ ! "$(docker network ls | grep -w "walkoff_default")" ] && docker network create --attachable=True --driver=overlay walkoff_default
+if [ ! "$(docker network ls | grep -w "walkoff_default")" ]; then
+  printf "Creating walkoff_default network: "
+  docker network create --attachable=True --driver=overlay walkoff_default
+fi
 
 uname_output="$(uname -s)"
 case "${uname_output}" in
@@ -24,3 +34,15 @@ docker run --rm -it --network walkoff_default --name walkoff_bootloader \
     -e DOCKER_HOST_IP=$docker_host_ip \
     -w $(pwd) \
     walkoff_bootloader "$@"
+
+
+CLEANARG="^-[a-zA-Z]*c|--clean"
+if [[ $1 == "down" ]]; then
+  for var in "$@"
+  do
+    if [[ $var =~ $CLEANARG ]]; then
+      printf "Removing walkoff_default network: "
+      docker network rm walkoff_default
+    fi
+  done
+fi

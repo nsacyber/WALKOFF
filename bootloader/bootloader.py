@@ -354,22 +354,6 @@ class Bootloader:
             raise e
 
     async def up(self):
-        data = {"name": "postgres-data"}
-        # Create Postgres Volume
-        await self.docker_client.volumes.create(data)
-
-        # Create Walkoff encryption key
-        wek = await create_encryption_key(self.docker_client, "walkoff_encryption_key")
-
-        # Create internal user key
-        wik = await create_encryption_key(self.docker_client, "walkoff_internal_key")
-
-        # Create Postgres user password
-        wpk = await create_encryption_key(self.docker_client, "walkoff_postgres_key")
-
-        # Create Minio secret key
-        wmak = await create_encryption_key(self.docker_client, "walkoff_minio_access_key", b"walkoff")
-        wmsk = await create_encryption_key(self.docker_client, "walkoff_minio_secret_key")
 
         # Set up a subcommand parser
         parser = argparse.ArgumentParser(description="Bring the WALKOFF stack up and initialize it")
@@ -377,20 +361,44 @@ class Bootloader:
                             help="Builds and pushes all WALKOFF components to local registry.")
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Set log level to debug.")
-        parser.add_argument("-k", "--keys", action="store_true",
-                            help="Prints all keys to STDOUT (dangerous).")
+        parser.add_argument("-y", "--yes", action="store_true",
+                            help="Skips all verification questions.")
+
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
 
+        debug_pw = None
         if args.debug:
             logger.setLevel("DEBUG")
             docker_logger.setLevel("DEBUG")
+
+            if not args.yes and await are_you_sure(
+                    "You specified -d/--debug, which will use 'walkoff' as the password for all "
+                    "resources, This should be used for debug only. "
+                    "(Choose 'no' to use randomly generated passwords.)"):
+                debug_pw = b"walkoff123456"
+
+        # Create Walkoff encryption key
+        await create_encryption_key(self.docker_client, static.ENCRYPTION_KEY, debug_pw)
+
+        # Create internal user key
+        await create_encryption_key(self.docker_client, static.INTERNAL_KEY, debug_pw)
+
+        # Create Postgres user password
+        await create_encryption_key(self.docker_client, static.POSTGRES_KEY, debug_pw)
+
+        # Create Minio secret key
+        await create_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY, b"walkoff")
+        await create_encryption_key(self.docker_client, static.MINIO_SECRET_KEY, debug_pw)
 
         logger.info("Creating persistent directories for registry, postgres, portainer...")
         os.makedirs(static.REGISTRY_DATA_PATH, exist_ok=True)
         os.makedirs(static.POSTGRES_DATA_PATH, exist_ok=True)
         os.makedirs(static.PORTAINER_DATA_PATH, exist_ok=True)
         os.makedirs(static.MINIO_DATA_PATH, exist_ok=True)
+
+        # Create Postgres Volume
+        await self.docker_client.volumes.create({"name": static.POSTGRES_VOLUME})
 
         # Bring up the base compose with the registry
         logger.info("Deploying base services (registry, postgres, portainer, redis)...")
@@ -447,14 +455,6 @@ class Bootloader:
 
         return_code = await deploy_compose(merged_compose)
 
-        if args.keys:
-            if await are_you_sure("You specified -k/--keys, which will print all newly created keys to stdout."):
-                print(f"walkoff_encryption_key:\t\t{wek.decode()}")
-                print(f"walkoff_internal_key:\t\t{wik.decode()}")
-                print(f"walkoff_postgres_key:\t\t{wpk.decode()}")
-                print(f"walkoff_minio_access_key:\t{wmak.decode()}")
-                print(f"walkoff_minio_secret_key:\t{wmsk.decode()}\n\n")
-
         logger.info("Walkoff stack deployed, it may take a little time to converge. \n"
                     "Use 'docker stack services walkoff' to check on Walkoff services. \n"
                     "Web interface should be available at 'https://127.0.0.1:8080' once walkoff_resource_nginx is up.")
@@ -465,13 +465,12 @@ class Bootloader:
 
         # Set up a subcommand parser
         parser = argparse.ArgumentParser(description="Remove the WALKOFF stack and optionally related artifacts.")
-        parser.add_argument("-k", "--key", action="store_true",
-                            help="Removes the walkoff_encryption_key secret.")
-        parser.add_argument("-r", "--registry", action="store_true",
-                            help="Clears the registry bind mount directory.")
-        parser.add_argument("-v", "--volume", action="store_true", help="Clears the postgresql volume")
+        parser.add_argument("-c", "--clean", action="store_true",
+                            help="Removes all encryption keys, volumes, data.")
         parser.add_argument("-d", "--debug", action="store_true",
                             help="Set log level to debug.")
+        parser.add_argument("-y", "--yes", action="store_true",
+                            help="Skips all verification questions.")
 
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
@@ -482,30 +481,22 @@ class Bootloader:
 
         proc = await rm_stack("walkoff")
 
-        # if not args.skipnetwork:
-        #     logger.info("Waiting for containers to exit and network to be removed...")
-        #     await exponential_wait(check_for_network, [self.docker_client], "Network walkoff_default still exists")
+        if args.clean:
+            if not args.yes and await are_you_sure("Are you sure you want to remove all WALKOFF data? This will remove "
+                                                   "all of WALKOFF's docker secrets, docker volumes, and data for "
+                                                   "walkoff_resource services,"):
+                await delete_encryption_key(self.docker_client, static.ENCRYPTION_KEY)
+                await delete_encryption_key(self.docker_client, static.INTERNAL_KEY)
+                await delete_encryption_key(self.docker_client, static.POSTGRES_KEY)
+                await delete_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY)
+                await delete_encryption_key(self.docker_client, static.MINIO_SECRET_KEY)
 
-        if args.key:
-            if await are_you_sure("Deleting encryption key will render database unreadable, so it will be cleared. "
-                                  "This will delete all workflows, execution results, globals, users, roles, etc. "):
-                await delete_encryption_key(self.docker_client, "walkoff_encryption_key")
-                await delete_encryption_key(self.docker_client, "walkoff_internal_key")
-                await delete_encryption_key(self.docker_client, "walkoff_postgres_key")
-                await delete_dir_contents(static.POSTGRES_DATA_PATH)
+                # await delete_dir_contents(static.POSTGRES_DATA_PATH)
+                await delete_dir_contents(static.REGISTRY_DATA_PATH)
+                await delete_dir_contents(static.MINIO_DATA_PATH)
+                await remove_volume(static.POSTGRES_VOLUME, wait=True)
 
-        if args.registry:
-            await delete_dir_contents(static.REGISTRY_DATA_PATH)
-            await delete_dir_contents(static.MINIO_DATA_PATH)
-            await delete_encryption_key(self.docker_client, "walkoff_minio_access_key")
-            await delete_encryption_key(self.docker_client, "walkoff_minio_secret_key")
-
-        if args.volume:
-            await remove_volume("walkoff_postgres-data", wait=True)
-
-
-        logger.info("Walkoff stack removed, it may take a little time to stop all services. "
-                    "It is OK if the walkoff_default network is not fully removed.")
+        logger.info("Walkoff stack removed, it may take a few seconds to stop all containers.")
 
         return proc.returncode
 
@@ -515,6 +506,8 @@ class Bootloader:
                             help="Name of the service to rebuild and update. "
                                  "You can specify a prefix ('walkoff_app' or 'walkoff_core') "
                                  "to rebuild all in that category.")
+        parser.add_argument("-y", "--yes", action="store_true",
+                            help="Skips all verification questions.")
 
         args = parser.parse_args(sys.argv[2:])
 
@@ -522,8 +515,9 @@ class Bootloader:
         service_yaml = compose.get(args.service)
 
         if service_yaml:
-            if await are_you_sure("Forcing a service to update will disrupt any work it is currently doing. "
-                                  "It is not yet guaranteed that a service will pick back up where it left off. "):
+            if not args.yes and await are_you_sure("Forcing a service to update will disrupt any work it is currently "
+                                                   "doing. It is not yet guaranteed that a service will pick back up "
+                                                   "where it left off. "):
                 if "build" in service_yaml:
                     await build_image(self.docker_client, service_yaml["image"],
                                       service_yaml["build"]["dockerfile"],
