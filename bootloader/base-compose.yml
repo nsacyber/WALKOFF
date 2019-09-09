@@ -58,6 +58,8 @@ services:
     image: "postgres"
     networks:
       - walkoff_default
+#    ports:
+#      - "5432:5432"
     environment:
       - "POSTGRES_USER=walkoff"
       - "POSTGRES_PASSWORD_FILE=/run/secrets/walkoff_postgres_key"
@@ -65,7 +67,7 @@ services:
       placement:
         constraints: [node.role==manager]
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - walkoff_resource_postgres_volume:/var/lib/postgresql/data
     secrets:
       - walkoff_postgres_key
 
@@ -97,4 +99,5 @@ networks:
     external: true
 
 volumes:
-  postgres-data:
+  walkoff_resource_postgres_volume:
+    external: true
