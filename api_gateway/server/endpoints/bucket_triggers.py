@@ -2,7 +2,6 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required
 
 from api_gateway.extensions import db
-from api_gateway.security import admin_required
 
 from api_gateway.server.problem import Problem
 from http import HTTPStatus
