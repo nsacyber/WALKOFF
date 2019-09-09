@@ -5,9 +5,10 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { Select2Module } from 'ng2-select2';
 import { ClipboardModule } from 'ngx-clipboard';
+import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from './auth/auth.service';
-import { JwtInterceptor, JwtModule } from '@auth0/angular-jwt';
-import { RefreshTokenInterceptor, jwtTokenGetter } from './refresh-token-interceptor';
+import { JwtInterceptor, JwtModule, JWT_OPTIONS } from '@auth0/angular-jwt';
+import { RefreshTokenInterceptor, jwtTokenGetter, jwtOptionsFactory } from './refresh-token-interceptor';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { DateTimePickerModule } from 'ng-pick-datetime';
 import { DndModule } from 'ng2-dnd';
@@ -76,9 +77,14 @@ import { HasPermissionDirective } from './permission.directive';
 		HttpClientModule,
 		ReactiveFormsModule,
 		JwtModule.forRoot({
-			config: {
-				tokenGetter: jwtTokenGetter,
-				blacklistedRoutes: ['login', 'api/auth', 'api/auth/logout', 'api/auth/refresh']
+			// config: {
+			// 	tokenGetter: jwtTokenGetter,
+			// 	blacklistedRoutes: ['login', 'api/auth', 'api/auth/logout', 'api/auth/refresh']
+			// },
+			jwtOptionsProvider: {
+				provide: JWT_OPTIONS,
+				useFactory: jwtOptionsFactory,
+				deps: [AuthService]
 			}
 		}),
 		NgbModule,
@@ -139,6 +145,7 @@ import { HasPermissionDirective } from './permission.directive';
 	],
 	providers: [
 		UtilitiesService,
+		CookieService,
 		AuthService,
 		JwtInterceptor, // Providing JwtInterceptor allow to inject JwtInterceptor manually into RefreshTokenInterceptor
 		{
