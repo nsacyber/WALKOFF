@@ -11,7 +11,6 @@ from api_gateway.serverdb.buckets import BucketTrigger as Trigger
 
 
 @jwt_required
-@admin_required
 def read_all_triggers(bucket_id):
     b = Bucket.query.filter_by(id=bucket_id).first()
     if b:
@@ -20,7 +19,6 @@ def read_all_triggers(bucket_id):
         return [], HTTPStatus.NOT_FOUND
 
 @jwt_required
-@admin_required
 def create_trigger(bucket_id):
     json_data = request.get_json()
     b = Bucket.query.filter_by(id=bucket_id).first()
@@ -38,7 +36,6 @@ def create_trigger(bucket_id):
         return [], HTTPStatus.NOT_FOUND
 
 @jwt_required
-@admin_required
 def read_trigger(bucket_id, trigger_id):
     t = Trigger.query.filter_by(id=trigger_id, bucket_id=bucket_id).first()
     if t:
@@ -49,7 +46,6 @@ def read_trigger(bucket_id, trigger_id):
 
 
 @jwt_required
-@admin_required
 def update_trigger(bucket_id, trigger_id):
     json_data = request.get_json()
     t = Trigger.query.filter_by(id=trigger_id, bucket_id=bucket_id).first()
@@ -70,7 +66,6 @@ def update_trigger(bucket_id, trigger_id):
         return [], HTTPStatus.NOT_FOUND
 
 @jwt_required
-@admin_required
 def delete_trigger(bucket_id, trigger_id):
     t = Trigger.query.filter_by(id=trigger_id, bucket_id=bucket_id).first()
     if t:
