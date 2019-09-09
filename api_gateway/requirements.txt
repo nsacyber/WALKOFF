@@ -37,4 +37,4 @@ asteval
 cryptography
 tenacity
 pycrypto
-
+minio
