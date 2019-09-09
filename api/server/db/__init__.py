@@ -64,11 +64,7 @@ class DBEngine(object):
 def get_db(request: Request):
     return request.state.db
 
-print("asdad1")
-
 db = DBEngine()
-print("asdad2")
-
 
 # class BaseSchema(ModelSchema):
 #     """
