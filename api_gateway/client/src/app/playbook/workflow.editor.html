@@ -492,7 +492,7 @@ else:
                     <div class="p-2">
                         <div class="d-flex">
                             <h4 class="mx-2 mb-0">Global Variables</h4>
-                            <button type="button" class="btn btn-sm btn-outline-primary" (click)="addGlobal()">
+                            <button *hasPermission="['editGlobals']" type="button" class="btn btn-sm btn-outline-primary" (click)="addGlobal()">
                                 Create New
                             </button>
                         </div>
@@ -521,7 +521,7 @@ else:
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Description" prop="description" [flexGrow]="3">
                         </ngx-datatable-column>
-                        <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false"
+                        <ngx-datatable-column *hasPermission="['editGlobals']" name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false"
                             [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <button (click)="editGlobal(row)" class="btn btn-primary mx-1" ngbTooltip="Edit"><i

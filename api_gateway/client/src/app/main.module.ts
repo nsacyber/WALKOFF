@@ -67,6 +67,7 @@ import { WorkflowEditorComponent } from './playbook/workflow.editor.component';
 import { MetadataModalComponent } from './playbook/metadata.modal.component';
 import { ImportModalComponent } from './playbook/import.modal.component';
 import { ManageAppComponent } from './apps/manage.app.component';
+import { HasPermissionDirective } from './permission.directive';
 
 @NgModule({
 	imports: [
@@ -133,6 +134,8 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		ManageReportsComponent,
 		SafeEmbedPipe,
 		WidgetModalComponent,
+		// Directives
+		HasPermissionDirective
 	],
 	providers: [
 		UtilitiesService,

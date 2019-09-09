@@ -13,7 +13,7 @@
         <nav aria-label="breadcrumb">
             <ol id="playbookBreadcrumbs" class="breadcrumb">
                 <li class="breadcrumb-item">Workflows</li>
-                <li class="breadcrumb-item d-flex align-items-center">
+                <li *hasPermission="['editWorkflows']" class="breadcrumb-item d-flex align-items-center">
                     <a routerLink="" (click)="createWorkflow()">Create New</a>
                     <button (click)="importWorkflow()" class="ml-3 btn btn-sm btn-outline-primary">Import Workflow</button>
                 </li>
@@ -28,7 +28,7 @@
 
         <div *ngFor="let w of filteredWorkflows" class="col-md-6 col-lg-4 col-xl-3 my-4">
             <div class="card workflow-card shadow">
-                <div ngbDropdown placement="bottom-right" class="d-inline-block workflow-menu mt-3">
+                <div *hasPermission="['editWorkflows']" ngbDropdown placement="bottom-right" class="d-inline-block workflow-menu mt-3">
                     <a class="workflow-menu-link text-muted h2 px-3" ngbDropdownToggle><i
                             class="fa fa-ellipsis-v"></i></a>
                     <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
@@ -49,10 +49,10 @@
                     </h5>
 
                     <p class="card-text flex-grow-1">{{ w.description }}</p>
-                    <div class="d-flex justify-content-around">
-                        <button class="btn btn-outline-primary mr-1" (click)="routeToWorkflow(w)"><i
+                    <div *hasPermission="['executeWorkflows', 'editWorkflows']" class="d-flex justify-content-around">
+                        <button *hasPermission="['editWorkflows']" class="btn btn-outline-primary mr-1" (click)="routeToWorkflow(w)"><i
                                 class="fa fa-sitemap"></i> Workflow Editor</button>
-                        <button class="btn btn-outline-primary" (click)="executeWorkflow(w)" [disabled]="!w.is_valid"><i
+                        <button *hasPermission="['executeWorkflows']" class="btn btn-outline-primary" (click)="executeWorkflow(w)" [disabled]="!w.is_valid"><i
                                 class="fa fa-play-circle"></i> Execute Workflow</button>
                     </div>
                 </div>
