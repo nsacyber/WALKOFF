@@ -1,10 +1,12 @@
 import os
+from common.config import config, static
 from minio import Minio
 from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
                          BucketAlreadyExists, InvalidBucketError, NoSuchBucket)
 
 from api_gateway.extensions import db
 from sqlalchemy import orm
+
 
 class Bucket(db.Model):
     __tablename__ = 'bucket'
@@ -17,29 +19,13 @@ class Bucket(db.Model):
         self.name = name
         self.description = description
 
-        #MINIO CONFIG
-        # self.minio_address = os.getenv("MINIO_ADDRESS")
-        self.minio_address = "minio:9000"
-        self.minio_access_key = "test"
-        self.minio_secret_key = "secretkey"
-        self.minio_secure = False
-        self.minio_region = None
-
         if triggers is not None:
             for t in set(triggers):
                 self.triggers.append(BucketTrigger(**t))
 
-    @orm.reconstructor
-    def init_on_load(self):
-        self.minio_address = "minio:9000"
-        self.minio_access_key = "test"
-        self.minio_secret_key = "secretkey"
-        self.minio_secure = False
-        self.minio_region = None
-
     def create_bucket_in_minio(self, name):
-        mc = Minio(self.minio_address, access_key=self.minio_access_key, secret_key=self.minio_secret_key,
-                   secure=self.minio_secure, region=self.minio_region)
+        mc = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                   secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         if not mc.bucket_exists(name):
             try:
                 mc.make_bucket(name)
@@ -54,8 +40,8 @@ class Bucket(db.Model):
                 return False
 
     def remove_bucket_in_minio(self, name):
-        mc = Minio(self.minio_address, access_key=self.minio_access_key, secret_key=self.minio_secret_key,
-                   secure=self.minio_secure, region=self.minio_region)
+        mc = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                   secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         if mc.bucket_exists(name):
             try:
                 mc.remove_bucket(name)
