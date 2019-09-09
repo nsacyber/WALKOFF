@@ -6,11 +6,25 @@ from sqlalchemy import Column, String, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
+from marshmallow_sqlalchemy import ModelSchema
+from pydantic import BaseModel, UUID4
 
-from api_gateway.executiondb import Base, BaseSchema
-from api_gateway.executiondb.action import ActionApiSchema
+from api.server.db import Base
+# from api.server.db.action import ActionApiSchema
 
 logger = logging.getLogger(__name__)
+
+
+class AppApiModel(BaseModel):
+    id_: UUID4
+    name: str
+    app_version: str
+    walkoff_version: str
+    description: str = ""
+    contact_info: dict = {}
+    license_info: dict = {}
+    external_docs: dict = {}
+    # actions:  dict = {}
 
 
 class AppApi(Base):
@@ -27,7 +41,7 @@ class AppApi(Base):
     contact_info = Column(JSON, default={})
     license_info = Column(JSON, default={})
     external_docs = Column(JSON, default={})
-    actions = relationship('ActionApi', backref='app_api', cascade="all, delete-orphan", passive_deletes=True)
+    # actions = relationship('ActionApi', backref='app_api', cascade="all, delete-orphan", passive_deletes=True)
 
     def __init__(self, **kwargs):
         super(AppApi, self).__init__(**kwargs)
@@ -39,11 +53,11 @@ class AppApi(Base):
         pass
 
 
-class AppApiSchema(BaseSchema):
+class AppApiSchema(ModelSchema):
     """
     Schema for App API
     """
-    actions = fields.Nested(ActionApiSchema, many=True)
+    # actions = fields.Nested(ActionApiSchema, many=True)
 
     class Meta:
         model = AppApi

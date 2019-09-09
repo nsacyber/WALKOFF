@@ -316,16 +316,6 @@ def read_and_indent(filename, indent):
         return [f'{indent}{line}' for line in file_open]
 
 
-def validate_uuid(id_, stringify=False):
-    try:
-        uuid_ = id_
-        if not isinstance(uuid_, UUID):
-            uuid_ = UUID(str(uuid_))
-        return uuid_ if not stringify else id_
-    except (ValueError, TypeError):
-        return None
-
-
 def compose_api(static):
     with open(os.path.join(static.API_PATH, 'api.yaml'), 'r') as api_yaml:
         final_yaml = []

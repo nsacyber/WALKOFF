@@ -1,5 +1,6 @@
 import logging
 import json
+from uuid import UUID
 
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -149,3 +150,13 @@ def fernet_decrypt(key, string):
         r = s
 
     return r
+
+
+def validate_uuid(id_, stringify=False):
+    try:
+        uuid_ = id_
+        if not isinstance(uuid_, UUID):
+            uuid_ = UUID(str(uuid_))
+        return uuid_ if not stringify else id_
+    except (ValueError, TypeError):
+        return None
