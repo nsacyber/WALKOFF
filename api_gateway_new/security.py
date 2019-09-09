@@ -27,20 +27,6 @@ app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
-def create_access_token(*, data: dict, expires_delta: timedelta = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, FastApiConfig.SECRET_KEY,
-                             algorithm=FastApiConfig.ALGORITHM)
-    return encoded_jwt
-
-def decode_token(to_decode):
-    decoded_jtw = jwt.encode(to_encode, FastApiConfig.SECRET_KEY,
-                             algorithm=FastApiConfig.ALGORITHM)
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):

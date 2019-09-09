@@ -36,7 +36,6 @@ def _authenticate_and_grant_tokens(json_in, with_refresh=False):
             response['refresh_token'] = create_refresh_token(identity=user.id)
         return response, HTTPStatus.CREATED
     else:
-
         return invalid_username_password_problem
 
 
