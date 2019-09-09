@@ -2,7 +2,6 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required
 
 from api_gateway.extensions import db
-from api_gateway.security import admin_required
 
 from api_gateway.server.problem import Problem
 from http import HTTPStatus
@@ -10,7 +9,6 @@ from api_gateway.serverdb.buckets import Bucket
 
 
 @jwt_required
-@admin_required
 def read_all_buckets():
     page = request.args.get('page', 1, type=int)
 
@@ -18,7 +16,6 @@ def read_all_buckets():
 
 
 @jwt_required
-@admin_required
 def create_bucket():
     json_data = request.get_json()
     if not Bucket.query.filter_by(name=json_data['name']).first():
@@ -53,7 +50,6 @@ def _create_trigger(json_data):
 
 
 @jwt_required
-@admin_required
 def read_bucket(bucket_id):
     q = Bucket.query.filter_by(id=bucket_id).first()
     if q:
@@ -63,7 +59,6 @@ def read_bucket(bucket_id):
 
 
 @jwt_required
-@admin_required
 def update_bucket(bucket_id):
     json_data = request.get_json()
     b = Bucket.query.filter_by(id=bucket_id).first()
@@ -85,7 +80,6 @@ def update_bucket(bucket_id):
         return [], HTTPStatus.NOT_FOUND
 
 @jwt_required
-@admin_required
 def delete_bucket(bucket_id):
     b = Bucket.query.filter_by(id=bucket_id).first()
     if b:
