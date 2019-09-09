@@ -26,11 +26,11 @@ services:
     configs:
       - common_env.yml
 
-  core_api_gateway:
-    image: "127.0.0.1:5000/api_gateway:latest"
+  core_api:
+    image: "127.0.0.1:5000/api:latest"
     build:
       context: ./
-      dockerfile: ./api_gateway/Dockerfile
+      dockerfile: ./api/Dockerfile
     networks:
       - walkoff_default
 #    stop_signal: SIGINT
@@ -45,7 +45,7 @@ services:
       - resource_redis
       - resource_postgres
     volumes:
-      - ./api_gateway/client/dist:/app/api_gateway/client/dist
+      - ./api/client/dist:/app/api/client/dist
 
   resource_nginx:
     image: 'bitnami/nginx:latest'
