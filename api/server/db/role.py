@@ -1,10 +1,42 @@
 from pydantic import BaseModel, UUID4
 from sqlalchemy import Column, String, JSON, Integer, DateTime
 from sqlalchemy.orm import relationship, backref, Session
+from typing import List
 
 from api.server.db.mixins import TrackModificationsMixIn
 from api.server.db.resource import Resource
 from api.server.db import Base
+
+
+class AddRole(BaseModel):
+    name: str
+    description: str = None
+    resources: List = None
+
+
+class AddResource(BaseModel):
+    name: str
+    permissions: List = None
+
+
+class Role(BaseModel):
+    id: int
+    name: str = None
+    description: str = None
+    resources: List = None
+
+
+class Resource(BaseModel):
+    id: int = None
+    name: str = None
+    needed_ids: List[str] = None
+    permissions: List[str] = None
+
+
+class AvailableResourceAction(BaseModel):
+    name: str = None
+    actions: List[str] = None
+    app_name: str = None
 
 
 class Role(Base, TrackModificationsMixIn):
