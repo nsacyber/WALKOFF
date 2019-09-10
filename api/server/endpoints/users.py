@@ -5,10 +5,9 @@ from http import HTTPStatus
 from api_gateway.serverdb import add_user
 from api_gateway.serverdb.user import User
 from api.server.db import get_db
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException
+from api.server.db.user import DisplayUser,EditUser, EditPersonalUser, AddUser
 with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(id=user_id).first())
 with_username = with_resource_factory('user', lambda username: User.query.filter_by(username=username).first())
 import logging
@@ -17,37 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 router = APIRouter()
-
-
-class AddUser(BaseModel):
-    username: str
-    password: str
-    roles: List[object] = None
-    active: bool = None
-    resources_created: List = None
-
-
-class EditUser(BaseModel):
-    id: int
-    username: str = None
-    old_password: str = None
-    password: str = None
-    active: bool = None
-    roles: List[object] = None
-
-
-class EditPersonalUser(BaseModel):
-    old_username: str
-    new_username: str = None
-    old_password: str = None
-    password: str = None
-
-
-class DisplayUser(BaseModel):
-    id: int = None
-    username: str = None
-    active: str = None
-    roles: List[int] = None
 
 
 @router.get("/", response_model=DisplayUser)

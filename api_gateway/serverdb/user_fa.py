@@ -4,18 +4,35 @@ from datetime import datetime
 from passlib.hash import pbkdf2_sha512
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from api_gateway.extensions_fa import Base
+from api.server.db import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, Integer, String, Enum, Boolean, DateTime
 from api_gateway.helpers import utc_as_rfc_datetime
 from api_gateway.serverdb.mixins import TrackModificationsMixIn
 from api_gateway.serverdb.role import Role
+from pydantic import BaseModel, UUID4
+from sqlalchemy.orm import Session
+from api.server.db import get_db
+from fastapi import Depends
+
 
 logger = logging.getLogger(__name__)
 
 user_roles_association = Base.Table('user_roles_association',
                                   Column('role_id', Integer, ForeignKey('role.id')),
                                   Column('user_id', Integer, ForeignKey('user.id')))
+
+
+class UserModel(BaseModel):
+    id: UUID4
+    username: str
+    _password: str
+    active: bool
+    last_login_at: DateTime
+    current_login_at: DateTime
+    last_login_ip: str
+    current_login_ip: str
+    login_count: int
 
 
 class User(Base, TrackModificationsMixIn):
@@ -103,13 +120,13 @@ class User(Base, TrackModificationsMixIn):
         self.current_login_ip = ip_address
         self.login_count += 1
 
-    def logout(self):
+    def logout(self, db_session: Session = Depends(get_db)):
         """Tracks login/logout information for the User upon logging out"""
         if self.login_count > 0:
             self.login_count -= 1
         else:
             logger.warning(f"User {self.id} logged out, but login count was already at 0")
-        Base.session.commit()
+        db_session.commit()
 
     def has_role(self, role):
         """Checks if a User has a Role associated with it.
