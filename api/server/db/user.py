@@ -11,8 +11,9 @@ from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as Ma
 from marshmallow_sqlalchemy import ModelSchema
 from pydantic import BaseModel, UUID4
 
+from api.server.utils.helpers import utc_as_rfc_datetime
 from api.server.db import Base
-from api.server.mixins import TrackModificationsMixIn
+from api.server.db.mixins import TrackModificationsMixIn
 
 logger = logging.getLogger(__name__)
 
