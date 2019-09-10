@@ -6,6 +6,7 @@ import semver
 from passlib.hash import pbkdf2_sha512
 from sqlalchemy import Column, String, JSON, Table, Integer, ForeignKey, Boolean, DateTime
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 from marshmallow_sqlalchemy import ModelSchema
