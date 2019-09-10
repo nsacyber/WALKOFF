@@ -38,12 +38,9 @@ export class AuthService {
 	 */
 	logout(): Promise<void> {
 		const headers = { 'Authorization': `Bearer ${ this.getAccessToken() }` };
-
 		return this.http.post('api/auth/logout', { refresh_token: this.getRefreshToken() }, { headers })
 			.toPromise()
-			.then(() => {
-				this.clearTokens();
-			})
+			.then(() => this.clearTokens())
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -161,7 +158,6 @@ export class AuthService {
 	}
 
 	getEventSource(url): Promise<any> {
-		//return Promise.resolve(new AuthEventSource(url, this));
 		return this.getAccessTokenRefreshed().then(authToken => {
 			let eventSource = new EventSourcePolyfill(url, { headers: { 'Authorization': `Bearer ${ authToken }` }})
 			eventSource.onerror = (err: Error) => console.error(err);

@@ -16,8 +16,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { GridsterModule } from 'angular-gridster2';
 import { ChartsModule } from 'ng2-charts';
-
 import { NgJsonEditorModule } from 'ang-jsoneditor'
+import { MomentModule } from 'ngx-moment';
 
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import 'codemirror/mode/meta';
@@ -99,7 +99,8 @@ import { HasPermissionDirective } from './permission.directive';
 		GridsterModule,
 		ChartsModule,
 		CodemirrorModule,
-		NgJsonEditorModule
+		NgJsonEditorModule,
+		MomentModule
 	],
 	declarations: [
 		//Main component

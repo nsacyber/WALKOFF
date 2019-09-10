@@ -101,8 +101,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	consoleLog: ConsoleLog[] = [];
 	executionResultsComponentWidth: number;
 	waitingOnData: boolean = false;
-	nodeStatusStartedRelativeTimes: { [key: string]: string } = {};
-	nodeStatusCompletedRelativeTimes: { [key: string]: string } = {};
 	eventSource: any;
 	consoleEventSource: any;
 	playbookToImport: File;
@@ -152,10 +150,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	ngOnInit(): void {
 		this.initializeCytoscape();
 		this.initialLoad();
-
-		Observable.interval(30000).subscribe(() => {
-			this.recalculateRelativeTimes();
-		});
 
 		/**
 		 * Filter app list by application and action names
@@ -436,12 +430,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					this.toastrService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
 					break;
 			}
-
-			this.recalculateRelativeTimes(matchingNodeStatus);
-			this.calculateLocalizedTimes(matchingNodeStatus);
 		} else {
 			const newNodeStatus = nodeStatusEvent.toNewNodeStatus();
-			this.calculateLocalizedTimes(newNodeStatus);
 			this.nodeStatuses.push(newNodeStatus);
 		}
 		// Induce change detection by slicing array
@@ -1519,43 +1509,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	removeWhitespace(input: string): string {
 		return input.replace(/\s/g, '');
-	}
-
-	/**
-	 * Recalculates the relative times shown for start/end date timestamps (e.g. '5 hours ago').
-	 */
-	recalculateRelativeTimes(specificStatus?: NodeStatus): void {
-		let targetStatuses: NodeStatus[];
-		if (specificStatus) {
-			targetStatuses = [specificStatus];
-		} else {
-			targetStatuses = this.nodeStatuses;
-		}
-		if (!targetStatuses || !targetStatuses.length ) { return; }
-
-		targetStatuses.forEach(nodeStatus => {
-			if (nodeStatus.started_at) {
-				this.nodeStatusStartedRelativeTimes[nodeStatus.execution_id] =
-					this.utils.getRelativeLocalTime(nodeStatus.started_at);
-			}
-			if (nodeStatus.completed_at) {
-				this.nodeStatusCompletedRelativeTimes[nodeStatus.execution_id] =
-					this.utils.getRelativeLocalTime(nodeStatus.completed_at);
-			}
-		});
-	}
-
-	/**
-	 * Adds/updates localized time strings to a status object.
-	 * @param status Action Status to mutate
-	 */
-	calculateLocalizedTimes(status: NodeStatus): void {
-		if (status.started_at) {
-			status.localized_started_at = this.utils.getLocalTime(status.started_at);
-		}
-		if (status.completed_at) {
-			status.localized_completed_at = this.utils.getLocalTime(status.completed_at);
-		}
 	}
 
 	get workflowChanged(): boolean {
