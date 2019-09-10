@@ -1,6 +1,3 @@
-from flask import request, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity
-
 from api_gateway.extensions import db
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory
@@ -15,7 +12,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 def read_all_users():
     page = request.args.get('page', 1, type=int)
@@ -27,7 +23,6 @@ def read_all_users():
     return users, HTTPStatus.OK
 
 
-@jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('users', ['create']))
 def create_user():
     data = request.get_json()
@@ -50,7 +45,6 @@ def create_user():
             f'User with username {username} already exists')
 
 
-@jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 @with_user('read', 'user_id')
 def read_user(user_id):
@@ -61,7 +55,6 @@ def read_user(user_id):
         return user_id.as_json(), HTTPStatus.OK
 
 
-@jwt_required
 @with_username('read', 'username')
 def read_personal_user(username):
     current_id = get_jwt_identity()
@@ -71,14 +64,12 @@ def read_personal_user(username):
         return None, HTTPStatus.FORBIDDEN
 
 
-@jwt_required
 def list_permissions():
     current_id = get_jwt_identity()
     current_user = User.query.filter_by(id=current_id).first()
     return current_user.permission_json(), HTTPStatus.OK
 
 
-@jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
 @with_user('update', 'user_id')
 def update_user(user_id):
@@ -113,7 +104,6 @@ def update_user(user_id):
                 return response
 
 
-@jwt_required
 @with_username('read', 'username')
 def update_personal_user(username):
     data = request.get_json()
@@ -194,7 +184,6 @@ def update_user_fields(data, user):
         return None, HTTPStatus.FORBIDDEN
 
 
-@jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('users', ['delete']))
 @with_user('delete', 'user_id')
 def delete_user(user_id):
