@@ -5,6 +5,9 @@ import { plainToClass } from 'class-transformer';
 
 import { AccessToken } from '../models/accessToken';
 import { UtilitiesService } from '../utilities.service';
+import { CookieService } from 'ngx-cookie-service';
+
+import { environment } from '../../environments/environment';
 
 const REFRESH_TOKEN_NAME = 'refresh_token';
 const ACCESS_TOKEN_NAME = 'access_token';
@@ -16,16 +19,16 @@ export class AuthService {
 
 	jwtHelper = new JwtHelperService();
 
-	constructor(private http: HttpClient, private utils: UtilitiesService) {}
+	constructor(private http: HttpClient, private utils: UtilitiesService, private cookieService: CookieService) {}
 
 	//TODO: not currently used, eventually should be used on the login
-	login(username: string, password: string): Promise<void> {
+	login(username: string, password: string, redirect: boolean = false): Promise<void> {
 		return this.http.post('api/auth', { username, password })
 			.toPromise()
 			.then((tokens: { access_token: string, refresh_token: string }) => {
-				sessionStorage.setItem(ACCESS_TOKEN_NAME, tokens.access_token);
-				sessionStorage.setItem(REFRESH_TOKEN_NAME, tokens.refresh_token);
-				location.href = '/';
+				this.setAccessToken(tokens.access_token);
+				this.setRefreshToken(tokens.refresh_token);
+				if (redirect) location.href = '/';
 			})
 			.catch(this.utils.handleResponseError);
 	}
@@ -36,7 +39,7 @@ export class AuthService {
 	logout(): Promise<void> {
 		const headers = { 'Authorization': `Bearer ${ this.getAccessToken() }` };
 
-		return this.http.post('api/auth/logout', { refresh_token: sessionStorage.getItem(REFRESH_TOKEN_NAME) }, { headers })
+		return this.http.post('api/auth/logout', { refresh_token: this.getRefreshToken() }, { headers })
 			.toPromise()
 			.then(() => {
 				this.clearTokens();
@@ -48,8 +51,14 @@ export class AuthService {
 	 * Clears our JWTs from session storage. Used when logging out.
 	 */
 	clearTokens(): void {
-		sessionStorage.removeItem(ACCESS_TOKEN_NAME);
-		sessionStorage.removeItem(REFRESH_TOKEN_NAME);
+		if (environment.cookies) {
+			this.cookieService.delete(ACCESS_TOKEN_NAME);
+			this.cookieService.delete(REFRESH_TOKEN_NAME);
+		}
+		else {
+			sessionStorage.removeItem(ACCESS_TOKEN_NAME);
+			sessionStorage.removeItem(REFRESH_TOKEN_NAME);
+		}
 	}
 
 	//TODO: figure out how roles are going to be stored
@@ -62,14 +71,30 @@ export class AuthService {
 	 * Grabs the refresh JWT string from session storage.
 	 */
 	getRefreshToken(): string {
-		return sessionStorage.getItem(REFRESH_TOKEN_NAME);
+		return (environment.cookies) ? 
+			this.cookieService.get(REFRESH_TOKEN_NAME) :
+			sessionStorage.getItem(REFRESH_TOKEN_NAME);
+	}
+
+	setRefreshToken(token: string): void {
+		(environment.cookies) ? 
+			this.cookieService.set(REFRESH_TOKEN_NAME, token, undefined, '/'): 
+			sessionStorage.setItem(ACCESS_TOKEN_NAME, token);	
 	}
 
 	/**
 	 * Grabs the access JWT string from session storage.
 	 */
 	getAccessToken(): string {
-		return sessionStorage.getItem(ACCESS_TOKEN_NAME);
+		return (environment.cookies) ? 
+			this.cookieService.get(ACCESS_TOKEN_NAME) :
+			sessionStorage.getItem(ACCESS_TOKEN_NAME);
+	}
+
+	setAccessToken(token: string): void {
+		(environment.cookies) ?
+			this.cookieService.set(ACCESS_TOKEN_NAME, token, undefined, '/') :
+			sessionStorage.setItem(ACCESS_TOKEN_NAME, token);
 	}
 
 	/**
@@ -94,8 +119,7 @@ export class AuthService {
 		if (!this.isAccessTokenExpired()) return Promise.resolve(this.getAccessToken());
 
 		if (this.isRefreshTokenExpired()) {
-			sessionStorage.removeItem('access_token');
-			sessionStorage.removeItem('refresh_token');
+			this.clearTokens();
 			//TODO: figure out a better way of handling this... maybe incorporate login into the main component somehow
 			location.href = 'login';
 			return Promise.reject('Refresh token does not exist or has expired. Please log in again.');
@@ -107,7 +131,7 @@ export class AuthService {
 			.toPromise()
 			.then((res: any) => {
 				const accessToken = res.access_token;
-				sessionStorage.setItem('access_token', accessToken);
+				this.setAccessToken(accessToken);
 				return accessToken;
 			})
 			.catch(this.utils.handleResponseError);

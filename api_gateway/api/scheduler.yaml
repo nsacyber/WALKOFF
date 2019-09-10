@@ -160,3 +160,29 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+  patch:
+    tags:
+      - Scheduler
+    summary: Stop a scheduled task
+    operationId: api_gateway.server.endpoints.scheduler.control_scheduled_task
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ControlScheduledTask'
+    responses:
+      204:
+        description: Success
+      404:
+        description: Scheduled task does not exist
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
+      400:
+        description: Invalid input error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

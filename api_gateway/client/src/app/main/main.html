@@ -15,7 +15,7 @@
           <li class="nav-item">
             <a class="nav-link" routerLink="/execution" routerLinkActive="active"><i class="fa fa-play-circle"></i><span class="navLink">Execution</span></a>
           </li>
-          <li class="nav-item">
+          <li *hasPermission="['editApps']" class="nav-item">
               <a class="nav-link" routerLink="/apps" routerLinkActive="active"><i class="fa fa-cube"></i><span class="navLink">Applications</span></a>
             </li>
           <!-- <li class="nav-item">
@@ -24,7 +24,7 @@
           <!-- <li class="nav-item">
             <a class="nav-link" routerLink="/scheduler" routerLinkActive="active"><i class="fa fa-calendar-o"></i><span class="navLink">Scheduler</span></a>
           </li> -->
-          
+
           <!-- <li class="nav-item">
             <a class="nav-link" routerLink="/messages" routerLinkActive="active"><i class="fa fa-envelope-o"></i><span class="navLink">Messages</span></a>
           </li> -->
@@ -34,7 +34,7 @@
           <!-- <li class="nav-item">
             <a class="nav-link" routerLink="/settings" routerLinkActive="active"><i class="fa fa-store"></i><span class="navLink">Marketplace</span></a>
           </li> -->
-          <li class="nav-item dropdown" routerLinkActive="active">
+          <li *hasPermission="['viewReports', 'editReports']" class="nav-item dropdown" routerLinkActive="active">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <i class="fa fa-area-chart"></i><span class="navLink">Reports</span>
             </a>
@@ -42,24 +42,25 @@
               <a *ngFor="let report of reports" class="dropdown-item installedReport" routerLink="/report/{{report.id}}">
                 <span>{{ report.name }}</span>
               </a>
-              <div *ngIf="reports && reports.length > 0" class="dropdown-divider"></div>
-              <a class="dropdown-item installedReport" routerLink="/report/new">
-                <span><i>Create New Report...</i></span>
-              </a>
+              <ng-container *hasPermission="['editReports']">
+                  <div *ngIf="reports && reports.length > 0" class="dropdown-divider"></div>
+                  <a class="dropdown-item installedReport" routerLink="/report/new">
+                    <span><i>Create New Report...</i></span>
+                  </a>
+              </ng-container>
             </div>
           </li>
 
-          <li class="nav-item dropdown" routerLinkActive="active">
+          <li *hasPermission="['isAdmin', 'editGlobals', 'editSchedule']" class="nav-item dropdown" routerLinkActive="active">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="fa fa-gear"></i><span class="navLink">Settings</span>
               </a>
               <div class="dropdown-menu border-0" aria-labelledby="navbarDropdown">
                 <!-- <a class="dropdown-item installedReport" routerLink="/execution" routerLinkActive="active"><i class="fa fa-play-circle"></i><span class="navLink">Execution Log</span></a> -->
-                <a class="dropdown-item installedReport" routerLink="/settings/users" routerLinkActive="active"><i class="fa fa-users"></i><span class="navLink">Users</span></a>
-                <a class="dropdown-item installedReport" routerLink="/settings/globals" routerLinkActive="active"><i class="fa fa-globe"></i><span class="navLink">Globals</span></a>
-                <a class="dropdown-item installedReport" routerLink="/settings/buckets" routerLinkActive="active"><i class="fa fa-folder"></i><span class="navLink">Buckets</span></a>
-                <a class="dropdown-item installedReport" routerLink="/settings/scheduler" routerLinkActive="active"><i class="fa fa-calendar-o"></i><span class="navLink">Scheduler</span></a>
-                <a class="dropdown-item installedReport" href="/portainer/" target="_blank"><i class="fa fa-sign-out"></i><span class="navLink">Portainer.io</span></a>
+                <a *hasPermission="['isAdmin']" class="dropdown-item installedReport" routerLink="/settings/users" routerLinkActive="active"><i class="fa fa-users"></i><span class="navLink">Users</span></a>
+                <a *hasPermission="['editGlobals']" class="dropdown-item installedReport" routerLink="/settings/globals" routerLinkActive="active"><i class="fa fa-globe"></i><span class="navLink">Globals</span></a>
+                <a *hasPermission="['editSchedule']" class="dropdown-item installedReport" routerLink="/settings/scheduler" routerLinkActive="active"><i class="fa fa-calendar-o"></i><span class="navLink">Scheduler</span></a>
+                <a *hasPermission="['isAdmin']" class="dropdown-item installedReport" href="/portainer/" target="_blank"><i class="fa fa-sign-out"></i><span class="navLink">Portainer.io</span></a>
               </div>
             </li>
           <!-- <li class="nav-item">
@@ -85,7 +86,7 @@
                         <i *ngIf="messageListing.awaiting_response" class="fa fa-exclamation required" title="This message is awaiting response."></i>
                     </td>
                     <td>
-                        <a class="dropdown-item" href="#" (click)="openMessage($event, messageListing)">{{utils.getTruncatedString(messageListing.subject, 25, '(no subject)')}}</a>    
+                        <a class="dropdown-item" href="#" (click)="openMessage($event, messageListing)">{{utils.getTruncatedString(messageListing.subject, 25, '(no subject)')}}</a>
                     </td>
                     <td [title]="utils.getLocalTime(messageListing.created_at)">{{notificationRelativeTimes[messageListing.id]}}</td>
                   </tr>
@@ -104,6 +105,7 @@
             </a>
             <div class="dropdown-menu dropdown-menu-right border-0" aria-labelledby="navbarUserDropdown">
               <!-- <a class="dropdown-item" routerLink="/settings" routerLinkActive="active"><i class="fa fa-gear"></i><span class="navLink">Settings</span></a> -->
+              <a class="dropdown-item installedDashboard" href="#" (click)="editUser()"><i class="fa fa-user"></i><span class="navLink">User Profile</span></a>
               <a class="dropdown-item installedDashboard" routerLink="/logout"><i class="fa fa-sign-out"></i><span class="navLink">Sign Out</span></a>
             </div>
           </li>

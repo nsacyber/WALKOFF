@@ -5,7 +5,7 @@
 			<h1 class="mb-0">
 				{{ report.name }}
 				<div class="float-right d-print-none" data-html2canvas-ignore>
-					<a class="btn btn-primary btn-sm mr-1" [routerLink]="['/report', reportId, 'edit']">Edit</a>
+					<a *hasPermission="['editReports']" class="btn btn-primary btn-sm mr-1" [routerLink]="['/report', reportId, 'edit']">Edit</a>
 					<button class="btn btn-primary btn-sm" (click)="savePDF()">Save as PDF</button>
 				</div>
 			</h1>

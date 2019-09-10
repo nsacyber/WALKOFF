@@ -89,3 +89,8 @@ actions:
     returns:
       schema:
         type: object
+  - name: sample_report_data
+    description: Outputs a string in the correct formatting that reports expects.
+    returns:
+      schema:
+        type: string

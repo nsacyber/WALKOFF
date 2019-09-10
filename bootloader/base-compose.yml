@@ -27,8 +27,8 @@ services:
     image: "redis"
     networks:
       - walkoff_default
-#    ports:
-#      - "6379:6379"
+    ports:
+      - "6379:6379"
     command: redis-server --port 6379
 #    volumes:
 #      - /path/to/persistent/dir/redis:/data
@@ -65,7 +65,7 @@ services:
       placement:
         constraints: [node.role==manager]
     volumes:
-      - ./data/postgres/pg_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     secrets:
       - walkoff_postgres_key
 
@@ -95,3 +95,6 @@ secrets:
 networks:
   walkoff_default:
     external: true
+
+volumes:
+  postgres-data:
