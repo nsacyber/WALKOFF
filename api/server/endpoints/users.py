@@ -1,16 +1,16 @@
+import logging
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory
 from api.server.utils.problem import Problem
 from http import HTTPStatus
 from api_gateway.serverdb import add_user
-from api_gateway.serverdb.user import User
+from api.server.db.user import User
 from api.server.db import get_db
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from api.server.db.user import DisplayUser,EditUser, EditPersonalUser, AddUser
 with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(id=user_id).first())
 with_username = with_resource_factory('user', lambda username: User.query.filter_by(username=username).first())
-import logging
 
 logger = logging.getLogger(__name__)
 
