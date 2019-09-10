@@ -1,10 +1,16 @@
 from pydantic import BaseModel, UUID4
 from sqlalchemy import Column, String, JSON, Integer, DateTime, ForeignKey
-from sqlalchemy.orm import relationship, backref, Session
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import ARRAY
 
 from api.server.db.mixins import TrackModificationsMixIn
 from api.server.db import Base
+
+
+class ResourceModel(BaseModel):
+    id: int
+    name: str
+    role_id: int
 
 
 class Resource(Base, TrackModificationsMixIn):

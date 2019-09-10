@@ -1,43 +1,52 @@
-from api_gateway.extensions import db
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.decorators import with_resource_factory
-from api_gateway.server.problem import Problem
+from api.server.utils.problem import Problem
 from http import HTTPStatus
 from api_gateway.serverdb import add_user
 from api_gateway.serverdb.user import User
-
+from api.server.db import get_db
+from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException
+from api.server.db.user import DisplayUser,EditUser, EditPersonalUser, AddUser
 with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(id=user_id).first())
 with_username = with_resource_factory('user', lambda username: User.query.filter_by(username=username).first())
 import logging
+
 logger = logging.getLogger(__name__)
 
 
+router = APIRouter()
+
+
+@router.get("/", response_model=DisplayUser)
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
-def read_all_users():
-    page = request.args.get('page', 1, type=int)
+def read_all_users(page: int = 1, db_session: Session = Depends(get_db)):
+    # page = request.args.get('page', 1, type=int)
     users = []
-    for user in User.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items:
+    for user in User.query.paginate(page, db_session.config['ITEMS_PER_PAGE'], False).items:
         # check for internal user
         if user.id != 1:
             users.append(user.as_json())
-    return users, HTTPStatus.OK
+    return users
 
 
+@router.post("/", response_model=DisplayUser, status_code=201)
 @permissions_accepted_for_resources(ResourcePermissions('users', ['create']))
-def create_user():
-    data = request.get_json()
-    username = data['username']
+def create_user(request: AddUser, db_session: Session = Depends(get_db)):
+    data = await request.json()
+    username = request.username
     if not User.query.filter_by(username=username).first():
-        user = add_user(username=username, password=data['password'])
+        user = add_user(username=username, password=request.password)
 
+        # if request.roles or request.active
         if 'roles' in data or 'active' in data:
-            role_update_user_fields(data, user)
+            role_update_user_fields(data, user, db_session)
 
-        db.session.commit()
-        current_app.logger.info(f'User added: {user.as_json()}')
-        return user.as_json(), HTTPStatus.CREATED
+        db_session.commit()
+        logger.info(f'User added: {user.as_json()}')
+        return user.as_json()
     else:
-        current_app.logger.warning(f'Cannot create user {username}. User already exists.')
+        logger.warning(f'Cannot create user {username}. User already exists.')
         return Problem.from_crud_resource(
             HTTPStatus.BAD_REQUEST,
             'user',
@@ -47,32 +56,36 @@ def create_user():
 
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 @with_user('read', 'user_id')
-def read_user(user_id):
+@router.get("/{user_id}", response_model=DisplayUser)
+def read_user(user_id: int):
     # check for internal user
     if user_id.id == 1:
         return None, HTTPStatus.FORBIDDEN
     else:
-        return user_id.as_json(), HTTPStatus.OK
+        return user_id.as_json()
 
 
 @with_username('read', 'username')
-def read_personal_user(username):
+@router.get("/personal_data/{username}", response_model=DisplayUser)
+def read_personal_user(username: str):
     current_id = get_jwt_identity()
     if current_id == username.id:
-        return username.as_json(), HTTPStatus.OK
+        return username.as_json()
     else:
         return None, HTTPStatus.FORBIDDEN
 
 
+@router.get("/permissions", response_model=DisplayUser)
 def list_permissions():
     current_id = get_jwt_identity()
     current_user = User.query.filter_by(id=current_id).first()
-    return current_user.permission_json(), HTTPStatus.OK
+    return current_user.permission_json()
 
 
 @permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
 @with_user('update', 'user_id')
-def update_user(user_id):
+@router.put("/{user_id}", response_model=DisplayUser)
+def update_user(user_id: int, request: EditUser, db_session: Session = Depends(get_db)):
     data = request.get_json()
     current_user = get_jwt_identity()
 
@@ -85,16 +98,16 @@ def update_user(user_id):
         if user_id.id == 2:
             user_id.set_roles([2])
             user_id.active = True
-            return update_user_fields(data, user_id)
-        return role_update_user_fields(data, user_id, update=True)
+            return update_user_fields(data, user_id, db_session)
+        return role_update_user_fields(data, user_id, db_session, update=True)
     else:
         # check for super_admin
         if user_id.id == 2:
             return None, HTTPStatus.FORBIDDEN
         else:
-            response = role_update_user_fields(data, user_id, update=True)
+            response = role_update_user_fields(data, user_id, db_session, update=True)
             if isinstance(response, tuple) and response[1] == HTTPStatus.FORBIDDEN:
-                current_app.logger.error(f"User {current_user} does not have permission to update user {user_id.id}")
+                logger.error(f"User {current_user} does not have permission to update user {user_id.id}")
                 return Problem.from_crud_resource(
                     HTTPStatus.FORBIDDEN,
                     'user',
@@ -105,8 +118,9 @@ def update_user(user_id):
 
 
 @with_username('read', 'username')
-def update_personal_user(username):
-    data = request.get_json()
+@router.put("/personal_data/{username}", response_model=DisplayUser)
+def update_personal_user(username: str, request: EditPersonalUser, db_session: Session = Depends(get_db)):
+    data = await request.json()
     current_user = get_jwt_identity()
 
     # check for internal user
@@ -118,15 +132,15 @@ def update_personal_user(username):
             f"Current user does not have permission to update user {username.id}.")
 
     # check password
-    if username.verify_password(data['old_password']):
+    if username.verify_password(request.old_password):
         if username.id == current_user:
             # allow ability to update username/password but not roles/active
             if username.id == 2:
                 username.set_roles([2])
                 username.active = True
-                return update_user_fields(data, username)
+                return update_user_fields(data, username, db_session)
             else:
-                return update_user_fields(data, username)
+                return update_user_fields(data, username, db_session)
         else:
             return Problem.from_crud_resource(
                 HTTPStatus.FORBIDDEN,
@@ -138,17 +152,17 @@ def update_personal_user(username):
 
 
 @permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
-def role_update_user_fields(data, user, update=False):
+def role_update_user_fields(data, user, db_session, update=False):
     # ensures inability to update roles for super_admin
     if 'roles' in data and user.id != 2:
         user.set_roles([role['id'] for role in data['roles']])
     if 'active' in data and user.id != 2:
         user.active = data['active']
     if update:
-        return update_user_fields(data, user)
+        return update_user_fields(data, user, db_session)
 
 
-def update_user_fields(data, user):
+def update_user_fields(data, user, db_session):
     if user.id != 1:
         original_username = str(user.username)
         if 'username' in data and data['username']:
@@ -177,8 +191,8 @@ def update_user_fields(data, user):
                     'user',
                     'update',
                     'Current password is incorrect.')
-        db.session.commit()
-        current_app.logger.info(f"Updated user {user.id}. Updated to: {user.as_json()}")
+        db_session.commit()
+        logger.info(f"Updated user {user.id}. Updated to: {user.as_json()}")
         return user.as_json(), HTTPStatus.OK
     else:
         return None, HTTPStatus.FORBIDDEN
@@ -186,24 +200,25 @@ def update_user_fields(data, user):
 
 @permissions_accepted_for_resources(ResourcePermissions('users', ['delete']))
 @with_user('delete', 'user_id')
-def delete_user(user_id):
+@router.delete("/{user_id}", response_model=DisplayUser)
+def delete_user(user_id: int, db_session: Session = Depends(get_db)):
     if user_id.id != get_jwt_identity() and user_id.id != 1 and user_id.id != 2:
-        db.session.delete(user_id)
-        db.session.commit()
-        current_app.logger.info(f"User {user_id.username} deleted")
+        db_session.delete(user_id)
+        db_session.commit()
+        logger.info(f"User {user_id.username} deleted")
         return None, HTTPStatus.NO_CONTENT
     else:
         if user_id.id == get_jwt_identity():
-            current_app.logger.error(f"Could not delete user {user_id.id}. User is current user.")
+            logger.error(f"Could not delete user {user_id.id}. User is current user.")
             return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
                                               'Current user cannot delete self.')
         if user_id.id == 2:
-            current_app.logger.error(f"Could not delete user {user_id.username}. "
+            logger.error(f"Could not delete user {user_id.username}. "
                                      f"You do not have permission to delete Super Admin.")
             return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
                                               'A user cannot delete Super Admin.')
         if user_id.id == 1:
-            current_app.logger.error(f"Could not delete user {user_id.username}. "
+            logger.error(f"Could not delete user {user_id.username}. "
                                      f"You do not have permission to delete WALKOFF's internal user.")
             return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
                                               "A user cannot delete WALKOFF's internal user.")

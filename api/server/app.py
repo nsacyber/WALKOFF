@@ -59,6 +59,11 @@ _app.include_router(appapi.router,
                     dependencies=[Depends(get_db)])
 
 _app.include_router(appapi.router,
+                    prefix="/users",
+                    tags=["users"],
+                    dependencies=[Depends(get_db)])
+
+_app.include_router(appapi.router,
                     prefix="/apps",
                     tags=["apps"],
                     dependencies=[Depends(get_db)])
