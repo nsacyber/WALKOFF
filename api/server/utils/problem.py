@@ -1,11 +1,14 @@
 import json
+import logging
 
-from flask import Response, current_app
+from starlette.responses import JSONResponse
 
 from http import HTTPStatus
 
+logger = logging.getLogger("API")
 
-class Problem(Response):
+
+class Problem(JSONResponse):
     """Returns a Problem Details object complying with RFC 7807
     .. https://tools.ietf.org/html/rfc7807
 
@@ -22,12 +25,10 @@ class Problem(Response):
         headers (dict, optional): Headers to use for this response
 
     """
-    default_mimetype = "application/problem+json"
-    default_status = 400
 
     def __init__(self, status, title, detail, instance=None, type_=None, ext=None, headers=None):
         response = Problem.make_response_body(status, title, detail, instance, type_, ext)
-        Response.__init__(self, response=response, status=status, headers=headers, mimetype=self.default_mimetype)
+        JSONResponse.__init__(self, content=response, status_code=status, headers=headers)
 
     @staticmethod
     def make_response_body(status, title, detail, instance=None, type_=None, ext=None):
@@ -50,29 +51,29 @@ class Problem(Response):
 
 def unique_constraint_problem(resource, operation, id_):
     detail = f"Could not {operation} {resource} {id_}, possibly because of invalid or non-unique IDs"
-    current_app.logger.error(detail)
+    logger.error(detail)
     return Problem.from_crud_resource(HTTPStatus.BAD_REQUEST, resource, operation, detail)
 
 
 def improper_json_problem(resource, operation, id_, errors=None):
     detail = f"Could not {operation} {resource} {id_}. Invalid JSON"
-    current_app.logger.error(f"{detail}. Details: {errors}")
+    logger.error(f"{detail}. Details: {errors}")
     return Problem.from_crud_resource(HTTPStatus.BAD_REQUEST, resource, operation, detail, ext={"errors": errors})
 
 
 def invalid_input_problem(resource, operation, id_, errors=None):
     detail = f"Could not {operation} {resource} {id_}. Invalid input"
-    current_app.logger.error(f"{detail}. Details: {errors}")
+    logger.error(f"{detail}. Details: {errors}")
     return Problem.from_crud_resource(HTTPStatus.BAD_REQUEST, resource, operation, detail, ext={"errors": errors})
 
 
 def invalid_id_problem(resource, operation, id_):
     detail = f"Could not {operation} {resource}. {id_} is an invalid ID"
-    current_app.logger.error(detail)
+    logger.error(detail)
     return Problem.from_crud_resource(HTTPStatus.BAD_REQUEST, resource, operation, detail)
 
 
 def dne_problem(resource, operation, id_, errors=None):
     detail = f"Could not {operation} {resource} {id_}. {resource.title()} does not exist"
-    current_app.logger.error(f"{detail}. Details: {errors}")
+    logger.error(f"{detail}. Details: {errors}")
     return Problem.from_crud_resource(HTTPStatus.NOT_FOUND, resource, operation, detail, ext=errors)

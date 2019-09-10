@@ -1,25 +1,43 @@
 import logging
 
 from fastapi import FastAPI, Depends
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
-from api.server.endpoints import example
+from api.server.endpoints import appapi
+from api.server.db import DBEngine, get_db
 
 from common.config import config, static
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 async def run_before_everything():
     return "use this as a dependency to make it run before every request"
 
 _app = FastAPI()
+_db_manager = DBEngine()
+
+
+@_app.middleware("http")
+async def db_session_middleware(request: Request, call_next):
+    try:
+        request.state.db = _db_manager.session_maker()
+        request.state.logger = logger
+        response = await call_next(request)
+    # except Exception as e:
+    #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
+    finally:
+        request.state.db.close()
+
+    return response
+
 
 # Include routers here
-_app.include_router()
-_app.include_router(example.router,
-                    prefix="/example",
-                    tags=["example"],
-                    dependencies=[Depends(run_before_everything)])
+_app.include_router(appapi.router,
+                    prefix="/apps",
+                    tags=["apps"],
+                    dependencies=[Depends(get_db)])
 
 
 app = _app
@@ -45,3 +63,6 @@ app = _app
 #     response.headers["X-Accel-Buffering"] = "no"
 #     return response
 #
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
