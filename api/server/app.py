@@ -35,6 +35,11 @@ async def db_session_middleware(request: Request, call_next):
 
 # Include routers here
 _app.include_router(appapi.router,
+                    prefix="/globals",
+                    tags=["globals"],
+                    dependencies=[Depends(get_db)])
+
+_app.include_router(appapi.router,
                     prefix="/apps",
                     tags=["apps"],
                     dependencies=[Depends(get_db)])
