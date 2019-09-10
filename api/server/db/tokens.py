@@ -2,6 +2,9 @@ from datetime import datetime
 
 from pydantic import BaseModel, UUID4
 from sqlalchemy import Column, String, JSON, Integer, DateTime
+
+from api.fastapi_config import FastApiConfig
+from sqlalchemy.orm import Session
 from api.server.db import Base
 from api import fastapi_config
 
@@ -12,8 +15,8 @@ class AuthModel(BaseModel):
 
 
 class TokenModel(BaseModel):
-    username: str
-    password: str
+    refresh_token: str
+    access_token: str
 
 
 class BlacklistedToken(Base):
@@ -36,15 +39,16 @@ class BlacklistedToken(Base):
         }
 
 
-def revoke_token(db_session, decoded_token):
+def revoke_token(db_session: Session, decoded_token):
     """Adds a new token to the database. It is not revoked when it is added
 
     Args:
         decoded_token (dict): The decoded token
+        :param decoded_token:
         :param db_session:
     """
     jti = decoded_token['jti']
-    user_identity = decoded_token[fastapi_config.JWT_IDENTITY_CLAIM]
+    user_identity = decoded_token[FastApiConfig.JWT_IDENTITY_CLAIM]
     expires = datetime.fromtimestamp(decoded_token['exp'])
 
     db_token = BlacklistedToken(
@@ -53,7 +57,7 @@ def revoke_token(db_session, decoded_token):
         expires=expires
     )
     db_session.add(db_token)
-    prune_if_necessary()
+    prune_if_necessary(db_session)
     db_session.commit()
 
 
@@ -71,12 +75,15 @@ def is_token_revoked(decoded_token):
     return token is not None
 
 
-def approve_token(db_session, token_id, user):
+def approve_token(db_session: Session, token_id, user):
     """Approves the given token
 
     Args:
         token_id (int): The ID of the token
         user (User): The User
+        :param user:
+        :param token_id:
+        :param db_session:
     """
     token = BlacklistedToken.query.filter_by(id=token_id, user_identity=user).first()
     if token is not None:
@@ -85,7 +92,7 @@ def approve_token(db_session, token_id, user):
         db_session.commit()
 
 
-def prune_if_necessary():
+def prune_if_necessary(db_session : Session):
     """Prunes the database if necessary"""
     return True
     # TODO:
@@ -94,7 +101,7 @@ def prune_if_necessary():
     #     prune_database()
 
 
-def prune_database(db_session):
+def prune_database(db_session: Session):
     """Delete tokens that have expired from the database"""
     now = datetime.now()
     expired = BlacklistedToken.query.filter(BlacklistedToken.expires < now).all()

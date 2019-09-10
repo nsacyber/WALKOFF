@@ -8,6 +8,8 @@ from http import HTTPStatus
 import json
 
 import jwt
+from sqlalchemy.orm import Session
+from starlette.requests import Request
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt import PyJWTError
@@ -15,28 +17,14 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 from api.fastapi_config import FastApiConfig
 #from api_gateway.serverdb import User
-# from api_gateway.serverdb.tokens import is_token_revoked
-# import api_gateway
-from api_gateway.serverdb.tokens import is_token_revoked
+from api.server.db.tokens import is_token_revoked
+from api.server.db.user import User
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
-"""
-JWT DECORATORS
-"""
 
-
-def jwt_refresh_token_required(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        verify_jwt_refresh_token_in_request(kwargs['refresh_token'])
-        return fn(*args, **kwargs)
-
-    return wrapper
-
-
-def verify_jwt_refresh_token_in_request(request):
+def verify_jwt_refresh_token_in_request(request: Request):
     decoded_token = get_raw_jwt(request)
 
     verify_token_in_decoded(decoded_token, request_type='refresh')
@@ -44,20 +32,20 @@ def verify_jwt_refresh_token_in_request(request):
     return True
 
 
-def verify_token_in_decoded(decoded_token, request_type):
+def verify_token_in_decoded(decoded_token: dict, request_type: str):
     if decoded_token['type'] != request_type:
         raise jwt.exceptions.InvalidTokenError('Only {} tokens are allowed'.format(request_type))
 
 
-def verify_token_not_blacklisted(decoded_token, request_type):
+def verify_token_not_blacklisted(decoded_token: dict, request_type: str):
     if not FastApiConfig.JWT_BLACKLIST_ENABLED:
         return
     if request_type == 'access':
         if is_token_blacklisted(decoded_token):
-            raise RevokedTokenError('Token has been revoked')
+            raise jwt.exceptions.InvalidTokenError('Token has been revoked')
     if request_type == 'refresh':
         if is_token_blacklisted(decoded_token):
-            raise RevokedTokenError('Token has been revoked')
+            raise jwt.exceptions.InvalidTokenError('Token has been revoked')
 
 
 def token_is_revoked_loader():
@@ -72,19 +60,14 @@ def expired_token_callback():
     return {'error': 'Token expired'}, HTTPStatus.UNAUTHORIZED
 
 
-
-"""
-JWT FUNCS
-"""
-
-
-def create_access_token(identity, fresh=False, expires_delta: timedelta = None, user_claims=None):
+def create_access_token(identity: int, db_session: Session, fresh=False, expires_delta: timedelta = None, user_claims=None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
+        # defaults to 15 minutes
         expire = datetime.utcnow() + timedelta(minutes=FastApiConfig.JWT_ACCESS_TOKEN_EXPIRES)
     if user_claims is None:
-        user_claims = add_claims_to_access_token(identity)
+        user_claims = add_claims_to_access_token(db_session, identity)
     to_encode = {"jti": str(uuid.uuid4()),
                  "exp": expire,
                  "identity": identity,
@@ -96,7 +79,7 @@ def create_access_token(identity, fresh=False, expires_delta: timedelta = None, 
     return encoded_jwt
 
 
-def create_refresh_token(identity, expires_delta: timedelta = None):
+def create_refresh_token(identity: int, expires_delta: timedelta = None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
@@ -117,25 +100,23 @@ def decode_token(to_decode):
     return decoded_jtw
 
 
-def get_raw_jwt(request):
+def get_raw_jwt(request: Request):
     auth_header = request.headers['Authorization']
     jwt_token = auth_header[7:]
     return decode_token(jwt_token)
 
 
-def get_jwt_identity(request):
+def get_jwt_identity(request: Request):
     return get_raw_jwt(request).get("identity", "")
 
 
-def get_jwt_claims(request):
+def get_jwt_claims(request: Request):
     return get_raw_jwt(request).get("user_claims", "")
 
 
-def add_claims_to_access_token(user_id):
-    #user = User.query.filter(User.id == user_id).first()
-    user = {"roles": ["admin"], "username": "admin"}
-    return user
-    #return {'roles': [role.id for role in user.roles], 'username': user.username} if user is not None else {}
+def add_claims_to_access_token(db_session: Session, user_id):
+    user = db_session.query(User).filter(User.id == user_id).first()
+    return {'roles': [role.id for role in user.roles], 'username': user.username} if user is not None else {}
 
 
 
