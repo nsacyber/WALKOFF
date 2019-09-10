@@ -39,6 +39,8 @@ services:
       - walkoff_encryption_key
       - walkoff_internal_key
       - walkoff_postgres_key
+      - walkoff_minio_access_key
+      - walkoff_minio_secret_key
     configs:
       - common_env.yml
     depends_on:
