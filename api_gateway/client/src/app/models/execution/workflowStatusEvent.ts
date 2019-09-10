@@ -12,6 +12,8 @@ export class WorkflowStatusEvent {
 
 	app_name: string;
 
+	action_name: string;
+
 	label: string;
 
 	user: string;
@@ -30,9 +32,10 @@ export class WorkflowStatusEvent {
 
 		out.execution_id = this.execution_id;
 		out.workflow_id = this.workflow_id;
-		out.name = this.name;
+		out.action_name = this.action_name;
 		out.app_name = this.app_name;
 		out.user = this.user;
+		out.name = this.name;
 		out.label = this.label
 		out.status = this.status;
 		out.node_status = this.node_status;

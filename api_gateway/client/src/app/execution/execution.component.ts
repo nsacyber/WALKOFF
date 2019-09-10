@@ -184,7 +184,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		const workflowStatusEvent = plainToClass(WorkflowStatusEvent, (JSON.parse(message.data) as object));
 		const matchingWorkflowStatus = this.workflowStatuses.find(ws => ws.execution_id === workflowStatusEvent.execution_id);
 
-		console.table(workflowStatusEvent);
+		console.log(workflowStatusEvent);
 
 		if (matchingWorkflowStatus) {
 			matchingWorkflowStatus.status = workflowStatusEvent.status;
@@ -199,7 +199,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 					}
 					matchingWorkflowStatus.user = workflowStatusEvent.user;
 					matchingWorkflowStatus.app_name = workflowStatusEvent.app_name;
-					matchingWorkflowStatus.name = workflowStatusEvent.name;
+					matchingWorkflowStatus.action_name = workflowStatusEvent.action_name;
 					matchingWorkflowStatus.label = workflowStatusEvent.label;
 					matchingWorkflowStatus.node_status = workflowStatusEvent.node_status;
 					break;

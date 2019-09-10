@@ -39,7 +39,7 @@
 					ngbTooltip="View Action Results">{{row.name}}</a>
 			</ng-template>
 		</ngx-datatable-column>
-		<ngx-datatable-column name="ID" prop="execution_id" [flexGrow]="2"></ngx-datatable-column>
+		<ngx-datatable-column name="ID" prop="execution_id" [flexGrow]="3"></ngx-datatable-column>
 		<ngx-datatable-column name="User" prop="user" [flexGrow]="1"></ngx-datatable-column>
 		<ngx-datatable-column name="Started At" prop="started_at" [comparator]="dateComparator" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
@@ -56,13 +56,13 @@
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Status" prop="status" [flexGrow]="1"></ngx-datatable-column>
-		<ngx-datatable-column name="Current App / Action" prop="displayAppAction" [comparator]="appNameComparator" [flexGrow]="1">
+		<ngx-datatable-column name="Current App / Action" prop="displayAppAction" [comparator]="appNameComparator" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				{{ row.displayAppAction }}
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Current Node" prop="displayLabel" [comparator]="actionNameComparator"
-			[flexGrow]="1">
+			[flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				{{ row.displayLabel }}
 			</ng-template>

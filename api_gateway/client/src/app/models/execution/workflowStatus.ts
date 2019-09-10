@@ -30,9 +30,11 @@ export class WorkflowStatus {
 
 	app_name: string;
 
-	name: string;
+	action_name: string;
 
 	label: string;
+
+	name: string;
 
 	/**
 	 * Date when workflow ended.
@@ -53,7 +55,7 @@ export class WorkflowStatus {
 	node_statuses?: NodeStatus[] = [];
 
 	get displayAppAction() : string {
-		return (this.app_name && this.name) ? `${ this.app_name } / ${this.name}` : 'N/A'
+		return (this.app_name && this.action_name) ? `${ this.app_name } / ${this.action_name}` : 'N/A'
 	}
 
 	get displayLabel() : string {
