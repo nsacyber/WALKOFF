@@ -4,11 +4,12 @@ from fastapi import APIRouter, Depends
 from api.security import (jwt_refresh_token_required, create_access_token, create_refresh_token, get_jwt_identity,
                           get_raw_jwt, decode_token)
 from api.fastapi_config import FastApiConfig
-from api_gateway.serverdb.tokens import revoke_token
-from api_gateway.server.problem import Problem
+
 from http import HTTPStatus
+
+from api.server.utils.problem import Problem
 from api_gateway.serverdb import User, db
-from api_gateway.serverdb.tokens import revoke_token
+from api.server.db.tokens import revoke_token
 
 token_problem_title = 'Could not grant access token.'
 invalid_username_password_problem = Problem(

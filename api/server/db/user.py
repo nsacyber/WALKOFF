@@ -1,33 +1,38 @@
-import logging
 from datetime import datetime
+import logging
+from uuid import uuid4
 
+import semver
 from passlib.hash import pbkdf2_sha512
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import Column, String, JSON, Table, Integer, ForeignKey, Boolean, DateTime
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
+from marshmallow_sqlalchemy import ModelSchema
+from pydantic import BaseModel, UUID4
 
-from api_gateway.extensions import db
-from api_gateway.helpers import utc_as_rfc_datetime
-from api_gateway.serverdb.mixins import TrackModificationsMixIn
-from api_gateway.serverdb.role import Role
+from api.server.db import Base
+from api.server.mixins import TrackModificationsMixIn
 
 logger = logging.getLogger(__name__)
 
-user_roles_association = db.Table('user_roles_association',
-                                  db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
-                                  db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
+user_roles_association = Table('user_roles_association',
+                                  Column('role_id', Integer, ForeignKey('role.id')),
+                                  Column('user_id', Integer, ForeignKey('user.id')))
 
 
-class User(db.Model, TrackModificationsMixIn):
+class User(Base, TrackModificationsMixIn):
     __tablename__ = 'user'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    roles = db.relationship('Role', secondary=user_roles_association, backref=db.backref('users', lazy='dynamic'))
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    _password = db.Column('password', db.String(255), nullable=False)
-    active = db.Column(db.Boolean, default=True)
-    last_login_at = db.Column(db.DateTime)
-    current_login_at = db.Column(db.DateTime)
-    last_login_ip = db.Column(db.String(45))
-    current_login_ip = db.Column(db.String(45))
-    login_count = db.Column(db.Integer, default=0)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    roles = relationship('Role', secondary=user_roles_association, backref=backref('users', lazy='dynamic'))
+    username = Column(String(80), unique=True, nullable=False)
+    _password = Column('password', String(255), nullable=False)
+    active = Column(Boolean, default=True)
+    last_login_at = Column(DateTime)
+    current_login_at = Column(DateTime)
+    last_login_ip = Column(String(45))
+    current_login_ip = Column(String(45))
+    login_count = Column(Integer, default=0)
 
     def __init__(self, name, password, roles=None):
         """Initializes a new User object
@@ -106,7 +111,7 @@ class User(db.Model, TrackModificationsMixIn):
             self.login_count -= 1
         else:
             logger.warning(f"User {self.id} logged out, but login count was already at 0")
-        db.session.commit()
+        session.commit()
 
     def has_role(self, role):
         """Checks if a User has a Role associated with it.

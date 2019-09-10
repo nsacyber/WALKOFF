@@ -44,8 +44,6 @@ async def jwt_requested(request: Request, call_next):
         response = await call_next(request)
     return response
 
-
-    return response
     # except Exception as e:
     #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
     # finally:
