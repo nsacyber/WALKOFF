@@ -112,7 +112,7 @@ def initialize_default_resources_super_admin():
     """Initializes the default resources for a super admin user"""
     super_admin = Role.query.filter(Role.id == 2).first()
     if not super_admin:
-        super_admin = Role("super_admin", description="Placeholder description",
+        super_admin = Raole("super_admin", description="Placeholder description",
                            resources=default_resource_permissions_super_admin)
         db.session.add(super_admin)
     else:
