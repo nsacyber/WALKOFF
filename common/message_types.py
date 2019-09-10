@@ -3,6 +3,8 @@ import json
 import datetime
 
 
+
+
 def message_dumps(obj):
     return json.dumps(obj, cls=MessageJSONEncoder)
 
@@ -27,16 +29,19 @@ class MessageJSONDecoder(json.JSONDecoder):
 
     def object_hook(self, o):
         if "result" in o and "app_name" in o:
-            o["status"] = StatusEnum[o["status"]]
-            return NodeStatusMessage(**o)
-
+            o["status"] = StatusEnum.from_name(o["status"])
+            result = NodeStatusMessage(**o)
+            return result
+        elif "app_name" in o:
+            o["status"] = StatusEnum.from_name(o["status"])
+            result = NodeStatusMessage(**o)
+            return result
         elif "workflow_id" in o and "execution_id" in o:
-            o["status"] = StatusEnum[o["status"]]
+            o["status"] = StatusEnum.from_name(o["status"])
             return WorkflowStatusMessage(**o)
 
         elif "trigger_data" in o:
             return TriggerMessage(**o)
-
         else:
             return o
 
@@ -119,6 +124,13 @@ class StatusEnum(enum.Enum):
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
 
+    @classmethod
+    def from_name(cls, name):
+        for status in StatusEnum:
+            if status.value == name:
+                return status
+        return None
+
 
 class WorkflowStatusMessage(object):
     """ Class that formats a WorkflowStatusMessage message """
@@ -182,7 +194,10 @@ class NodeStatusMessage(object):
         self.combined_id = combined_id if combined_id is not None else ':'.join((node_id, execution_id))
         self.result = result
         self.parameters = parameters
-        self.status = status
+        if type(status) == str:
+            self.status = StatusEnum.from_name(status)
+        else:
+            self.status = status
         self.started_at = started_at
         self.completed_at = completed_at
 

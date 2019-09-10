@@ -76,8 +76,6 @@ services:
     deploy:
       mode: replicated
       replicas: 0
-      restart_policy:
-        condition: none
 
   app_sdk:
     networks:
@@ -86,6 +84,21 @@ services:
       context: ./
       dockerfile: ./app_sdk/Dockerfile
     image: "127.0.0.1:5000/walkoff_app_sdk:latest"
+    configs:
+      - common_env.yml
+    deploy:
+      mode: replicated
+      replicas: 0
+      restart_policy:
+        condition: none
+
+  app_sdk_v2:
+    networks:
+      - walkoff_default
+    build:
+      context: ./
+      dockerfile: ./app_sdk_v2/Dockerfile
+    image: "127.0.0.1:5000/walkoff_app_sdk_v2:latest"
     configs:
       - common_env.yml
     deploy:

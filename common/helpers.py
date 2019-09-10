@@ -97,6 +97,7 @@ def get_patches(message):
             patches.append(make_patch(message, f"/completed_at", JSONPatchOps.REPLACE, value_only=True,
                                       white_list={"completed_at"}))
 
+
     return patches
 
 
@@ -110,6 +111,7 @@ async def send_status_update(session, execution_id, message, headers=None):
     patches = get_patches(message)
 
     if len(patches) < 1:
+        logger.info(message)
         raise ValueError(f"Attempting to send improper message type: {type(message)}")
 
     params = {"event": message.status.value}
