@@ -1,14 +1,18 @@
-from api_gateway.extensions import db
-from api_gateway.serverdb.mixins import TrackModificationsMixIn
-from api_gateway.serverdb.resource import Resource
+from pydantic import BaseModel, UUID4
+from sqlalchemy import Column, String, JSON, Integer, DateTime
+from sqlalchemy.orm import relationship, backref, Session
+
+from api.server.db.mixins import TrackModificationsMixIn
+from api.server.db.resource import Resource
+from api.server.db import Base
 
 
-class Role(db.Model, TrackModificationsMixIn):
+class Role(Base, TrackModificationsMixIn):
     __tablename__ = 'role'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
-    description = db.Column(db.String(255))
-    resources = db.relationship('Resource', backref=db.backref('role'), cascade='all, delete-orphan')
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(80), unique=True, nullable=False)
+    description = Column(String(255))
+    resources = relationship('Resource', backref=backref('role'), cascade='all, delete-orphan')
 
     def __init__(self, name, description='', resources=None):
         """Initializes a Role object. Each user has one or more Roles associated with it, which determines the user's
@@ -26,12 +30,13 @@ class Role(db.Model, TrackModificationsMixIn):
         if resources:
             self.set_resources(resources)
 
-    def set_resources(self, new_resources):
+    def set_resources(self, new_resources, db_session: Session):
         """Adds the given list of resources to the Role object.
 
         Args:
             new_resources (list(dict[name:resource, permissions:list[permission])): A list of dictionaries containing
                 the name of the resource, and a list of permission names associated with the resource.
+                :param db_session:
         """
         new_resource_names = set([resource['name'] for resource in new_resources])
         current_resource_names = set([resource.name for resource in self.resources] if self.resources else [])
@@ -48,7 +53,7 @@ class Role(db.Model, TrackModificationsMixIn):
                 resource = Resource.query.filter_by(role_id=self.id, name=resource_perms['name']).first()
                 if resource:
                     resource.set_permissions(resource_perms['permissions'])
-        db.session.commit()
+        db_session.commit()
 
     def as_json(self, with_users=False):
         """Returns the dictionary representation of the Role object.

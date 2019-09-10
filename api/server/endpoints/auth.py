@@ -57,7 +57,7 @@ def fresh_login(json_in: AuthModel, request: Request, db_session: Session = Depe
 
 @router.post("/auth/refresh")
 def refresh(request: Request, db_session: Session = Depends(get_db)):
-    verify_jwt_refresh_token_in_request(request)
+    verify_jwt_refresh_token_in_request(db_session=db_session, request=request)
     current_user_id = get_jwt_identity(request)
 
     user = db_session.query(User).filter_by(id=current_user_id).first()

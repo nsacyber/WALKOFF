@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from api.server.db import Base
 from api import fastapi_config
 
+NUMBER_OF_PRUNE_OPERATIONS = 0
+
 
 class AuthModel(BaseModel):
     username: str
@@ -61,7 +63,7 @@ def revoke_token(db_session: Session, decoded_token):
     db_session.commit()
 
 
-def is_token_revoked(decoded_token):
+def is_token_revoked(db_session: Session, decoded_token):
     """Checks if the given token is revoked or not. Because we are adding all the
     tokens that we create into this database, if the token is not present
     in the database we are going to consider it revoked, as we don't know where
@@ -71,7 +73,7 @@ def is_token_revoked(decoded_token):
         (bool): True if the token is revoked, False otherwise.
     """
     jti = decoded_token['jti']
-    token = BlacklistedToken.query.filter_by(jti=jti).first()
+    token = db_session.add(BlacklistedToken).filter_by(jti=jti).first()
     return token is not None
 
 
@@ -85,28 +87,27 @@ def approve_token(db_session: Session, token_id, user):
         :param token_id:
         :param db_session:
     """
-    token = BlacklistedToken.query.filter_by(id=token_id, user_identity=user).first()
+    token = db_session.query(BlacklistedToken).filter_by(id=token_id, user_identity=user).first()
     if token is not None:
-        db_session.remove(token)
-        prune_if_necessary()
+        db_session.delete(token)
+        prune_if_necessary(db_session)
         db_session.commit()
 
 
 def prune_if_necessary(db_session : Session):
     """Prunes the database if necessary"""
-    return True
-    # TODO:
-    #  if (current_app.running_context.cache.incr("number_of_operations")
-    #         >= current_app.config['JWT_BLACKLIST_PRUNE_FREQUENCY']):
-    #     prune_database()
+    global NUMBER_OF_PRUNE_OPERATIONS
+    NUMBER_OF_PRUNE_OPERATIONS += 1
+    if NUMBER_OF_PRUNE_OPERATIONS >= FastApiConfig.JWT_BLACKLIST_PRUNE_FREQUENCY:
+        prune_database(db_session)
 
 
 def prune_database(db_session: Session):
     """Delete tokens that have expired from the database"""
+    global NUMBER_OF_PRUNE_OPERATIONS
     now = datetime.now()
     expired = BlacklistedToken.query.filter(BlacklistedToken.expires < now).all()
     for token in expired:
         db_session.delete(token)
     db_session.commit()
-    # TODO:
-    #  current_app.running_context.cache.set("number_of_operations", 0)
+    NUMBER_OF_PRUNE_OPERATIONS = 0

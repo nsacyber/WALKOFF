@@ -24,11 +24,11 @@ app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 
-def verify_jwt_refresh_token_in_request(request: Request):
+def verify_jwt_refresh_token_in_request(db_session: Session, request: Request):
     decoded_token = get_raw_jwt(request)
 
     verify_token_in_decoded(decoded_token, request_type='refresh')
-    verify_token_not_blacklisted(decoded_token, request_type='refresh')
+    verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='refresh')
     return True
 
 
@@ -37,23 +37,19 @@ def verify_token_in_decoded(decoded_token: dict, request_type: str):
         raise jwt.exceptions.InvalidTokenError('Only {} tokens are allowed'.format(request_type))
 
 
-def verify_token_not_blacklisted(decoded_token: dict, request_type: str):
+def verify_token_not_blacklisted(db_session: Session, decoded_token: dict, request_type: str):
     if not FastApiConfig.JWT_BLACKLIST_ENABLED:
         return
     if request_type == 'access':
-        if is_token_blacklisted(decoded_token):
+        if is_token_revoked(db_session=db_session, decoded_token=decoded_token):
             raise jwt.exceptions.InvalidTokenError('Token has been revoked')
     if request_type == 'refresh':
-        if is_token_blacklisted(decoded_token):
+        if is_token_revoked(db_session=db_session, decoded_token=decoded_token):
             raise jwt.exceptions.InvalidTokenError('Token has been revoked')
 
 
 def token_is_revoked_loader():
     return json.dumps({'error': 'Token is revoked'}), HTTPStatus.UNAUTHORIZED
-
-
-def is_token_blacklisted(decoded_token):
-    return is_token_revoked(decoded_token)
 
 
 def expired_token_callback():
