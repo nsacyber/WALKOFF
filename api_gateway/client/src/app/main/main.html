@@ -59,6 +59,7 @@
                 <!-- <a class="dropdown-item installedReport" routerLink="/execution" routerLinkActive="active"><i class="fa fa-play-circle"></i><span class="navLink">Execution Log</span></a> -->
                 <a *hasPermission="['isAdmin']" class="dropdown-item installedReport" routerLink="/settings/users" routerLinkActive="active"><i class="fa fa-users"></i><span class="navLink">Users</span></a>
                 <a *hasPermission="['editGlobals']" class="dropdown-item installedReport" routerLink="/settings/globals" routerLinkActive="active"><i class="fa fa-globe"></i><span class="navLink">Globals</span></a>
+                <a class="dropdown-item installedReport" routerLink="/settings/buckets" routerLinkActive="active"><i class="fa fa-folder"></i><span class="navLink">Buckets</span></a>
                 <a *hasPermission="['editSchedule']" class="dropdown-item installedReport" routerLink="/settings/scheduler" routerLinkActive="active"><i class="fa fa-calendar-o"></i><span class="navLink">Scheduler</span></a>
                 <a *hasPermission="['isAdmin']" class="dropdown-item installedReport" href="/portainer/" target="_blank"><i class="fa fa-sign-out"></i><span class="navLink">Portainer.io</span></a>
               </div>
