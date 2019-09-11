@@ -8,13 +8,35 @@ from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSche
 
 from sqlalchemy import Column, String, JSON, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID
+from pydantic import BaseModel
 from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
 
 from common.config import config
 from common.helpers import fernet_decrypt, fernet_encrypt
-from api_gateway.executiondb import Base, BaseSchema
+from typing import List
+from api.server.db import Base
+from marshmallow_sqlalchemy import ModelSchema
 
 logger = logging.getLogger(__name__)
+
+
+class GlobalVariable(BaseModel):
+    id_: UUID = None
+    _walkoff_type: str = None
+    name: str
+    permissions: List[object] = None
+    access_level: int = None
+    creator: int = None
+    value: str
+    description: str = None
+
+
+class GlobalVariableTemplate(BaseModel):
+    id_: UUID = None
+    _walkoff_type: str = None
+    name: str
+    schema: object
+    description: str = None
 
 
 class GlobalVariableTemplate(Base):
@@ -60,7 +82,7 @@ class GlobalVariable(Base):
     _walkoff_type = Column(String(80), default="variable")
 
 
-class GlobalVariableTemplateSchema(BaseSchema):
+class GlobalVariableTemplateSchema(ModelSchema):
     """Schema for global variable template
     """
 
@@ -76,7 +98,7 @@ class GlobalVariableTemplateSchema(BaseSchema):
             raise MarshmallowValidationError(str(e))
 
 
-class GlobalVariableSchema(BaseSchema):
+class GlobalVariableSchema(ModelSchema):
     """Schema for global variables
     """
 
