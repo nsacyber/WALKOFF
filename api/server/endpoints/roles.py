@@ -18,7 +18,7 @@ def role_getter(db_session: Session, role_id: int):
 router = APIRouter()
 
 
-@router.get("/roles")
+@router.get("/")
 def read_all_roles(db_session: Session = Depends(get_db)):
     roles = []
     for role in db_session.query(Role).all():
@@ -28,7 +28,7 @@ def read_all_roles(db_session: Session = Depends(get_db)):
     return roles, HTTPStatus.OK
 
 
-@router.post("/roles")
+@router.post("/")
 def create_role(*, db_session: Session = Depends(get_db), add_role: AddRoleModel):
     json_data = dict(add_role)
     if not db_session.query(Role).filter_by(name=json_data['name']).first():
@@ -52,7 +52,7 @@ def create_role(*, db_session: Session = Depends(get_db), add_role: AddRoleModel
             f"Role with name {json_data['name']} already exists")
 
 
-@router.get('/roles/{role_id}')
+@router.get('/{role_id}')
 def read_role(role_id: int, *, db_session: Session = Depends(get_db)):
     role = role_getter(db_session=db_session, role_id=role_id)
     # check for internal or super_admin
@@ -62,7 +62,7 @@ def read_role(role_id: int, *, db_session: Session = Depends(get_db)):
         return None, HTTPStatus.FORBIDDEN
 
 
-@router.put('/roles/{role_id}')
+@router.put('/{role_id}')
 def update_role(role_id: int, *, db_session: Session = Depends(get_db), updated_role: RoleModel):
     role = role_getter(db_session=db_session, role_id=role_id)
     if role.id != 1 and role.id != 2:
@@ -84,7 +84,7 @@ def update_role(role_id: int, *, db_session: Session = Depends(get_db), updated_
         return None, HTTPStatus.FORBIDDEN
 
 
-@router.delete('/roles/{role_id}')
+@router.delete('/{role_id}')
 def delete_role(role_id: int, *, db_session: Session = Depends(get_db)):
     role = role_getter(db_session=db_session, role_id=role_id)
     if role.id != 1 or role.id != 2:

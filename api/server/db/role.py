@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, JSON, Integer, DateTime
 from sqlalchemy.orm import relationship, backref, Session
 from typing import List
 
-from api.server.db.mixins import TrackModificationsMixIn
+from api.server.db import TrackModificationsMixIn
 from api.server.db.resource import Resource
 from api.server.db import Base
 
@@ -46,7 +46,7 @@ class Role(Base, TrackModificationsMixIn):
     description = Column(String(255))
     resources = relationship('Resource', backref=backref('role'), cascade='all, delete-orphan')
 
-    def __init__(self, name, description='', resources=None):
+    def __init__(self, name: str, db_session: Session, description: str = '', resources=None):
         """Initializes a Role object. Each user has one or more Roles associated with it, which determines the user's
             permissions.
 
@@ -59,8 +59,9 @@ class Role(Base, TrackModificationsMixIn):
         self.name = name
         self.description = description
         self.resources = []
+        self.db_session = db_session
         if resources:
-            self.set_resources(resources)
+            self.set_resources(resources, db_session)
 
     def set_resources(self, new_resources, db_session: Session):
         """Adds the given list of resources to the Role object.
@@ -82,7 +83,7 @@ class Role(Base, TrackModificationsMixIn):
             if resource_perms['name'] in resource_names_to_add:
                 self.resources.append(Resource(resource_perms['name'], resource_perms['permissions']))
             elif resource_perms['name'] in resource_names_intersect:
-                resource = Resource.query.filter_by(role_id=self.id, name=resource_perms['name']).first()
+                resource = db_session.query(Resource).filter_by(role_id=self.id, name=resource_perms['name']).first()
                 if resource:
                     resource.set_permissions(resource_perms['permissions'])
         db_session.commit()

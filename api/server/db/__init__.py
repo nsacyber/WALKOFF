@@ -5,7 +5,7 @@ import asyncio
 from starlette.requests import Request
 from marshmallow import pre_load, fields
 from marshmallow_sqlalchemy import ModelSchema
-from sqlalchemy import create_engine, event, MetaData
+from sqlalchemy import create_engine, event, MetaData, Column, DateTime
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -161,6 +161,59 @@ def get_db(request: Request):
     return request.state.db
 
 
+db = DBEngine()
+
+
+class TrackModificationsMixIn(Base):
+    created_at = Column(DateTime, default=db.current_timestamp())
+    modified_at = Column(DateTime, default=db.current_timestamp(), onupdate=db.func.current_timestamp())
+
+# class BaseSchema(ModelSchema):
+#     """
+#     Base schema, attaches ExecutionDatabase session to model on load.
+#     """
+#
+#     @pre_load
+#     def set_nested_session(self, data):
+#         """Allow nested schemas to use the parent schema's session. This is a
+#         longstanding bug with marshmallow-sqlalchemy.
+#
+#         https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/67
+#         https://github.com/marshmallow-code/marshmallow/issues/658#issuecomment-328369199
+#         """
+#         nested_fields = {k: v for k, v in self.fields.items() if type(v) == fields.Nested}
+#         for field in nested_fields.values():
+#             field.schema.session = self.session
+#
+#     def load(self, data, session=None, instance=None, *args, **kwargs):
+#         session = db.session_maker
+#         # ToDo: Automatically find and use instance if 'id' (or key) is passed
+#         return super(BaseSchema, self).load(data, session=session, instance=instance, *args, **kwargs)
+#
+
+class MongoEngine(object):
+    def __init__(self):
+        self.client = motor.motor_asyncio.AsyncIOMotorClient(username=config.DB_USERNAME,
+                                                             password=config.get_from_file(config.MONGO_KEY_PATH),
+                                                             host=config.DB_HOST)
+
+    async def init_db(self):
+        await self.client.walkoff_db.apps.create_index([("id_", pymongo.ASCENDING),
+                                                        ("name", pymongo.ASCENDING)],
+                                                       unique=True)
+
+    def collection_from_url(self, path: str):
+        resource = path.split("/")[2]
+        return self.client.walkoff_db[resource]
+
+
+def get_mongo_c(request: Request):
+    return request.state.mongo_c
+
+
+mongo = MongoEngine()
+
+
 def initialize_default_resources_internal_user(db_session: Session):
     """Initializes the default resources for an internal user"""
     internal_user = db_session.query(Role).filter(Role.id == 1).first()
@@ -303,52 +356,3 @@ def remove_user(username: str, db_session: Session):
         username (str): The username of the User to delete.
     """
     db_session.query(User).filter_by(username=username).delete()
-
-
-db = DBEngine()
-
-
-# class BaseSchema(ModelSchema):
-#     """
-#     Base schema, attaches ExecutionDatabase session to model on load.
-#     """
-#
-#     @pre_load
-#     def set_nested_session(self, data):
-#         """Allow nested schemas to use the parent schema's session. This is a
-#         longstanding bug with marshmallow-sqlalchemy.
-#
-#         https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/67
-#         https://github.com/marshmallow-code/marshmallow/issues/658#issuecomment-328369199
-#         """
-#         nested_fields = {k: v for k, v in self.fields.items() if type(v) == fields.Nested}
-#         for field in nested_fields.values():
-#             field.schema.session = self.session
-#
-#     def load(self, data, session=None, instance=None, *args, **kwargs):
-#         session = db.session_maker
-#         # ToDo: Automatically find and use instance if 'id' (or key) is passed
-#         return super(BaseSchema, self).load(data, session=session, instance=instance, *args, **kwargs)
-#
-
-class MongoEngine(object):
-    def __init__(self):
-        self.client = motor.motor_asyncio.AsyncIOMotorClient(username=config.DB_USERNAME,
-                                                             password=config.get_from_file(config.MONGO_KEY_PATH),
-                                                             host=config.DB_HOST)
-
-    async def init_db(self):
-        await self.client.walkoff_db.apps.create_index([("id_", pymongo.ASCENDING),
-                                                        ("name", pymongo.ASCENDING)],
-                                                       unique=True)
-
-    def collection_from_url(self, path: str):
-        resource = path.split("/")[2]
-        return self.client.walkoff_db[resource]
-
-
-def get_mongo_c(request: Request):
-    return request.state.mongo_c
-
-
-mongo = MongoEngine()

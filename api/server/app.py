@@ -133,6 +133,11 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
 #                     prefix="/walkoff/users",
 #                     tags=["users"],
 #                     dependencies=[Depends(get_db)])
+#
+# _app.include_router(appapi.router,
+#                     prefix="/walkoff/roles",
+#                     tags=["users"],
+#                     dependencies=[Depends(get_db)])
 
 _app.include_router(appapi.router,
                     prefix="/walkoff/apps",
