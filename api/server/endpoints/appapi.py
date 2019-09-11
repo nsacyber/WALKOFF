@@ -78,7 +78,6 @@ def read_all_app_apis(db_session: Session = Depends(get_db)):
 
 @router.post("/apis", status_code=HTTPStatus.CREATED)
 def create_app_api(*, db_session: Session = Depends(get_db), new_api: AppApiModel):
-
     # new_api = dict(new_api)
 
     # if request.files and 'file' in request.files:

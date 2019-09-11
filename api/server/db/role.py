@@ -8,32 +8,32 @@ from api.server.db.resource import Resource
 from api.server.db import Base
 
 
-class AddRole(BaseModel):
+class AddRoleModel(BaseModel):
     name: str
     description: str = None
     resources: List = None
 
 
-class AddResource(BaseModel):
+class AddResourceModel(BaseModel):
     name: str
     permissions: List = None
 
 
-class Role(BaseModel):
+class RoleModel(BaseModel):
     id: int
     name: str = None
     description: str = None
     resources: List = None
 
 
-class Resource(BaseModel):
+class ResourceModel(BaseModel):
     id: int = None
     name: str = None
     needed_ids: List[str] = None
     permissions: List[str] = None
 
 
-class AvailableResourceAction(BaseModel):
+class AvailableResourceActionModel(BaseModel):
     name: str = None
     actions: List[str] = None
     app_name: str = None

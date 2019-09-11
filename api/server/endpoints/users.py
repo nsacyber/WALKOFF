@@ -1,6 +1,6 @@
 import logging
-from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.decorators import with_resource_factory
+from api.security import get_jwt_identity, permissions_accepted_for_resources, ResourcePermissions
+from api.server.utils.decorators import with_resource_factory
 from api.server.utils.problem import Problem
 from http import HTTPStatus
 from api_gateway.serverdb import add_user
@@ -8,7 +8,7 @@ from api.server.db.user import User
 from api.server.db import get_db
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
-from api.server.db.user import DisplayUser,EditUser, EditPersonalUser, AddUser
+from api.server.db.user import DisplayUser, EditUser, EditPersonalUser, AddUser
 with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(id=user_id).first())
 with_username = with_resource_factory('user', lambda username: User.query.filter_by(username=username).first())
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/", response_model=DisplayUser)
+@router.get("/users", response_model=DisplayUser)
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 def read_all_users(page: int = 1, db_session: Session = Depends(get_db)):
     # page = request.args.get('page', 1, type=int)
@@ -30,7 +30,7 @@ def read_all_users(page: int = 1, db_session: Session = Depends(get_db)):
     return users
 
 
-@router.post("/", response_model=DisplayUser, status_code=201)
+@router.post("/users", response_model=DisplayUser, status_code=201)
 @permissions_accepted_for_resources(ResourcePermissions('users', ['create']))
 def create_user(request: AddUser, db_session: Session = Depends(get_db)):
     data = await request.json()
@@ -56,7 +56,7 @@ def create_user(request: AddUser, db_session: Session = Depends(get_db)):
 
 @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
 @with_user('read', 'user_id')
-@router.get("/{user_id}", response_model=DisplayUser)
+@router.get("/users/{user_id}", response_model=DisplayUser)
 def read_user(user_id: int):
     # check for internal user
     if user_id.id == 1:
@@ -66,7 +66,7 @@ def read_user(user_id: int):
 
 
 @with_username('read', 'username')
-@router.get("/personal_data/{username}", response_model=DisplayUser)
+@router.get("users/personal_data/{username}", response_model=DisplayUser)
 def read_personal_user(username: str):
     current_id = get_jwt_identity()
     if current_id == username.id:
@@ -75,7 +75,7 @@ def read_personal_user(username: str):
         return None, HTTPStatus.FORBIDDEN
 
 
-@router.get("/permissions", response_model=DisplayUser)
+@router.get("users/permissions", response_model=DisplayUser)
 def list_permissions():
     current_id = get_jwt_identity()
     current_user = User.query.filter_by(id=current_id).first()
@@ -84,7 +84,7 @@ def list_permissions():
 
 @permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
 @with_user('update', 'user_id')
-@router.put("/{user_id}", response_model=DisplayUser)
+@router.put("users/{user_id}", response_model=DisplayUser)
 def update_user(user_id: int, request: EditUser, db_session: Session = Depends(get_db)):
     data = request.get_json()
     current_user = get_jwt_identity()
