@@ -11,26 +11,25 @@ import { Observable, Subscriber } from 'rxjs';
 import { Workflow } from '../models/playbook/workflow';
 
 @Injectable({
-  providedIn: 'root'
+	providedIn: 'root'
 })
 export class BucketsService {
 
-  bucketsChange: Observable<any>;
+	bucketsChange: Observable<any>;
 	observer: Subscriber<any>;
 
-	constructor (private http: HttpClient, private utils: UtilitiesService) {
-    this.bucketsChange = new Observable((observer) => {
-            this.observer = observer;
-            this.getAllBuckets().then(buckets => this.observer.next(buckets));
-        });
-
+	constructor(private http: HttpClient, private utils: UtilitiesService) {
+		this.bucketsChange = new Observable((observer) => {
+			this.observer = observer;
+			this.getAllBuckets().then(buckets => this.observer.next(buckets));
+		});
 	}
 
 	getAllBuckets(): Promise<Bucket[]> {
 		return this.utils.paginateAll<Bucket>(this.getBuckets.bind(this));
 	}
 
-  getAllTriggers(): Promise<Bucket[]> {
+	getAllTriggers(): Promise<Bucket[]> {
 		return this.getBuckets.bind(this);
 	}
 
@@ -41,15 +40,14 @@ export class BucketsService {
 			.catch(this.utils.handleResponseError);
 	}
 
-
-  emitChange(data: any) {
-        if (this.observer) this.getAllBuckets().then(buckets => this.observer.next(buckets));
-        return data;
-    }
+	emitChange(data: any) {
+		if (this.observer) this.getAllBuckets().then(buckets => this.observer.next(buckets));
+		return data;
+	}
 
 
 	getBuckets(page: number = 1): Promise<Bucket[]> {
-		return this.http.get(`api/buckets?page=${ page }`)
+		return this.http.get(`api/buckets?page=${page}`)
 			.toPromise()
 			.then((data) => plainToClass(Bucket, data))
 			.catch(this.utils.handleResponseError);
@@ -64,7 +62,7 @@ export class BucketsService {
 	}
 
 	editBucket(bucket: Bucket): Promise<Bucket> {
-		return this.http.put(`api/buckets/${ bucket.id }`, classToPlain(bucket))
+		return this.http.put(`api/buckets/${bucket.id}`, classToPlain(bucket))
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(Bucket, data))
@@ -72,39 +70,38 @@ export class BucketsService {
 	}
 
 	deleteBucket(bucket: Bucket): Promise<void> {
-		return this.http.delete(`api/buckets/${ bucket.id }`)
+		return this.http.delete(`api/buckets/${bucket.id}`)
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
 	}
 
-	addTrigger(bucket: Bucket, trigger: BucketTrigger): Promise<BucketTrigger> {
-		return this.http.post(`api/buckets/${ bucket.id }/triggers`, classToPlain(trigger))
+	addTrigger(trigger: BucketTrigger): Promise<BucketTrigger> {
+		return this.http.post(`api/buckets/${trigger.parent}/triggers`, classToPlain(trigger))
 			.toPromise()
-			.then((data) => bucket.emitTriggerChange(this, data))
+			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(BucketTrigger, data))
 			.catch(this.utils.handleResponseError);
 	}
 
-  editTrigger(bucket: Bucket, trigger: BucketTrigger, trigger_id:number): Promise<BucketTrigger> {
-    console.log(trigger);
-		return this.http.put(`api/buckets/${ bucket.id }/triggers/${ trigger_id }`, classToPlain(trigger))
+	editTrigger(trigger: BucketTrigger): Promise<BucketTrigger> {
+		return this.http.put(`api/buckets/${trigger.parent}/triggers/${trigger.id}`, classToPlain(trigger))
 			.toPromise()
-			.then((data) => bucket.emitTriggerChange(this, data))
+			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(BucketTrigger, data))
 			.catch(this.utils.handleResponseError);
 	}
 
-  deleteTrigger(bucket: Bucket, trigger: BucketTrigger): Promise<void> {
-		return this.http.delete(`api/buckets/${ bucket.id }/triggers/${ trigger.id }`)
+	deleteTrigger(trigger: BucketTrigger): Promise<void> {
+		return this.http.delete(`api/buckets/${trigger.parent}/triggers/${trigger.id}`)
 			.toPromise()
-			.then((data) => bucket.emitTriggerChange(this, data))
+			.then((data) => this.emitChange(data))
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
 	}
 
-  getWorkflows(): Promise<Workflow[]> {
+	getWorkflows(): Promise<Workflow[]> {
 		return this.http.get('api/workflows')
 			.toPromise()
 			.then((data) => plainToClass(Workflow, data))

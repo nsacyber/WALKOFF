@@ -1,49 +1,54 @@
 <div class="modal-header">
-	<h4 class="modal-title">{{title}}</h4>
+	<h4 class="modal-title">{{ existing ? 'Edit Trigger' : 'Create New Trigger' }}</h4>
 </div>
 <div class="modal-body">
 	<div class="container-fluid">
 		<form id="triggerForm" #triggerForm="ngForm" (ngSubmit)="submit()">
+			<button type="submit" class="d-none"></button>
 			<div class="row">
 
-        <div class="col-6">
+				<div class="col-6">
 					<div class="form-group">
 						<label for="event_type">Event Type</label>
-            <select class="form-control" [(ngModel)]="trigger.event_type" name="event_type" tabindex="4">
-              <option value="s3:ObjectCreated:*">s3:ObjectCreated:*</option>
-              <option value="s3:ObjectAccessed:*">s3:ObjectAccessed:*</option>
-              <option value="s3:ObjectRemoved:*">s3:ObjectRemoved:*</option>
-            </select>
+						<select class="form-control" [(ngModel)]="trigger.event_type" name="event_type" tabindex="4">
+							<option value="">Select...</option>
+							<option value="s3:ObjectCreated:*">s3:ObjectCreated:*</option>
+							<option value="s3:ObjectAccessed:*">s3:ObjectAccessed:*</option>
+							<option value="s3:ObjectRemoved:*">s3:ObjectRemoved:*</option>
+						</select>
 					</div>
 				</div>
 
-        <div class="col-6">
+				<div class="col-6">
 					<div class="form-group">
 						<label for="workflow">Workflow</label>
-            <select2 [data]="availableWorkflows" [value]="undefined"  [options]="workflowSelectConfig"
-				      name="workflow" tabindex="2" (valueChanged)="workflowsSelectChanged($event)"></select2>
+						<select class="form-control" [(ngModel)]="trigger.workflow" name="workflow" tabindex="4">
+							<option value="">Select...</option>
+							<option *ngFor="let x of workflows" [value]="x.id">{{ x.name }}</option>
+						</select>
 					</div>
 				</div>
 
-        <div class="col-6">
+				<div class="col-6">
 					<div class="form-group">
-						<label for="suffix">Suffix</label>
-						<input type="text" class="form-control" [(ngModel)]="trigger.suffix" name="suffix" tabindex="2">
-					</div>
-				</div>
-
-        <div class="col-6">
-					<div class="form-group">
-						<label for="prefix">Prefix</label>
+						<label for="prefix">Prefix (optional)</label>
 						<input type="text" class="form-control" [(ngModel)]="trigger.prefix" name="prefix" tabindex="2">
 					</div>
 				</div>
 
-      </div>
+				<div class="col-6">
+					<div class="form-group">
+						<label for="suffix">Suffix (optional)</label>
+						<input type="text" class="form-control" [(ngModel)]="trigger.suffix" name="suffix" tabindex="2">
+					</div>
+				</div>
+
+			</div>
 		</form>
 	</div>
 </div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
-	<button type="button" class="btn btn-primary" [disabled]="!isBasicInfoValid()" (click)="activeModal.close(trigger)">{{submitText}}</button>
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cancel</button>
+	<button type="button" class="btn btn-primary" [disabled]="!isBasicInfoValid()"
+		(click)="submit()">{{ existing ?  'Add Trigger' : 'Save Changes' }}</button>
 </div>

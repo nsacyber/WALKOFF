@@ -1,10 +1,5 @@
-import { Component, Input, ChangeDetectorRef, ViewChild, ElementRef, OnInit, AfterViewInit } from '@angular/core';
+import { Component, Input, ChangeDetectorRef, OnInit, AfterViewInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastrService } from 'ngx-toastr';
-
-import { BucketsService } from './buckets.service';
-import { UtilitiesService } from '../utilities.service';
-
 import { Bucket } from '../models/buckets/bucket';
 
 @Component({
@@ -13,38 +8,27 @@ import { Bucket } from '../models/buckets/bucket';
 	styleUrls: [
 		'./buckets.scss',
 	],
-	providers: [BucketsService, UtilitiesService],
 })
 export class BucketsModalComponent implements OnInit, AfterViewInit {
-  @Input() bucket: Bucket = new Bucket();
-  @Input() title: string;
-  @Input() submitText: string;
-  existing: boolean = false;
+	@Input() bucket: Bucket = new Bucket();
+	@Input() existing: boolean = false;
 
+	constructor(
+		public activeModal: NgbActiveModal,
+		private cdr: ChangeDetectorRef,
+	) { }
 
-	constructor (
-		private bucketsService: BucketsService, public activeModal: NgbActiveModal,
-		private toastrService: ToastrService, private cdr: ChangeDetectorRef,
-	) {}
-
-	ngOnInit(): void {
-	}
+	ngOnInit(): void {}
 
 	ngAfterViewInit(): void {
-	  this.cdr.detectChanges();
+		this.cdr.detectChanges();
 	}
 
-	/**
-	 * Submits the add/edit bucket modal.
-	 */
+	isBasicInfoValid(): boolean {
+		return !!(this.bucket.name && this.bucket.name.trim())
+	}
+
 	submit(): void {
-    if (!this.isBasicInfoValid()) { return; }
-  }
-
-
-  isBasicInfoValid(): boolean {
-		if (this.bucket.name && this.bucket.name.trim()) { return true; }
-		return false;
+		if (this.isBasicInfoValid()) { this.activeModal.close(this.bucket) }
 	}
-
 }
