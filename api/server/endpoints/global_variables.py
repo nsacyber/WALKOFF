@@ -7,7 +7,7 @@ from uuid import UUID
 # from starlette.responses import Response
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
-from api_gateway import helpers
+from api.server.utils import helpers
 from api.server.db import get_db
 from sqlalchemy.orm import Session
 

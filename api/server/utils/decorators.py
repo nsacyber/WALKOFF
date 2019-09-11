@@ -4,7 +4,7 @@ from inspect import getfullargspec
 
 from flask import current_app, request
 
-from api_gateway.server.problem import dne_problem, invalid_id_problem
+from api.server.utils.problem import dne_problem, invalid_id_problem
 
 
 def get_id_str(ids):

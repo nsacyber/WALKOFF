@@ -5,7 +5,7 @@ marshmallow == 3.0.0rc2
 marshmallow-sqlalchemy == 0.13.0
 marshmallow-enum >= 1.4.1
 # APscheduler >= 3.0.0
-# pyyaml >= 3.0
+pyyaml >= 3.0
 # passlib >= 1.7.0
 semver
 jsonschema == 2.6.0
@@ -15,3 +15,7 @@ jsonpatch
 asteval
 cryptography
 tenacity
+uvicorn
+fastapi
+email-validator
+motor

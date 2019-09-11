@@ -173,7 +173,7 @@ async def delete_secret(client: aiodocker.Docker, secret_id):
 
 
 async def disconnect_from_network(client: aiodocker.Docker):
-    await client._query(f"networks/walkoff_default/disconnect", "POST")
+    await client._query(f"networks/walkoff_network/disconnect", "POST")
 
 
 async def get_network(client: aiodocker.Docker, network_id):

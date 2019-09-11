@@ -1,7 +1,7 @@
 import logging
 
 #from common.config import config
-from api_gateway.helpers import format_db_path
+from api.server.utils.helpers import format_db_path
 
 logger = logging.getLogger(__name__)
 
