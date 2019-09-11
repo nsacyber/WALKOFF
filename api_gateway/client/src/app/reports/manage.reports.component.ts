@@ -19,6 +19,8 @@ export class ManageReportsComponent implements OnInit {
     options: GridsterConfig;
 
     report: Report = new Report();
+    originalReport: Report = new Report();
+
     existingReport = false;
     submitted = false;
 
@@ -52,6 +54,7 @@ export class ManageReportsComponent implements OnInit {
                 this.existingReport = true;
                 this.reportService.getReportWithMetadata(params.reportId).then(report => {
                     this.report = report;
+                    this.originalReport = this.report.clone();
                 });
             }
 
@@ -144,6 +147,8 @@ export class ManageReportsComponent implements OnInit {
         if (!this.report.name) return this.submitted = true;
 
         (this.existingReport) ? this.reportService.updateReport(this.report) : this.reportService.newReport(this.report);
+
+        this.originalReport = this.report.clone();
         this.toastrService.success(`"${ this.report.name }" Saved`);
 
         this.router.navigate(['/report', this.report.id]);
@@ -157,4 +162,17 @@ export class ManageReportsComponent implements OnInit {
         this.toastrService.success(`"${ reportName }" Deleted`);
         this.router.navigate(['/report/new']);
     }
+
+    canDeactivate(): Promise<boolean> | boolean {
+        return this.checkUnsavedChanges(); 
+    }
+
+    async checkUnsavedChanges() : Promise<boolean> {
+        if (!this.reportChanged) return true;
+        return this.utils.confirm('Any unsaved changes will be lost. Are you sure?', { alwaysResolve: true });
+    }
+
+    get reportChanged(): boolean {
+		return this.report && JSON.stringify(this.originalReport).localeCompare(JSON.stringify(this.report)) != 0;
+	}
 }

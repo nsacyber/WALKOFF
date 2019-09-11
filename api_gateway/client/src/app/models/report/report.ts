@@ -1,4 +1,4 @@
-import { Type, Expose } from 'class-transformer';
+import { Type, Expose, classToClass } from 'class-transformer';
 
 import { ReportWidget, 
          BarChartWidget, 
@@ -37,4 +37,8 @@ export class Report {
     constructor() { 
         this.id = UUID.UUID();
     }
+
+    clone() {
+		return classToClass(this, { ignoreDecorators: true });
+	}
 }

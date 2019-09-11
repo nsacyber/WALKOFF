@@ -27,8 +27,8 @@ const routes: Routes = [
 	{ path: 'execution', component: ExecutionComponent },
 	{ path: 'apps', component: AppsListComponent },
 	{ path: 'apps/:appId', component: ManageAppComponent, canDeactivate: [CanDeactivateGuard] },
-	{ path: 'report/new', component: ManageReportsComponent },
-	{ path: 'report/:reportId/edit', component: ManageReportsComponent },
+	{ path: 'report/new', component: ManageReportsComponent, canDeactivate: [CanDeactivateGuard] },
+	{ path: 'report/:reportId/edit', component: ManageReportsComponent, canDeactivate: [CanDeactivateGuard] },
 	{ path: 'report/:reportId', component: ReportsComponent },
 	{ path: 'logout', canActivate: [RedirectGuard], component: RedirectGuard, data: { externalUrl: '/walkoff/login', logout: true }}
 ];
