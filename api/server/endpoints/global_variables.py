@@ -1,52 +1,28 @@
+import logging
+
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
-from uuid import uuid4
 from uuid import UUID
-
-# from starlette.requests import Request
-# from starlette.responses import Response
-from common.config import config
-from common.helpers import fernet_encrypt, fernet_decrypt
-from api_gateway import helpers
-from api.server.db import get_db
 from sqlalchemy.orm import Session
-
-from api_gateway.executiondb.global_variable import (GlobalVariable, GlobalVariableSchema,
-                                                      GlobalVariableTemplate, GlobalVariableTemplateSchema)
-from api_gateway.serverdb.user import User
-from pydantic import BaseModel
-from typing import List
-from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.decorators import with_resource_factory, paginate
-from api.server.utils.problem import unique_constraint_problem
 from http import HTTPStatus
-from common.roles_helpers import auth_check, update_permissions, default_permissions, creator_check
 from fastapi import APIRouter, Depends, HTTPException
 
+from api.server.db.global_variable import GlobalVariableSchema, GlobalVariableTemplateSchema
+from api.server.db.global_variable import GlobalVariableTemplate, GlobalVariable
+from api.server.db.user import User
+from api.server.db import get_db
+from api.server.utils.problem import unique_constraint_problem
+from api.security import get_jwt_claims
+from common.roles_helpers import auth_check, update_permissions, default_permissions, creator_check
+from common.config import config
+from common.helpers import fernet_encrypt, fernet_decrypt
+from api.server.utils import helpers
+from api_gateway.server.decorators import with_resource_factory, paginate
 
-import logging
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-
-class GlobalVariable(BaseModel):
-    id_: UUID = None
-    _walkoff_type: str = None
-    name: str
-    permissions: List[object] = None
-    access_level: int = None
-    creator: int = None
-    value: str
-    description: str = None
-
-
-class GlobalVariableTemplate(BaseModel):
-    id_: UUID = None
-    _walkoff_type: str = None
-    name: str
-    schema: object
-    description: str = None
 
 
 def global_variable_getter(global_var, db_session: Session = Depends(get_db)):
@@ -67,10 +43,10 @@ def global_variable_template_getter(global_template, db_session: Session = Depen
             name=global_template).first()
 
 
-with_global_variable = with_resource_factory("global_variable", global_variable_getter)
+# with_global_variable = with_resource_factory("global_variable", global_variable_getter)
 global_variable_schema = GlobalVariableSchema()
 
-with_global_variable_template = with_resource_factory("global_variable_template", global_variable_template_getter)
+# with_global_variable_template = with_resource_factory("global_variable_template", global_variable_template_getter)
 global_variable_template_schema = GlobalVariableTemplateSchema()
 
 
@@ -96,17 +72,17 @@ async def read_all_globals(to_decrypt: str = "false", db_session: Session = Depe
         return ret
 
 
-@with_global_variable("read", "global_var")
 @router.get("/{global_var}")
-def read_global(global_var: UUID, to_decrypt: str = "false", db_session: Session = Depends(get_db)):
+def read_global(*, global_var: UUID, to_decrypt: str = "false", db_session: Session = Depends(get_db)):
+    var = global_variable_getter(global_var, db_session)
     username = get_jwt_claims().get('username', None)
     curr_user_id = (db_session.query(User).filter(User.username == username).first()).id
 
-    global_id = str(global_var.id_)
+    global_id = str(var.id_)
     to_read = auth_check(global_id, "read", "global_variables")
 
-    if (global_var.creator == curr_user_id) or to_read:
-        global_json = global_variable_schema.dump(global_var)
+    if (var.creator == curr_user_id) or to_read:
+        global_json = global_variable_schema.dump(var)
 
         if to_decrypt == "false":
             return global_json
@@ -117,25 +93,24 @@ def read_global(global_var: UUID, to_decrypt: str = "false", db_session: Session
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
-@with_global_variable("delete", "global_var")
 @router.delete("/{global_var}")
 def delete_global(global_var: UUID, db_session: Session = Depends(get_db)):
+    var = global_variable_getter(global_var, db_session)
     username = get_jwt_claims().get('username', None)
     curr_user_id = (db_session.query(User).filter(User.username == username).first()).id
 
-    global_id = str(global_var.id_)
+    global_id = str(var.id_)
     to_delete = auth_check(global_id, "delete", "global_variables")
 
-    if (global_var.creator == curr_user_id) or to_delete:
-        db_session.delete(global_var)
-        db_session.logger.info(f"Global_variable removed {global_var.name}")
+    if (var.creator == curr_user_id) or to_delete:
+        db_session.delete(var)
+        db_session.logger.info(f"Global_variable removed {var.name}")
         db_session.commit()
         return None, HTTPStatus.NO_CONTENT
     else:
         return None, HTTPStatus.FORBIDDEN
 
 
-@permissions_accepted_for_resources(ResourcePermissions("global_variables", ["create"]))
 @router.post("/")
 def create_global(request: GlobalVariable, db_session: Session = Depends(get_db)):
     data = await request.json()
@@ -182,9 +157,10 @@ def create_global(request: GlobalVariable, db_session: Session = Depends(get_db)
         return unique_constraint_problem("global_variable", "create", request.name)
 
 
-@with_global_variable("update", "global_var")
 @router.put("/{global_var}")
 def update_global(request: GlobalVariable, global_var: UUID, db_session: Session = Depends(get_db)):
+    var = global_variable_getter(global_var, db_session)
+
     username = get_jwt_claims().get('username', None)
     curr_user_id = (db_session.query(User).filter(User.username == username).first()).id
 
@@ -195,7 +171,7 @@ def update_global(request: GlobalVariable, global_var: UUID, db_session: Session
     access_level = request.access_level
 
     to_update = auth_check(global_id, "update", "global_variables")
-    if (global_var.creator == curr_user_id) or to_update:
+    if (var.creator == curr_user_id) or to_update:
         if access_level == 0:
             auth_check(global_id, "update", "global_variables",
                        updated_roles=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}])
@@ -210,9 +186,9 @@ def update_global(request: GlobalVariable, global_var: UUID, db_session: Session
         try:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
             data['value'] = fernet_encrypt(key, request.value)
-            global_variable_schema.load(data, instance=global_var)
+            global_variable_schema.load(data, instance=var)
             db_session.commit()
-            return global_variable_schema.dump(global_var)
+            return global_variable_schema.dump(var)
         except (IntegrityError, StatementError):
             db_session.rollback()
             return unique_constraint_problem("global_variable", "update", request.name)
@@ -222,7 +198,6 @@ def update_global(request: GlobalVariable, global_var: UUID, db_session: Session
 # Templates
 
 
-@permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["read"]))
 @paginate(global_variable_schema)
 @router.get("/templates")
 def read_all_global_templates(db_session: Session = Depends(get_db)):
@@ -231,25 +206,22 @@ def read_all_global_templates(db_session: Session = Depends(get_db)):
     return query
 
 
-@permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["read"]))
-@with_global_variable_template("read", "global_template")
 @router.get("/templates/{global_template}")
-def read_global_templates(global_template: UUID):
-    global_json = global_variable_template_schema.dump(global_template)
+def read_global_templates(global_template: UUID, db_session: Session = Depends(get_db)):
+    template = global_variable_template_getter(global_template, db_session=db_session)
+    global_json = global_variable_template_schema.dump(template)
     return global_json
 
 
-@permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["delete"]))
-@with_global_variable_template("delete", "global_template")
 @router.delete("/templates/{global_template}", status_code=204)
 def delete_global_templates(global_template: UUID, db_session: Session = Depends(get_db)):
-    db_session.delete(global_template)
-    db_session.logger.info(f"global_variable_template removed {global_template.name}")
+    template = global_variable_template_getter(global_template, db_session=db_session)
+    db_session.delete(template)
+    db_session.logger.info(f"global_variable_template removed {template.name}")
     db_session.commit()
     return None, HTTPStatus.NO_CONTENT
 
 
-@permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["create"]))
 @router.post("/templates", status_code=201)
 def create_global_templates(request: GlobalVariableTemplate, db_session: Session = Depends(get_db)):
     data = await request.get_json()
@@ -264,15 +236,15 @@ def create_global_templates(request: GlobalVariableTemplate, db_session: Session
         return unique_constraint_problem("global_variable_template", "create", data["name"])
 
 
-@permissions_accepted_for_resources(ResourcePermissions("global_variable_templates", ["update"]))
-@with_global_variable_template("update", "global_template")
 @router.put("/templates/{global_template}")
 def update_global_templates(request: GlobalVariableTemplate, global_template, db_session: Session = Depends(get_db)):
+    template = global_variable_template_getter(global_template, db_session=db_session)
+
     data = await request.get_json()
     try:
-        global_variable_template_schema.load(data, instance=global_template)
+        global_variable_template_schema.load(data, instance=template)
         db_session.commit()
-        return global_variable_template_schema.dump(global_template)
+        return global_variable_template_schema.dump(template)
     except (IntegrityError, StatementError):
         db_session.rollback()
         return unique_constraint_problem("global_variable_template", "update", data["name"])

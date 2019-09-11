@@ -1,13 +1,15 @@
 import logging
-from api.server.utils.problem import Problem
+
 from http import HTTPStatus
-from api.server.db import add_user
-from api.server.db.user import User
-from api.server.db import get_db
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
-from api.security import get_jwt_identity
+
+from api.server.db.user import User
+from api.server.db import add_user
+from api.server.db import get_db
 from api.server.db.user import DisplayUser,EditUser, EditPersonalUser, AddUser
+from api.server.utils.problem import Problem
+from api.security import get_jwt_identity
 
 logger = logging.getLogger(__name__)
 
