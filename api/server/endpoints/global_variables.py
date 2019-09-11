@@ -2,6 +2,7 @@ import logging
 
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
+from uuid import uuid4
 from uuid import UUID
 from sqlalchemy.orm import Session
 from http import HTTPStatus

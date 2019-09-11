@@ -3,10 +3,12 @@ import logging
 from fastapi import FastAPI, Depends
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+import pymongo
 
 from api.server.endpoints import appapi
-from api.server.db import DBEngine, get_db
-from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted
+from api.server.db import DBEngine, get_db, MongoEngine, get_mongo_c
+# from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted
+
 from common.config import config, static
 
 logger = logging.getLogger("API")
@@ -17,13 +19,19 @@ async def run_before_everything():
 
 _app = FastAPI()
 _db_manager = DBEngine()
+_mongo_manager = MongoEngine()
+
+
+@_app.on_event("startup")
+async def initialize_mongodb():
+    await _mongo_manager.init_db()
 
 
 @_app.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     try:
         request.state.db = _db_manager.session_maker()
-        request.state.logger = logger
+        request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
         response = await call_next(request)
     # except Exception as e:
     #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
@@ -32,17 +40,17 @@ async def db_session_middleware(request: Request, call_next):
 
     return response
 
-
-@_app.middleware("http")
-async def jwt_requested(request: Request, call_next):
-    try:
-        decoded_token = get_raw_jwt(request)
-        verify_token_in_decoded(decoded_token, request_type='access')
-        verify_token_not_blacklisted(decoded_token, request_type='access')
-        #response = await call_next(request)
-    finally:
-        response = await call_next(request)
-    return response
+#
+# @_app.middleware("http")
+# async def jwt_requested(request: Request, call_next):
+#     try:
+#         decoded_token = get_raw_jwt(request)
+#         verify_token_in_decoded(decoded_token, request_type='access')
+#         verify_token_not_blacklisted(decoded_token, request_type='access')
+#         #response = await call_next(request)
+#     finally:
+#         response = await call_next(request)
+#     return response
 
     # except Exception as e:
     #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
@@ -53,20 +61,20 @@ async def jwt_requested(request: Request, call_next):
 
 
 # Include routers here
-_app.include_router(appapi.router,
-                    prefix="/globals",
-                    tags=["globals"],
-                    dependencies=[Depends(get_db)])
+# _app.include_router(appapi.router,
+#                     prefix="/walkoff/globals",
+#                     tags=["globals"],
+#                     dependencies=[Depends(get_db)])
+#
+# _app.include_router(appapi.router,
+#                     prefix="/walkoff/users",
+#                     tags=["users"],
+#                     dependencies=[Depends(get_db)])
 
 _app.include_router(appapi.router,
-                    prefix="/users",
-                    tags=["users"],
-                    dependencies=[Depends(get_db)])
-
-_app.include_router(appapi.router,
-                    prefix="/apps",
+                    prefix="/walkoff/apps",
                     tags=["apps"],
-                    dependencies=[Depends(get_db)])
+                    dependencies=[Depends(get_mongo_c)])
 
 
 app = _app

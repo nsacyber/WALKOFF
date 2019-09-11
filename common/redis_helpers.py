@@ -3,13 +3,15 @@ from contextlib import asynccontextmanager
 
 import aioredis
 
+from common.config import config
+
 logger = logging.getLogger("WALKOFF")
 
 
 @asynccontextmanager
 async def connect_to_redis_pool(redis_uri) -> aioredis.Redis:
     # Redis client bound to pool of connections (auto-reconnecting).
-    redis = await aioredis.create_redis_pool(redis_uri)
+    redis = await aioredis.create_redis_pool(redis_uri, password=config.get_from_file(config.REDIS_KEY_PATH))
     try:
         yield redis
     finally:

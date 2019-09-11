@@ -10,7 +10,7 @@ RUN apt-get update \
 RUN mkdir /install
 WORKDIR /install
 
-COPY ./api_gateway/requirements.txt /requirements.txt
+COPY ./api/requirements.txt /requirements.txt
 RUN pip install --no-warn-script-location --prefix="/install" -r /requirements.txt
 
 # Stage - Copy pip packages and source files
@@ -22,4 +22,4 @@ COPY ./api /app/api
 WORKDIR /app
 
 
-CMD uvicorn -k gevent -b 0.0.0.0:8080 api.server.app:app
+CMD uvicorn api.server.app:app --host 0.0.0.0:8080

@@ -1,6 +1,7 @@
 import logging
 import json
 from uuid import UUID
+import asyncio
 
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -35,7 +36,7 @@ def sfloat(value, default):
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
 async def get_walkoff_auth_header(session, token=None, timeout=5*60):
-    url = config.API_GATEWAY_URI.rstrip('/') + '/walkoff/api'
+    url = config.API_URI.rstrip('/') + '/walkoff/api'
     logger.debug("Attempting to refresh WALKOFF JWT")
     if token is None:
         key = config.get_from_file(config.INTERNAL_KEY_PATH)
@@ -114,7 +115,7 @@ async def send_status_update(session, execution_id, message, headers=None):
         raise ValueError(f"Attempting to send improper message type: {type(message)}")
 
     params = {"event": message.status.value}
-    url = f"{config.API_GATEWAY_URI}/walkoff/api/internal/workflowstatus/{execution_id}"
+    url = f"{config.API_URI}/walkoff/api/internal/workflowstatus/{execution_id}"
     headers, token = await get_walkoff_auth_header(session)
     headers["content-type"] = "application/json"
 

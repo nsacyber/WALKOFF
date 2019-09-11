@@ -40,7 +40,7 @@ class Static:
     APP_PREFIX = f"{STACK_PREFIX}_app"
 
     # Core services
-    API_GATEWAY_SERVICE = f"{CORE_PREFIX}_api_gateway"
+    API_SERVICE = f"{CORE_PREFIX}_api"
     UMPIRE_SERVICE = f"{CORE_PREFIX}_umpire"
     WORKER_SERVICE = f"{CORE_PREFIX}_worker"
 
@@ -51,9 +51,11 @@ class Static:
     PORTAINER_SERVICE = f"{RESOURCE_PREFIX}_portainer"
     REGISTRY_SERVICE = f"{RESOURCE_PREFIX}_registry"
     MINIO_SERVICE = f"{RESOURCE_PREFIX}_minio"
+    MONGO_SERVICE = f"{RESOURCE_PREFIX}_mongo"
 
     # Volume names
     POSTGRES_VOLUME = f"{POSTGRES_SERVICE}_volume"
+    MONGO_VOLUME = f"{MONGO_SERVICE}_volume"
 
     # Secret names
     ENCRYPTION_KEY = f"{STACK_PREFIX}_encryption_key"
@@ -61,6 +63,8 @@ class Static:
     POSTGRES_KEY = f"{STACK_PREFIX}_postgres_key"
     MINIO_ACCESS_KEY = f"{STACK_PREFIX}_minio_access_key"
     MINIO_SECRET_KEY = f"{STACK_PREFIX}_minio_secret_key"
+    REDIS_KEY = f"{STACK_PREFIX}_redis_key"
+    MONGO_KEY = f"{STACK_PREFIX}_mongo_key"
 
     # Redis options
     REDIS_EXECUTING_WORKFLOWS = "executing-workflows"
@@ -79,8 +83,8 @@ class Static:
     API_PATH = Path("api_gateway") / "api"
     CLIENT_PATH = Path("api_gateway") / "client"
 
-    REDIS_DATA_PATH = Path("data") / "redis" / "red_data"
-    POSTGRES_DATA_PATH = Path("data") / "postgres" / "pg_data"
+    # REDIS_DATA_PATH = Path("data") / "redis" / "red_data"
+    # POSTGRES_DATA_PATH = Path("data") / "postgres" / "pg_data"
     PORTAINER_DATA_PATH = Path("data") / "portainer" / "prt_data"
     REGISTRY_DATA_PATH = Path("data") / "registry" / "reg_data"
     MINIO_DATA_PATH = Path("data") / "minio" / "min_data"
@@ -103,7 +107,7 @@ class Config:
     """
 
     # Common options
-    API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", f"http://{Static.API_GATEWAY_SERVICE}:8080")
+    API_URI = os.getenv("API_URI", f"http://{Static.API_SERVICE}:8080")
     REDIS_URI = os.getenv("REDIS_URI", f"redis://{Static.REDIS_SERVICE}:6379")
     MINIO = os.getenv("MINIO", f"{Static.MINIO_SERVICE}:9000")
 
@@ -111,8 +115,10 @@ class Config:
     ENCRYPTION_KEY_PATH = os.getenv("ENCRYPTION_KEY_PATH", Static.SECRET_BASE_PATH / Static.ENCRYPTION_KEY)
     INTERNAL_KEY_PATH = os.getenv("INTERNAL_KEY_PATH", Static.SECRET_BASE_PATH / Static.INTERNAL_KEY)
     POSTGRES_KEY_PATH = os.getenv("POSTGRES_KEY_PATH", Static.SECRET_BASE_PATH / Static.POSTGRES_KEY)
+    REDIS_KEY_PATH = os.getenv("REDIS_KEY_PATH", Static.SECRET_BASE_PATH / Static.REDIS_KEY)
     MINIO_ACCESS_KEY_PATH = os.getenv("MINIO_SECRET_KEY_PATH", Static.SECRET_BASE_PATH / Static.MINIO_ACCESS_KEY)
     MINIO_SECRET_KEY_PATH = os.getenv("MINIO_SECRET_KEY_PATH", Static.SECRET_BASE_PATH / Static.MINIO_SECRET_KEY)
+    MONGO_KEY_PATH = os.getenv("MONGO_KEY_PATH", Static.SECRET_BASE_PATH / Static.MONGO_KEY)
 
     # Worker options
     MAX_WORKER_REPLICAS = os.getenv("MAX_WORKER_REPLICAS", "10")
@@ -122,7 +128,7 @@ class Config:
     # Umpire options
     APPS_PATH = os.getenv("APPS_PATH", "./apps")
     APP_REFRESH = os.getenv("APP_REFRESH", "60")
-    SWARM_NETWORK = os.getenv("SWARM_NETWORK", "walkoff_default")
+    SWARM_NETWORK = os.getenv("SWARM_NETWORK", "walkoff_network")
     DOCKER_REGISTRY = os.getenv("DOCKER_REGISTRY", "127.0.0.1:5000")
     UMPIRE_HEARTBEAT = os.getenv("UMPIRE_HEARTBEAT", "1")
 
@@ -131,7 +137,7 @@ class Config:
     DB_HOST = os.getenv("DB_HOST", Static.POSTGRES_SERVICE)
     SERVER_DB_NAME = os.getenv("SERVER_DB", "walkoff")
     EXECUTION_DB_NAME = os.getenv("EXECUTION_DB", "execution")
-    DB_USERNAME = os.getenv("DB_USERNAME", "")
+    DB_USERNAME = os.getenv("DB_USERNAME", "walkoff")
 
     # Bootloader options
     BASE_COMPOSE = os.getenv("BASE_COMPOSE", "./bootloader/base-compose.yml")

@@ -11,7 +11,7 @@ from walkoff_app_sdk.app_base import AppBase
 logger = logging.getLogger("apps")
 
 DEFAULT_TIMEOUT = 2
-WALKOFF_ADDRESS_DEFAULT = config.API_GATEWAY_URI
+WALKOFF_ADDRESS_DEFAULT = config.API_URI
 
 
 class Walkoff(AppBase):
