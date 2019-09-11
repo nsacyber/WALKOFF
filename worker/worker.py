@@ -388,7 +388,7 @@ class Worker:
                                                                              label=trigger.label))
 
     async def get_globals(self):
-        url = config.API_GATEWAY_URI.rstrip('/') + '/walkoff/api'
+        url = config.API_URI.rstrip('/') + '/walkoff/api'
         headers, self.token = await get_walkoff_auth_header(self.session, self.token)
         # saving decryption for app-level
         payload = {'to_decrypt': 'false'}

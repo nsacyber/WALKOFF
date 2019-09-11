@@ -4,6 +4,7 @@ from http import HTTPStatus
 from fastapi import FastAPI, Depends
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+import pymongo
 
 from api.server.endpoints import appapi
 from api.server.db import get_roles_by_resource_permission, DBEngine, get_db, MongoEngine, get_mongo_c, \
@@ -63,11 +64,16 @@ async def initialize_users():
     db_session.commit()
 
 
+@_app.on_event("startup")
+async def initialize_mongodb():
+    await _mongo_manager.init_db()
+
+
 @_app.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     try:
         request.state.db = _db_manager.session_maker()
-        request.state.logger = logger
+        request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
         response = await call_next(request)
     # except Exception as e:
     #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
@@ -75,7 +81,6 @@ async def db_session_middleware(request: Request, call_next):
         request.state.db.close()
 
     return response
-
 
 @_app.middleware("http")
 async def jwt_required_middleware(request: Request, call_next):
@@ -86,7 +91,6 @@ async def jwt_required_middleware(request: Request, call_next):
 
     response = await call_next(request)
     return response
-
 
 @_app.middleware("http")
 async def permissions_accepted_for_resource_middleware(request: Request, call_next):
@@ -120,28 +124,24 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
 
 
 # Include routers here
-_app.include_router(appapi.router,
-                    prefix="/globals",
-                    tags=["globals"],
-                    dependencies=[Depends(get_db)])
+# _app.include_router(appapi.router,
+#                     prefix="/walkoff/globals",
+#                     tags=["globals"],
+#                     dependencies=[Depends(get_db)])
+#
+# _app.include_router(appapi.router,
+#                     prefix="/walkoff/users",
+#                     tags=["users"],
+#                     dependencies=[Depends(get_db)])
 
 _app.include_router(appapi.router,
-                    prefix="/users",
-                    tags=["users"],
-                    dependencies=[Depends(get_db)])
-
-_app.include_router(appapi.router,
-                    prefix="/roles",
-                    tags=["roles"],
-                    dependencies=[Depends(get_db)])
-
-_app.include_router(appapi.router,
-                    prefix="/apps",
+                    prefix="/walkoff/apps",
                     tags=["apps"],
-                    dependencies=[Depends(get_db)])
+                    dependencies=[Depends(get_mongo_c)])
 
 
 app = _app
+
 
 
 

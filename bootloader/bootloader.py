@@ -27,10 +27,12 @@ logging.basicConfig(level=logging.DEBUG, format="{asctime} - {name} - {levelname
 logger = logging.getLogger("BOOTLOADER")
 static.set_local_hostname("local_bootloader")
 
-COMPOSE_BASE = {"version": "3.5",
-                "services": {},
-                "networks": {"walkoff_default": {"driver": "overlay", "name": "walkoff_default", "attachable": True}},
-                "secrets": {"encryption_key": {"external": True}}}
+COMPOSE_BASE = {
+    "version": "3.5",
+    "services": {},
+    "networks": {"walkoff_network": {"external": True}},
+    "secrets": {"encryption_key": {"external": True}}
+}
 
 APP_NAME_PREFIX = "walkoff_"
 
@@ -76,7 +78,7 @@ def compose_from_app(path: pathlib.Path, name):
     compose = copy.deepcopy(COMPOSE_BASE)
     build = {"build": {"context": str(path), "dockerfile": "Dockerfile"}}
     image = {"image": f"{config.DOCKER_REGISTRY}/{APP_NAME_PREFIX}{name}:{path.name}"}
-    networks = {"networks": ["walkoff_default"]}
+    networks = {"networks": ["walkoff_network"]}
     deploy = {"deploy": {"mode": "replicated", "replicas": 0, "restart_policy": {"condition": "none"}}}
     config_mount = {"configs": ["common_env.yml"]}
     secret_mount = {"secrets": ["walkoff_encryption_key"]}
@@ -180,7 +182,7 @@ async def delete_encryption_key(docker_client, key_name):
 
 async def check_for_network(docker_client):
     try:
-        await get_network(docker_client, "walkoff_default")
+        await get_network(docker_client, "walkoff_network")
         return True
     except aiodocker.exceptions.DockerError:
         return False
@@ -372,7 +374,7 @@ class Bootloader:
             logger.setLevel("DEBUG")
             docker_logger.setLevel("DEBUG")
 
-            if not args.yes and await are_you_sure(
+            if args.yes or await are_you_sure(
                     "You specified -d/--debug, which will use 'walkoff' as the password for all "
                     "resources, This should be used for debug only. "
                     "(Choose 'no' to use randomly generated passwords.)"):
@@ -391,14 +393,21 @@ class Bootloader:
         await create_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY, b"walkoff")
         await create_encryption_key(self.docker_client, static.MINIO_SECRET_KEY, debug_pw)
 
+        # Create Mongo user password
+        await create_encryption_key(self.docker_client, static.MONGO_KEY, debug_pw)
+
+        # Create Redis key
+        await create_encryption_key(self.docker_client, static.REDIS_KEY, debug_pw)
+
         logger.info("Creating persistent directories for registry, postgres, portainer...")
         os.makedirs(static.REGISTRY_DATA_PATH, exist_ok=True)
-        os.makedirs(static.POSTGRES_DATA_PATH, exist_ok=True)
+        # os.makedirs(static.POSTGRES_DATA_PATH, exist_ok=True)
         os.makedirs(static.PORTAINER_DATA_PATH, exist_ok=True)
         os.makedirs(static.MINIO_DATA_PATH, exist_ok=True)
 
         # Create Postgres Volume
         await self.docker_client.volumes.create({"name": static.POSTGRES_VOLUME})
+        await self.docker_client.volumes.create({"name": static.MONGO_VOLUME})
 
         # Bring up the base compose with the registry
         logger.info("Deploying base services (registry, postgres, portainer, redis)...")
@@ -482,12 +491,14 @@ class Bootloader:
         proc = await rm_stack("walkoff")
 
         if args.clean:
-            if not args.yes and await are_you_sure("Are you sure you want to remove all WALKOFF data? This will remove "
-                                                   "all of WALKOFF's docker secrets, docker volumes, and data for "
-                                                   "walkoff_resource services,"):
+            if args.yes or await are_you_sure("Are you sure you want to remove all WALKOFF data? This will remove "
+                                              "all of WALKOFF's docker secrets, docker volumes, and data for "
+                                              "walkoff_resource services,"):
                 await delete_encryption_key(self.docker_client, static.ENCRYPTION_KEY)
                 await delete_encryption_key(self.docker_client, static.INTERNAL_KEY)
                 await delete_encryption_key(self.docker_client, static.POSTGRES_KEY)
+                await delete_encryption_key(self.docker_client, static.MONGO_KEY)
+                await delete_encryption_key(self.docker_client, static.REDIS_KEY)
                 await delete_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY)
                 await delete_encryption_key(self.docker_client, static.MINIO_SECRET_KEY)
 
@@ -495,6 +506,7 @@ class Bootloader:
                 await delete_dir_contents(static.REGISTRY_DATA_PATH)
                 await delete_dir_contents(static.MINIO_DATA_PATH)
                 await remove_volume(static.POSTGRES_VOLUME, wait=True)
+                await remove_volume(static.MONGO_VOLUME, wait=True)
 
         logger.info("Walkoff stack removed, it may take a few seconds to stop all containers.")
 
@@ -515,9 +527,9 @@ class Bootloader:
         service_yaml = compose.get(args.service)
 
         if service_yaml:
-            if not args.yes and await are_you_sure("Forcing a service to update will disrupt any work it is currently "
-                                                   "doing. It is not yet guaranteed that a service will pick back up "
-                                                   "where it left off. "):
+            if args.yes or await are_you_sure("Forcing a service to update will disrupt any work it is currently "
+                                              "doing. It is not yet guaranteed that a service will pick back up "
+                                              "where it left off. "):
                 if "build" in service_yaml:
                     await build_image(self.docker_client, service_yaml["image"],
                                       service_yaml["build"]["dockerfile"],

@@ -51,7 +51,7 @@ class AppRepo:
         return inst
 
     async def get_loaded_apis(self):
-        url = f"{config.API_GATEWAY_URI}/walkoff/api/apps/apis"
+        url = f"{config.API_URI}/walkoff/api/apps/apis"
         timeout = 0.25
         while True:
             try:
@@ -69,7 +69,7 @@ class AppRepo:
                 await asyncio.sleep(timeout)
 
     async def store_api(self, api):
-        url = f"{config.API_GATEWAY_URI}/walkoff/api/apps/apis"
+        url = f"{config.API_URI}/walkoff/api/apps/apis"
         try:
             headers, self.token = await get_walkoff_auth_header(self.session, self.token)
             if api.get("name") in self.loaded_apis:
@@ -101,7 +101,7 @@ class AppRepo:
 
     # TODO: Maybe set an API to inactive instead of deletion
     async def delete_unused_apps_and_apis(self):
-        url = f"{config.API_GATEWAY_URI}/walkoff/api/apps/apis"
+        url = f"{config.API_URI}/walkoff/api/apps/apis"
         appnames = {key for key, value in self.apps.items()}
         appnames.add('Builtin')
         unused_apis = set(self.loaded_apis.keys()).difference(appnames)

@@ -8,12 +8,14 @@ API_GATEWAY_URI: "http://localhost:8081"
 REDIS_URI: "redis://localhost:6379"
 MINIO: "localhost:9001"
 
+
 # Key locations
 ENCRYPTION_KEY_PATH: "data/local_key"
 INTERNAL_KEY_PATH: "data/local_key"
 POSTGRES_KEY_PATH: "data/local_key"
 MINIO_ACCESS_KEY_PATH: "data/local_key"
 MINIO_SECRET_KEY_PATH: "data/local_key"
+MONGO_KEY_PATH: "data/local_key"
 
 # Worker options
 MAX_WORKER_REPLICAS: "10"

@@ -32,7 +32,7 @@ class HTTPStream:
     async def write(self, message):
         data = {"message": message}
         params = {"workflow_execution_id": self.execution_id}
-        url = f"{config.API_GATEWAY_URI}/walkoff/api/streams/console/logger"
+        url = f"{config.API_URI}/walkoff/api/streams/console/logger"
 
         await self.session.post(url, json=data, params=params)
 

@@ -3,13 +3,12 @@ services:
   resource_registry:
     image: registry:2
     networks:
-      - walkoff_default
+      - walkoff_network
     deploy:
       placement:
         constraints: [node.role==manager]
     ports:
       - 5000:5000
-
 #    The commented lines are needed to enable auth on the custom registry
 #    environment:
 #      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
@@ -24,19 +23,41 @@ services:
 #      - /var/lib/boot2docker/auth:/auth
 
   resource_redis:
-    image: "redis"
+    image: bitnami/redis:latest
     networks:
-      - walkoff_default
-    ports:
-      - "6379:6379"
-    command: redis-server --port 6379
+      - walkoff_network
+#    ports:
+#      - "6379:6379"
+    environment:
+#      - REDIS_REPLICATION_MODE=master
+      - REDIS_MASTER_PASSWORD_FILE=/run/secrets/walkoff_redis_key
+      - REDIS_PASSWORD_FILE=run/secrets/walkoff_redis_key
 #    volumes:
-#      - /path/to/persistent/dir/redis:/data
+#      - walkoff_resource_redis_volume:/bitnami
+    secrets:
+      - walkoff_redis_key
+
+#  resource_redis_replicas:
+#    image: bitnami/redis:latest
+##    ports:
+##      - "6379:6379"
+#    depends_on:
+#      - resource_redis_master
+#    deploy:
+#      replicas: 3
+#    environment:
+#      - REDIS_REPLICATION_MODE=slave
+#      - REDIS_MASTER_HOST=resource_redis_master
+#      - REDIS_MASTER_PORT_NUMBER=6379
+#      - REDIS_MASTER_PASSWORD_FILE=/run/secrets/walkoff_redis_key
+#      - REDIS_PASSWORD_FILE=/run/secrets/walkoff_redis_key
+#    secrets:
+#      - walkoff_redis_key
 
   resource_minio:
     image: minio/minio
     networks:
-      - walkoff_default
+      - walkoff_network
 #    ports:
 #      - "9001:9000"
     volumes:
@@ -47,8 +68,8 @@ services:
       placement:
         constraints: [node.role==manager]
     environment:
-      - "MINIO_ACCESS_KEY_FILE=walkoff_minio_access_key"
-      - "MINIO_SECRET_KEY_FILE=walkoff_minio_secret_key"
+      - MINIO_ACCESS_KEY_FILE=walkoff_minio_access_key
+      - MINIO_SECRET_KEY_FILE=walkoff_minio_secret_key
     command: server /data
     secrets:
       - walkoff_minio_access_key
@@ -57,12 +78,12 @@ services:
   resource_postgres:
     image: "postgres"
     networks:
-      - walkoff_default
-#    ports:
-#      - "5432:5432"
+      - walkoff_network
+    ports:
+      - "5432:5432"
     environment:
-      - "POSTGRES_USER=walkoff"
-      - "POSTGRES_PASSWORD_FILE=/run/secrets/walkoff_postgres_key"
+      - POSTGRES_USER=walkoff
+      - POSTGRES_PASSWORD_FILE=/run/secrets/walkoff_postgres_key
     deploy:
       placement:
         constraints: [node.role==manager]
@@ -71,10 +92,33 @@ services:
     secrets:
       - walkoff_postgres_key
 
+  resource_mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=walkoff
+      - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/walkoff_mongo_key
+    volumes:
+      - walkoff_resource_mongo_volume:/data/db
+    secrets:
+      - walkoff_mongo_key
+
+  debug_mongo_express:
+    image: mongo-express
+    ports:
+      - 27018:8081
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=resource_mongo
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=walkoff
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=walkoff123456
+    secrets:
+      - walkoff_mongo_key
+
   resource_portainer:
     image: "portainer/portainer"
     networks:
-      - walkoff_default
+      - walkoff_network
     deploy:
       placement:
         constraints: [node.role==manager]
@@ -89,15 +133,23 @@ configs:
 secrets:
   walkoff_postgres_key:
     external: true
+  walkoff_mongo_key:
+    external: true
   walkoff_minio_access_key:
     external: true
   walkoff_minio_secret_key:
     external: true
+  walkoff_redis_key:
+    external: true
 
 networks:
-  walkoff_default:
+  walkoff_network:
     external: true
 
 volumes:
   walkoff_resource_postgres_volume:
     external: true
+  walkoff_resource_mongo_volume:
+    external: true
+#  walkoff_resource_redis_volume:
+#    external: true
