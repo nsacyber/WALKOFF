@@ -5,6 +5,7 @@ import { ReportWidget } from '../models/report/reportWidget';
 import { ExecutionService } from '../execution/execution.service';
 import { PlaybookService } from '../playbook/playbook.service';
 import { WorkflowStatuses } from '../models/execution/workflowStatus';
+import { UtilitiesService } from '../utilities.service';
 
 @Component({
     selector: 'widget-modal-component',
@@ -20,7 +21,8 @@ export class WidgetModalComponent implements OnInit {
     executions: any[] = [];
     nodeResults: any[] = [];
 
-    constructor(public activeModal: NgbActiveModal, private executionService: ExecutionService, private playbookService: PlaybookService) { }
+    constructor(public activeModal: NgbActiveModal, private executionService: ExecutionService, 
+        private playbookService: PlaybookService, private utils: UtilitiesService) { }
 
     ngOnInit() {
         this.updateWorkflows();
@@ -46,7 +48,7 @@ export class WidgetModalComponent implements OnInit {
         const workflowStatuses = await this.executionService.getAllWorkflowStatuses();
         this.executions = [{id: 'latest', text: 'Latest'}].concat(workflowStatuses
                             .filter(status => status.workflow_id == workflowId && status.status == WorkflowStatuses.COMPLETED)
-                            .map(status => ({ id: status.execution_id, text: status.completed_at_local})))
+                            .map(status => ({ id: status.execution_id, text: this.utils.getLocalTime(status.completed_at) })))
 
         this.widget.options.execution = 'latest';
         this.updateNodeResults();

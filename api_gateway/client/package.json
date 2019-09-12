@@ -76,6 +76,7 @@
     "ng2-select2": "^1.0.0-beta.16",
     "ngx-clipboard": "^12.2.0",
     "ngx-cookie-service": "^2.2.0",
+    "ngx-moment": "^3.4.0",
     "ngx-toastr": "^10.0.4",
     "node-sass": "^4.12.0",
     "rxjs": "~6.5.3",

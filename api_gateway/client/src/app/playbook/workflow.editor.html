@@ -392,15 +392,15 @@ else:
                                 </ngx-datatable-column>
                                 <ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
-                                        <span [title]="row.localized_started_at">
-                                            {{nodeStatusStartedRelativeTimes[row.execution_id]}}
+                                        <span ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                            {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}
                                         </span>
                                     </ng-template>
                                 </ngx-datatable-column>
                                 <ngx-datatable-column name="Completed At" prop="completed_at" [flexGrow]="1">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
-                                        <span [title]="row.localized_completed_at">
-                                            {{nodeStatusCompletedRelativeTimes[row.execution_id]}}
+                                        <span ngbTooltip="{{ row.completed_at ? (row.completed_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                            {{ row.completed_at ? (row.completed_at | amFromUtc | amTimeAgo ) : 'N/A' }}
                                         </span>
                                     </ng-template>
                                 </ngx-datatable-column>

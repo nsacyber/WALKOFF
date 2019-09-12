@@ -17,6 +17,8 @@ export class NodeStatus {
 
 	execution_id: string;
 
+	combined_id: string;
+
 	node_id: string;
 
 	label: string;
@@ -37,10 +39,4 @@ export class NodeStatus {
 	completed_at?: string;
 
 	parameters?: any;
-
-	@Exclude({ toPlainOnly: true })
-	localized_started_at?: string;
-
-	@Exclude({ toPlainOnly: true })
-	localized_completed_at?: string;
 }
