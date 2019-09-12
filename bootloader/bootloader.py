@@ -365,6 +365,8 @@ class Bootloader:
                             help="Set log level to debug.")
         parser.add_argument("-y", "--yes", action="store_true",
                             help="Skips all verification questions.")
+        parser.add_argument("-r", "--resources", action="store_true",
+                            help="Only runs the resource services.")
 
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
@@ -414,6 +416,9 @@ class Bootloader:
         base_compose = parse_yaml(config.BASE_COMPOSE)
 
         await deploy_compose(base_compose)
+
+        if args.resources:
+            return
 
         await self.wait_for_registry()
 
