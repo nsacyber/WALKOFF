@@ -10,23 +10,23 @@ from api.server.endpoints import appapi, roles, users, global_variables, auth
 from api.server.db import get_roles_by_resource_permission, DBEngine, get_db, MongoEngine, get_mongo_c, \
     initialize_default_resources_super_admin, initialize_default_resources_internal_user, \
     initialize_default_resources_admin, initialize_default_resources_app_developer, \
-    initialize_default_resources_workflow_developer, initialize_default_resources_workflow_operator, add_user, Role, User
+    initialize_default_resources_workflow_developer, initialize_default_resources_workflow_operator, add_user, Role, \
+    User
 
 from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles
 from common.config import config, static
 
 logger = logging.getLogger("API")
 
-
-async def run_before_everything():
-    return "use this as a dependency to make it run before every request"
-
 _app = FastAPI()
+_walkoff = FastAPI(openapi_prefix="/walkoff")
 _db_manager = DBEngine()
 _mongo_manager = MongoEngine()
 
+_app.mount("/walkoff", _walkoff)
 
-@_app.on_event("startup")
+
+@_walkoff.on_event("startup")
 async def initialize_users():
     db_session = _db_manager.session_maker()
     initialize_default_resources_internal_user(db_session)
@@ -64,12 +64,12 @@ async def initialize_users():
     db_session.commit()
 
 
-@_app.on_event("startup")
+@_walkoff.on_event("startup")
 async def initialize_mongodb():
     await _mongo_manager.init_db()
 
 
-@_app.middleware("http")
+@_walkoff.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     try:
         request.state.db = _db_manager.session_maker()
@@ -83,7 +83,7 @@ async def db_session_middleware(request: Request, call_next):
     return response
 
 
-@_app.middleware("http")
+@_walkoff.middleware("http")
 async def jwt_required_middleware(request: Request, call_next):
     db_session = _db_manager.session_maker()
     decoded_token = get_raw_jwt(request)
@@ -94,7 +94,7 @@ async def jwt_required_middleware(request: Request, call_next):
     return response
 
 
-@_app.middleware("http")
+@_walkoff.middleware("http")
 async def permissions_accepted_for_resource_middleware(request: Request, call_next):
     logger.info("Permissions Checking Initiated")
     db_session = _db_manager.session_maker()
@@ -131,35 +131,32 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
 
 
 # Include routers here
-_app.include_router(auth.router,
-                    prefix="/walkoff/auth",
-                    tags=["auth"],
-                    dependencies=[Depends(get_db)])
+_walkoff.include_router(auth.router,
+                        prefix="/auth",
+                        tags=["auth"],
+                        dependencies=[Depends(get_db)])
 
-_app.include_router(global_variables.router,
-                    prefix="/walkoff/globals",
-                    tags=["globals"],
-                    dependencies=[Depends(get_db)])
+_walkoff.include_router(global_variables.router,
+                        prefix="/globals",
+                        tags=["globals"],
+                        dependencies=[Depends(get_db)])
 
-_app.include_router(users.router,
-                    prefix="/walkoff/users",
-                    tags=["users"],
-                    dependencies=[Depends(get_db)])
+_walkoff.include_router(users.router,
+                        prefix="/users",
+                        tags=["users"],
+                        dependencies=[Depends(get_db)])
 
-_app.include_router(roles.router,
-                    prefix="/walkoff/roles",
-                    tags=["roles"],
-                    dependencies=[Depends(get_db)])
+_walkoff.include_router(roles.router,
+                        prefix="/roles",
+                        tags=["roles"],
+                        dependencies=[Depends(get_db)])
 
-_app.include_router(appapi.router,
-                    prefix="/walkoff/apps",
-                    tags=["apps"],
-                    dependencies=[Depends(get_mongo_c)])
-
+_walkoff.include_router(appapi.router,
+                        prefix="/apps",
+                        tags=["apps"],
+                        dependencies=[Depends(get_mongo_c)])
 
 app = _app
-
-
 
 #
 # # Validate database models before saving them, here.
