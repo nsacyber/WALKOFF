@@ -47,12 +47,12 @@ def _authenticate_and_grant_tokens(request: Request, db_session: Session, json_i
 
 
 @router.post("/")
-def login(*, request: Request, db_session: Session = Depends(get_db), json_in: AuthModel):
-    return _authenticate_and_grant_tokens(request, db_session, dict(json_in), with_refresh=True)
+def login(json_in: AuthModel, request: Request, db_session: Session = Depends(get_db)):
+    return _authenticate_and_grant_tokens(request=request, db_session=db_session, json_in=dict(json_in), with_refresh=True)
 
 
 def fresh_login(json_in: AuthModel, request: Request, db_session: Session = Depends(get_db)):
-    return _authenticate_and_grant_tokens(request, db_session, dict(json_in))
+    return _authenticate_and_grant_tokens(request=request, db_session=db_session, json_in=dict(json_in))
 
 
 @router.post("/refresh")
@@ -74,7 +74,7 @@ def refresh(request: Request, db_session: Session = Depends(get_db)):
 
 
 @router.post("/logout")
-def logout(*, request: Request, db_session: Session = Depends(get_db), json_in: TokenModel):
+def logout(json_in: TokenModel, request: Request, db_session: Session = Depends(get_db)):
     data = dict(json_in)
     refresh_token = data.get('refresh_token', None) if data else None
     if refresh_token is None:
@@ -86,7 +86,7 @@ def logout(*, request: Request, db_session: Session = Depends(get_db), json_in: 
         user = db_session.query(User).filter(User.id == user_id).first()
         if user is not None:
             user.logout(db_session=db_session)
-        revoke_token(db_session=db_session, decoded_token=decode_token(refresh_token),)
+        revoke_token(db_session=db_session, decoded_token=decode_token(refresh_token))
         return None, HTTPStatus.NO_CONTENT
     else:
         return Problem(

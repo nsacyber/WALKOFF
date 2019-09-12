@@ -3,8 +3,7 @@ from sqlalchemy import Column, String, JSON, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import ARRAY
 
-from api.server.db.mixins import TrackModificationsMixIn
-from api.server.db import Base
+from api.server.db import Base, TrackModificationsMixIn
 
 
 class ResourceModel(BaseModel):

@@ -108,7 +108,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
     resource_permission = ""
 
     # TODO: Add check for scheduler "execute" permission
-    if resource_name != ("globals" and "workflows" and "workflowqueue"):
+    if resource_name != ("globals" and "workflows" and "workflowqueue" and "auth" and "appapi"):
         if request_method == "POST":
             resource_permission = "create"
 

@@ -26,7 +26,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 def verify_jwt_refresh_token_in_request(db_session: Session, request: Request):
     decoded_token = get_raw_jwt(request)
 
-    verify_token_in_decoded(decoded_token, request_type='refresh')
+    verify_token_in_decoded(decoded_token=decoded_token, request_type='refresh')
     verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='refresh')
     return True
 

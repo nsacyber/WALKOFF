@@ -94,7 +94,7 @@ def approve_token(db_session: Session, token_id, user):
         db_session.commit()
 
 
-def prune_if_necessary(db_session : Session):
+def prune_if_necessary(db_session: Session):
     """Prunes the database if necessary"""
     global NUMBER_OF_PRUNE_OPERATIONS
     NUMBER_OF_PRUNE_OPERATIONS += 1
