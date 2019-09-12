@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, JSON, Integer, DateTime
 from sqlalchemy.orm import relationship, backref, Session
 from typing import List
 
-from api.server.db import TrackModificationsMixIn
+# from api.server.db import TrackModificationsMixIn
 from api.server.db.resource import Resource
 from api.server.db import Base
 
@@ -39,7 +39,7 @@ class AvailableResourceActionModel(BaseModel):
     app_name: str = None
 
 
-class Role(Base, TrackModificationsMixIn):
+class Role(Base):
     __tablename__ = 'role'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(80), unique=True, nullable=False)

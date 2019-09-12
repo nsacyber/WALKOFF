@@ -5,11 +5,12 @@ from passlib.hash import pbkdf2_sha512
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from api.server.db import Base
+from api.server.db import db
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, Integer, String, Enum, Boolean, DateTime
 from api.server.utils.helpers import utc_as_rfc_datetime
-from api.server.db import TrackModificationsMixIn
-from api.server.db.role import Role
+# from api.server.db import TrackModificationsMixIn
+from api.server.db.role import Role, RoleModel
 from typing import List
 from pydantic import BaseModel, UUID4
 from sqlalchemy.orm import Session
@@ -19,15 +20,15 @@ from fastapi import Depends
 
 logger = logging.getLogger(__name__)
 
-user_roles_association = Base.Table('user_roles_association',
-                                  Column('role_id', Integer, ForeignKey('role.id')),
-                                  Column('user_id', Integer, ForeignKey('user.id')))
+# user_roles_association = db.Table('user_roles_association',
+#                                   Column('role_id', Integer, ForeignKey('role.id')),
+#                                   Column('user_id', Integer, ForeignKey('user.id')))
 
 
 class AddUser(BaseModel):
     username: str
     password: str
-    roles: List[object] = None
+    roles: List[RoleModel] = None
     active: bool = None
     resources_created: List = None
 
@@ -38,7 +39,7 @@ class EditUser(BaseModel):
     old_password: str = None
     password: str = None
     active: bool = None
-    roles: List[object] = None
+    roles: List[RoleModel] = None
 
 
 class EditPersonalUser(BaseModel):
@@ -55,7 +56,7 @@ class DisplayUser(BaseModel):
     roles: List[int] = None
 
 
-class User(Base, TrackModificationsMixIn):
+class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, autoincrement=True)
     # roles = relationship('Role', secondary=user_roles_association, backref=db.backref('users', lazy='dynamic'))

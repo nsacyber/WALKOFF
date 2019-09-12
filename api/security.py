@@ -18,6 +18,8 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 from api.fastapi_config import FastApiConfig
 from api.server.db.tokens import is_token_revoked
 from api.server.db.user import User
+from api.server.db.role import Role
+from api.server.db.resource import Resource, Permission
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
@@ -94,6 +96,7 @@ def decode_token(to_decode):
 
 
 def get_raw_jwt(request: Request):
+    print(vars(request))
     auth_header = request.headers['Authorization']
     jwt_token = auth_header[7:]
     return decode_token(jwt_token)
@@ -120,6 +123,14 @@ def user_has_correct_roles(accepted_roles, request: Request, all_required=False)
         return not accepted_roles - user_roles
     else:
         return any(role in accepted_roles for role in user_roles)
+
+
+def get_roles_by_resource_permission(resource_name: str, resource_permission: str, db_session: Session):
+    roles = []
+    roles.extend(db_session.query(Role).join(Role.resources).join(Resource.permissions).filter(
+        Resource.name == resource_name, Permission.name == resource_permission).all())
+
+    return {role_obj.id for role_obj in roles}
 
 
 class ResourcePermissions:

@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 from api.server.utils.problem import Problem, dne_problem
 from http import HTTPStatus
-from api.server.db import get_db, clear_resources_for_role, get_all_available_resource_actions
+from api.server.db import get_db
+from api.server.db.user_init import clear_resources_for_role, get_all_available_resource_actions
 from api.server.db.role import Role, AddRoleModel, RoleModel
 
 

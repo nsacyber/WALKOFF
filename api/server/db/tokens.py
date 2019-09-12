@@ -22,6 +22,7 @@ class TokenModel(BaseModel):
 
 
 class BlacklistedToken(Base):
+    __tablename__ = 'token'
     id = Column(Integer, primary_key=True)
     jti = Column(String(36), nullable=False)
     user_identity = Column(String(50), nullable=False)

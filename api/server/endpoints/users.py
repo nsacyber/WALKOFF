@@ -7,7 +7,7 @@ from starlette.requests import Request
 
 from api.fastapi_config import FastApiConfig
 from api.server.db.user import User
-from api.server.db import add_user
+from api.server.db.user_init import add_user
 from api.server.db import get_db
 from api.server.db.user import DisplayUser, EditUser, EditPersonalUser, AddUser
 from api.server.utils.problem import Problem

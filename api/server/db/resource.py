@@ -3,7 +3,8 @@ from sqlalchemy import Column, String, JSON, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import ARRAY
 
-from api.server.db import Base, TrackModificationsMixIn
+from api.server.db import Base
+#TrackModificationsMixIn
 
 
 class ResourceModel(BaseModel):
@@ -12,7 +13,7 @@ class ResourceModel(BaseModel):
     role_id: int
 
 
-class Resource(Base, TrackModificationsMixIn):
+class Resource(Base):
     __tablename__ = 'resource'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
