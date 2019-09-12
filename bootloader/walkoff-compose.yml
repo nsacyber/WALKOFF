@@ -31,8 +31,8 @@ services:
     build:
       context: ./
       dockerfile: ./api/Dockerfile
-    ports:
-      - '8080:8080'
+#    ports:
+#      - '8080:8080'
     networks:
       - walkoff_network
 #    stop_signal: SIGINT

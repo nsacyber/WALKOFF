@@ -147,10 +147,10 @@ async def remove_volume(volume: str, wait: bool = False):
     client = docker.from_env()
     if wait:
         bl = client.containers.list(filters={"name": "walkoff_bootloader"})
-        list = set(client.containers.list()) - set(bl)
-        while len(list):
-            list = set(client.containers.list()) - set(bl)
-            logger.info(f"Waiting for containers to close: {list}")
+        container_set = set(client.containers.list()) - set(bl)
+        while len(container_set):
+            container_set = set(client.containers.list()) - set(bl)
+            logger.info(f"Waiting for containers to close: {[c.name for c in container_set]}")
             time.sleep(1)
             continue
 
