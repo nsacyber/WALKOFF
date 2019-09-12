@@ -42,7 +42,7 @@ def create_user(request: AddUser, db_session: Session = Depends(get_db)):
     data = await request.json()
     username = request.username
     if not User.query.filter_by(username=username).first():
-        user = add_user(username=username, password=request.password)
+        user = add_user(username=username, password=request.password, db_session=db_session)
 
         # if request.roles or request.active
         if 'roles' in data or 'active' in data:

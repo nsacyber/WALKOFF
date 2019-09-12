@@ -341,7 +341,7 @@ def add_user(username: str, password: str, db_session: Session, roles: list = No
         (User): The new User object if successful, else None.
     """
     if db_session.query(User).filter_by(username=username).first() is None:
-        u = User(username, password, roles=roles)
+        u = User(username, password, roles=roles, db_session=db_session)
         db_session.add(u)
         db_session.commit()
         return u

@@ -37,7 +37,7 @@ def create_role(*, db_session: Session = Depends(get_db), add_role: AddRoleModel
             resources.remove('/roles')
         role_params = {'name': json_data['name'],
                        'description': json_data['description'] if 'description' in json_data else '',
-                       'resources': resources}
+                       'resources': resources, 'db_session': db_session}
         new_role = Role(**role_params)
         db_session.add(new_role)
         db_session.commit()
