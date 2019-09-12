@@ -94,40 +94,40 @@ async def jwt_required_middleware(request: Request, call_next):
     return response
 
 
-@_app.middleware("http")
-async def permissions_accepted_for_resource_middleware(request: Request, call_next):
-    logger.info("Permissions Checking Initiated")
-    db_session = _db_manager.session_maker()
-    request_path = (request.url.path).split("/")
-    logger.info(f"Current request path: {request.url.path}")
-    resource_name = request_path[1]
-    logger.info(f"Current resource name: {resource_name}")
-    request_method = request.method
-    logger.info(f"Current request method: {request_method}")
-    accepted_roles = set()
-    resource_permission = ""
-
-    # TODO: Add check for scheduler "execute" permission
-    if resource_name != ("globals" and "workflows" and "workflowqueue" and "auth" and "appapi"):
-        if request_method == "POST":
-            resource_permission = "create"
-
-        if request_method == "GET":
-            resource_permission = "read"
-
-        if request_method == "PUT":
-            resource_permission = "put"
-
-        if request_method == "DELETE":
-            resource_permission = "delete"
-
-        accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, db_session)
-        logger.info(f"Accepted roles: {accepted_roles}")
-        if not user_has_correct_roles(accepted_roles, request):
-            return "Unauthorized View", HTTPStatus.FORBIDDEN
-
-    response = await call_next(request)
-    return response
+# @_app.middleware("http")
+# async def permissions_accepted_for_resource_middleware(request: Request, call_next):
+#     logger.info("Permissions Checking Initiated")
+#     db_session = _db_manager.session_maker()
+#     request_path = (request.url.path).split("/")
+#     logger.info(f"Current request path: {request.url.path}")
+#     resource_name = request_path[1]
+#     logger.info(f"Current resource name: {resource_name}")
+#     request_method = request.method
+#     logger.info(f"Current request method: {request_method}")
+#     accepted_roles = set()
+#     resource_permission = ""
+#
+#     # TODO: Add check for scheduler "execute" permission
+#     if resource_name != ("globals" and "workflows" and "workflowqueue" and "auth" and "appapi"):
+#         if request_method == "POST":
+#             resource_permission = "create"
+#
+#         if request_method == "GET":
+#             resource_permission = "read"
+#
+#         if request_method == "PUT":
+#             resource_permission = "put"
+#
+#         if request_method == "DELETE":
+#             resource_permission = "delete"
+#
+#         accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, db_session)
+#         logger.info(f"Accepted roles: {accepted_roles}")
+#         if not user_has_correct_roles(accepted_roles, request):
+#             return "Unauthorized View", HTTPStatus.FORBIDDEN
+#
+#     response = await call_next(request)
+#     return response
 
 
 # Include routers here

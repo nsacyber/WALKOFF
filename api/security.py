@@ -69,8 +69,7 @@ def create_access_token(identity: int, db_session: Session, fresh=False, expires
                  "fresh": fresh,
                  "type": "access",
                  "user_claims": user_claims}
-    encoded_jwt = jwt.encode(to_encode, FastApiConfig.SECRET_KEY,
-                             algorithm=FastApiConfig.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, FastApiConfig.SECRET_KEY, algorithm=FastApiConfig.ALGORITHM)
     return encoded_jwt
 
 
@@ -84,8 +83,7 @@ def create_refresh_token(identity: int, expires_delta: timedelta = None):
                  "exp": expire,
                  "identity": identity,
                  "type": "refresh"}
-    encoded_jwt = jwt.encode(to_encode, FastApiConfig.SECRET_KEY,
-                             algorithm=FastApiConfig.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, FastApiConfig.SECRET_KEY, algorithm=FastApiConfig.ALGORITHM)
     return encoded_jwt
 
 
@@ -112,30 +110,6 @@ def get_jwt_claims(request: Request):
 def add_claims_to_access_token(db_session: Session, user_id):
     user = db_session.query(User).filter(User.id == user_id).first()
     return {'roles': [role.id for role in user.roles], 'username': user.username} if user is not None else {}
-
-
-def permissions_accepted_for_resources(*resource_permissions):
-    return _permissions_decorator(resource_permissions)
-
-
-def permissions_required_for_resources(*resource_permissions):
-    return _permissions_decorator(resource_permissions, all_required=True)
-
-
-def _permissions_decorator(resource_permissions, all_required=False):
-    def wrapper(fn):
-        @wraps(fn)
-        def decorated_view(*args, **kwargs):
-            _roles_accepted = set()
-            for resource_permission in resource_permissions:
-                _roles_accepted |= api_gateway.serverdb.get_roles_by_resource_permissions(resource_permission)
-            if user_has_correct_roles(_roles_accepted, args[0], all_required=all_required):
-                return fn(*args, **kwargs)
-            return "Unauthorized View", HTTPStatus.FORBIDDEN
-
-        return decorated_view
-
-    return wrapper
 
 
 def user_has_correct_roles(accepted_roles, request: Request, all_required=False):

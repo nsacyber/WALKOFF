@@ -7,9 +7,9 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from api.server.db import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, Integer, String, Enum, Boolean, DateTime
-from api_gateway.helpers import utc_as_rfc_datetime
-from api_gateway.serverdb import TrackModificationsMixIn
-from api_gateway.serverdb.role import Role
+from api.server.utils.helpers import utc_as_rfc_datetime
+from api.server.db import TrackModificationsMixIn
+from api.server.db.role import Role
 from typing import List
 from pydantic import BaseModel, UUID4
 from sqlalchemy.orm import Session

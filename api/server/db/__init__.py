@@ -1,6 +1,7 @@
 # from alembic import command
 # from alembic.config import Config
 import asyncio
+import datetime
 
 from starlette.requests import Request
 from marshmallow import pre_load, fields
@@ -146,10 +147,11 @@ class DBEngine(object):
         #
         self.session_maker = sessionmaker(bind=self.engine)
         # self.session = scoped_session(session)
-
         Base.metadata.bind = self.engine
         Base.metadata.create_all(self.engine)
 
+    def current_timestamp(self):
+        return datetime.datetime.now()
         # alembic_cfg = Config(api_gateway.config.Config.ALEMBIC_CONFIG, ini_section="execution",
         #                      attributes={'configure_logger': False})
         # command.stamp(alembic_cfg, "head")
@@ -164,7 +166,7 @@ db = DBEngine()
 
 class TrackModificationsMixIn(Base):
     created_at = Column(DateTime, default=db.current_timestamp())
-    modified_at = Column(DateTime, default=db.current_timestamp(), onupdate=db.func.current_timestamp())
+    modified_at = Column(DateTime, default=db.current_timestamp(), onupdate=db.current_timestamp())
 
 # class BaseSchema(ModelSchema):
 #     """
@@ -217,7 +219,7 @@ def initialize_default_resources_internal_user(db_session: Session):
     internal_user = db_session.query(Role).filter(Role.id == 1).first()
     if not internal_user:
         internal_user = Role("internal_user", description="Placeholder description",
-                             resources=default_resource_permissions_internal_user)
+                             resources=default_resource_permissions_internal_user, db_session=db_session)
         db_session.add(internal_user)
     else:
         internal_user.set_resources(default_resource_permissions_internal_user)
@@ -240,7 +242,7 @@ def initialize_default_resources_admin(db_session: Session):
     """Initializes the default resources for an admin user"""
     admin = db_session.query(Role).filter(Role.id == 3).first()
     if not admin:
-        admin = Role("admin", description="Placeholder description", resources=default_resource_permissions_admin)
+        admin = Role("admin", description="Placeholder description", resources=default_resource_permissions_admin, db_session=db_session)
         db_session.add(admin)
     else:
         admin.set_resources(default_resource_permissions_admin)
@@ -252,7 +254,7 @@ def initialize_default_resources_app_developer(db_session: Session):
     app_developer = db_session.query(Role).filter(Role.id == 4).first()
     if not app_developer:
         app_developer = Role("app_developer", description="Placeholder description",
-                                  resources=default_resource_permissions_app_developer)
+                                  resources=default_resource_permissions_app_developer, db_session=db_session)
         db_session.add(app_developer)
     else:
         app_developer.set_resources(default_resource_permissions_app_developer)
@@ -264,7 +266,7 @@ def initialize_default_resources_workflow_developer(db_session: Session):
     workflow_developer = db_session.query(Role).filter(Role.id == 5).first()
     if not workflow_developer:
         workflow_developer = Role("workflow_developer", description="Placeholder description",
-                                  resources=default_resource_permissions_workflow_developer)
+                                  resources=default_resource_permissions_workflow_developer, db_session=db_session)
         db_session.add(workflow_developer)
     else:
         workflow_developer.set_resources(default_resource_permissions_workflow_developer)
@@ -276,7 +278,7 @@ def initialize_default_resources_workflow_operator(db_session: Session):
     workflow_operator = db_session.query(Role).filter(Role.id == 6).first()
     if not workflow_operator:
         workflow_operator = Role("workflow_operator", description="Placeholder description",
-                                 resources=default_resource_permissions_workflow_operator)
+                                 resources=default_resource_permissions_workflow_operator, db_session=db_session)
         db_session.add(workflow_operator)
     else:
         workflow_operator.set_resources(default_resource_permissions_workflow_operator)
