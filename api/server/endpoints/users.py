@@ -11,7 +11,6 @@ from api.server.db.user import DisplayUser, EditUser, EditPersonalUser, AddUser
 from api.server.utils.problem import Problem
 from api.security import get_jwt_identity
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -38,11 +37,11 @@ def read_all_users(page: int = 1, db_session: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=DisplayUser, status_code=201)
-def create_user(request: AddUser, db_session: Session = Depends(get_db)):
-    data = await request.json()
-    username = request.username
+def create_user(body: AddUser, db_session: Session = Depends(get_db)):
+    data = dict(body)
+    username = body.username
     if not User.query.filter_by(username=username).first():
-        user = add_user(username=username, password=request.password, db_session=db_session)
+        user = add_user(username=username, password=body.password)
 
         # if request.roles or request.active
         if 'roles' in data or 'active' in data:
@@ -88,9 +87,9 @@ def list_permissions():
 
 
 @router.put("/{user_id}", response_model=DisplayUser)
-def update_user(user_id: int, request: EditUser, db_session: Session = Depends(get_db)):
+def update_user(user_id: int, body: EditUser, db_session: Session = Depends(get_db)):
     user = userid_getter(db_session=db_session, user_id=user_id)
-    data = request.get_json()
+    data = dict(body)
     current_user = get_jwt_identity()
 
     # check for internal user
@@ -122,9 +121,9 @@ def update_user(user_id: int, request: EditUser, db_session: Session = Depends(g
 
 
 @router.put("/personal_data/{username}", response_model=DisplayUser)
-def update_personal_user(username: str, request: EditPersonalUser, db_session: Session = Depends(get_db)):
+def update_personal_user(username: str, body: EditPersonalUser, db_session: Session = Depends(get_db)):
     user = username_getter(db_session=db_session, username=username)
-    data = await request.json()
+    data = dict(body)
     current_user = get_jwt_identity()
 
     # check for internal user
@@ -136,7 +135,7 @@ def update_personal_user(username: str, request: EditPersonalUser, db_session: S
             f"Current user does not have permission to update user {user.id}.")
 
     # check password
-    if user.verify_password(request.old_password):
+    if user.verify_password(body.old_password):
         if user.id == current_user:
             # allow ability to update username/password but not roles/active
             if user.id == 2:
