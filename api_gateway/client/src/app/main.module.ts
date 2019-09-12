@@ -67,6 +67,7 @@ import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 import { WorkflowEditorComponent } from './playbook/workflow.editor.component';
 import { MetadataModalComponent } from './playbook/metadata.modal.component';
 import { ImportModalComponent } from './playbook/import.modal.component';
+import { FileModalComponent } from './apps/file.modal.component';
 import { ManageAppComponent } from './apps/manage.app.component';
 import { HasPermissionDirective } from './permission.directive';
 
@@ -130,6 +131,7 @@ import { HasPermissionDirective } from './permission.directive';
 		MetadataModalComponent,
 		ImportModalComponent,
 		ExecutionVariableModalComponent,
+		FileModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
 		PlaybookConditionsComponent,
@@ -173,7 +175,8 @@ import { HasPermissionDirective } from './permission.directive';
 		PlaybookEnvironmentVariableModalComponent,
 		ImportModalComponent,
 		MetadataModalComponent,
-		WidgetModalComponent
+		WidgetModalComponent,
+		FileModalComponent
 	],
 	bootstrap: [MainComponent],
 })
