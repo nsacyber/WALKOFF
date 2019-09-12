@@ -16,8 +16,6 @@ from sqlalchemy_utils import database_exists, create_database
 from api.server.db.resource import Permission, Resource
 from api.server.db.role import Role
 from api.server.db.user import User
-from common.config import config
-from api_gateway.helpers import format_db_path
 import motor.motor_asyncio
 import pymongo
 

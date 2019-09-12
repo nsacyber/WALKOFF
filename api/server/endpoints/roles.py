@@ -1,13 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from api_gateway.extensions import db
 from starlette.requests import Request
-from api.security import permissions_accepted_for_resources, ResourcePermissions
 from api.server.utils.problem import Problem, dne_problem
 from http import HTTPStatus
-from api_gateway.serverdb import clear_resources_for_role, get_all_available_resource_actions
-from api.server.db import get_db
+from api.server.db import get_db, clear_resources_for_role, get_all_available_resource_actions
 from api.server.db.role import Role, AddRoleModel, RoleModel
 
 
@@ -29,7 +26,7 @@ def read_all_roles(db_session: Session = Depends(get_db)):
 
 
 @router.post("/")
-def create_role(*, db_session: Session = Depends(get_db), add_role: AddRoleModel):
+def create_role(add_role: AddRoleModel, db_session: Session = Depends(get_db)):
     json_data = dict(add_role)
     if not db_session.query(Role).filter_by(name=json_data['name']).first():
         resources = json_data['resources'] if 'resources' in json_data else []
@@ -53,7 +50,7 @@ def create_role(*, db_session: Session = Depends(get_db), add_role: AddRoleModel
 
 
 @router.get('/{role_id}')
-def read_role(role_id: int, *, db_session: Session = Depends(get_db)):
+def read_role(role_id: int, db_session: Session = Depends(get_db)):
     role = role_getter(db_session=db_session, role_id=role_id)
     # check for internal or super_admin
     if role.id != 1 or role.id != 2:
@@ -63,7 +60,7 @@ def read_role(role_id: int, *, db_session: Session = Depends(get_db)):
 
 
 @router.put('/{role_id}')
-def update_role(role_id: int, *, db_session: Session = Depends(get_db), updated_role: RoleModel):
+def update_role(role_id: int, updated_role: RoleModel, db_session: Session = Depends(get_db)):
     role = role_getter(db_session=db_session, role_id=role_id)
     if role.id != 1 and role.id != 2:
         json_data = dict(updated_role)
@@ -85,10 +82,10 @@ def update_role(role_id: int, *, db_session: Session = Depends(get_db), updated_
 
 
 @router.delete('/{role_id}')
-def delete_role(role_id: int, *, db_session: Session = Depends(get_db)):
+def delete_role(role_id: int, db_session: Session = Depends(get_db)):
     role = role_getter(db_session=db_session, role_id=role_id)
     if role.id != 1 or role.id != 2:
-        clear_resources_for_role(role.name)
+        clear_resources_for_role(role_name=role.name, db_session=db_session)
         db_session.delete(role)
         db_session.commit()
         return None, HTTPStatus.NO_CONTENT
