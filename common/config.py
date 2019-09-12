@@ -135,6 +135,7 @@ class Config:
     # API Gateway options
     DB_TYPE = os.getenv("DB_TYPE", "postgres")
     DB_HOST = os.getenv("DB_HOST", Static.POSTGRES_SERVICE)
+    MONGO_HOST = os.getenv("MONGO_HOST", Static.MONGO_SERVICE)
     SERVER_DB_NAME = os.getenv("SERVER_DB", "walkoff")
     EXECUTION_DB_NAME = os.getenv("EXECUTION_DB", "execution")
     DB_USERNAME = os.getenv("DB_USERNAME", "walkoff")

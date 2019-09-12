@@ -6,8 +6,8 @@ import asyncio
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from common.config import config
-from common.message_types import(message_dumps, NodeStatusMessage, WorkflowStatusMessage,
-                                 StatusEnum, JSONPatch, JSONPatchOps)
+from common.message_types import (message_dumps, NodeStatusMessage, WorkflowStatusMessage,
+                                  StatusEnum, JSONPatch, JSONPatchOps)
 
 logger = logging.getLogger("WALKOFF")
 
@@ -35,7 +35,7 @@ def sfloat(value, default):
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
-async def get_walkoff_auth_header(session, token=None, timeout=5*60):
+async def get_walkoff_auth_header(session, token=None, timeout=5 * 60):
     url = config.API_URI.rstrip('/') + '/walkoff/api'
     logger.debug("Attempting to refresh WALKOFF JWT")
     if token is None:

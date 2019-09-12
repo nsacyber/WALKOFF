@@ -21,7 +21,6 @@ import motor.motor_asyncio
 import pymongo
 
 from common.config import config, static
-from common.helpers import run_coro_to_complete
 from api.server.utils.helpers import format_db_path
 
 default_resource_permissions_internal_user = [
@@ -195,7 +194,7 @@ class MongoEngine(object):
     def __init__(self):
         self.client = motor.motor_asyncio.AsyncIOMotorClient(username=config.DB_USERNAME,
                                                              password=config.get_from_file(config.MONGO_KEY_PATH),
-                                                             host=config.DB_HOST)
+                                                             host=config.MONGO_HOST)
 
     async def init_db(self):
         await self.client.walkoff_db.apps.create_index([("id_", pymongo.ASCENDING),
@@ -203,8 +202,12 @@ class MongoEngine(object):
                                                        unique=True)
 
     def collection_from_url(self, path: str):
-        resource = path.split("/")[2]
-        return self.client.walkoff_db[resource]
+        parts = path.split("/")
+        if len(parts) >= 3:
+            resource = parts[2]
+            return self.client.walkoff_db[resource]
+        else:
+            return None
 
 
 def get_mongo_c(request: Request):

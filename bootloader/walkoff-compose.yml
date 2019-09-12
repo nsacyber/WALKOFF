@@ -31,6 +31,8 @@ services:
     build:
       context: ./
       dockerfile: ./api/Dockerfile
+#    ports:
+#      - '8080:8080'
     networks:
       - walkoff_network
 #    stop_signal: SIGINT
@@ -60,7 +62,7 @@ services:
       - ./nginx/cert.pem:/opt/bitnami/nginx/conf/cert.pem:ro
       - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
     depends_on:
-      - core_api_gateway
+      - core_api
 
   core_worker:
 #    command: python -m worker.worker --log-level=debug
