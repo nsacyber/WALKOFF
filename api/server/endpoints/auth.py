@@ -46,7 +46,7 @@ def _authenticate_and_grant_tokens(request: Request, db_session: Session, json_i
         return invalid_username_password_problem
 
 
-@router.post("/auth")
+@router.post("/")
 def login(*, request: Request, db_session: Session = Depends(get_db), json_in: AuthModel):
     return _authenticate_and_grant_tokens(request, db_session, dict(json_in), with_refresh=True)
 
@@ -55,7 +55,7 @@ def fresh_login(json_in: AuthModel, request: Request, db_session: Session = Depe
     return _authenticate_and_grant_tokens(request, db_session, dict(json_in))
 
 
-@router.post("/auth/refresh")
+@router.post("/refresh")
 def refresh(request: Request, db_session: Session = Depends(get_db)):
     verify_jwt_refresh_token_in_request(db_session=db_session, request=request)
     current_user_id = get_jwt_identity(request)
@@ -73,7 +73,7 @@ def refresh(request: Request, db_session: Session = Depends(get_db)):
         return user_deactivated_problem
 
 
-@router.post("/auth/logout")
+@router.post("/logout")
 def logout(*, request: Request, db_session: Session = Depends(get_db), json_in: TokenModel):
     data = dict(json_in)
     refresh_token = data.get('refresh_token', None) if data else None

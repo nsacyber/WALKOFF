@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 from api.server.db.user import User
 from api.server.db import add_user
 from api.server.db import get_db
-from api.server.db.user import DisplayUser,EditUser, EditPersonalUser, AddUser
+from api.server.db.user import DisplayUser, EditUser, EditPersonalUser, AddUser
 from api.server.utils.problem import Problem
 from api.security import get_jwt_identity
 

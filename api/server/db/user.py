@@ -8,7 +8,7 @@ from api.server.db import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, ForeignKey, Integer, String, Enum, Boolean, DateTime
 from api_gateway.helpers import utc_as_rfc_datetime
-from api_gateway.serverdb.mixins import TrackModificationsMixIn
+from api_gateway.serverdb import TrackModificationsMixIn
 from api_gateway.serverdb.role import Role
 from typing import List
 from pydantic import BaseModel, UUID4
@@ -69,7 +69,7 @@ class User(Base, TrackModificationsMixIn):
     current_login_ip = Column(String(45))
     login_count = Column(Integer, default=0)
 
-    def __init__(self, name, password, roles=None):
+    def __init__(self, name: str, password: str, db_session: Session, roles=None):
         """Initializes a new User object
 
         Args:
@@ -80,8 +80,9 @@ class User(Base, TrackModificationsMixIn):
         self.username = name
         self._password = pbkdf2_sha512.hash(password)
         self.roles = []
+        self.db_session = db_session
         if roles:
-            self.set_roles(roles)
+            self.set_roles(roles, db_session)
 
     @hybrid_property
     def password(self):
@@ -112,7 +113,7 @@ class User(Base, TrackModificationsMixIn):
         """
         return pbkdf2_sha512.verify(password_attempt, self._password)
 
-    def set_roles(self, new_roles):
+    def set_roles(self, new_roles, db_session: Session):
         """Sets the roles for a User.
 
         Args:
@@ -120,7 +121,7 @@ class User(Base, TrackModificationsMixIn):
         """
 
         new_role_ids = set(new_roles)
-        new_roles = Role.query.filter(Role.id.in_(new_role_ids)).all() if new_role_ids else []
+        new_roles = db_session.query(Role).filter(Role.id.in_(new_role_ids)).all() if new_role_ids else []
 
         self.roles[:] = new_roles
 

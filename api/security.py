@@ -16,7 +16,6 @@ from jwt import PyJWTError
 from starlette.status import HTTP_401_UNAUTHORIZED
 
 from api.fastapi_config import FastApiConfig
-#from api_gateway.serverdb import User
 from api.server.db.tokens import is_token_revoked
 from api.server.db.user import User
 
@@ -115,42 +114,41 @@ def add_claims_to_access_token(db_session: Session, user_id):
     return {'roles': [role.id for role in user.roles], 'username': user.username} if user is not None else {}
 
 
+def permissions_accepted_for_resources(*resource_permissions):
+    return _permissions_decorator(resource_permissions)
 
-# def permissions_accepted_for_resources(*resource_permissions):
-#     return _permissions_decorator(resource_permissions)
-#
-#
-# def permissions_required_for_resources(*resource_permissions):
-#     return _permissions_decorator(resource_permissions, all_required=True)
-#
-#
-# def _permissions_decorator(resource_permissions, all_required=False):
-#     def wrapper(fn):
-#         @wraps(fn)
-#         def decorated_view(*args, **kwargs):
-#             _roles_accepted = set()
-#             for resource_permission in resource_permissions:
-#                 _roles_accepted |= api_gateway.serverdb.get_roles_by_resource_permissions(resource_permission)
-#             if user_has_correct_roles(_roles_accepted, all_required=all_required):
-#                 return fn(*args, **kwargs)
-#             return "Unauthorized View", HTTPStatus.FORBIDDEN
-#
-#         return decorated_view
-#
-#     return wrapper
-#
-#
-# def user_has_correct_roles(accepted_roles, all_required=False):
-#     if not accepted_roles:
-#         return False
-#     user_roles = set(get_jwt_claims().get('roles', []))
-#     if all_required:
-#         return not accepted_roles - user_roles
-#     else:
-#         return any(role in accepted_roles for role in user_roles)
-#
-#
-# class ResourcePermissions:
-#     def __init__(self, resource, permissions):
-#         self.resource = resource
-#         self.permissions = permissions
+
+def permissions_required_for_resources(*resource_permissions):
+    return _permissions_decorator(resource_permissions, all_required=True)
+
+
+def _permissions_decorator(resource_permissions, all_required=False):
+    def wrapper(fn):
+        @wraps(fn)
+        def decorated_view(*args, **kwargs):
+            _roles_accepted = set()
+            for resource_permission in resource_permissions:
+                _roles_accepted |= api_gateway.serverdb.get_roles_by_resource_permissions(resource_permission)
+            if user_has_correct_roles(_roles_accepted, args[0], all_required=all_required):
+                return fn(*args, **kwargs)
+            return "Unauthorized View", HTTPStatus.FORBIDDEN
+
+        return decorated_view
+
+    return wrapper
+
+
+def user_has_correct_roles(accepted_roles, request: Request, all_required=False):
+    if not accepted_roles:
+        return False
+    user_roles = set(get_jwt_claims(request).get('roles', []))
+    if all_required:
+        return not accepted_roles - user_roles
+    else:
+        return any(role in accepted_roles for role in user_roles)
+
+
+class ResourcePermissions:
+    def __init__(self, resource, permissions):
+        self.resource = resource
+        self.permissions = permissions
