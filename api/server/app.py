@@ -5,7 +5,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 import pymongo
 
-from api.server.endpoints import appapi
+from api.server.endpoints import appapi, global_variables, users
 from api.server.db import DBEngine, get_db, MongoEngine, get_mongo_c
 # from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted
 
@@ -61,12 +61,12 @@ async def db_session_middleware(request: Request, call_next):
 
 
 # Include routers here
-# _app.include_router(appapi.router,
+# _app.include_router(global_variables.router,
 #                     prefix="/walkoff/globals",
 #                     tags=["globals"],
 #                     dependencies=[Depends(get_db)])
 #
-# _app.include_router(appapi.router,
+# _app.include_router(users.router,
 #                     prefix="/walkoff/users",
 #                     tags=["users"],
 #                     dependencies=[Depends(get_db)])

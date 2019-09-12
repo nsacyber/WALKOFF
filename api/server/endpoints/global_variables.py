@@ -17,8 +17,7 @@ from api.security import get_jwt_claims
 from common.roles_helpers import auth_check, update_permissions, default_permissions, creator_check
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
-from api.server.utils import helpers
-from api_gateway.server.decorators import with_resource_factory, paginate
+from api.server.utils import helpers, decorators
 
 
 logger = logging.getLogger(__name__)
@@ -105,7 +104,7 @@ def delete_global(global_var: UUID, db_session: Session = Depends(get_db)):
 
     if (var.creator == curr_user_id) or to_delete:
         db_session.delete(var)
-        db_session.logger.info(f"Global_variable removed {var.name}")
+        logger.info(f"Global_variable removed {var.name}")
         db_session.commit()
         return None, HTTPStatus.NO_CONTENT
     else:
@@ -113,19 +112,19 @@ def delete_global(global_var: UUID, db_session: Session = Depends(get_db)):
 
 
 @router.post("/")
-def create_global(request: GlobalVariable, db_session: Session = Depends(get_db)):
-    data = await request.json()
-    global_id = request.id_
+def create_global(body: GlobalVariable, db_session: Session = Depends(get_db)):
+    data = dict(body)
+    global_id = body.id_
     # data.get('id_', str(uuid4()))
 
     username = get_jwt_claims().get('username', None)
     curr_user = db_session.query(User).filter(User.username == username).first()
     data.update({'creator': curr_user.id})
 
-    new_permissions = request.permissions
+    new_permissions = body.permissions
 
-    if request.access_level is not None:
-        access_level = request.access_level
+    if body.access_level is not None:
+        access_level = body.access_level
     else:
         access_level = 1
 
@@ -148,28 +147,28 @@ def create_global(request: GlobalVariable, db_session: Session = Depends(get_db)
 
     try:
         key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
-        data['value'] = fernet_encrypt(key, request.value)
+        data['value'] = fernet_encrypt(key, body.value)
         global_variable = global_variable_schema.load(data)
         db_session.add(global_variable)
         db_session.commit()
         return global_variable_schema.dump(global_variable), HTTPStatus.CREATED
     except IntegrityError:
         db_session.rollback()
-        return unique_constraint_problem("global_variable", "create", request.name)
+        return unique_constraint_problem("global_variable", "create", body.name)
 
 
 @router.put("/{global_var}")
-def update_global(request: GlobalVariable, global_var: UUID, db_session: Session = Depends(get_db)):
+def update_global(body: GlobalVariable, global_var: UUID, db_session: Session = Depends(get_db)):
     var = global_variable_getter(global_var, db_session)
 
     username = get_jwt_claims().get('username', None)
     curr_user_id = (db_session.query(User).filter(User.username == username).first()).id
 
-    data = await request.get_json()
-    global_id = request.id_
+    data = await body.get_json()
+    global_id = body.id_
 
-    new_permissions = request.permissions
-    access_level = request.access_level
+    new_permissions = body.permissions
+    access_level = body.access_level
 
     to_update = auth_check(global_id, "update", "global_variables")
     if (var.creator == curr_user_id) or to_update:
@@ -186,20 +185,20 @@ def update_global(request: GlobalVariable, global_var: UUID, db_session: Session
         #     default_permissions("global_variables", global_id, data=data)
         try:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
-            data['value'] = fernet_encrypt(key, request.value)
+            data['value'] = fernet_encrypt(key, body.value)
             global_variable_schema.load(data, instance=var)
             db_session.commit()
             return global_variable_schema.dump(var)
         except (IntegrityError, StatementError):
             db_session.rollback()
-            return unique_constraint_problem("global_variable", "update", request.name)
+            return unique_constraint_problem("global_variable", "update", body.name)
     else:
         return None, HTTPStatus.FORBIDDEN
 
 # Templates
 
 
-@paginate(global_variable_schema)
+# @paginate(global_variable_schema)
 @router.get("/templates")
 def read_all_global_templates(db_session: Session = Depends(get_db)):
     query = db_session.query(GlobalVariableTemplate).order_by(
@@ -218,14 +217,14 @@ def read_global_templates(global_template: UUID, db_session: Session = Depends(g
 def delete_global_templates(global_template: UUID, db_session: Session = Depends(get_db)):
     template = global_variable_template_getter(global_template, db_session=db_session)
     db_session.delete(template)
-    db_session.logger.info(f"global_variable_template removed {template.name}")
+    logger.info(f"global_variable_template removed {template.name}")
     db_session.commit()
     return None, HTTPStatus.NO_CONTENT
 
 
 @router.post("/templates", status_code=201)
-def create_global_templates(request: GlobalVariableTemplate, db_session: Session = Depends(get_db)):
-    data = await request.get_json()
+def create_global_templates(body: GlobalVariableTemplate, db_session: Session = Depends(get_db)):
+    data = await body.get_json()
 
     try:
         global_variable_template = global_variable_template_schema.load(data)
@@ -238,10 +237,10 @@ def create_global_templates(request: GlobalVariableTemplate, db_session: Session
 
 
 @router.put("/templates/{global_template}")
-def update_global_templates(request: GlobalVariableTemplate, global_template, db_session: Session = Depends(get_db)):
+def update_global_templates(body: GlobalVariableTemplate, global_template, db_session: Session = Depends(get_db)):
     template = global_variable_template_getter(global_template, db_session=db_session)
 
-    data = await request.get_json()
+    data = await body.get_json()
     try:
         global_variable_template_schema.load(data, instance=template)
         db_session.commit()
