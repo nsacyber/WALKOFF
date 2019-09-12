@@ -63,6 +63,23 @@ services:
     depends_on:
       - core_api_gateway
 
+  core_listener:
+    image: "127.0.0.1:5000/listener:latest"
+    configs:
+      - common_env.yml
+    build:
+      context: ./
+      dockerfile: ./listener/Dockerfile
+    networks:
+      - walkoff_default
+    depends_on:
+      - core_api_gateway
+      - resource_minio
+    secrets:
+      - walkoff_internal_key
+      - walkoff_minio_access_key
+      - walkoff_minio_secret_key
+
   core_worker:
 #    command: python -m worker.worker --log-level=debug
     image: "127.0.0.1:5000/worker:latest"
