@@ -33,7 +33,7 @@
                         </ng-template>
                       </ngx-datatable-column>
 
-                      <ngx-datatable-column name="type" prop="type" [flexGrow]="4">
+                      <ngx-datatable-column name="type" prop="type" [flexGrow]="2">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                           <span title="{{row.type}}">{{row.event_type}}</span>
                         </ng-template>
@@ -41,7 +41,7 @@
 
                       <ngx-datatable-column name="workflow" prop="workflow" [flexGrow]="4">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                          <span title="{{row.workflow}}">{{row.workflow}}</span>
+                          <span title="{{ getWorkflowName(row.workflow) }}">{{ getWorkflowName(row.workflow) }}</span>
                         </ng-template>
                       </ngx-datatable-column>
 
@@ -51,13 +51,13 @@
                         </ng-template>
                       </ngx-datatable-column>
 
-                      <ngx-datatable-column name="suffix" prop="suffix" [flexGrow]="4">
+                      <ngx-datatable-column name="suffix" prop="suffix" [flexGrow]="2">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                           <span title="{{row.suffix}}">{{row.suffix}}</span>
                         </ng-template>
                       </ngx-datatable-column>
 
-                      <ngx-datatable-column name="actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
+                      <ngx-datatable-column name="actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                           <button (click)="editTrigger(row)" class="mr-1 btn btn-primary" title="Edit Trigger">
                             <i class="fa fa-edit"></i>
