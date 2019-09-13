@@ -41,6 +41,7 @@ def _authenticate_and_grant_tokens(request: Request, db_session: Session, json_i
             # user.login(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
             db_session.commit()
             response['refresh_token'] = create_refresh_token(identity=user.id)
+        print(response)
         return response, HTTPStatus.CREATED
     else:
         return invalid_username_password_problem
@@ -48,7 +49,6 @@ def _authenticate_and_grant_tokens(request: Request, db_session: Session, json_i
 
 @router.post("/")
 def login(json_in: AuthModel, request: Request, db_session: Session = Depends(get_db)):
-    print("got here")
     return _authenticate_and_grant_tokens(request=request, db_session=db_session, json_in=dict(json_in), with_refresh=True)
 
 

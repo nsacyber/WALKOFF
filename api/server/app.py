@@ -27,43 +27,44 @@ _mongo_manager = MongoEngine()
 
 _app.mount("/walkoff/api", _walkoff)
 
-
-@_app.on_event("startup")
-async def initialize_users():
-    db_session = _db_manager.session_maker()
-    initialize_default_resources_internal_user(db_session)
-    initialize_default_resources_super_admin(db_session)
-    initialize_default_resources_admin(db_session)
-    initialize_default_resources_app_developer(db_session)
-    initialize_default_resources_workflow_developer(db_session)
-    initialize_default_resources_workflow_operator(db_session)
-
-    # Setup internal user
-    internal_role = db_session(Role).query.filter_by(id=1).first()
-    internal_user = db_session.query(User).filter_by(username="internal_user").first()
-    if not internal_user:
-        key = config.get_from_file(config.INTERNAL_KEY_PATH)
-        add_user(username='internal_user', password=key, roles=[2], db_session=db_session)
-    elif internal_role not in internal_user.roles:
-        internal_user.roles.append(internal_role)
-
-    # Setup Super Admin user
-    super_admin_role = db_session.query(Role).filter_by(id=2).first()
-    super_admin_user = db_session.query(User).filter_by(username="super_admin").first()
-    if not super_admin_user:
-        add_user(username='super_admin', password='super_admin', roles=[2], db_session=db_session)
-    elif super_admin_role not in super_admin_user.roles:
-        super_admin_user.roles.append(super_admin_role)
-
-    # Setup Admin user
-    admin_role = db_session.query(Role).filter_by(id=3).first()
-    admin_user = db_session.query(User).filter_by(username="admin").first()
-    if not admin_user:
-        add_user(username='admin', password='admin', roles=[3], db_session=db_session)
-    elif admin_role not in admin_user.roles:
-        admin_user.roles.append(admin_role)
-
-    db_session.commit()
+#
+# @_app.on_event("startup")
+# async def initialize_users():
+#     db_session = _db_manager.session_maker()
+#     initialize_default_resources_internal_user(db_session)
+#     initialize_default_resources_super_admin(db_session)
+#     initialize_default_resources_admin(db_session)
+#     initialize_default_resources_app_developer(db_session)
+#     initialize_default_resources_workflow_developer(db_session)
+#     initialize_default_resources_workflow_operator(db_session)
+#
+#     # Setup internal user
+#     internal_role = db_session.query(Role).filter_by(id=1).first()
+#     internal_user = db_session.query(User).filter_by(username="internal_user").first()
+#
+#     if not internal_user:
+#         key = config.get_from_file(config.INTERNAL_KEY_PATH)
+#         add_user(username='internal_user', password=key, roles=[2], db_session=db_session)
+#     elif internal_role not in internal_user.roles:
+#         internal_user.roles.append(internal_role)
+#
+#     # Setup Super Admin user
+#     super_admin_role = db_session.query(Role).filter_by(id=2).first()
+#     super_admin_user = db_session.query(User).filter_by(username="super_admin").first()
+#     if not super_admin_user:
+#         add_user(username='super_admin', password='super_admin', roles=[2], db_session=db_session)
+#     elif super_admin_role not in super_admin_user.roles:
+#         super_admin_user.roles.append(super_admin_role)
+#
+#     # Setup Admin user
+#     admin_role = db_session.query(Role).filter_by(id=3).first()
+#     admin_user = db_session.query(User).filter_by(username="admin").first()
+#     if not admin_user:
+#         add_user(username='admin', password='admin', roles=[3], db_session=db_session)
+#     elif admin_role not in admin_user.roles:
+#         admin_user.roles.append(admin_role)
+#
+#     db_session.commit()
 
 
 # @_app.on_event("startup")

@@ -6,7 +6,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 from api.server.db import Base
 from api.server.db import db
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, ForeignKey, Integer, String, Enum, Boolean, DateTime
 from api.server.utils.helpers import utc_as_rfc_datetime
 # from api.server.db import TrackModificationsMixIn
@@ -20,7 +20,7 @@ from fastapi import Depends
 
 logger = logging.getLogger(__name__)
 
-# user_roles_association = db.Table('user_roles_association',
+# user_roles_association = Table('user_roles_association',
 #                                   Column('role_id', Integer, ForeignKey('role.id')),
 #                                   Column('user_id', Integer, ForeignKey('user.id')))
 
@@ -60,7 +60,8 @@ class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, autoincrement=True)
     # roles = relationship('Role', secondary=user_roles_association, backref=db.backref('users', lazy='dynamic'))
-    roles = relationship('Role', back_populates='users')
+    # roles = relationship('Role', back_populates='users')
+    roles = relationship('Role', backref=backref('users'))
     username = Column(String(80), unique=True, nullable=False)
     _password = Column('password', String(255), nullable=False)
     active = Column(Boolean, default=True)

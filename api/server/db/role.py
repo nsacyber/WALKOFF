@@ -1,5 +1,5 @@
 from pydantic import BaseModel, UUID4
-from sqlalchemy import Column, String, JSON, Integer, DateTime
+from sqlalchemy import Column, String, JSON, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref, Session
 from typing import List
 
@@ -45,6 +45,7 @@ class Role(Base):
     name = Column(String(80), unique=True, nullable=False)
     description = Column(String(255))
     resources = relationship('Resource', backref=backref('role'), cascade='all, delete-orphan')
+    user_id = Column(Integer, ForeignKey('user.id'))
 
     def __init__(self, name: str, db_session: Session, description: str = '', resources=None):
         """Initializes a Role object. Each user has one or more Roles associated with it, which determines the user's

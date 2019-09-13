@@ -93,12 +93,14 @@ default_resources = ['app_apis', 'apps', 'settings', 'global_variables', 'workfl
 def initialize_default_resources_internal_user(db_session: Session):
     """Initializes the default resources for an internal user"""
     internal_user = db_session.query(Role).filter(Role.id == 1).first()
+    print(f" internal: {internal_user}")
     if not internal_user:
         internal_user = Role("internal_user", description="Placeholder description",
                              resources=default_resource_permissions_internal_user, db_session=db_session)
         db_session.add(internal_user)
     else:
-        internal_user.set_resources(default_resource_permissions_internal_user)
+        internal_user.set_resources(default_resource_permissions_internal_user, db_session=db_session)
+    print(f"{vars(internal_user)}")
     db_session.commit()
 
 
@@ -107,10 +109,10 @@ def initialize_default_resources_super_admin(db_session: Session):
     super_admin = db_session.query(Role).filter(Role.id == 2).first()
     if not super_admin:
         super_admin = Role("super_admin", description="Placeholder description",
-                           resources=default_resource_permissions_super_admin)
+                           resources=default_resource_permissions_super_admin, db_session=db_session)
         db_session.add(super_admin)
     else:
-        super_admin.set_resources(default_resource_permissions_super_admin)
+        super_admin.set_resources(default_resource_permissions_super_admin, db_session=db_session)
     db_session.commit()
 
 
@@ -121,7 +123,7 @@ def initialize_default_resources_admin(db_session: Session):
         admin = Role("admin", description="Placeholder description", resources=default_resource_permissions_admin, db_session=db_session)
         db_session.add(admin)
     else:
-        admin.set_resources(default_resource_permissions_admin)
+        admin.set_resources(default_resource_permissions_admin, db_session=db_session)
     db_session.commit()
 
 
@@ -133,7 +135,7 @@ def initialize_default_resources_app_developer(db_session: Session):
                                   resources=default_resource_permissions_app_developer, db_session=db_session)
         db_session.add(app_developer)
     else:
-        app_developer.set_resources(default_resource_permissions_app_developer)
+        app_developer.set_resources(default_resource_permissions_app_developer, db_session=db_session)
     db_session.commit()
 
 
@@ -145,7 +147,7 @@ def initialize_default_resources_workflow_developer(db_session: Session):
                                   resources=default_resource_permissions_workflow_developer, db_session=db_session)
         db_session.add(workflow_developer)
     else:
-        workflow_developer.set_resources(default_resource_permissions_workflow_developer)
+        workflow_developer.set_resources(default_resource_permissions_workflow_developer, db_session=db_session)
     db_session.commit()
 
 
@@ -157,7 +159,7 @@ def initialize_default_resources_workflow_operator(db_session: Session):
                                  resources=default_resource_permissions_workflow_operator, db_session=db_session)
         db_session.add(workflow_operator)
     else:
-        workflow_operator.set_resources(default_resource_permissions_workflow_operator)
+        workflow_operator.set_resources(default_resource_permissions_workflow_operator, db_session=db_session)
     db_session.commit()
 
 
