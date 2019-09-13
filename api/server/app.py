@@ -25,10 +25,10 @@ _walkoff = FastAPI(openapi_prefix="/walkoff")
 _db_manager = DBEngine()
 _mongo_manager = MongoEngine()
 
-_app.mount("/walkoff", _walkoff)
+_app.mount("/walkoff/api", _walkoff)
 
 
-@_walkoff.on_event("startup")
+@_app.on_event("startup")
 async def initialize_users():
     db_session = _db_manager.session_maker()
     initialize_default_resources_internal_user(db_session)
@@ -66,16 +66,21 @@ async def initialize_users():
     db_session.commit()
 
 
-@_walkoff.on_event("startup")
-async def initialize_mongodb():
-    await _mongo_manager.init_db()
+# @_app.on_event("startup")
+# async def initialize_mongodb():
+#     await _mongo_manager.init_db()
+
+
+@_app.on_event("startup")
+async def tester():
+    print("walkoff app has started")
 
 
 @_walkoff.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     try:
         request.state.db = _db_manager.session_maker()
-        request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
+        # request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
         response = await call_next(request)
     # except Exception as e:
     #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
@@ -85,20 +90,21 @@ async def db_session_middleware(request: Request, call_next):
     return response
 
 
-@_walkoff.middleware("http")
-async def jwt_required_middleware(request: Request, call_next):
-    request_path = (request.url.path).split("/")
-    resource_name = request_path[3]
-    if resource_name != "auth":
-        db_session = _db_manager.session_maker()
-        decoded_token = get_raw_jwt(request)
-        verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
-        verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
-
-    response = await call_next(request)
-    return response
-
+# @_walkoff.middleware("http")
+# async def jwt_required_middleware(request: Request, call_next):
+#     print("checking jwt")
+#     # request_path = (request.url.path).split("/")
+#     # resource_name = request_path[3]
+#     # if resource_name != "auth":
+#     #     db_session = _db_manager.session_maker()
+#     #     decoded_token = get_raw_jwt(request)
+#     #     verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
+#     #     verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
 #
+#     response = await call_next(request)
+#     return response
+
+
 # @_walkoff.middleware("http")
 # async def permissions_accepted_for_resource_middleware(request: Request, call_next):
 #     logger.info("Permissions Checking Initiated")

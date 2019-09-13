@@ -48,6 +48,7 @@ def _authenticate_and_grant_tokens(request: Request, db_session: Session, json_i
 
 @router.post("/")
 def login(json_in: AuthModel, request: Request, db_session: Session = Depends(get_db)):
+    print("got here")
     return _authenticate_and_grant_tokens(request=request, db_session=db_session, json_in=dict(json_in), with_refresh=True)
 
 
