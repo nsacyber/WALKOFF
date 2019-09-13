@@ -74,7 +74,7 @@ _app.mount("/walkoff/api", _walkoff)
 
 @_app.on_event("startup")
 async def tester():
-    print("walkoff app has started")
+    print("Walkoff app has started")
 
 
 @_walkoff.middleware("http")

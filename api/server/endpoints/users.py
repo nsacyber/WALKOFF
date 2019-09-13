@@ -27,7 +27,7 @@ def username_getter(db_session: Session, username: str):
     return db_session.query(User).filter_by(username=username).first()
 
 
-@router.get("/", response_model=DisplayUser)
+@router.get("/")
 def read_all_users(page: int = 1, db_session: Session = Depends(get_db)):
     # page = request.args.get('page', 1, type=int)
     users = []
@@ -35,11 +35,12 @@ def read_all_users(page: int = 1, db_session: Session = Depends(get_db)):
     # for user in User.query.paginate(page, FastApiConfig.ITEMS_PER_PAGE, False).items:
         # check for internal user
         if user.id != 1:
+            print(user.as_json())
             users.append(user.as_json())
     return users
 
 
-@router.post("/", response_model=DisplayUser, status_code=201)
+@router.post("/", status_code=201)
 def create_user(body: AddUser, db_session: Session = Depends(get_db)):
     data = dict(body)
     username = body.username
@@ -62,7 +63,7 @@ def create_user(body: AddUser, db_session: Session = Depends(get_db)):
             f'User with username {username} already exists')
 
 
-@router.get("/{user_id}", response_model=DisplayUser)
+@router.get("/{user_id}")
 def read_user(user_id: int, db_session: Session = Depends(get_db)):
     user = userid_getter(db_session=db_session, user_id=user_id)
     # check for internal user
@@ -72,7 +73,7 @@ def read_user(user_id: int, db_session: Session = Depends(get_db)):
         return user.as_json()
 
 
-@router.get("/personal_data/{username}", response_model=DisplayUser)
+@router.get("/personal_data/{username}")
 def read_personal_user(username: str, request: Request, db_session: Session = Depends(get_db)):
     user = username_getter(db_session=db_session, username=username)
     current_id = get_jwt_identity(request)
@@ -82,14 +83,14 @@ def read_personal_user(username: str, request: Request, db_session: Session = De
         return None, HTTPStatus.FORBIDDEN
 
 
-@router.get("/permissions", response_model=DisplayUser)
+@router.get("/permissions")
 def list_permissions(request: Request, db_session: Session = Depends(get_db)):
     current_id = get_jwt_identity(request)
     current_user = db_session.query(User).filter_by(id=current_id).first()
     return current_user.permission_json()
 
 
-@router.put("/{user_id}", response_model=DisplayUser)
+@router.put("/{user_id}")
 def update_user(user_id: int, body: EditUser, request: Request, db_session: Session = Depends(get_db)):
     user = userid_getter(db_session=db_session, user_id=user_id)
     data = dict(body)
@@ -123,7 +124,7 @@ def update_user(user_id: int, body: EditUser, request: Request, db_session: Sess
                 return response
 
 
-@router.put("/personal_data/{username}", response_model=DisplayUser)
+@router.put("/personal_data/{username}")
 def update_personal_user(username: str, body: EditPersonalUser, request: Request, db_session: Session = Depends(get_db)):
     user = username_getter(db_session=db_session, username=username)
     data = dict(body)
@@ -160,7 +161,7 @@ def update_personal_user(username: str, body: EditPersonalUser, request: Request
 def role_update_user_fields(data, user, db_session, update=False):
     # ensures inability to update roles for super_admin
     if 'roles' in data and user.id != 2:
-        user.set_roles([role['id'] for role in data['roles']])
+        user.set_roles([role['id'] for role in data['roles']], db_session)
     if 'active' in data and user.id != 2:
         user.active = data['active']
     if update:
@@ -203,7 +204,7 @@ def update_user_fields(data, user, db_session):
         return None, HTTPStatus.FORBIDDEN
 
 
-@router.delete("/{user_id}", response_model=DisplayUser)
+@router.delete("/{user_id}")
 def delete_user(user_id: int, request: Request, db_session: Session = Depends(get_db)):
     user = userid_getter(db_session=db_session, user_id=user_id)
     if user.id != get_jwt_identity(request) and user.id != 1 and user.id != 2:
