@@ -6,10 +6,11 @@ import io
 import aiodocker
 import os
 from os import stat
+import asyncio
 from pwd import getpwuid
 from grp import getgrgid
 
-from common.docker_helpers import connect_to_aiodocker, docker_context, stream_docker_log, logger as docker_logger
+from common.docker_helpers import connect_to_aiodocker, docker_context, stream_umpire_build_log, logger as docker_logger
 import pathlib
 
 logger = logging.getLogger("Umpire")
@@ -28,9 +29,8 @@ async def push_image(docker_client, repo):
 
 
 class MinioApi:
-
     @staticmethod
-    async def build_image(app_name, version):
+    async def build_image(app_name, version, build_id):
         tag_name = f"{static.APP_PREFIX}_{app_name}"
         repo = f"{config.DOCKER_REGISTRY}/{tag_name}:{version}"
         try:
@@ -68,17 +68,24 @@ class MinioApi:
                                                                   path_dockerfile=dockerfile,
                                                                   encoding="application/x-tar")
                     logger.info("Docker image building")
-                    await stream_docker_log(log_stream)
+                    await stream_umpire_build_log(log_stream, build_id)
                     logger.info("Docker image Built")
                     # if await push_image(docker_client, repo):
                     #     return "Docker image built and pushed successfully."
                     success = await push_image(docker_client, repo)
                     if success:
-                        return True, "Successfully built and pushed image"
+                        saved = await MinioApi.save_file(app_name, version)
+                        if saved is True:
+                            return True
+                            # return True, "Successfully built and pushed image"
+                        else:
+                            return False
                     else:
-                        return False, "Failed to push image"
+                        return False
+                        # return False, "Failed to push image"
                 except Exception as e:
-                    return False, str(e)
+                    return False
+                    # return False, str(e)
 
     @staticmethod
     async def list_files(app_name, version):

@@ -1,0 +1,17 @@
+.buildStatusContainer .CodeMirror {
+	border: 1px solid #dee2e6;
+	border-radius: 0.25rem;
+    height: 450px;
+    min-height: unset;
+}
+
+.buildStatusContainer .CodeMirror-empty {
+	color: rgba(73, 80, 87, 0.65)
+}
+
+.buildStatusContainer .CodeMirror-focused {
+    background-color: #fff;
+    border-color: #8bb8df;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(51, 122, 183, 0.25);
+}

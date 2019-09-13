@@ -1,0 +1,15 @@
+<!-- <div class="modal-header">
+    <h4 class="modal-title">{{ existing ? 'Edit Workflow' : 'Create Workflow' }}</h4>
+</div> -->
+<div class="modal-body m-3 buildStatusContainer">
+    <ngx-codemirror #consoleArea  [options]="{
+        lineWrapping: true,
+        lineNumbers: false,
+        mode: 'shell',
+        theme: 'darcula',
+        readOnly: 'nocursor'
+    }"></ngx-codemirror>
+</div>
+<div class="modal-footer justify-content-center">
+    <button type="button" class="btn btn-primary" (click)="activeModal.dismiss()">Close Window</button>
+</div>

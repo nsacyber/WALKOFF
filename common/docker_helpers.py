@@ -5,6 +5,7 @@ import json
 import copy
 import base64
 import tarfile
+import requests
 import time
 from io import BytesIO
 from pathlib import Path
@@ -368,3 +369,28 @@ async def stream_docker_log(log_stream):
         elif "error" in line:
             logger.error(line["error"].strip())
             raise DockerBuildError
+
+
+async def stream_umpire_build_log(log_stream, build_id):
+    async for line in log_stream:
+        url = f"{config.API_GATEWAY_URI}/walkoff/api/streams/build/build_logger"
+        if "stream" in line and line["stream"].strip():
+            data = line["stream"].strip()
+            body = {"stream": data, "build_status": "building"}
+            params = {"build_id": build_id}
+            requests.post(url, json=body, params=params)
+        elif "status" in line:
+            data = line["status"].strip()
+            body = {"stream": data, "build_status": "building"}
+            params = {"build_id": build_id}
+            requests.post(url, json=body, params=params)
+        elif "error" in line:
+            data = line["error"].strip()
+            body = {"stream": data, "build_status": "failure"}
+            params = {"build_id": build_id}
+            requests.post(url, json=body, params=params)
+            raise DockerBuildError
+    body = {"stream": " ", "build_status": "Success"}
+    params = {"build_id": build_id}
+    requests.post(url, json=body, params=params)
+

@@ -51,6 +51,7 @@ import { SettingsTimeoutModalComponent } from './settings/settings.timeout.modal
 import { ExecutionVariableModalComponent } from './execution/execution.variable.modal.component';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook/playbook.environment.variable.modal.component';
 import { MainProfileModalComponent } from './main/main.profile.modal.component';
+import { StatusModalComponent } from './apps/status.modal.component';
 
 import { PlaybookArgumentComponent } from './playbook/playbook.argument.component';
 import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
@@ -131,6 +132,7 @@ import { HasPermissionDirective } from './permission.directive';
 		MetadataModalComponent,
 		ImportModalComponent,
 		ExecutionVariableModalComponent,
+		StatusModalComponent,
 		FileModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
@@ -175,6 +177,7 @@ import { HasPermissionDirective } from './permission.directive';
 		PlaybookEnvironmentVariableModalComponent,
 		ImportModalComponent,
 		MetadataModalComponent,
+		StatusModalComponent,
 		WidgetModalComponent,
 		FileModalComponent
 	],

@@ -27,6 +27,7 @@ import { createTree } from 'jquery.fancytree';
 import 'jquery.fancytree/dist/modules/jquery.fancytree.edit';
 import 'jquery.fancytree/dist/modules/jquery.fancytree.filter';
 import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
+import { StatusModalComponent } from './status.modal.component';
 import { FileModalComponent } from './file.modal.component';
 
 @Component({
@@ -198,8 +199,11 @@ export class ManageAppComponent implements OnInit, OnDestroy {
 
     async buildImage() {
         if (!await this.checkUnsavedChanges()) return;
-        this.toastrService.success(`Building App <b>${this.currentApp.name}</b>`);
-        this.appService.buildImage(this.currentApp).then(() => { })
+
+        const buildId = await this.appService.buildImage(this.currentApp);
+        const modalRef = this.modalService.open(StatusModalComponent, { size: 'xl', centered: true });
+        modalRef.componentInstance.buildId = buildId;
+        modalRef.componentInstance.appApi = this.currentApp;
     }
 
     undo() {
