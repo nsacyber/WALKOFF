@@ -1,86 +1,53 @@
-from flask import current_app, request, jsonify
-from flask_jwt_extended import jwt_required
+import logging
 
-from marshmallow import ValidationError
+from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException
+from motor.motor_asyncio import AsyncIOMotorCollection
 
-from sqlalchemy.exc import IntegrityError, StatementError
+from api.server.db import get_mongo_c
+from common.helpers import validate_uuid
+from api.server.db.dashboard import DashboardModel, WidgetModel
 
-from api_gateway import helpers
-from api_gateway.server.decorators import with_resource_factory, paginate
-from api_gateway.executiondb.dashboard import Dashboard, DashboardSchema
-from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.problem import unique_constraint_problem, improper_json_problem
-from http import HTTPStatus
+router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
-def dashboard_getter(dashboard):
-    if helpers.validate_uuid(dashboard):
-        return current_app.running_context.execution_db.session.query(Dashboard).filter_by(id_=dashboard).first()
+def dashboard_getter(dashboard, app_api_col: AsyncIOMotorCollection):
+    if validate_uuid(dashboard):
+        return await app_api_col.find_one({"id_": dashboard}, projection={'_id': False})
     else:
-        return current_app.running_context.execution_db.session.query(Dashboard).filter_by(name=dashboard).first()
+        return await app_api_col.find_one({"name": dashboard}, projection={'_id': False})
 
 
-dashboard_schema = DashboardSchema()
-with_dashboard = with_resource_factory("dashboard", dashboard_getter)
+@router.post("/")
+async def create_dashboard(*, new_dash: DashboardModel, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    r = await app_api_col.insert_one(dict(new_dash))
+    return r.acknowledged
 
 
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["create"]))
-def create_dashboard():
-    data = request.get_json()
-    dashboard_name = data["name"]
-
-    try:
-        dashboard = dashboard_schema.load(data)
-        current_app.running_context.execution_db.session.add(dashboard)
-        current_app.running_context.execution_db.session.commit()
-        return dashboard_schema.dump(dashboard), HTTPStatus.CREATED
-    except ValidationError as e:
-        current_app.running_context.execution_db.session.rollback()
-        return improper_json_problem("dashboard", "create", dashboard_name, e.messages)
-    except (IntegrityError, StatementError):
-        current_app.running_context.execution_db.session.rollback()
-        return unique_constraint_problem("dashboard", "create", dashboard_name)
+@router.get("/")
+async def read_all_dashboards(app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    ret = []
+    for app_api in (await app_api_col.find().to_list(None)):
+        ret.append(DashboardModel(**app_api))
+    return ret
 
 
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["read"]))
-@paginate(dashboard_schema)
-def read_all_dashboards():
-    r = current_app.running_context.execution_db.session.query(Dashboard).order_by(Dashboard.name).all()
-    return r, HTTPStatus.OK
+@router.put("/")
+async def update_dashboard(new_dashboard: DashboardModel, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    dash = await dashboard_getter(new_dashboard.name, app_api_col)
+    r = await app_api_col.replace_one(dict(dash), dict(new_dashboard))
+    return r.acknowledged
 
 
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["update"]))
-@with_dashboard("update", "dashboard")
-def update_dashboard(dashboard):
-    data = request.get_json()
-    try:
-        dashboard_schema.load(data, instance=dashboard)
-        # return invalid_input_problem("dashboard", "update", data["name"], errors)  # ToDo: validation
-
-        current_app.running_context.execution_db.session.commit()
-        current_app.logger.info(f"Updated dashboard {dashboard}")
-        return dashboard_schema.dump(dashboard), HTTPStatus.OK
-    except (IntegrityError, StatementError):
-        current_app.running_context.execution_db.session.rollback()
-        return unique_constraint_problem("dashboard", "update", data["name"])
+@router.get("/{dashboard}")
+async def read_dashboard(dashboard: UUID, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    dash = dashboard_getter(dashboard, app_api_col)
+    return dash
 
 
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["read"]))
-@with_dashboard("read", "dashboard")
-def read_dashboard(dashboard):
-    dashboard_json = dashboard_schema.dump(dashboard)
-    return jsonify(dashboard_json), HTTPStatus.OK
-
-
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("dashboards", ["delete"]))
-@with_dashboard("delete", "dashboard")
-def delete_dashboard(dashboard):
-    current_app.running_context.execution_db.session.delete(dashboard)
-    current_app.logger.info(f"Dashboard removed: {dashboard.name}")
-    current_app.running_context.execution_db.session.commit()
-    return None, HTTPStatus.NO_CONTENT
+@router.get("/{dashboard}")
+async def delete_dashboard(dashboard: UUID, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    dash = dashboard_getter(dashboard, app_api_col)
+    r = await app_api_col.delete_one(dict(dash))
+    return r.acknowledged

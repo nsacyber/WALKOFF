@@ -168,6 +168,11 @@ _walkoff.include_router(appapi.router,
                         tags=["apps"],
                         dependencies=[Depends(get_mongo_c)])
 
+_walkoff.include_router(appapi.router,
+                        prefix="/dashboards",
+                        tags=["dashboards"],
+                        dependencies=[Depends(get_mongo_c)])
+
 app = _app
 
 #
