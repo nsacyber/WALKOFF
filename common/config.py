@@ -80,8 +80,9 @@ class Static:
     REDIS_WORKFLOW_CONTROL_GROUP = "workflow-control-group"
 
     # File paths
-    API_PATH = Path("api_gateway") / "api"
-    CLIENT_PATH = Path("api_gateway") / "client"
+    # API_PATH = Path("api") / "api"
+    CLIENT_PATH = Path("api") / "client"
+    TEMPLATE_PATH = Path("api") / "server" / "templates"
 
     # REDIS_DATA_PATH = Path("data") / "redis" / "red_data"
     # POSTGRES_DATA_PATH = Path("data") / "postgres" / "pg_data"

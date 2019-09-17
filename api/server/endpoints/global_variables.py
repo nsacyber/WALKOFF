@@ -12,7 +12,6 @@ from api.server.db.global_variable import GlobalVariableSchema, GlobalVariableTe
 from api.server.db.global_variable import GlobalVariableTemplate, GlobalVariable
 from api.server.db.user import User
 from api.server.db import get_db
-from api.server.utils.problem import unique_constraint_problem
 from api.security import get_jwt_claims
 from common.roles_helpers import auth_check, update_permissions, default_permissions, creator_check
 from common.config import config

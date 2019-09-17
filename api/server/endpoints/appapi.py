@@ -10,8 +10,6 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from api.server.db import get_mongo_c
 from api.server.db.appapi import AppApiModel
 
-from api.server.utils.decorators import with_resource_factory
-
 from common.helpers import validate_uuid
 from common.config import static
 
@@ -24,9 +22,6 @@ async def app_api_getter(app_api_col: AsyncIOMotorCollection, app_api: str):
         return await app_api_col.find_one({"id_": app_api}, projection={'_id': False})
     else:
         return await app_api_col.find_one({"name": app_api}, projection={'_id': False})
-
-
-with_app_api = with_resource_factory('app_api', app_api_getter)
 
 
 @router.get("/names")
@@ -45,7 +40,10 @@ async def read_all_app_apis(app_api_col: AsyncIOMotorCollection = Depends(get_mo
 @router.post("/apis", status_code=HTTPStatus.CREATED)
 async def create_app_api(*, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c), new_api: AppApiModel):
     r = await app_api_col.insert_one(dict(new_api))
-    return r.acknowledged
+    if r.acknowledged:
+        result = await app_api_getter(app_api_col, new_api.id_)
+        logger.info(f"Updated Workflow {result.name} ({result.id_})")
+        return result
 
 
 @router.get("/api/{app_name}")

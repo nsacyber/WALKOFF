@@ -51,7 +51,7 @@ class DBEngine(object):
 
         # self.connection = self.engine.connect()
         # self.transaction = self.connection.begin()
-        #
+
         self.session_maker = sessionmaker(bind=self.engine)
         # self.session = scoped_session(session)
         Base.metadata.bind = self.engine
@@ -75,6 +75,7 @@ db = DBEngine()
 #     __tablename__ = 'mixin'
 #     created_at = Column(DateTime, default=db.current_timestamp())
 #     modified_at = Column(DateTime, default=db.current_timestamp(), onupdate=db.current_timestamp())
+
 
 # class BaseSchema(ModelSchema):
 #     """
@@ -109,6 +110,10 @@ class MongoEngine(object):
         await self.client.walkoff_db.apps.create_index([("id_", pymongo.ASCENDING),
                                                         ("name", pymongo.ASCENDING)],
                                                        unique=True)
+
+        await self.client.walkoff_db.workflows.create_index([("id_", pymongo.ASCENDING),
+                                                             ("name", pymongo.ASCENDING)],
+                                                            unique=True)
 
     def collection_from_url(self, path: str):
         parts = path.split("/")

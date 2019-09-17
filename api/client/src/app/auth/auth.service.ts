@@ -20,7 +20,7 @@ export class AuthService {
 
 	//TODO: not currently used, eventually should be used on the login
 	login(username: string, password: string): Promise<void> {
-		return this.http.post('api/auth', { username, password })
+		return this.http.post('api/auth/login', { username, password })
 			.toPromise()
 			.then((tokens: { access_token: string, refresh_token: string }) => {
 				sessionStorage.setItem(ACCESS_TOKEN_NAME, tokens.access_token);
