@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from starlette.requests import Request
-from api.server.utils.problem import Problem, dne_problem
+from api.server.utils.problems import ProblemException, DoesNotExistException
 from http import HTTPStatus
 from api.server.db import get_db
 from api.server.db.user_init import clear_resources_for_role, get_all_available_resource_actions
@@ -44,10 +44,9 @@ def create_role(add_role: AddRoleModel, db_session: Session = Depends(get_db)):
         return new_role.as_json(), HTTPStatus.CREATED
     else:
         # current_app.logger.warning(f"Role with name {json_data['name']} already exists")
-        return Problem.from_crud_resource(
+        return ProblemException(
             HTTPStatus.BAD_REQUEST,
-            'role',
-            'create',
+            "Could not create role.",
             f"Role with name {json_data['name']} already exists")
 
 
@@ -55,7 +54,7 @@ def create_role(add_role: AddRoleModel, db_session: Session = Depends(get_db)):
 def read_role(role_id: int, db_session: Session = Depends(get_db)):
     role = role_getter(db_session=db_session, role_id=role_id)
     if role is None:
-        return Problem(
+        return ProblemException(
             HTTPStatus.BAD_REQUEST,
             'Could not logout.',
             'The identity of the refresh token does not match the identity of the authentication token.')

@@ -10,8 +10,8 @@ from api.server.db.user import User
 from api.server.db.user_init import add_user
 from api.server.db import get_db
 from api.server.db.user import DisplayUser, EditUser, EditPersonalUser, AddUser
-from api.server.utils.problem import Problem
 from api.security import get_jwt_identity
+from api.server.utils.problems import ProblemException
 
 logger = logging.getLogger(__name__)
 
@@ -56,10 +56,9 @@ def create_user(body: AddUser, db_session: Session = Depends(get_db)):
         return user.as_json()
     else:
         logger.warning(f'Cannot create user {username}. User already exists.')
-        return Problem.from_crud_resource(
+        return ProblemException(
             HTTPStatus.BAD_REQUEST,
-            'user',
-            'create',
+            "Could not create user.",
             f'User with username {username} already exists')
 
 
@@ -115,10 +114,9 @@ def update_user(user_id: int, body: EditUser, request: Request, db_session: Sess
             response = role_update_user_fields(data, user, db_session, update=True)
             if isinstance(response, tuple) and response[1] == HTTPStatus.FORBIDDEN:
                 logger.error(f"User {current_user} does not have permission to update user {user_id.id}")
-                return Problem.from_crud_resource(
+                return ProblemException(
                     HTTPStatus.FORBIDDEN,
-                    'user',
-                    'update',
+                    "User could not be updated.",
                     f"Current user does not have permission to update user {user.id}.")
             else:
                 return response
@@ -132,10 +130,9 @@ def update_personal_user(username: str, body: EditPersonalUser, request: Request
 
     # check for internal user
     if user.id == 1:
-        return Problem.from_crud_resource(
+        return ProblemException(
             HTTPStatus.FORBIDDEN,
-            'user',
-            'update',
+            "Could not update user.",
             f"Current user does not have permission to update user {user.id}.")
 
     # check password
@@ -149,10 +146,9 @@ def update_personal_user(username: str, body: EditPersonalUser, request: Request
             else:
                 return update_user_fields(data, user, db_session)
         else:
-            return Problem.from_crud_resource(
+            return ProblemException(
                 HTTPStatus.FORBIDDEN,
-                'user',
-                'update',
+                "Could not update user.",
                 f"Current user does not have permission to update user {user.id}.")
     else:
         return None, HTTPStatus.FORBIDDEN
@@ -177,14 +173,14 @@ def update_user_fields(data, user, db_session):
             if user_db is None or user_db.id == user.id:
                 user.username = data['username']
             else:
-                return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
+                return ProblemException(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
                                f"Username {data['username']} is already taken.")
         elif 'new_username' in data and data['new_username']:
             user_db = db_session.query(User).filter_by(username=data['old_username']).first()
             if user_db is None or user_db.id == user.id:
                 user.username = data['new_username']
             else:
-                return Problem(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
+                return ProblemException(HTTPStatus.BAD_REQUEST, 'Cannot update user.',
                                f"Username {data['new_username']} is already taken.")
         if 'old_password' in data and 'password' in data and \
                 data['old_password'] != "" and data['password'] != "":
@@ -193,10 +189,9 @@ def update_user_fields(data, user, db_session):
                 user.password = data['password']
             else:
                 user.username = original_username
-                return Problem.from_crud_resource(
+                return ProblemException(
                     HTTPStatus.UNAUTHORIZED,
-                    'user',
-                    'update',
+                    "Could not update user.",
                     'Current password is incorrect.')
         db_session.commit()
         logger.info(f"Updated user {user.id}. Updated to: {user.as_json()}")
@@ -216,15 +211,15 @@ def delete_user(user_id: int, request: Request, db_session: Session = Depends(ge
     else:
         if user.id == get_jwt_identity(request):
             logger.error(f"Could not delete user {user.id}. User is current user.")
-            return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
+            return ProblemException(HTTPStatus.FORBIDDEN, "Could not delete user.",
                                               'Current user cannot delete self.')
         if user.id == 2:
             logger.error(f"Could not delete user {user.username}. "
                                      f"You do not have permission to delete Super Admin.")
-            return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
+            return ProblemException(HTTPStatus.FORBIDDEN, "Could not delete user.",
                                               'A user cannot delete Super Admin.')
         if user.id == 1:
             logger.error(f"Could not delete user {user.username}. "
                                      f"You do not have permission to delete WALKOFF's internal user.")
-            return Problem.from_crud_resource(HTTPStatus.FORBIDDEN, 'user', 'delete',
+            return ProblemException(HTTPStatus.FORBIDDEN, "Could not delete user.",
                                               "A user cannot delete WALKOFF's internal user.")

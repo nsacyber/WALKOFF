@@ -16,7 +16,7 @@ from api.server.db.user import Role
 from api.server.db.user import User
 from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
     get_roles_by_resource_permission
-from api.server.utils.problem import Problem
+from api.server.utils.problems import ProblemException
 from common.config import config, static
 
 logger = logging.getLogger("API")
@@ -127,10 +127,9 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
 
         accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, db_session)
         if not user_has_correct_roles(accepted_roles, request):
-            raise Problem.from_crud_resource(
+            raise ProblemException(
                 HTTPStatus.FORBIDDEN,
-                resource_name,
-                resource_permission,
+                "User does not have correct permissions for this resource.",
                 "Unauthorized View")
 
     response = await call_next(request)
