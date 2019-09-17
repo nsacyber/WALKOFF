@@ -127,10 +127,9 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
 
         accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, db_session)
         if not user_has_correct_roles(accepted_roles, request):
-            raise ProblemException(
-                HTTPStatus.FORBIDDEN,
-                "User does not have correct permissions for this resource.",
-                "Unauthorized View")
+            return JSONResponse({"Error": "FORBIDDEN",
+                                 "message": "User does not have correct permissions for this resource"},
+                                status_code=403)
 
     response = await call_next(request)
     return response

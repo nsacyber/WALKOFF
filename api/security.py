@@ -20,6 +20,7 @@ from api.server.db.tokens import is_token_revoked
 from api.server.db.user import User
 from api.server.db.role import Role
 from api.server.db.resource import Resource, Permission
+from api.server.utils.problems import ProblemException
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
@@ -35,7 +36,7 @@ def verify_jwt_refresh_token_in_request(db_session: Session, request: Request):
 
 def verify_token_in_decoded(decoded_token: dict, request_type: str):
     if decoded_token['type'] != request_type:
-        raise jwt.exceptions.InvalidTokenError('Only {} tokens are allowed'.format(request_type))
+        raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.",'Only {} tokens are allowed'.format(request_type))
 
 
 def verify_token_not_blacklisted(db_session: Session, decoded_token: dict, request_type: str):
@@ -43,18 +44,10 @@ def verify_token_not_blacklisted(db_session: Session, decoded_token: dict, reque
         return
     if request_type == 'access':
         if is_token_revoked(db_session=db_session, decoded_token=decoded_token):
-            raise jwt.exceptions.InvalidTokenError('Token has been revoked')
+            raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.", 'Token has been revoked.')
     if request_type == 'refresh':
         if is_token_revoked(db_session=db_session, decoded_token=decoded_token):
-            raise jwt.exceptions.InvalidTokenError('Token has been revoked')
-
-
-def token_is_revoked_loader():
-    return json.dumps({'error': 'Token is revoked'}), HTTPStatus.UNAUTHORIZED
-
-
-def expired_token_callback():
-    return {'error': 'Token expired'}, HTTPStatus.UNAUTHORIZED
+            raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.", 'Token has been revoked.')
 
 
 def create_access_token(identity: int, db_session: Session, fresh=False, expires_delta: timedelta = None, user_claims=None):
@@ -65,7 +58,6 @@ def create_access_token(identity: int, db_session: Session, fresh=False, expires
         expire = datetime.utcnow() + timedelta(minutes=FastApiConfig.JWT_ACCESS_TOKEN_EXPIRES)
     if user_claims is None:
         user_claims = add_claims_to_access_token(db_session, identity)
-    print(f"user claims: {user_claims}")
     to_encode = {"jti": str(uuid.uuid4()),
                  "exp": expire,
                  "identity": identity,
