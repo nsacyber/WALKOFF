@@ -1,12 +1,15 @@
 import json
 import logging
 import os
+from typing import Union
 from datetime import datetime
 from uuid import uuid4, UUID
-
 from inspect import signature as getsignature
 
 logger = logging.getLogger(__name__)
+
+
+JSON = Union[str, int, bool, dict, list, None]
 
 
 def __list_valid_directories(path):
