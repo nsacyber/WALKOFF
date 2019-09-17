@@ -32,40 +32,36 @@ router = APIRouter()
 logger = logging.getLogger("API")
 
 
-def _authenticate_and_grant_tokens(request: Request, db_session: Session, json_in: dict, with_refresh=False):
-    username = json_in.get('username', None)
-    password = json_in.get('password', None)
-    logger.info(f"{username}, {password}")
-    if not (username and password):
+def _authenticate_and_grant_tokens(request: Request, db_session: Session, creds: AuthModel, with_refresh=False):
+    if not (creds.username and creds.password):
         raise invalid_credentials_problem
-
-    user = db_session.query(User).filter_by(username=username).first()
+    user = db_session.query(User).filter_by(username=creds.username).first()
     if user is None:
         raise invalid_credentials_problem
     try:
-        password = password.encode('utf-8')
+        password_b = creds.password.encode('utf-8')
     except UnicodeEncodeError:
         raise invalid_credentials_problem
 
     if not user.active:
         raise user_deactivated_problem
 
-    if user.verify_password(password):
+    if user.verify_password(password_b):
         response = {'access_token': create_access_token(identity=user.id, db_session=db_session, fresh=True)}
         if with_refresh:
             user.login(request.client.host)
             # user.login(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
             db_session.commit()
             response['refresh_token'] = create_refresh_token(identity=user.id)
-        # print(response)
+        print(response)
         return response
     else:
         raise invalid_credentials_problem
 
 
-@router.post("/")
-def login(json_in: AuthModel, request: Request, db_session: Session = Depends(get_db)):
-    return _authenticate_and_grant_tokens(request=request, db_session=db_session, json_in=dict(json_in), with_refresh=True)
+@router.post("/login")
+def login(creds: AuthModel, request: Request, db_session: Session = Depends(get_db)):
+    return _authenticate_and_grant_tokens(request=request, db_session=db_session, creds=creds, with_refresh=True)
 
 
 def fresh_login(json_in: AuthModel, request: Request, db_session: Session = Depends(get_db)):

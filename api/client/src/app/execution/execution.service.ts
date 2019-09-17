@@ -99,7 +99,7 @@ export class ExecutionService {
 	 * Returns all playbooks and their child workflows in minimal form (id, name).
 	 */
 	getWorkflows(): Promise<Workflow[]> {
-		return this.http.get('api/workflows')
+		return this.http.get('api/workflows/')
 			.toPromise()
 			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);

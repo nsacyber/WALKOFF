@@ -8,10 +8,10 @@ from sqlalchemy.orm import relationship
 
 from marshmallow import fields, EXCLUDE
 from marshmallow_sqlalchemy import field_for, ModelSchema
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel, ValidationError, validator, UUID4
 
 # from api.server.db import Base, BaseSchema
-from api.server.db.parameter import ParameterApiModel  # ParameterApiSchema, Parameter, ParameterSchema,
+from api.server.db.parameter import ParameterApiModel, ParameterModel  # ParameterApiSchema, Parameter, ParameterSchema,
 from api.server.db.returns import ReturnApiModel  # ReturnApiSchema,
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,26 @@ class ActionApiModel(BaseModel):
     returns: ReturnApiModel = {}
     parameters: List[ParameterApiModel] = []
 
+
+class ActionModel(BaseModel):
+    id_: UUID4 = uuid4()
+    errors: List[str] = []
+    is_valid: bool = True
+    app_name: str
+    app_version: str
+    name: str
+    label: str
+    position: dict = {"x": 0, "y": 0, "_walkoff_type": "position"}
+    priority: int = 3
+    parallelized: bool = False
+    _walkoff_type: str = "action"
+    parameters: List[ParameterModel] = []
+
+    # @classmethod
+    # @validator('parameters')
+    # def parameters_must_match_api(cls, parameters, action, **kwargs):
+    #     for param in parameters:
+    #
 
 # class ActionApi(Base):
 #     __tablename__ = 'action_api'

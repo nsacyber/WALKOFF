@@ -91,7 +91,7 @@ describe('GlobalsComponent', () => {
 				JwtModule.forRoot({
 					config: {
 						tokenGetter: jwtTokenGetter,
-						blacklistedRoutes: ['login', 'api/auth', 'api/auth/logout', 'api/auth/refresh']
+						blacklistedRoutes: ['login', 'api/auth/login', 'api/auth/logout', 'api/auth/refresh']
 					}
 				}),
 				ToastrModule.forRoot({ positionClass: 'toast-bottom-right' })

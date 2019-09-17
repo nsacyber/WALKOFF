@@ -73,7 +73,7 @@ export class SchedulerService {
 	}
 
 	getWorkflows(): Promise<Workflow[]> {
-		return this.http.get('api/workflows')
+		return this.http.get('api/workflows/')
 			.toPromise()
 			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);

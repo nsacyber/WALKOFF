@@ -54,7 +54,7 @@ class AppApiModel(BaseModel):
     def walkoff_version_is_semver(cls, walkoff_version):
         semver.parse(walkoff_version)
         return walkoff_version
-    #
+
     # class Config:
     #     orm_mode = True
 

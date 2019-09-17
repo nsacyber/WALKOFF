@@ -145,7 +145,7 @@ export class PlaybookService {
 		const body = JSON.parse(await this.utils.readUploadedFileAsText(fileToImport));
 		body.name = await this.nextWorkflowName(body.name);
 
-		return this.http.post('api/workflows', body, { headers })
+		return this.http.post('api/workflows/', body, { headers })
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(Workflow, data))
@@ -162,7 +162,7 @@ export class PlaybookService {
 	 * Returns all playbooks and their child workflows in minimal form (id, name).
 	 */
 	getWorkflows(): Promise<Workflow[]> {
-		return this.http.get('api/workflows')
+		return this.http.get('api/workflows/')
 			.toPromise()
 			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
@@ -177,7 +177,7 @@ export class PlaybookService {
 	duplicateWorkflow(
 		sourceWorkflowId: string, newName: string,
 	): Promise<Workflow> {
-		return this.http.post(`api/workflows?source=${sourceWorkflowId}`,
+		return this.http.post(`api/workflows/?source=${sourceWorkflowId}`,
 			{ name: newName })
 			.toPromise()
 			.then((data) => this.emitChange(data))
@@ -203,7 +203,7 @@ export class PlaybookService {
 	 */
 	newWorkflow(workflow: Workflow): Promise<Workflow> {
 		workflow.id = UUID.UUID();
-		return this.http.post('api/workflows', classToPlain(workflow))
+		return this.http.post('api/workflows/', classToPlain(workflow))
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(Workflow, data))

@@ -82,6 +82,7 @@ class Static:
     # File paths
     # API_PATH = Path("api") / "api"
     CLIENT_PATH = Path("api") / "client"
+    TEMPLATE_PATH = Path("api") / "server" / "templates"
 
     # REDIS_DATA_PATH = Path("data") / "redis" / "red_data"
     # POSTGRES_DATA_PATH = Path("data") / "postgres" / "pg_data"
