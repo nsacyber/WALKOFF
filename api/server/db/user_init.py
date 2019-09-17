@@ -1,4 +1,6 @@
-from api.server.db.role import Role
+from motor.motor_asyncio import AsyncIOMotorCollection
+
+from api.server.db.role import Role, RoleModel, set_resources
 from api.server.db.user import User
 from sqlalchemy.orm import Session
 
@@ -90,75 +92,84 @@ default_resource_permissions_workflow_operator = [
 default_resources = ['app_apis', 'apps', 'settings', 'global_variables', 'workflows', 'roles', 'scheduler', 'users']
 
 
-def initialize_default_resources_internal_user(db_session: Session):
+def initialize_default_resources_internal_user(roles_col: AsyncIOMotorCollection):
     """Initializes the default resources for an internal user"""
-    internal_user = db_session.query(Role).filter(Role.id == 1).first()
+    internal_user = await roles_col.find_one({"id": 1}, projection={'_id': False})
     if not internal_user:
-        internal_user = Role("internal_user", description="Placeholder description",
-                             resources=default_resource_permissions_internal_user, db_session=db_session)
-        db_session.add(internal_user)
+        data = {"id": 1, "name": "internal_user", "description": "Placeholder description",
+                "resources": default_resource_permissions_internal_user}
+        internal_user = RoleModel(**data)
+        roles_col.insert_one(dict(internal_user))
+        set_resources(default_resource_permissions_internal_user)
     else:
-        internal_user.set_resources(default_resource_permissions_internal_user, db_session=db_session)
-    db_session.commit()
+        set_resources(default_resource_permissions_internal_user)
 
 
-def initialize_default_resources_super_admin(db_session: Session):
+def initialize_default_resources_super_admin(roles_col: AsyncIOMotorCollection):
     """Initializes the default resources for a super admin user"""
-    super_admin = db_session.query(Role).filter(Role.id == 2).first()
+    super_admin = await roles_col.find_one({"id": 2}, projection={'_id': False})
     if not super_admin:
-        super_admin = Role("super_admin", description="Placeholder description",
-                           resources=default_resource_permissions_super_admin, db_session=db_session)
-        db_session.add(super_admin)
+        data = {"id": 2, "name": "super_admin", "description": "Placeholder description",
+                "resources": default_resource_permissions_super_admin}
+        super_admin = RoleModel(**data)
+        roles_col.insert_one(dict(super_admin))
+        set_resources(default_resource_permissions_super_admin)
     else:
-        super_admin.set_resources(default_resource_permissions_super_admin, db_session=db_session)
-    db_session.commit()
+        set_resources(default_resource_permissions_super_admin)
 
 
-def initialize_default_resources_admin(db_session: Session):
+def initialize_default_resources_admin(roles_col: AsyncIOMotorCollection):
     """Initializes the default resources for an admin user"""
-    admin = db_session.query(Role).filter(Role.id == 3).first()
+    admin = await roles_col.find_one({"id": 3}, projection={'_id': False})
     if not admin:
-        admin = Role("admin", description="Placeholder description", resources=default_resource_permissions_admin, db_session=db_session)
-        db_session.add(admin)
+        resources = set_resources(default_resource_permissions_admin)
+        data = {"id": 3, "name": "admin", "description": "Placeholder description",
+                "resources": resources}
+        admin = RoleModel(**data)
+        roles_col.insert_one(dict(admin))
     else:
-        admin.set_resources(default_resource_permissions_admin, db_session=db_session)
-    db_session.commit()
+        resources = set_resources(default_resource_permissions_admin)
+        await roles_col.replace_one(dict(admin), dict(new_admin))
 
 
-def initialize_default_resources_app_developer(db_session: Session):
+
+def initialize_default_resources_app_developer(roles_col: AsyncIOMotorCollection):
     """Initializes the default resources for an app developer"""
-    app_developer = db_session.query(Role).filter(Role.id == 4).first()
+    app_developer = await roles_col.find_one({"id": 4}, projection={'_id': False})
     if not app_developer:
-        app_developer = Role("app_developer", description="Placeholder description",
-                                  resources=default_resource_permissions_app_developer, db_session=db_session)
-        db_session.add(app_developer)
+        data = {"id": 4, "name": "app_developer", "description": "Placeholder description",
+                "resources": default_resource_permissions_app_developer}
+        app_developer = RoleModel(**data)
+        roles_col.insert_one(dict(app_developer))
+        set_resources(default_resource_permissions_app_developer)
     else:
-        app_developer.set_resources(default_resource_permissions_app_developer, db_session=db_session)
-    db_session.commit()
+        set_resources(default_resource_permissions_app_developer)
 
 
-def initialize_default_resources_workflow_developer(db_session: Session):
+def initialize_default_resources_workflow_developer(roles_col: AsyncIOMotorCollection):
     """Initializes the default resources for a workflow developer"""
-    workflow_developer = db_session.query(Role).filter(Role.id == 5).first()
+    workflow_developer = await roles_col.find_one({"id": 5}, projection={'_id': False})
     if not workflow_developer:
-        workflow_developer = Role("workflow_developer", description="Placeholder description",
-                                  resources=default_resource_permissions_workflow_developer, db_session=db_session)
-        db_session.add(workflow_developer)
+        data = {"id": 5, "name": "workflow_developer", "description": "Placeholder description",
+                "resources": default_resource_permissions_workflow_developer}
+        workflow_developer = RoleModel(**data)
+        roles_col.insert_one(dict(workflow_developer))
+        set_resources(default_resource_permissions_workflow_developer)
     else:
-        workflow_developer.set_resources(default_resource_permissions_workflow_developer, db_session=db_session)
-    db_session.commit()
+        set_resources(default_resource_permissions_workflow_developer)
 
 
-def initialize_default_resources_workflow_operator(db_session: Session):
+def initialize_default_resources_workflow_operator(roles_col: AsyncIOMotorCollection):
     """Initializes the default resources for a workflow operator"""
-    workflow_operator = db_session.query(Role).filter(Role.id == 6).first()
+    workflow_operator = await roles_col.find_one({"id": 6}, projection={'_id': False})
     if not workflow_operator:
-        workflow_operator = Role("workflow_operator", description="Placeholder description",
-                                 resources=default_resource_permissions_workflow_operator, db_session=db_session)
-        db_session.add(workflow_operator)
+        data = {"id": 6, "name": "workflow_operator", "description": "Placeholder description",
+                "resources": default_resource_permissions_workflow_operator}
+        workflow_operator = RoleModel(**data)
+        roles_col.insert_one(dict(workflow_operator))
+        set_resources(default_resource_permissions_workflow_operator)
     else:
-        workflow_operator.set_resources(default_resource_permissions_workflow_operator, db_session=db_session)
-    db_session.commit()
+        set_resources(default_resource_permissions_workflow_operator)
 
 
 def set_resources_for_role(role_name: str, resources: dict, db_session: Session):
@@ -217,10 +228,11 @@ def add_user(username: str, password: str, db_session: Session, roles: list = No
         return None
 
 
-def remove_user(username: str, db_session: Session):
+def remove_user(username: str, user_col: AsyncIOMotorCollection):
     """Removes the user.
 
     Args:
         username (str): The username of the User to delete.
     """
-    db_session.query(User).filter_by(username=username).delete()
+    to_delete = user_col.find_and_delete({"username": username}, projection={'_id': False})
+    user_col.delete_one(dict(to_delete))

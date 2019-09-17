@@ -11,6 +11,21 @@ class ResourceModel(BaseModel):
     id: int
     name: str
     role_id: int
+    permissions: List[Permission]
+    
+
+
+    def set_permissions(self, new_permissions):
+        """Adds the given list of permissions to the Resource object.
+
+        Args:
+            new_permissions (list|set[str]): A list of permission names with which the Resource will be associated.
+                These permissions must be in the set ["create", "read", "update", "delete", "execute"].
+        """
+        self.permissions = []
+        new_permission_names = set(new_permissions)
+        self.permissions.extend([Permission(permission) for permission in new_permission_names])
+
 
 
 class Resource(Base):
@@ -33,16 +48,6 @@ class Resource(Base):
         self.needed_ids = needed_ids
         self.set_permissions(permissions)
 
-    def set_permissions(self, new_permissions):
-        """Adds the given list of permissions to the Resource object.
-
-        Args:
-            new_permissions (list|set[str]): A list of permission names with which the Resource will be associated.
-                These permissions must be in the set ["create", "read", "update", "delete", "execute"].
-        """
-        self.permissions = []
-        new_permission_names = set(new_permissions)
-        self.permissions.extend([Permission(permission) for permission in new_permission_names])
 
     def as_json(self, with_roles=False):
         """Returns the dictionary representation of the Resource object.

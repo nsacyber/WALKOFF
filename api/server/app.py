@@ -31,41 +31,41 @@ _app.mount("/walkoff/api", _walkoff)
 
 @_app.on_event("startup")
 async def initialize_users():
-    db_session = _db_manager.session_maker()
-    initialize_default_resources_internal_user(db_session)
-    initialize_default_resources_super_admin(db_session)
-    initialize_default_resources_admin(db_session)
-    initialize_default_resources_app_developer(db_session)
-    initialize_default_resources_workflow_developer(db_session)
-    initialize_default_resources_workflow_operator(db_session)
+    walkoff_db = _mongo_manager.client.walkoff_db
+
+    initialize_default_resources_internal_user(walkoff_db)
+    initialize_default_resources_super_admin(walkoff_db)
+    initialize_default_resources_admin(walkoff_db)
+    initialize_default_resources_app_developer(walkoff_db)
+    initialize_default_resources_workflow_developer(walkoff_db)
+    initialize_default_resources_workflow_operator(walkoff_db)
 
     # Setup internal user
-    internal_role = db_session.query(Role).filter_by(id=1).first()
-    internal_user = db_session.query(User).filter_by(username="internal_user").first()
-
+    internal_role = walkoff_db.getCollection("roles").find_one({"id": 1}, projection={'_id': False})
+    internal_user = walkoff_db.getCollection("users").find_one({"username": "internal_user"}, projection={'_id': False})
     if not internal_user:
         key = config.get_from_file(config.INTERNAL_KEY_PATH)
-        add_user(username='internal_user', password=key, roles=[2], db_session=db_session)
+        add_user(username='internal_user', password=key, roles=[2], walkoff_db=walkoff_db)
     elif internal_role not in internal_user.roles:
         internal_user.roles.append(internal_role)
 
     # Setup Super Admin user
-    super_admin_role = db_session.query(Role).filter_by(id=2).first()
-    super_admin_user = db_session.query(User).filter_by(username="super_admin").first()
+    super_admin_role = walkoff_db.getCollection("roles").find_one({"id": 2}, projection={'_id': False})
+    super_admin_user = walkoff_db.getCollection("users").find_one({"username": "super_admin"}, projection={'_id': False})
     if not super_admin_user:
-        add_user(username='super_admin', password='super_admin', roles=[2], db_session=db_session)
+        add_user(username='super_admin', password='super_admin', roles=[2], walkoff_db=walkoff_db)
     elif super_admin_role not in super_admin_user.roles:
         super_admin_user.roles.append(super_admin_role)
 
     # Setup Admin user
-    admin_role = db_session.query(Role).filter_by(id=3).first()
-    admin_user = db_session.query(User).filter_by(username="admin").first()
+    admin_role = walkoff_db.getCollection("roles").find_one({"id": 3}, projection={'_id': False})
+    admin_user = walkoff_db.getCollection("users").find_one({"username": "admin"}, projection={'_id': False})
     if not admin_user:
-        add_user(username='admin', password='admin', roles=[3], db_session=db_session)
+        add_user(username='admin', password='admin', roles=[3], walkoff_db=walkoff_db)
     elif admin_role not in admin_user.roles:
         admin_user.roles.append(admin_role)
 
-    db_session.commit()
+    walkoff_db.commit()
 
 
 # @_app.on_event("startup")
@@ -138,7 +138,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
 _walkoff.include_router(auth.router,
                         prefix="/auth",
                         tags=["auth"],
-                        dependencies=[Depends(get_db)])
+                        dependencies=[Depends(get_mongo_c)])
 
 # _walkoff.include_router(global_variables.router,
 #                         prefix="/globals",
@@ -148,12 +148,12 @@ _walkoff.include_router(auth.router,
 _walkoff.include_router(users.router,
                         prefix="/users",
                         tags=["users"],
-                        dependencies=[Depends(get_db)])
+                        dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(roles.router,
                         prefix="/roles",
                         tags=["roles"],
-                        dependencies=[Depends(get_db)])
+                        dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(appapi.router,
                         prefix="/apps",
