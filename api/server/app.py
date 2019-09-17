@@ -16,6 +16,7 @@ from api.server.db.user import Role
 from api.server.db.user import User
 from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
     get_roles_by_resource_permission
+from api.server.utils.problem import Problem
 from common.config import config, static
 
 logger = logging.getLogger("API")
@@ -27,54 +28,49 @@ _mongo_manager = MongoEngine()
 
 _app.mount("/walkoff/api", _walkoff)
 
-#
-# @_app.on_event("startup")
-# async def initialize_users():
-#     db_session = _db_manager.session_maker()
-#     initialize_default_resources_internal_user(db_session)
-#     initialize_default_resources_super_admin(db_session)
-#     initialize_default_resources_admin(db_session)
-#     initialize_default_resources_app_developer(db_session)
-#     initialize_default_resources_workflow_developer(db_session)
-#     initialize_default_resources_workflow_operator(db_session)
-#
-#     # Setup internal user
-#     internal_role = db_session.query(Role).filter_by(id=1).first()
-#     internal_user = db_session.query(User).filter_by(username="internal_user").first()
-#
-#     if not internal_user:
-#         key = config.get_from_file(config.INTERNAL_KEY_PATH)
-#         add_user(username='internal_user', password=key, roles=[2], db_session=db_session)
-#     elif internal_role not in internal_user.roles:
-#         internal_user.roles.append(internal_role)
-#
-#     # Setup Super Admin user
-#     super_admin_role = db_session.query(Role).filter_by(id=2).first()
-#     super_admin_user = db_session.query(User).filter_by(username="super_admin").first()
-#     if not super_admin_user:
-#         add_user(username='super_admin', password='super_admin', roles=[2], db_session=db_session)
-#     elif super_admin_role not in super_admin_user.roles:
-#         super_admin_user.roles.append(super_admin_role)
-#
-#     # Setup Admin user
-#     admin_role = db_session.query(Role).filter_by(id=3).first()
-#     admin_user = db_session.query(User).filter_by(username="admin").first()
-#     if not admin_user:
-#         add_user(username='admin', password='admin', roles=[3], db_session=db_session)
-#     elif admin_role not in admin_user.roles:
-#         admin_user.roles.append(admin_role)
-#
-#     db_session.commit()
+
+@_app.on_event("startup")
+async def initialize_users():
+    db_session = _db_manager.session_maker()
+    initialize_default_resources_internal_user(db_session)
+    initialize_default_resources_super_admin(db_session)
+    initialize_default_resources_admin(db_session)
+    initialize_default_resources_app_developer(db_session)
+    initialize_default_resources_workflow_developer(db_session)
+    initialize_default_resources_workflow_operator(db_session)
+
+    # Setup internal user
+    internal_role = db_session.query(Role).filter_by(id=1).first()
+    internal_user = db_session.query(User).filter_by(username="internal_user").first()
+
+    if not internal_user:
+        key = config.get_from_file(config.INTERNAL_KEY_PATH)
+        add_user(username='internal_user', password=key, roles=[2], db_session=db_session)
+    elif internal_role not in internal_user.roles:
+        internal_user.roles.append(internal_role)
+
+    # Setup Super Admin user
+    super_admin_role = db_session.query(Role).filter_by(id=2).first()
+    super_admin_user = db_session.query(User).filter_by(username="super_admin").first()
+    if not super_admin_user:
+        add_user(username='super_admin', password='super_admin', roles=[2], db_session=db_session)
+    elif super_admin_role not in super_admin_user.roles:
+        super_admin_user.roles.append(super_admin_role)
+
+    # Setup Admin user
+    admin_role = db_session.query(Role).filter_by(id=3).first()
+    admin_user = db_session.query(User).filter_by(username="admin").first()
+    if not admin_user:
+        add_user(username='admin', password='admin', roles=[3], db_session=db_session)
+    elif admin_role not in admin_user.roles:
+        admin_user.roles.append(admin_role)
+
+    db_session.commit()
 
 
 # @_app.on_event("startup")
 # async def initialize_mongodb():
 #     await _mongo_manager.init_db()
-
-
-@_app.on_event("startup")
-async def tester():
-    print("Walkoff app has started")
 
 
 @_walkoff.middleware("http")
@@ -91,56 +87,54 @@ async def db_session_middleware(request: Request, call_next):
     return response
 
 
-# @_walkoff.middleware("http")
-# async def jwt_required_middleware(request: Request, call_next):
-#     print("checking jwt")
-#     # request_path = (request.url.path).split("/")
-#     # resource_name = request_path[3]
-#     # if resource_name != "auth":
-#     #     db_session = _db_manager.session_maker()
-#     #     decoded_token = get_raw_jwt(request)
-#     #     verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
-#     #     verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
-#
-#     response = await call_next(request)
-#     return response
+@_walkoff.middleware("http")
+async def jwt_required_middleware(request: Request, call_next):
+    request_path = (request.url.path).split("/")
+    resource_name = request_path[3]
+    if resource_name != "auth":
+        db_session = _db_manager.session_maker()
+        decoded_token = get_raw_jwt(request)
+        verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
+        verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
+
+    response = await call_next(request)
+    return response
 
 
-# @_walkoff.middleware("http")
-# async def permissions_accepted_for_resource_middleware(request: Request, call_next):
-#     logger.info("Permissions Checking Initiated")
-#     db_session = _db_manager.session_maker()
-#     request_path = (request.url.path).split("/")
-#     logger.info(f"Current request path: {request.url.path}")
-#     resource_name = request_path[1]
-#     logger.info(f"Current resource name: {resource_name}")
-#     request_method = request.method
-#     logger.info(f"Current request method: {request_method}")
-#     accepted_roles = set()
-#     resource_permission = ""
-#
-#     # TODO: Add check for scheduler "execute" permission
-#     if resource_name != ("globals" and "workflows" and "workflowqueue" and "auth" and "appapi"):
-#         if request_method == "POST":
-#             resource_permission = "create"
-#
-#         if request_method == "GET":
-#             resource_permission = "read"
-#
-#         if request_method == "PUT":
-#             resource_permission = "put"
-#
-#         if request_method == "DELETE":
-#             resource_permission = "delete"
-#
-#         accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, db_session)
-#         logger.info(f"Accepted roles: {accepted_roles}")
-#         if not user_has_correct_roles(accepted_roles, request):
-#             return "Unauthorized View", HTTPStatus.FORBIDDEN
-#
-#     response = await call_next(request)
-#     return response
-#
+@_walkoff.middleware("http")
+async def permissions_accepted_for_resource_middleware(request: Request, call_next):
+    db_session = _db_manager.session_maker()
+    request_path = (request.url.path).split("/")
+    resource_name = request_path[3]
+    request_method = request.method
+    accepted_roles = set()
+    resource_permission = ""
+
+    # TODO: Add check for scheduler "execute" permission when scheduler built out
+    move_on = ["globals", "workflow", "workflowqueue", "auth", "appapi"]
+    if resource_name not in move_on:
+        if request_method == "POST":
+            resource_permission = "create"
+
+        if request_method == "GET":
+            resource_permission = "read"
+
+        if request_method == "PUT":
+            resource_permission = "put"
+
+        if request_method == "DELETE":
+            resource_permission = "delete"
+
+        accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, db_session)
+        if not user_has_correct_roles(accepted_roles, request):
+            raise Problem.from_crud_resource(
+                HTTPStatus.FORBIDDEN,
+                resource_name,
+                resource_permission,
+                "Unauthorized View")
+
+    response = await call_next(request)
+    return response
 
 # Include routers here
 _walkoff.include_router(auth.router,

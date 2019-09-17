@@ -160,9 +160,10 @@ def update_personal_user(username: str, body: EditPersonalUser, request: Request
 
 def role_update_user_fields(data, user, db_session, update=False):
     # ensures inability to update roles for super_admin
-    if 'roles' in data and user.id != 2:
+    invalid_roles = [1, 2]
+    if 'roles' in data and user.id not in invalid_roles:
         user.set_roles([role['id'] for role in data['roles']], db_session)
-    if 'active' in data and user.id != 2:
+    if 'active' in data and user.id not in invalid_roles:
         user.active = data['active']
     if update:
         return update_user_fields(data, user, db_session)

@@ -8,7 +8,7 @@ from http import HTTPStatus
 logger = logging.getLogger("API")
 
 
-class Problem(JSONResponse):
+class Problem(JSONResponse, BaseException):
     """Returns a Problem Details object complying with RFC 7807
     .. https://tools.ietf.org/html/rfc7807
 

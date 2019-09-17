@@ -18,7 +18,6 @@ class AuthModel(BaseModel):
 
 class TokenModel(BaseModel):
     refresh_token: str
-    access_token: str
 
 
 class BlacklistedToken(Base):
@@ -74,7 +73,7 @@ def is_token_revoked(db_session: Session, decoded_token):
         (bool): True if the token is revoked, False otherwise.
     """
     jti = decoded_token['jti']
-    token = db_session.add(BlacklistedToken).filter_by(jti=jti).first()
+    token = db_session.query(BlacklistedToken).filter_by(jti=jti).first()
     return token is not None
 
 

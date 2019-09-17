@@ -93,14 +93,12 @@ default_resources = ['app_apis', 'apps', 'settings', 'global_variables', 'workfl
 def initialize_default_resources_internal_user(db_session: Session):
     """Initializes the default resources for an internal user"""
     internal_user = db_session.query(Role).filter(Role.id == 1).first()
-    print(f" internal: {internal_user}")
     if not internal_user:
         internal_user = Role("internal_user", description="Placeholder description",
                              resources=default_resource_permissions_internal_user, db_session=db_session)
         db_session.add(internal_user)
     else:
         internal_user.set_resources(default_resource_permissions_internal_user, db_session=db_session)
-    print(f"{vars(internal_user)}")
     db_session.commit()
 
 

@@ -10,7 +10,8 @@ from api.server.db.role import Role, AddRoleModel, RoleModel
 
 
 def role_getter(db_session: Session, role_id: int):
-    return db_session.query(Role).filter_by(id=role_id).first()
+    role = db_session.query(Role).filter_by(id=role_id).first()
+    return role
 
 
 router = APIRouter()
@@ -53,6 +54,11 @@ def create_role(add_role: AddRoleModel, db_session: Session = Depends(get_db)):
 @router.get('/{role_id}')
 def read_role(role_id: int, db_session: Session = Depends(get_db)):
     role = role_getter(db_session=db_session, role_id=role_id)
+    if role is None:
+        return Problem(
+            HTTPStatus.BAD_REQUEST,
+            'Could not logout.',
+            'The identity of the refresh token does not match the identity of the authentication token.')
     # check for internal or super_admin
     if role.id != 1 or role.id != 2:
         return role.as_json(), HTTPStatus.OK
@@ -74,7 +80,7 @@ def update_role(role_id: int, updated_role: RoleModel, db_session: Session = Dep
             role.description = json_data['description']
         if 'resources' in json_data:
             resources = json_data['resources']
-            role.set_resources(resources)
+            role.set_resources(resources, db_session)
         db_session.commit()
         # current_app.logger.info(f"Edited role {json_data['id']} to {json_data}")
         return role.as_json(), HTTPStatus.OK

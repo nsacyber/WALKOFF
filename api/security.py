@@ -65,6 +65,7 @@ def create_access_token(identity: int, db_session: Session, fresh=False, expires
         expire = datetime.utcnow() + timedelta(minutes=FastApiConfig.JWT_ACCESS_TOKEN_EXPIRES)
     if user_claims is None:
         user_claims = add_claims_to_access_token(db_session, identity)
+    print(f"user claims: {user_claims}")
     to_encode = {"jti": str(uuid.uuid4()),
                  "exp": expire,
                  "identity": identity,
@@ -96,7 +97,6 @@ def decode_token(to_decode):
 
 
 def get_raw_jwt(request: Request):
-    print(vars(request))
     auth_header = request.headers['Authorization']
     jwt_token = auth_header[7:]
     return decode_token(jwt_token)
