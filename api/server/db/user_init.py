@@ -199,7 +199,7 @@ def get_all_available_resource_actions():
     return resource_actions
 
 
-def add_user(username: str, password: str, user_col: AsyncIOMotorCollection, roles: list = None):
+def add_user(username: str, password: str, walkoff_db, roles: list = None):
     """Adds a User object.
 
     Args:
@@ -210,9 +210,12 @@ def add_user(username: str, password: str, user_col: AsyncIOMotorCollection, rol
     Returns:
         (User): The new User object if successful, else None.
     """
+    user_col = walkoff_db.getCollection("users")
+    role_col = walkoff_db.getCollection("roles")
+
     user = await user_col.find_one({"username": username}, projection={'_id': False})
     if user is None:
-        u = UserModel(username, password, roles=roles)
+        u = UserModel(username, password, roles=roles, role_col=role_col)
         user_col.insert_one(**dict(u))
         return u
     else:

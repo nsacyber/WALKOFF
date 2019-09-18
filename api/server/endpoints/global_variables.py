@@ -12,9 +12,9 @@ from starlette.requests import Request
 
 from api.server.db.global_variable import GlobalVariableSchema, GlobalVariableTemplateSchema
 from api.server.db.global_variable import GlobalVariableTemplate, GlobalVariable
-from api.server.db.user import User
+
 from api.server.db import get_db
-from api.security import get_jwt_claims, get_jwt_identity
+from api.security import get_jwt_identity
 from common.roles_helpers import auth_check, update_permissions, default_permissions, creator_check
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
@@ -52,9 +52,8 @@ global_variable_template_schema = GlobalVariableTemplateSchema()
 
 
 @router.get("/", status_code=200)
-async def read_all_globals(to_decrypt: str = "false", db_session: Session = Depends(get_db)):
-    username = get_jwt_claims().get('username', None)
-    curr_user_id = (db_session.query(User).filter(User.username == username).first()).id
+async def read_all_globals(request: Request, to_decrypt: str = "false", db_session: Session = Depends(get_db)):
+    curr_user_id = get_jwt_identity(request)
 
     key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
     ret = []
@@ -74,10 +73,9 @@ async def read_all_globals(to_decrypt: str = "false", db_session: Session = Depe
 
 
 @router.get("/{global_var}")
-def read_global(*, global_var: UUID, to_decrypt: str = "false", db_session: Session = Depends(get_db)):
+def read_global(*, request: Request, global_var: UUID, to_decrypt: str = "false", db_session: Session = Depends(get_db)):
     var = global_variable_getter(global_var, db_session)
-    username = get_jwt_claims().get('username', None)
-    curr_user_id = (db_session.query(User).filter(User.username == username).first()).id
+    curr_user_id = get_jwt_identity(request)
 
     global_id = str(var.id_)
     to_read = auth_check(global_id, "read", "global_variables")
@@ -95,10 +93,9 @@ def read_global(*, global_var: UUID, to_decrypt: str = "false", db_session: Sess
 
 
 @router.delete("/{global_var}")
-def delete_global(global_var: UUID, db_session: Session = Depends(get_db)):
+def delete_global(request: Request, global_var: UUID, db_session: Session = Depends(get_db)):
     var = global_variable_getter(global_var, db_session)
-    username = get_jwt_claims().get('username', None)
-    curr_user_id = (db_session.query(User).filter(User.username == username).first()).id
+    curr_user_id = get_jwt_identity(request)
 
     global_id = str(var.id_)
     to_delete = auth_check(global_id, "delete", "global_variables")
@@ -157,11 +154,10 @@ def create_global(request: Request, new_global: GlobalVariable, global_col: Asyn
 
 
 @router.put("/{global_var}")
-def update_global(body: GlobalVariable, global_var: UUID, db_session: Session = Depends(get_db)):
+def update_global(request: Request, body: GlobalVariable, global_var: UUID, db_session: Session = Depends(get_db)):
     var = global_variable_getter(global_var, db_session)
 
-    username = get_jwt_claims().get('username', None)
-    curr_user_id = (db_session.query(User).filter(User.username == username).first()).id
+    curr_user_id = get_jwt_identity(request)
 
     data = await body.get_json()
     global_id = body.id_
