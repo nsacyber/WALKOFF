@@ -1,7 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from api.server.db.role import Role, RoleModel, set_resources
-from api.server.db.user import User
+from api.server.db.role import Role, RoleModel
+from api.server.db.user import User, UserModel
 from sqlalchemy.orm import Session
 
 default_resource_permissions_internal_user = [
@@ -100,9 +100,8 @@ def initialize_default_resources_internal_user(roles_col: AsyncIOMotorCollection
                 "resources": default_resource_permissions_internal_user}
         internal_user = RoleModel(**data)
         roles_col.insert_one(dict(internal_user))
-        set_resources(default_resource_permissions_internal_user)
     else:
-        set_resources(default_resource_permissions_internal_user)
+        internal_user.set_resources(default_resource_permissions_internal_user)
 
 
 def initialize_default_resources_super_admin(roles_col: AsyncIOMotorCollection):
@@ -113,24 +112,20 @@ def initialize_default_resources_super_admin(roles_col: AsyncIOMotorCollection):
                 "resources": default_resource_permissions_super_admin}
         super_admin = RoleModel(**data)
         roles_col.insert_one(dict(super_admin))
-        set_resources(default_resource_permissions_super_admin)
     else:
-        set_resources(default_resource_permissions_super_admin)
+        super_admin.set_resources(default_resource_permissions_super_admin)
 
 
 def initialize_default_resources_admin(roles_col: AsyncIOMotorCollection):
     """Initializes the default resources for an admin user"""
     admin = await roles_col.find_one({"id": 3}, projection={'_id': False})
     if not admin:
-        resources = set_resources(default_resource_permissions_admin)
         data = {"id": 3, "name": "admin", "description": "Placeholder description",
-                "resources": resources}
+                "resources": default_resource_permissions_admin}
         admin = RoleModel(**data)
         roles_col.insert_one(dict(admin))
     else:
-        resources = set_resources(default_resource_permissions_admin)
-        await roles_col.replace_one(dict(admin), dict(new_admin))
-
+        admin.set_resources(default_resource_permissions_admin)
 
 
 def initialize_default_resources_app_developer(roles_col: AsyncIOMotorCollection):
@@ -141,9 +136,8 @@ def initialize_default_resources_app_developer(roles_col: AsyncIOMotorCollection
                 "resources": default_resource_permissions_app_developer}
         app_developer = RoleModel(**data)
         roles_col.insert_one(dict(app_developer))
-        set_resources(default_resource_permissions_app_developer)
     else:
-        set_resources(default_resource_permissions_app_developer)
+        app_developer.set_resources(default_resource_permissions_app_developer)
 
 
 def initialize_default_resources_workflow_developer(roles_col: AsyncIOMotorCollection):
@@ -154,9 +148,8 @@ def initialize_default_resources_workflow_developer(roles_col: AsyncIOMotorColle
                 "resources": default_resource_permissions_workflow_developer}
         workflow_developer = RoleModel(**data)
         roles_col.insert_one(dict(workflow_developer))
-        set_resources(default_resource_permissions_workflow_developer)
     else:
-        set_resources(default_resource_permissions_workflow_developer)
+        workflow_developer.set_resources(default_resource_permissions_workflow_developer)
 
 
 def initialize_default_resources_workflow_operator(roles_col: AsyncIOMotorCollection):
@@ -167,12 +160,11 @@ def initialize_default_resources_workflow_operator(roles_col: AsyncIOMotorCollec
                 "resources": default_resource_permissions_workflow_operator}
         workflow_operator = RoleModel(**data)
         roles_col.insert_one(dict(workflow_operator))
-        set_resources(default_resource_permissions_workflow_operator)
     else:
-        set_resources(default_resource_permissions_workflow_operator)
+        workflow_operator.set_resources(default_resource_permissions_workflow_operator)
 
 
-def set_resources_for_role(role_name: str, resources: dict, db_session: Session):
+def set_resources_for_role(role_name: str, resources: dict, role_col: AsyncIOMotorCollection):
     """Sets the resources a role is allowed to access.
 
     Args:
@@ -180,19 +172,18 @@ def set_resources_for_role(role_name: str, resources: dict, db_session: Session)
         resources (dict[resource:list[permission]): A dictionary containing the name of the resource, with the value
                 being a list of permission names
     """
-    r = db_session.query(Role).filter(Role.name == role_name).first()
+    r = await role_col.find_one({"name": role_name}, projection={'_id': False})
     r.set_resources(resources)
 
 
-def clear_resources_for_role(role_name: str, db_session: Session):
+def clear_resources_for_role(role_name: str, role_col: AsyncIOMotorCollection):
     """Clears all of the resources that a role has access to.
 
     Args:
         role_name (str): The name of the role.
     """
-    r = db_session.query(Role).filter(Role.name == role_name).first()
-    r.resources = []
-    db_session.commit()
+    r = await role_col.find_one({"name": role_name}, projection={'_id': False})
+    r.set_resources([])
 
 
 def get_all_available_resource_actions():
@@ -208,7 +199,7 @@ def get_all_available_resource_actions():
     return resource_actions
 
 
-def add_user(username: str, password: str, db_session: Session, roles: list = None):
+def add_user(username: str, password: str, user_col: AsyncIOMotorCollection, roles: list = None):
     """Adds a User object.
 
     Args:
@@ -219,10 +210,10 @@ def add_user(username: str, password: str, db_session: Session, roles: list = No
     Returns:
         (User): The new User object if successful, else None.
     """
-    if db_session.query(User).filter_by(username=username).first() is None:
-        u = User(username, password, roles=roles, db_session=db_session)
-        db_session.add(u)
-        db_session.commit()
+    user = await user_col.find_one({"username": username}, projection={'_id': False})
+    if user is None:
+        u = UserModel(username, password, roles=roles)
+        user_col.insert_one(**dict(u))
         return u
     else:
         return None
@@ -234,5 +225,5 @@ def remove_user(username: str, user_col: AsyncIOMotorCollection):
     Args:
         username (str): The username of the User to delete.
     """
-    to_delete = user_col.find_and_delete({"username": username}, projection={'_id': False})
+    to_delete = user_col.find_one({"username": username}, projection={'_id': False})
     user_col.delete_one(dict(to_delete))

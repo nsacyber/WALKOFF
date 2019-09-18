@@ -13,47 +13,19 @@ class AccessLevel(int, Enum):
     ROLE_BASED = 2
 
 
-class PermissionVerb(str, Enum):
-    CREATE = "create"
-    READ = "read"
-    UPDATE = "update"
-    DELETE = "delete"
-    EXECUTE = "execute"
-
-
 class RolePermissions(BaseModel):
     role: int
-    permissions: List[PermissionVerb]
+    permissions: List[str]
 
 
 class PermissionsModel(BaseModel):
-    creator: UUID4
-    access_level: AccessLevel
+    creator: int = None
+    access_level: int
     permissions: List[RolePermissions]
     _walkoff_type: str = "permissions"
-
-
-rude_perms = [
-    PermissionVerb.READ,
-    PermissionVerb.UPDATE,
-    PermissionVerb.DELETE,
-    PermissionVerb.EXECUTE
-]
 
 
 def creator_only_permissions(creator):
     return PermissionsModel(creator=creator,
                             access_level=AccessLevel.CREATOR_ONLY,
-                            permissions=[RolePermissions(role=1, permissions=rude_perms)])
-
-
-def role_based_permissions(creator):
-    return PermissionsModel(creator=creator,
-                            access_level=AccessLevel.ROLE_BASED,
-                            permissions=[])
-
-
-def everyone_permissions():
-    return PermissionsModel(creator=None,
-                            access_level=AccessLevel.EVERYONE,
                             permissions=[])

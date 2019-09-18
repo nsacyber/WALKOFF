@@ -1,5 +1,6 @@
 import logging
 
+from motor.motor_asyncio import AsyncIOMotorCollection
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
 from uuid import uuid4
@@ -7,12 +8,13 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException
+from starlette.requests import Request
 
 from api.server.db.global_variable import GlobalVariableSchema, GlobalVariableTemplateSchema
 from api.server.db.global_variable import GlobalVariableTemplate, GlobalVariable
 from api.server.db.user import User
 from api.server.db import get_db
-from api.security import get_jwt_claims
+from api.security import get_jwt_claims, get_jwt_identity
 from common.roles_helpers import auth_check, update_permissions, default_permissions, creator_check
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
@@ -111,14 +113,12 @@ def delete_global(global_var: UUID, db_session: Session = Depends(get_db)):
 
 
 @router.post("/")
-def create_global(body: GlobalVariable, db_session: Session = Depends(get_db)):
-    data = dict(body)
-    global_id = body.id_
-    # data.get('id_', str(uuid4()))
+def create_global(request: Request, new_global: GlobalVariable, global_col: AsyncIOMotorCollection):
+    global_dict = dict(new_global)
+    global_id = global_dict["id_"]
 
-    username = get_jwt_claims().get('username', None)
-    curr_user = db_session.query(User).filter(User.username == username).first()
-    data.update({'creator': curr_user.id})
+    curr_user_id = get_jwt_identity(request)
+    permissions = global_dict[]
 
     new_permissions = body.permissions
 

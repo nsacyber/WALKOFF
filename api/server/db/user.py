@@ -55,14 +55,10 @@ class DisplayUser(BaseModel):
     active: str = None
     roles: List[int] = None
 
-
-class User(Base):
-    __tablename__ = 'user'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    # roles = relationship('Role', secondary=user_roles_association, backref=db.backref('users', lazy='dynamic'))
-    # roles = relationship('Role', back_populates='users')
-    roles = relationship('Role', backref=backref('users'))
-    username = Column(String(80), unique=True, nullable=False)
+class UserModel(BaseModel):
+    id: int = None
+    username: str
+    roles: List[RoleModel]
     _password = Column('password', String(255), nullable=False)
     active = Column(Boolean, default=True)
     last_login_at = Column(DateTime)
@@ -71,7 +67,7 @@ class User(Base):
     current_login_ip = Column(String(45))
     login_count = Column(Integer, default=0)
 
-    def __init__(self, name: str, password: str, db_session: Session, roles=None):
+    def __init__(self, name: str, password: str, roles=None, **data: Any):
         """Initializes a new User object
 
         Args:
@@ -79,6 +75,7 @@ class User(Base):
             password (str): The password for the User.
             roles (list[int], optional): List of Role ids for the User. Defaults to None.
         """
+        super().__init__(**data)
         self.username = name
         self._password = pbkdf2_sha512.hash(password)
         self.roles = []
@@ -162,38 +159,3 @@ class User(Base):
         """
         return role in [role.id for role in self.roles]
 
-    def as_json(self, with_user_history=False):
-        """Returns the dictionary representation of a User object.
-
-        Args:
-            with_user_history (bool, optional): Boolean to determine whether or not to include user history in the JSON
-                representation of the User. Defaults to False.
-
-        Returns:
-            (dict): The dictionary representation of a User object.
-        """
-        out = {"id": self.id,
-               "username": self.username,
-               "roles": [role.as_json() for role in self.roles],
-               "active": self.active}
-        if with_user_history:
-            out.update({
-                "last_login_at": utc_as_rfc_datetime(self.last_login_at),
-                "current_login_at": utc_as_rfc_datetime(self.current_login_at),
-                "last_login_ip": self.last_login_ip,
-                "current_login_ip": self.current_login_ip,
-                "login_count": self.login_count})
-        return out
-
-    def permission_json(self):
-        """Returns the dictionary representation of a User's permissions.
-
-        Args:
-            with_user_history (bool, optional): Boolean to determine whether or not to include user history in the JSON
-                representation of the User. Defaults to False.
-
-        Returns:
-            (dict): The dictionary representation of a User's permissions.
-        """
-        out = {"roles": [role.as_json() for role in self.roles]}
-        return out
