@@ -116,14 +116,41 @@ async def jwt_required_middleware(request: Request, call_next):
     return response
 
 
-# @_walkoff.middleware("http")
-# async def permissions_accepted_for_resource_middleware(request: Request, call_next):
-#     db_session = _db_manager.session_maker()
-#     request_path = (request.url.path).split("/")
-#     resource_name = request_path[3]
-#     request_method = request.method
-#     accepted_roles = set()
-#     resource_permission = ""
+@_walkoff.middleware("http")
+async def permissions_accepted_for_resource_middleware(request: Request, call_next):
+    db_session = _db_manager.session_maker()
+    request_path = request.url.path.split("/")
+
+    if len(request_path) >= 4:
+        resource_name = request_path[3]
+        request_method = request.method
+        accepted_roles = set()
+        resource_permission = ""
+
+        # TODO: Add check for scheduler "execute" permission when scheduler built out
+        move_on = ["globals", "workflow", "workflowqueue", "auth", "appapi", "docs", "redoc", "openapi.json"]
+        if resource_name not in move_on:
+            if request_method == "POST":
+                resource_permission = "create"
+
+            if request_method == "GET":
+                resource_permission = "read"
+
+            if request_method == "PUT":
+                resource_permission = "put"
+
+            if request_method == "DELETE":
+                resource_permission = "delete"
+
+            accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, db_session)
+            if not user_has_correct_roles(accepted_roles, request):
+                return JSONResponse({"Error": "FORBIDDEN",
+                                     "message": "User does not have correct permissions for this resource"},
+                                    status_code=403)
+
+    response = await call_next(request)
+    return response
+
 
 
 @_walkoff.exception_handler(ProblemException)
@@ -134,44 +161,6 @@ async def problem_exception_handler(request: Request, exc: ProblemException):
         status_code=exc.status_code
     )
     return r
-
-# @_walkoff.middleware("http")
-# async def jwt_required_middleware(request: Request, call_next):
-#     print("checking jwt")
-#     # request_path = (request.url.path).split("/")
-#     # resource_name = request_path[3]
-#     # if resource_name != "auth":
-#     #     db_session = _db_manager.session_maker()
-#     #     decoded_token = get_raw_jwt(request)
-#     #     verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
-#     #     verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
-#
-#     response = await call_next(request)
-#     return response
-
-    # TODO: Add check for scheduler "execute" permission when scheduler built out
-    move_on = ["globals", "workflow", "workflowqueue", "auth", "appapi"]
-    if resource_name not in move_on:
-        if request_method == "POST":
-            resource_permission = "create"
-
-        if request_method == "GET":
-            resource_permission = "read"
-
-        if request_method == "PUT":
-            resource_permission = "put"
-
-        if request_method == "DELETE":
-            resource_permission = "delete"
-
-        accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, db_session)
-        if not user_has_correct_roles(accepted_roles, request):
-            return JSONResponse({"Error": "FORBIDDEN",
-                                 "message": "User does not have correct permissions for this resource"},
-                                status_code=403)
-
-    response = await call_next(request)
-    return response
 
 # Include routers here
 _walkoff.include_router(auth.router,
