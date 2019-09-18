@@ -89,7 +89,10 @@ def decode_token(to_decode):
 
 
 def get_raw_jwt(request: Request):
-    auth_header = request.headers['Authorization']
+    auth_header = request.headers.get('Authorization')
+    if auth_header is None:
+        return None
+
     jwt_token = auth_header[7:]
     return decode_token(jwt_token)
 

@@ -24,12 +24,12 @@ async def app_api_getter(app_api_col: AsyncIOMotorCollection, app_api: str):
         return await app_api_col.find_one({"name": app_api}, projection={'_id': False})
 
 
-@router.get("/names")
+@router.get("/")
 async def read_all_app_names(app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     return await app_api_col.distinct("name")
 
 
-@router.get("/apis")
+@router.get("/apis/")
 async def read_all_app_apis(app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     ret = []
     for app_api in (await app_api_col.find().to_list(None)):
@@ -37,7 +37,7 @@ async def read_all_app_apis(app_api_col: AsyncIOMotorCollection = Depends(get_mo
     return ret
 
 
-@router.post("/apis", status_code=HTTPStatus.CREATED)
+@router.post("/apis/", status_code=HTTPStatus.CREATED)
 async def create_app_api(*, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c), new_api: AppApiModel):
     r = await app_api_col.insert_one(dict(new_api))
     if r.acknowledged:
@@ -46,20 +46,20 @@ async def create_app_api(*, app_api_col: AsyncIOMotorCollection = Depends(get_mo
         return result
 
 
-@router.get("/api/{app_name}")
+@router.get("/apis/{app_name}")
 async def read_app_api(*, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c), app_name: str):
     app = await app_api_getter(app_api_col, app_name)
     return app
 
 
-@router.put("/api/{app_name}")
+@router.put("/apis/{app_name}")
 async def update_app_api(*, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c), app_name: str, new_api: AppApiModel):
     app = await app_api_getter(app_api_col, app_name)
     r = await app_api_col.replace_one(dict(app), dict(new_api))
     return r.acknowledged
 
 
-@router.delete("/api/{app_name}")
+@router.delete("/apis/{app_name}")
 async def delete_app_api(*, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c), app_name: str):
     app = await app_api_getter(app_api_col, app_name)
     r = await app_api_col.delete_one(dict(app))
