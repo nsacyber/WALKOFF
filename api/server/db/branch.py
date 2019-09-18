@@ -1,16 +1,16 @@
 import logging
-from uuid import uuid4
+from uuid import uuid4, UUID
 
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel
 
 
 logger = logging.getLogger(__name__)
 
 
 class BranchModel(BaseModel):
-    id_: UUID4 = uuid4()
-    source_id: UUID4
-    destination_id: UUID4
+    id_: UUID = uuid4()
+    source_id: UUID
+    destination_id: UUID
     _walkoff_type: str = "branch"
 
 

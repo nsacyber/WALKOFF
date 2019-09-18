@@ -1,6 +1,5 @@
 import logging
 
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from motor.motor_asyncio import AsyncIOMotorCollection
 
@@ -12,7 +11,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-def dashboard_getter(dashboard, app_api_col: AsyncIOMotorCollection):
+async def dashboard_getter(dashboard, app_api_col: AsyncIOMotorCollection):
     if validate_uuid(dashboard):
         return await app_api_col.find_one({"id_": dashboard}, projection={'_id': False})
     else:
@@ -33,7 +32,7 @@ async def read_all_dashboards(app_api_col: AsyncIOMotorCollection = Depends(get_
     return ret
 
 
-@router.put("/")
+@router.put("/{dashboard}")
 async def update_dashboard(new_dashboard: DashboardModel, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     dash = await dashboard_getter(new_dashboard.name, app_api_col)
     r = await app_api_col.replace_one(dict(dash), dict(new_dashboard))
@@ -41,13 +40,13 @@ async def update_dashboard(new_dashboard: DashboardModel, app_api_col: AsyncIOMo
 
 
 @router.get("/{dashboard}")
-async def read_dashboard(dashboard: UUID, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def read_dashboard(dashboard: str, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     dash = dashboard_getter(dashboard, app_api_col)
     return dash
 
 
 @router.get("/{dashboard}")
-async def delete_dashboard(dashboard: UUID, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def delete_dashboard(dashboard: str, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     dash = dashboard_getter(dashboard, app_api_col)
     r = await app_api_col.delete_one(dict(dash))
     return r.acknowledged

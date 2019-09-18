@@ -1,4 +1,4 @@
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel
 from sqlalchemy import Column, String, JSON, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref, Session
 from typing import List

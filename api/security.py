@@ -28,7 +28,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 def verify_jwt_refresh_token_in_request(db_session: Session, request: Request):
     decoded_token = get_raw_jwt(request)
-
     verify_token_in_decoded(decoded_token=decoded_token, request_type='refresh')
     verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='refresh')
     return True
@@ -90,6 +89,7 @@ def decode_token(to_decode):
 
 def get_raw_jwt(request: Request):
     auth_header = request.headers.get('Authorization')
+
     if auth_header is None:
         return None
 
@@ -98,11 +98,13 @@ def get_raw_jwt(request: Request):
 
 
 def get_jwt_identity(request: Request):
-    return get_raw_jwt(request).get("identity", "")
+    rjwt = get_raw_jwt(request) or {}
+    return rjwt.get("identity", "")
 
 
 def get_jwt_claims(request: Request):
-    return get_raw_jwt(request).get("user_claims", "")
+    rjwt = get_raw_jwt(request) or {}
+    return rjwt.get("user_claims", {})
 
 
 def add_claims_to_access_token(db_session: Session, user_id):

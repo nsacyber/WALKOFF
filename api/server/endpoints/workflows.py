@@ -17,7 +17,7 @@ from api.server.db.workflow import WorkflowModel
 from api.server.db.permissions import PermissionsModel, AccessLevel
 from api.server.utils.helpers import regenerate_workflow_ids
 
-from common.roles_helpers import auth_check, update_permissions, default_permissions
+# from common.roles_helpers import auth_check, update_permissions, default_permissions
 from common.helpers import validate_uuid
 
 router = APIRouter()
@@ -36,10 +36,10 @@ async def create_workflow(
         new_workflow: WorkflowModel,
         workflow_coll: AsyncIOMotorCollection = Depends(get_mongo_c),
         source: str = None,
-        file: UploadFile = File(...)
+        # file: UploadFile = File(...)
 ):
-    if file:
-        new_workflow = WorkflowModel(**json.loads((await file.read()).decode('utf-8')))
+    # if file:
+    #     new_workflow = WorkflowModel(**json.loads((await file.read()).decode('utf-8')))
 
     if source:
         old_workflow: WorkflowModel = await workflow_getter(workflow_coll, source)
@@ -51,7 +51,7 @@ async def create_workflow(
 
     r: pymongo.results.InsertOneResult = await workflow_coll.insert_one(dict(new_workflow))
     if r.acknowledged:
-        result = await workflow_getter(workflow_coll, new_workflow.id_)
+        result = WorkflowModel(**(await workflow_getter(workflow_coll, new_workflow.id_)))
         logger.info(f"Created Workflow {result.name} ({result.id_})")
         return result
 
@@ -109,7 +109,7 @@ async def copy_workflow(old_workflow: WorkflowModel, new_workflow: WorkflowModel
 
 
 @router.get("/")
-def read_all_workflows(
+async def read_all_workflows(
         workflow_coll: AsyncIOMotorCollection = Depends(get_mongo_c),
 ):
     # username = get_jwt_claims().get('username', None)
@@ -128,7 +128,7 @@ def read_all_workflows(
 
 
 @router.get("/{workflow_name_id}")
-def read_workflow(
+async def read_workflow(
         workflow_name_id: str,
         mode: str = None,
         workflow_coll: AsyncIOMotorCollection = Depends(get_mongo_c)
@@ -163,7 +163,7 @@ def read_workflow(
 
 
 @router.put("/{workflow_name_id}")
-def update_workflow(
+async def update_workflow(
         updated_workflow: WorkflowModel,
         workflow_name_id: str,
         workflow_coll: AsyncIOMotorCollection = Depends(get_mongo_c)
@@ -194,7 +194,7 @@ def update_workflow(
 
 
 @router.delete("/{workflow_name_id}")
-def delete_workflow(
+async def delete_workflow(
         workflow_name_id: str,
         workflow_coll: AsyncIOMotorCollection = Depends(get_mongo_c)
 ):

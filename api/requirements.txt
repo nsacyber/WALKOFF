@@ -20,3 +20,5 @@ fastapi
 email-validator
 motor
 aiofiles
+python-multipart
+pydantic

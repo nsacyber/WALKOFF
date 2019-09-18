@@ -1,7 +1,7 @@
 import logging
-from uuid import uuid4
+from uuid import uuid4, UUID
 from typing import Union
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel
 
 # from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 # from sqlalchemy.dialects.postgresql import UUID
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReturnApiModel(BaseModel):
-    id_: UUID4 = uuid4()
+    id_: UUID = uuid4()
     location: str = ""
     description: str = ""
     example: Union[str, int, bool, dict, list, None] = None

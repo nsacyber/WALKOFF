@@ -192,7 +192,7 @@ ParentSymbol = namedtuple("ParentSymbol", "result")  # used inside conditions to
 ChildSymbol = namedtuple("ChildSymbol", "id_")  # used inside conditions to further mask the child node attrs
 
 
-class ParameterVariant(enum.Enum):
+class ParameterVariant(str, enum.Enum):
     STATIC_VALUE = "STATIC_VALUE"
     ACTION_RESULT = "ACTION_RESULT"
     WORKFLOW_VARIABLE = "WORKFLOW_VARIABLE"

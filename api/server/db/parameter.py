@@ -1,9 +1,9 @@
 import logging
-from uuid import uuid4
+from uuid import uuid4, UUID
 from enum import Enum
 from typing import Union
 
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel
 from common.workflow_types import ParameterVariant
 
 # from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class ParameterApiModel(BaseModel):
-    id_: UUID4 = uuid4()
+    id_: UUID = uuid4()
     name: str
     location: str = ""
     description: str = ""
@@ -34,7 +34,7 @@ class ParameterApiModel(BaseModel):
 
 
 class ParameterModel(BaseModel):
-    id_: UUID4 = uuid4()
+    id_: UUID = uuid4()
     name: str
     value: dict = {}
     parallelized: bool = False
