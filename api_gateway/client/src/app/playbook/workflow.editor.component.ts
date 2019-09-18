@@ -319,14 +319,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// Induce change detection by slicing array
 		this.consoleLog.push(newConsoleLog);
 		this.consoleLog = this.consoleLog.slice();
+		this.updateConsole();
 	}
 
 	get consoleContent() {
-		let content = `******************************* Console Output *******************************\n`;
-		this.consoleLog.forEach(log => {
-			content += log.message;
-		})
-		return content;
+		return this.consoleLog.map(log => log.message).join('');
 	}
 
 	///------------------------------------------------------------------------------------------------------
@@ -466,6 +463,15 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 	}
 
+	updateConsole() {
+		const cm = this.consoleArea.codeMirror;
+		const $scroller = $(cm.getScrollerElement());
+		const atBottom = $scroller[0].scrollHeight - $scroller.scrollTop() - $scroller.outerHeight() <= 0;
+		cm.getDoc().setValue(this.consoleContent);
+		cm.refresh();
+		if (atBottom) cm.execCommand('goDocEnd');
+	}
+
 	/**
 	 * Executes the loaded workflow as it exists on the server. Will not currently execute the workflow as it stands.
 	 */
@@ -481,6 +487,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
 				.then((workflowStatus: WorkflowStatus) => {
 					this.toastrService.success(`Starting <b>${this.loadedWorkflow.name}</b>`)
+					this.consoleLog.push(plainToClass(ConsoleLog, { message: `Starting workflow execution....\n`}));
+					this.updateConsole();
 				})
 				.catch(e => this.toastrService.error(`Error starting execution of ${this.loadedWorkflow.name}: ${e.message}`));
 		})
@@ -1325,6 +1333,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.clearExecutionHighlighting();
 		this.consoleLog = [];
 		this.nodeStatuses = [];
+		this.consoleArea.codeMirror.getDoc().setValue('');
 	}
 
 	/**
