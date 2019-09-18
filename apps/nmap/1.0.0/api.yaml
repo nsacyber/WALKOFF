@@ -1,7 +1,7 @@
 walkoff_version: 1.0.0
 app_version: 1.0.0
 name: nmap
-description: A simple app to interact with map
+description: A simple app to interact with nmap
 contact_info:
   name: Walkoff Team
   url: https://github.com/nsacyber/walkoff
