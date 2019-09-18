@@ -1,49 +1,51 @@
 import datetime
 import json
-import uuid
+from uuid import UUID
 import logging
 from collections import OrderedDict
 from datetime import datetime
 
 
 from flask import request, current_app, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_claims
 from sqlalchemy import exists, and_, or_
 import gevent
-
+from starlette.requests import Request
+from sqlalchemy.orm import Session
 from marshmallow import ValidationError
+from fastapi import APIRouter, Depends, HTTPException
+from motor.motor_asyncio import AsyncIOMotorCollection
+
 
 from common.config import config, static
 from common.message_types import StatusEnum, message_dumps
 from common.roles_helpers import auth_check, creator_check
-from api_gateway.executiondb.workflow import Workflow, WorkflowSchema
-from api_gateway.serverdb.user import User
-from api_gateway.extensions import db
-from api_gateway.executiondb.workflowresults import WorkflowStatus, WorkflowStatusSchema
-from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid, \
-    paginate
-from api_gateway.server.problem import dne_problem, invalid_input_problem, improper_json_problem
-from api_gateway.server.endpoints.results import push_to_workflow_stream_queue
+from api.server.db.workflow import Workflow, WorkflowSchema
+from api.server.db.user import User
+from api.server.db import get_db
+from api.server.db.workflowresults import WorkflowStatus, WorkflowStatusSchema
+from api.security import permissions_accepted_for_resources, ResourcePermissions
+from api.security import get_jwt_claims
+from api.server.utils.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
+from api.server.utils.problem import dne_problem, invalid_input_problem, improper_json_problem
+from api.server.endpoints.results import push_to_workflow_stream_queue
 from http import HTTPStatus
 
 logger = logging.getLogger(__name__)
 
 
-def workflow_status_getter(execution_id):
-    return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
-        execution_id=execution_id).first()
+def workflow_status_getter(execution_id, app_api_col: AsyncIOMotorCollection):
+    return await app_api_col.find_one({"execution_id": execution_id}, projection={'_id': False})
 
 
-def workflow_getter(workflow_id):
-    return current_app.running_context.execution_db.session.query(Workflow).filter_by(id_=workflow_id).first()
+def workflow_getter(workflow_id, app_api_col: AsyncIOMotorCollection):
+    return await app_api_col.find_one({"workflow_id": workflow_id}, projection={'_id': False})
 
 
 workflow_schema = WorkflowSchema()
 workflow_status_schema = WorkflowStatusSchema()
 
-with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
-with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
+# with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
+# with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
 
 
 status_order = OrderedDict(
@@ -55,14 +57,13 @@ executing_statuses = (StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA, StatusEnum
 completed_statuses = (StatusEnum.ABORTED, StatusEnum.COMPLETED)
 
 
-@jwt_required
-@paginate(workflow_status_schema)  # ToDo: make this summary
-def get_all_workflow_status():
-    username = get_jwt_claims().get('username', None)
-    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
-
-    r = current_app.running_context.execution_db.session.query(WorkflowStatus).order_by(WorkflowStatus.name).all()
+def get_all_workflow_status(request: Request, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    curr_user_id = get_jwt_claims(request)
+    r = []
     ret = []
+    for wf_status in (await workflow_status_col.find().to_list(None)):
+        r.append(WorkflowStatus(**wf_status))
+
     for wf_status in r:
         wf_creator = creator_check(str(wf_status.workflow_id), "workflows")
         to_read = auth_check(str(wf_status.workflow_id), "read", "workflows")
@@ -72,13 +73,13 @@ def get_all_workflow_status():
     return ret, HTTPStatus.OK
 
 
-@jwt_required
 @with_workflow_status('control', 'execution')
-def get_workflow_status(execution):
+def get_workflow_status(execution, db_session: Session = Depends(get_db)):
     username = get_jwt_claims().get('username', None)
-    curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
+    curr_user_id = (db_session.query(User).filter(User.username == username).first()).id
+    execute = workflow_status_getter(execution, db_session)
 
-    workflow_status = workflow_status_schema.dump(execution)
+    workflow_status = workflow_status_schema.dump(execute)
 
     to_read = auth_check(str(workflow_status['workflow_id']), "read", "workflows")
     wf_creator = creator_check(str(workflow_status['workflow_id']), "workflows")
