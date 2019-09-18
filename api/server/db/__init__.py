@@ -117,8 +117,8 @@ class MongoEngine(object):
 
     def collection_from_url(self, path: str):
         parts = path.split("/")
-        if len(parts) >= 3:
-            resource = parts[2]
+        if len(parts) >= 4:
+            resource = parts[3]
             return self.client.walkoff_db[resource]
         else:
             return None

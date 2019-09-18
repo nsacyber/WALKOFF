@@ -7,7 +7,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
-from api.server.endpoints import appapi, roles, users, auth
+from api.server.endpoints import appapi, roles, users, auth, dashboards, workflows
 from api.server.db import DBEngine, get_db, MongoEngine, get_mongo_c
 from api.server.db.user_init import initialize_default_resources_super_admin, \
     initialize_default_resources_internal_user, initialize_default_resources_admin, \
@@ -80,6 +80,8 @@ async def tester():
     logger.info("API Server started.")
 
 
+# Note: The request goes through middleware here in opposite order of instantiation, last to first.
+
 @_walkoff.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     try:
@@ -92,27 +94,6 @@ async def db_session_middleware(request: Request, call_next):
     finally:
         request.state.db.close()
 
-    return response
-
-
-@_walkoff.middleware("http")
-async def jwt_required_middleware(request: Request, call_next):
-    request_path = request.url.path.split("/")
-    if len(request_path) >= 4:
-        resource_name = request_path[3]
-        if resource_name not in ("auth", "docs", "redoc", "openapi.json"):
-            db_session = _db_manager.session_maker()
-            decoded_token = get_raw_jwt(request)
-
-            if decoded_token is None:
-                e = ProblemException(HTTPStatus.UNAUTHORIZED, "No authorization provided.",
-                                     "Authorization header is missing.")
-                return e.as_response()
-
-            verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
-            verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
-
-    response = await call_next(request)
     return response
 
 
@@ -152,6 +133,26 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
     return response
 
 
+@_walkoff.middleware("http")
+async def jwt_required_middleware(request: Request, call_next):
+    request_path = request.url.path.split("/")
+    if len(request_path) >= 4:
+        resource_name = request_path[3]
+        if resource_name not in ("auth", "docs", "redoc", "openapi.json"):
+            db_session = _db_manager.session_maker()
+            decoded_token = get_raw_jwt(request)
+
+            if decoded_token is None:
+                e = ProblemException(HTTPStatus.UNAUTHORIZED, "No authorization provided.",
+                                     "Authorization header is missing.")
+                return e.as_response()
+
+            verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
+            verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
+
+    response = await call_next(request)
+    return response
+
 
 @_walkoff.exception_handler(ProblemException)
 async def problem_exception_handler(request: Request, exc: ProblemException):
@@ -188,9 +189,14 @@ _walkoff.include_router(appapi.router,
                         tags=["apps"],
                         dependencies=[Depends(get_mongo_c)])
 
-_walkoff.include_router(appapi.router,
-                        prefix="/dashboards",
-                        tags=["dashboards"],
+# _walkoff.include_router(dashboards.router,
+#                         prefix="/dashboards",
+#                         tags=["dashboards"],
+#                         dependencies=[Depends(get_mongo_c)])
+
+_walkoff.include_router(workflows.router,
+                        prefix="/workflows",
+                        tags=["workflows"],
                         dependencies=[Depends(get_mongo_c)])
 
 

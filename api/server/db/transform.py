@@ -1,13 +1,7 @@
 import logging
-from uuid import uuid4
+from uuid import uuid4, UUID
 from typing import List
-from pydantic import BaseModel, ValidationError, validator, UUID4
-
-from sqlalchemy import Column, String, Boolean, JSON, ForeignKey, event
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
-
-from marshmallow import EXCLUDE
-from marshmallow_sqlalchemy import field_for
+from pydantic import BaseModel, ValidationError, validator
 
 from api.server.db import Base
 
@@ -15,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class TransformModel(BaseModel):
-    id_: UUID4 = uuid4()
+    id_: UUID = uuid4()
     errors: List[str] = []
     is_valid: bool = True
     app_name: str

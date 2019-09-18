@@ -1,14 +1,9 @@
 import logging
-from uuid import uuid4
+from uuid import uuid4, UUID
 from typing import List
 
 import semver
-# from sqlalchemy import Column, String, JSON
-# from sqlalchemy.dialects.postgresql import UUID
-# from sqlalchemy.orm import relationship
-# from marshmallow import fields, EXCLUDE, validates_schema, ValidationError as MarshmallowValidationError
-# from marshmallow_sqlalchemy import ModelSchema
-from pydantic import BaseModel, ValidationError, validator, UUID4
+from pydantic import BaseModel, ValidationError, validator
 
 # from api.server.db import Base, BaseSchema
 from api.server.db.action import ActionApiModel #ActionApiSchema,
@@ -33,7 +28,7 @@ class AppExternalDocModel(BaseModel):
 
 
 class AppApiModel(BaseModel):
-    id_: UUID4 = uuid4()
+    id_: UUID = uuid4()
     name: str
     app_version: str
     walkoff_version: str

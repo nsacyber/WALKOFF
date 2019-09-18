@@ -1,9 +1,9 @@
 import logging
-from uuid import uuid4
+from uuid import uuid4, UUID
 from typing import List
 
 from jsonschema import Draft4Validator, ValidationError as JSONSchemaValidationError
-from pydantic import BaseModel, ValidationError, validator, UUID4
+from pydantic import BaseModel, ValidationError, validator
 
 from common.workflow_types import ParameterVariant
 
@@ -25,21 +25,21 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowModel(BaseModel):
-    id_: UUID4 = uuid4()
+    id_: UUID
     errors: List[str] = []
     is_valid: bool = True
     name: str
-    start: UUID4
+    start: UUID
     description: str = ""
-    tags: str = ""
+    tags: List[str] = []
     _walkoff_type: str = "workflow"
     permissions: PermissionsModel
-    actions = List[ActionModel]
-    branches = List[BranchModel] = []
-    conditions = List[ConditionModel] = []
-    transforms = List[TransformModel] = []
-    workflow_variables = List[WorkflowVariableModel] = []
-    triggers = List[TriggerModel] = []
+    actions: List[ActionModel]
+    branches: List[BranchModel] = []
+    conditions: List[ConditionModel] = []
+    transforms: List[TransformModel] = []
+    workflow_variables: List[WorkflowVariableModel] = []
+    triggers: List[TriggerModel] = []
 
     @classmethod
     @validator('start')

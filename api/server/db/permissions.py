@@ -2,7 +2,7 @@ import logging
 from typing import List
 from enum import Enum
 
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 

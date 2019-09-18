@@ -1,21 +1,12 @@
 import logging
-from uuid import uuid4
+from typing import List
+from uuid import uuid4, UUID
 
-from sqlalchemy import Column, String, Integer, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, backref
 from pydantic import BaseModel
-
-from marshmallow import fields, EXCLUDE
 
 from api.server.db import Base
 
 logger = logging.getLogger(__name__)
-
-
-class DashboardModel(BaseModel):
-    id_: UUID = uuid4()
-    name: str
 
 
 class WidgetModel(BaseModel):
@@ -26,9 +17,13 @@ class WidgetModel(BaseModel):
     y: int
     cols: int
     rows: int
-    options: JSON = {}
-    dashboard_id: UUID = uuid4()
+    options: dict = {}
 
+
+class DashboardModel(BaseModel):
+    id_: UUID = uuid4()
+    name: str
+    widgets: List[WidgetModel]
 
 # class Dashboard(Base):
 #     __tablename__ = 'dashboard'
