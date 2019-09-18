@@ -2,6 +2,7 @@ import json
 import logging
 
 from fastapi.exceptions import HTTPException
+from starlette.responses import JSONResponse
 
 from http import HTTPStatus
 
@@ -44,6 +45,10 @@ class ProblemException(HTTPException):
         }
         r.update(self.ext)
         return r
+
+    def as_response(self):
+        return JSONResponse(self.as_dict(), status_code=self.status_code)
+
     #
     # @staticmethod
     # def make_response_body(status, title, detail, instance=None, type_=None, ext=None):

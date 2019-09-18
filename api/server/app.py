@@ -23,7 +23,7 @@ from common.config import config, static
 logger = logging.getLogger("API")
 
 _app = FastAPI()
-_walkoff = FastAPI(openapi_prefix="/walkoff")
+_walkoff = FastAPI(openapi_prefix="/walkoff/api")
 _db_manager = DBEngine()
 _mongo_manager = MongoEngine()
 
@@ -84,7 +84,8 @@ async def tester():
 async def db_session_middleware(request: Request, call_next):
     try:
         request.state.db = _db_manager.session_maker()
-        # request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
+        request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
+        request.state.mongo_d = _mongo_manager.client.walkoff_db
         response = await call_next(request)
     # except Exception as e:
     #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
@@ -97,12 +98,19 @@ async def db_session_middleware(request: Request, call_next):
 @_walkoff.middleware("http")
 async def jwt_required_middleware(request: Request, call_next):
     request_path = request.url.path.split("/")
-    resource_name = request_path[3]
-    if resource_name != "auth":
-        db_session = _db_manager.session_maker()
-        decoded_token = get_raw_jwt(request)
-        verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
-        verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
+    if len(request_path) >= 4:
+        resource_name = request_path[3]
+        if resource_name not in ("auth", "docs", "redoc", "openapi.json"):
+            db_session = _db_manager.session_maker()
+            decoded_token = get_raw_jwt(request)
+
+            if decoded_token is None:
+                e = ProblemException(HTTPStatus.UNAUTHORIZED, "No authorization provided.",
+                                     "Authorization header is missing.")
+                return e.as_response()
+
+            verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
+            verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
 
     response = await call_next(request)
     return response
@@ -205,7 +213,10 @@ async def login_page():
     return HTMLResponse(login)
 
 
-@_app.get("/.*")
+@_app.get("/")
+@_app.get("/walkoff")
+@_app.get("/walkoff/")
+@_app.get("/walkoff/.*")
 async def root_router():
     with open(static.CLIENT_PATH / "dist" / "walkoff" / "index.html") as f:
         index = f.read()
