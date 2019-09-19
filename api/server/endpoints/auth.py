@@ -10,7 +10,7 @@ from api.security import (create_access_token, create_refresh_token, get_jwt_ide
                           get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request)
 from api.fastapi_config import FastApiConfig
 from api.server.db.user import User
-from api.server.db import get_db
+from api.server.db import get_db, get_mongo_d
 from api.server.db.tokens import revoke_token, AuthModel, TokenModel
 from api.server.utils.problems import ProblemException, InvalidInputException
 
@@ -32,10 +32,12 @@ router = APIRouter()
 logger = logging.getLogger("API")
 
 
-def _authenticate_and_grant_tokens(request: Request, db_session: Session, creds: AuthModel, with_refresh=False):
+def _authenticate_and_grant_tokens(request: Request, walkoff_db, creds: AuthModel, with_refresh=False):
+    user_col = walkoff_db.getCollection("users")
+
     if not (creds.username and creds.password):
         raise invalid_credentials_problem
-    user = db_session.query(User).filter_by(username=creds.username).first()
+    user = user_col.find_one({"username":creds.username}, projection={'_id': False})
     if user is None:
         raise invalid_credentials_problem
     try:
@@ -51,7 +53,6 @@ def _authenticate_and_grant_tokens(request: Request, db_session: Session, creds:
         if with_refresh:
             user.login(request.client.host)
             # user.login(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
-            db_session.commit()
             response['refresh_token'] = create_refresh_token(identity=user.id)
         print(response)
         return response
@@ -60,16 +61,18 @@ def _authenticate_and_grant_tokens(request: Request, db_session: Session, creds:
 
 
 @router.post("/login")
-def login(creds: AuthModel, request: Request, db_session: Session = Depends(get_db)):
-    return _authenticate_and_grant_tokens(request=request, db_session=db_session, creds=creds, with_refresh=True)
+def login(creds: AuthModel, request: Request):
+    walkoff_db = get_mongo_d(request)
+    return _authenticate_and_grant_tokens(request=request, walkoff_db=walkoff_db, creds=creds, with_refresh=True)
 
 
-def fresh_login(json_in: AuthModel, request: Request, db_session: Session = Depends(get_db)):
-    return _authenticate_and_grant_tokens(request=request, db_session=db_session, json_in=dict(json_in))
+def fresh_login(creds: AuthModel, request: Request):
+    walkoff_db = get_mongo_d(request)
+    return _authenticate_and_grant_tokens(request=request, walkoff_db=walkoff_db, creds=creds)
 
 
 @router.post("/refresh")
-def refresh(request: Request, db_session: Session = Depends(get_db)):
+def refresh(request: Request):
     verify_jwt_refresh_token_in_request(db_session=db_session, request=request)
     current_user_id = get_jwt_identity(request)
 
