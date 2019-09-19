@@ -12,7 +12,7 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-def dashboard_getter(dashboard, dashboard_col: AsyncIOMotorCollection):
+async def dashboard_getter(dashboard, dashboard_col: AsyncIOMotorCollection):
     if validate_uuid(dashboard):
         return await dashboard_col.find_one({"id_": dashboard}, projection={'_id': False})
     else:

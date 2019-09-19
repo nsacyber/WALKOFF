@@ -4,16 +4,10 @@ from sqlalchemy.orm import relationship, backref, Session
 from typing import List
 from motor.motor_asyncio import AsyncIOMotorCollection
 
+from api.server.db.resource import ResourceModel
+
 # from api.server.db import TrackModificationsMixIn
-from api.server.db.resource import Resource
 from api.server.db import Base
-
-
-class ResourceModel(BaseModel):
-    id: int = None
-    name: str
-    permissions: List[str] = None
-    needed_ids: List[str] = None
 
 
 class AddRoleModel(BaseModel):
@@ -22,44 +16,37 @@ class AddRoleModel(BaseModel):
     resources: List[ResourceModel] = None
 
 
-# class ResourceModel(BaseModel):
-#     id: int = None
-#     name: str = None
-#     needed_ids: List[str] = None
-#     permissions: List[str] = None
-
-
 class RoleModel(BaseModel):
-    id: int
+    id_: int
     name: str = None
     description: str = None
     resources: List[ResourceModel] = None
 
-    def set_resources(self, new_resources, role_col: AsyncIOMotorCollection):
-        """Adds the given list of resources to the Role object.
-
-        Args:
-            new_resources (list(dict[name:resource, permissions:list[permission])): A list of dictionaries containing
-                the name of the resource, and a list of permission names associated with the resource.
-                :param db_session:
-                :param resource_col:
-                :param new_resources:
-        """
-        new_resource_names = set([resource['name'] for resource in new_resources])
-        current_resource_names = set([resource.name for resource in self.resources] if self.resources else [])
-        resource_names_to_add = new_resource_names - current_resource_names
-        resource_names_to_delete = current_resource_names - new_resource_names
-        resource_names_intersect = current_resource_names.intersection(new_resource_names)
-
-        self.resources[:] = [resource for resource in self.resources if resource.name not in resource_names_to_delete]
-
-        for resource_perms in new_resources:
-            if resource_perms['name'] in resource_names_to_add:
-                self.resources.append(Resource(resource_perms['name'], resource_perms['permissions']))
-            elif resource_perms['name'] in resource_names_intersect:
-                self.resources = role_col.find_one({"role_id": self.id, "name": resource_perms})
-                if self.resources:
-                    self.resources.permissions = resource_perms['permissions']
+    # def set_resources(self, new_resources, role_col: AsyncIOMotorCollection):
+    #     """Adds the given list of resources to the Role object.
+    #
+    #     Args:
+    #         new_resources (list(dict[name:resource, permissions:list[permission])): A list of dictionaries containing
+    #             the name of the resource, and a list of permission names associated with the resource.
+    #             :param db_session:
+    #             :param resource_col:
+    #             :param new_resources:
+    #     """
+    #     new_resource_names = set([resource['name'] for resource in new_resources])
+    #     current_resource_names = set([resource.name for resource in self.resources] if self.resources else [])
+    #     resource_names_to_add = new_resource_names - current_resource_names
+    #     resource_names_to_delete = current_resource_names - new_resource_names
+    #     resource_names_intersect = current_resource_names.intersection(new_resource_names)
+    #
+    #     self.resources[:] = [resource for resource in self.resources if resource.name not in resource_names_to_delete]
+    #
+    #     for resource_perms in new_resources:
+    #         if resource_perms['name'] in resource_names_to_add:
+    #             self.resources.append(Resource(resource_perms['name'], resource_perms['permissions']))
+    #         elif resource_perms['name'] in resource_names_intersect:
+    #             self.resources = role_col.find_one({"role_id": self.id, "name": resource_perms})
+    #             if self.resources:
+    #                 self.resources.permissions = resource_perms['permissions']
 
 
 class AvailableResourceActionModel(BaseModel):

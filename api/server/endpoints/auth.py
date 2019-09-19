@@ -9,10 +9,10 @@ from fastapi import HTTPException
 from api.security import (create_access_token, create_refresh_token, get_jwt_identity,
                           get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request)
 from api.fastapi_config import FastApiConfig
-from api.server.db.user import User
-from api.server.db import get_db
+from api.server.db import get_db, get_mongo_c, get_mongo_d
 from api.server.db.tokens import revoke_token, AuthModel, TokenModel
 from api.server.utils.problems import ProblemException, InvalidInputException
+from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 token_problem_title = 'Could not grant access token.'
 
@@ -32,45 +32,40 @@ router = APIRouter()
 logger = logging.getLogger("API")
 
 
-def _authenticate_and_grant_tokens(request: Request, db_session: Session, creds: AuthModel, with_refresh=False):
+def _authenticate_and_grant_tokens(request: Request, users_col: AsyncIOMotorCollection, creds: AuthModel, with_refresh=False):
     if not (creds.username and creds.password):
         raise invalid_credentials_problem
-    user = db_session.query(User).filter_by(username=creds.username).first()
+
+    user = users_col.find_one({"username": creds.username}, projection={'_id': False})
+
     if user is None:
-        raise invalid_credentials_problem
-    try:
-        password_b = creds.password.encode('utf-8')
-    except UnicodeEncodeError:
         raise invalid_credentials_problem
 
     if not user.active:
         raise user_deactivated_problem
 
-    if user.verify_password(password_b):
-        response = {'access_token': create_access_token(identity=user.id, db_session=db_session, fresh=True)}
+    if user.verify_password(creds.password):
+        response = {'access_token': create_access_token(user=user, fresh=True)}
         if with_refresh:
             user.login(request.client.host)
-            # user.login(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
-            db_session.commit()
-            response['refresh_token'] = create_refresh_token(identity=user.id)
-        print(response)
+            response['refresh_token'] = create_refresh_token(user=user)
         return response
     else:
         raise invalid_credentials_problem
 
 
 @router.post("/login")
-def login(creds: AuthModel, request: Request, db_session: Session = Depends(get_db)):
-    return _authenticate_and_grant_tokens(request=request, db_session=db_session, creds=creds, with_refresh=True)
+def login(creds: AuthModel, request: Request, users_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    return _authenticate_and_grant_tokens(request=request, users_col=users_col, creds=creds, with_refresh=True)
 
 
-def fresh_login(json_in: AuthModel, request: Request, db_session: Session = Depends(get_db)):
-    return _authenticate_and_grant_tokens(request=request, db_session=db_session, json_in=dict(json_in))
+# def fresh_login(creds: AuthModel, request: Request, users_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+#     return _authenticate_and_grant_tokens(request=request, users_col=users_col, creds=creds)
 
 
 @router.post("/refresh")
-def refresh(request: Request, db_session: Session = Depends(get_db)):
-    verify_jwt_refresh_token_in_request(db_session=db_session, request=request)
+def refresh(request: Request, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)):
+    verify_jwt_refresh_token_in_request(walkoff_db=walkoff_db, request=request)
     current_user_id = get_jwt_identity(request)
 
     user = db_session.query(User).filter_by(id=current_user_id).first()
@@ -81,7 +76,7 @@ def refresh(request: Request, db_session: Session = Depends(get_db)):
             "Could not grant access token.",
             f"User {current_user_id} from refresh JWT identity could not be found.")
     if user.active:
-        return {'access_token': create_access_token(identity=current_user_id, db_session=db_session)}, HTTPStatus.CREATED
+        return {'access_token': create_access_token(identity=current_user_id, user=user)}, HTTPStatus.CREATED
     else:
         raise user_deactivated_problem
 

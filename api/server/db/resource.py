@@ -6,7 +6,5 @@ from typing import List
 
 
 class ResourceModel(BaseModel):
-    id: int
     name: str
-    role_id: int
     permissions: List[str]

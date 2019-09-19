@@ -18,7 +18,6 @@ import pymongo
 from common.config import config, static
 from api.server.utils.helpers import format_db_path
 
-
 Base = declarative_base()
 naming_convention = {
     "ix": 'ix_%(column_0_label)s',
@@ -70,6 +69,7 @@ def get_db(request: Request):
 
 db = DBEngine()
 
+
 #
 # class TrackModificationsMixIn(Base):
 #     __tablename__ = 'mixin'
@@ -114,6 +114,22 @@ class MongoEngine(object):
         await self.client.walkoff_db.workflows.create_index([("id_", pymongo.ASCENDING),
                                                              ("name", pymongo.ASCENDING)],
                                                             unique=True)
+
+        await self.client.walkoff_db.globals.create_index([("id_", pymongo.ASCENDING),
+                                                           ("name", pymongo.ASCENDING)],
+                                                          unique=True)
+
+        await self.client.walkoff_db.roles.create_index([("id_", pymongo.ASCENDING),
+                                                         ("name", pymongo.ASCENDING)],
+                                                        unique=True)
+
+        await self.client.walkoff_db.users.create_index([("id_", pymongo.ASCENDING),
+                                                         ("name", pymongo.ASCENDING)],
+                                                        unique=True)
+
+        await self.client.walkoff_db.dashboards.create_index([("id_", pymongo.ASCENDING),
+                                                              ("name", pymongo.ASCENDING)],
+                                                             unique=True)
 
     def collection_from_url(self, path: str):
         parts = path.split("/")
