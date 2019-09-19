@@ -1,12 +1,10 @@
 from datetime import datetime
 
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
-from sqlalchemy import Column, String, JSON, Integer, DateTime
 
 from api.fastapi_config import FastApiConfig
-from sqlalchemy.orm import Session
-from api.server.db import Base
-from api import fastapi_config
+
 
 NUMBER_OF_PRUNE_OPERATIONS = 0
 
@@ -20,28 +18,14 @@ class TokenModel(BaseModel):
     refresh_token: str
 
 
-class BlacklistedToken(Base):
-    __tablename__ = 'token'
-    id = Column(Integer, primary_key=True)
-    jti = Column(String(36), nullable=False)
-    user_identity = Column(String(50), nullable=False)
-    expires = Column(DateTime, nullable=False)
-
-    def as_json(self):
-        """Get the JSON representation of a BlacklistedToken object.
-
-        Returns:
-            (dict): The JSON representation of a BlacklistedToken object.
-        """
-        return {
-            'id': self.id,
-            'jti': self.jti,
-            'user': self.user_identity,
-            'expires': str(self.expires)
-        }
+class BlacklistedToken(BaseModel):
+    __tablename__ = 'tokens'
+    jti: str
+    user_identity: str
+    expires: datetime
 
 
-def revoke_token(db_session: Session, decoded_token):
+def revoke_token(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
     """Adds a new token to the database. It is not revoked when it is added
 
     Args:
@@ -49,21 +33,22 @@ def revoke_token(db_session: Session, decoded_token):
         :param decoded_token:
         :param db_session:
     """
+    token_col = walkoff_db.getCollection("tokens")
+
     jti = decoded_token['jti']
     user_identity = decoded_token[FastApiConfig.JWT_IDENTITY_CLAIM]
     expires = datetime.fromtimestamp(decoded_token['exp'])
 
-    db_token = BlacklistedToken(
-        jti=jti,
-        user_identity=user_identity,
-        expires=expires
-    )
-    db_session.add(db_token)
-    prune_if_necessary(db_session)
-    db_session.commit()
+    db_token = {
+        "jti": jti,
+        "user_identity": user_identity,
+        "expires": expires
+    }
+    token_col.insert_one(db_token)
+    prune_if_necessary(token_col)
 
 
-def is_token_revoked(db_session: Session, decoded_token):
+def is_token_revoked(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
     """Checks if the given token is revoked or not. Because we are adding all the
     tokens that we create into this database, if the token is not present
     in the database we are going to consider it revoked, as we don't know where
@@ -72,42 +57,45 @@ def is_token_revoked(db_session: Session, decoded_token):
     Returns:
         (bool): True if the token is revoked, False otherwise.
     """
+    token_col = walkoff_db.getCollection("tokens")
     jti = decoded_token['jti']
-    token = db_session.query(BlacklistedToken).filter_by(jti=jti).first()
+    token = token_col.find_one({"jti": jti}, projection={'_id': False})
     return token is not None
 
 
-def approve_token(db_session: Session, token_id, user):
-    """Approves the given token
+# this is never used
+# def approve_token(token_id, user, walkoff_db):
+#     """Approves the given token
+#
+#     Args:
+#         token_id (int): The ID of the token
+#         user (User): The User
+#         :param user:
+#         :param token_id:
+#         :param db_session:
+#     """
+#     token = db_session.query(BlacklistedToken).filter_by(id=token_id, user_identity=user).first()
+#     if token is not None:
+#         db_session.delete(token)
+#         prune_if_necessary(db_session)
+#         db_session.commit()
 
-    Args:
-        token_id (int): The ID of the token
-        user (User): The User
-        :param user:
-        :param token_id:
-        :param db_session:
-    """
-    token = db_session.query(BlacklistedToken).filter_by(id=token_id, user_identity=user).first()
-    if token is not None:
-        db_session.delete(token)
-        prune_if_necessary(db_session)
-        db_session.commit()
 
-
-def prune_if_necessary(db_session: Session):
+def prune_if_necessary(walkoff_db: AsyncIOMotorDatabase):
     """Prunes the database if necessary"""
     global NUMBER_OF_PRUNE_OPERATIONS
     NUMBER_OF_PRUNE_OPERATIONS += 1
     if NUMBER_OF_PRUNE_OPERATIONS >= FastApiConfig.JWT_BLACKLIST_PRUNE_FREQUENCY:
-        prune_database(db_session)
+        prune_database(walkoff_db)
 
 
-def prune_database(db_session: Session):
+def prune_database(walkoff_db):
     """Delete tokens that have expired from the database"""
     global NUMBER_OF_PRUNE_OPERATIONS
+    token_col = walkoff_db.getCollection("tokens")
+
     now = datetime.now()
-    expired = BlacklistedToken.query.filter(BlacklistedToken.expires < now).all()
+    expired = token_col.find({"expires": {$lte: datetime.now()}}, projection={'_id': False})
     for token in expired:
-        db_session.delete(token)
-    db_session.commit()
+        token_col.delete(dict(token))
     NUMBER_OF_PRUNE_OPERATIONS = 0

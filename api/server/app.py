@@ -8,14 +8,12 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
-from api.server.endpoints import appapi, roles, users, auth, dashboards, workflows
+from api.server.endpoints import appapi, dashboards, workflows, users  # auth, roles, users,
 from api.server.db import DBEngine, get_db, MongoEngine, get_mongo_c
-from api.server.db.user_init import initialize_default_resources_super_admin, \
-    initialize_default_resources_internal_user, initialize_default_resources_admin, \
-    initialize_default_resources_app_developer, initialize_default_resources_workflow_developer, \
-    initialize_default_resources_workflow_operator, add_user
-from api.server.db.user import Role
-from api.server.db.user import User
+from api.server.db.user import UserModel
+from api.server.db.role import RoleModel
+
+from api.server.db.user_init import default_roles, default_users
 from api.server.utils.problems import ProblemException
 from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
     get_roles_by_resource_permission
@@ -33,57 +31,66 @@ _app.mount("/walkoff/client", StaticFiles(directory=static.CLIENT_PATH), name="s
 
 
 @_app.on_event("startup")
-async def initialize_users():
-    walkoff_db = _mongo_manager.client.walkoff_db
-    role_col = walkoff_db.getCollection("roles")
-    user_col = walkoff_db.getCollection("users")
-
-    initialize_default_resources_internal_user(walkoff_db)
-    initialize_default_resources_super_admin(walkoff_db)
-    initialize_default_resources_admin(walkoff_db)
-    initialize_default_resources_app_developer(walkoff_db)
-    initialize_default_resources_workflow_developer(walkoff_db)
-    initialize_default_resources_workflow_operator(walkoff_db)
-
-    # Setup internal user
-    internal_role = role_col.find_one({"id": 1}, projection={'_id': False})
-    internal_user = user_col.find_one({"username": "internal_user"}, projection={'_id': False})
-    if not internal_user:
-        key = config.get_from_file(config.INTERNAL_KEY_PATH)
-        add_user(username='internal_user', password=key, roles=[2], user_col=user_col)
-    elif internal_role not in internal_user.roles:
-        user_copy = deepcopy(internal_user)
-        user_copy.roles.append(internal_role)
-        await user_col.replace_one(dict(internal_user), dict(user_copy))
-
-    # Setup Super Admin user
-    super_admin_role = role_col.find_one({"id": 2}, projection={'_id': False})
-    super_admin_user = user_col.find_one({"username": "super_admin"}, projection={'_id': False})
-    if not super_admin_user:
-        add_user(username='super_admin', password='super_admin', roles=[2], user_col=user_col)
-    elif super_admin_role not in super_admin_user.roles:
-        user_copy = deepcopy(super_admin_user)
-        user_copy.roles.append(super_admin_role)
-        await user_col.replace_one(dict(super_admin_user), dict(user_copy))
-
-    # Setup Admin user
-    admin_role = role_col.find_one({"id": 3}, projection={'_id': False})
-    admin_user = user_col.find_one({"username": "admin"}, projection={'_id': False})
-    if not admin_user:
-        add_user(username='admin', password='admin', roles=[3], user_col=user_col)
-    elif admin_role not in admin_user.roles:
-        user_copy = deepcopy(admin_user)
-        user_copy.roles.append(admin_role)
-        await user_col.replace_one(dict(admin_user), dict(user_copy))
-
-
-@_app.on_event("startup")
 async def initialize_mongodb():
     await _mongo_manager.init_db()
 
 
 @_app.on_event("startup")
-async def tester():
+async def initialize_users():
+    walkoff_db = _mongo_manager.client.walkoff_db
+    roles_col = walkoff_db.roles
+    users_col = walkoff_db.users
+
+    for role_key, role_val in default_roles.items():
+        role_d = await roles_col.find_one({"id_": role_val["id_"]}, projection={'_id': False})
+        if not role_d:
+            await roles_col.insert_one(role_val)
+
+    for user_key, user_val in default_users.items():
+        user_d = await users_col.find_one({"id_": user_val["id_"]}, projection={'_id': False})
+        if not user_d:
+            if user_val["password"] is None:
+                user_val["password"] = config.get_from_file(config.POSTGRES_KEY_PATH)
+
+            await users_col.insert_one(user_val)
+
+    # # Setup internal user
+    # internal_role = await role_col.find_one({"id_": 1}, projection={'_id': False})
+    # internal_user = await user_col.find_one({"username": "internal_user"}, projection={'_id': False})
+    # if not internal_user:
+    #     key = config.get_from_file(config.INTERNAL_KEY_PATH)
+    #     user_col.insert_one(UserModel(username="internal_user", password=key, hashed=False, roles=[2]))
+    # elif internal_role not in internal_user.roles:
+    #     user_copy = deepcopy(internal_user)
+    #     user_copy.roles.append(internal_role)
+    #     await user_col.replace_one(dict(internal_user), dict(user_copy))
+    #
+    # # Setup Super Admin user
+    # super_admin_role = await role_col.find_one({"id_": 2}, projection={'_id': False})
+    # super_admin_user = await user_col.find_one({"username": "super_admin"}, projection={'_id': False})
+    # if not super_admin_user:
+    #     user_col.insert_one(UserModel(username="super_admin", password="super_admin", hashed=False, roles=[2]))
+    # elif super_admin_role not in super_admin_user.roles:
+    #     user_copy = deepcopy(super_admin_user)
+    #     user_copy.roles.append(super_admin_role)
+    #     await user_col.replace_one(dict(super_admin_user), dict(user_copy))
+    #
+    # # Setup Admin user
+    # admin_role = await role_col.find_one({"id_": 3}, projection={'_id': False})
+    # admin_user = await user_col.find_one({"username": "admin"}, projection={'_id': False})
+    # if not admin_user:
+    #     user_col.insert_one(UserModel(username="admin", password="admin", hashed=False, roles=[3]))
+    # elif admin_role not in admin_user.roles:
+    #     user_copy = deepcopy(admin_user)
+    #     user_copy.roles.append(admin_role)
+    #     await user_col.replace_one(dict(admin_user), dict(user_copy))
+
+
+
+
+
+@_app.on_event("startup")
+async def start_banner():
     logger.info("API Server started.")
 
 
@@ -104,61 +111,61 @@ async def db_session_middleware(request: Request, call_next):
     return response
 
 
-@_walkoff.middleware("http")
-async def permissions_accepted_for_resource_middleware(request: Request, call_next):
-    db_session = _db_manager.session_maker()
-    request_path = request.url.path.split("/")
+# @_walkoff.middleware("http")
+# async def permissions_accepted_for_resource_middleware(request: Request, call_next):
+#     db_session = _db_manager.session_maker()
+#     request_path = request.url.path.split("/")
+#
+#     if len(request_path) >= 4:
+#         resource_name = request_path[3]
+#         request_method = request.method
+#         accepted_roles = set()
+#         resource_permission = ""
+#
+#         # TODO: Add check for scheduler "execute" permission when scheduler built out
+#         move_on = ["globals", "workflow", "workflowqueue", "auth", "appapi", "docs", "redoc", "openapi.json"]
+#         if resource_name not in move_on:
+#             if request_method == "POST":
+#                 resource_permission = "create"
+#
+#             if request_method == "GET":
+#                 resource_permission = "read"
+#
+#             if request_method == "PUT":
+#                 resource_permission = "put"
+#
+#             if request_method == "DELETE":
+#                 resource_permission = "delete"
+#
+#             accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, db_session)
+#             if not user_has_correct_roles(accepted_roles, request):
+#                 return JSONResponse({"Error": "FORBIDDEN",
+#                                      "message": "User does not have correct permissions for this resource"},
+#                                     status_code=403)
+#
+#     response = await call_next(request)
+#     return response
 
-    if len(request_path) >= 4:
-        resource_name = request_path[3]
-        request_method = request.method
-        accepted_roles = set()
-        resource_permission = ""
 
-        # TODO: Add check for scheduler "execute" permission when scheduler built out
-        move_on = ["globals", "workflow", "workflowqueue", "auth", "appapi", "docs", "redoc", "openapi.json"]
-        if resource_name not in move_on:
-            if request_method == "POST":
-                resource_permission = "create"
-
-            if request_method == "GET":
-                resource_permission = "read"
-
-            if request_method == "PUT":
-                resource_permission = "put"
-
-            if request_method == "DELETE":
-                resource_permission = "delete"
-
-            accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, db_session)
-            if not user_has_correct_roles(accepted_roles, request):
-                return JSONResponse({"Error": "FORBIDDEN",
-                                     "message": "User does not have correct permissions for this resource"},
-                                    status_code=403)
-
-    response = await call_next(request)
-    return response
-
-
-@_walkoff.middleware("http")
-async def jwt_required_middleware(request: Request, call_next):
-    request_path = request.url.path.split("/")
-    if len(request_path) >= 4:
-        resource_name = request_path[3]
-        if resource_name not in ("auth", "docs", "redoc", "openapi.json"):
-            db_session = _db_manager.session_maker()
-            decoded_token = get_raw_jwt(request)
-
-            if decoded_token is None:
-                e = ProblemException(HTTPStatus.UNAUTHORIZED, "No authorization provided.",
-                                     "Authorization header is missing.")
-                return e.as_response()
-
-            verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
-            verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
-
-    response = await call_next(request)
-    return response
+# @_walkoff.middleware("http")
+# async def jwt_required_middleware(request: Request, call_next):
+#     request_path = request.url.path.split("/")
+#     if len(request_path) >= 4:
+#         resource_name = request_path[3]
+#         if resource_name not in ("auth", "docs", "redoc", "openapi.json"):
+#             db_session = _db_manager.session_maker()
+#             decoded_token = get_raw_jwt(request)
+#
+#             if decoded_token is None:
+#                 e = ProblemException(HTTPStatus.UNAUTHORIZED, "No authorization provided.",
+#                                      "Authorization header is missing.")
+#                 return e.as_response()
+#
+#             verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
+#             verify_token_not_blacklisted(db_session=db_session, decoded_token=decoded_token, request_type='access')
+#
+#     response = await call_next(request)
+#     return response
 
 
 @_walkoff.exception_handler(ProblemException)
@@ -171,10 +178,10 @@ async def problem_exception_handler(request: Request, exc: ProblemException):
     return r
 
 # Include routers here
-_walkoff.include_router(auth.router,
-                        prefix="/auth",
-                        tags=["auth"],
-                        dependencies=[Depends(get_mongo_c)])
+# _walkoff.include_router(auth.router,
+#                         prefix="/auth",
+#                         tags=["auth"],
+#                         dependencies=[Depends(get_mongo_c)])
 
 # _walkoff.include_router(global_variables.router,
 #                         prefix="/globals",
@@ -185,11 +192,11 @@ _walkoff.include_router(users.router,
                         prefix="/users",
                         tags=["users"],
                         dependencies=[Depends(get_mongo_c)])
-
-_walkoff.include_router(roles.router,
-                        prefix="/roles",
-                        tags=["roles"],
-                        dependencies=[Depends(get_mongo_c)])
+#
+# _walkoff.include_router(roles.router,
+#                         prefix="/roles",
+#                         tags=["roles"],
+#                         dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(appapi.router,
                         prefix="/apps",
