@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from http import HTTPStatus
 
 from fastapi import FastAPI, Depends
@@ -34,6 +35,8 @@ _app.mount("/walkoff/client", StaticFiles(directory=static.CLIENT_PATH), name="s
 @_app.on_event("startup")
 async def initialize_users():
     walkoff_db = _mongo_manager.client.walkoff_db
+    role_col = walkoff_db.getCollection("roles")
+    user_col = walkoff_db.getCollection("users")
 
     initialize_default_resources_internal_user(walkoff_db)
     initialize_default_resources_super_admin(walkoff_db)
@@ -43,36 +46,40 @@ async def initialize_users():
     initialize_default_resources_workflow_operator(walkoff_db)
 
     # Setup internal user
-    internal_role = walkoff_db.getCollection("roles").find_one({"id": 1}, projection={'_id': False})
-    internal_user = walkoff_db.getCollection("users").find_one({"username": "internal_user"}, projection={'_id': False})
+    internal_role = role_col.find_one({"id": 1}, projection={'_id': False})
+    internal_user = user_col.find_one({"username": "internal_user"}, projection={'_id': False})
     if not internal_user:
         key = config.get_from_file(config.INTERNAL_KEY_PATH)
-        add_user(username='internal_user', password=key, roles=[2], walkoff_db=walkoff_db)
+        add_user(username='internal_user', password=key, roles=[2], user_col=user_col)
     elif internal_role not in internal_user.roles:
-        internal_user.roles.append(internal_role)
+        user_copy = deepcopy(internal_user)
+        user_copy.roles.append(internal_role)
+        await user_col.replace_one(dict(internal_user), dict(user_copy))
 
     # Setup Super Admin user
-    super_admin_role = walkoff_db.getCollection("roles").find_one({"id": 2}, projection={'_id': False})
-    super_admin_user = walkoff_db.getCollection("users").find_one({"username": "super_admin"}, projection={'_id': False})
+    super_admin_role = role_col.find_one({"id": 2}, projection={'_id': False})
+    super_admin_user = user_col.find_one({"username": "super_admin"}, projection={'_id': False})
     if not super_admin_user:
-        add_user(username='super_admin', password='super_admin', roles=[2], walkoff_db=walkoff_db)
+        add_user(username='super_admin', password='super_admin', roles=[2], user_col=user_col)
     elif super_admin_role not in super_admin_user.roles:
-        super_admin_user.roles.append(super_admin_role)
+        user_copy = deepcopy(super_admin_user)
+        user_copy.roles.append(super_admin_role)
+        await user_col.replace_one(dict(super_admin_user), dict(user_copy))
 
     # Setup Admin user
-    admin_role = walkoff_db.getCollection("roles").find_one({"id": 3}, projection={'_id': False})
-    admin_user = walkoff_db.getCollection("users").find_one({"username": "admin"}, projection={'_id': False})
+    admin_role = role_col.find_one({"id": 3}, projection={'_id': False})
+    admin_user = user_col.find_one({"username": "admin"}, projection={'_id': False})
     if not admin_user:
-        add_user(username='admin', password='admin', roles=[3], walkoff_db=walkoff_db)
+        add_user(username='admin', password='admin', roles=[3], user_col=user_col)
     elif admin_role not in admin_user.roles:
-        admin_user.roles.append(admin_role)
+        user_copy = deepcopy(admin_user)
+        user_copy.roles.append(admin_role)
+        await user_col.replace_one(dict(admin_user), dict(user_copy))
 
-    walkoff_db.commit()
 
-
-# @_app.on_event("startup")
-# async def initialize_mongodb():
-#     await _mongo_manager.init_db()
+@_app.on_event("startup")
+async def initialize_mongodb():
+    await _mongo_manager.init_db()
 
 
 @_app.on_event("startup")

@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+from motor.motor_asyncio import AsyncIOMotorCollection
 from passlib.hash import pbkdf2_sha512
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -12,7 +13,7 @@ from api.server.utils.helpers import utc_as_rfc_datetime
 # from api.server.db import TrackModificationsMixIn
 from api.server.db.role import Role, RoleModel
 from typing import List
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel, UUID4, Any
 from sqlalchemy.orm import Session
 from api.server.db import get_db
 from fastapi import Depends
@@ -55,19 +56,20 @@ class DisplayUser(BaseModel):
     active: str = None
     roles: List[int] = None
 
+
 class UserModel(BaseModel):
     id: int = None
     username: str
     roles: List[RoleModel]
-    _password = Column('password', String(255), nullable=False)
-    active = Column(Boolean, default=True)
-    last_login_at = Column(DateTime)
-    current_login_at = Column(DateTime)
-    last_login_ip = Column(String(45))
-    current_login_ip = Column(String(45))
-    login_count = Column(Integer, default=0)
+    _password: str
+    active: bool
+    last_login_at: datetime
+    current_login_at: datetime
+    last_login_ip: str
+    current_login_ip: str
+    login_count: int
 
-    def __init__(self, name: str, password: str, roles=None, **data: Any):
+    def __init__(self, name: str, password: str, role_col: AsyncIOMotorCollection, roles=None, **data: Any):
         """Initializes a new User object
 
         Args:
@@ -79,9 +81,8 @@ class UserModel(BaseModel):
         self.username = name
         self._password = pbkdf2_sha512.hash(password)
         self.roles = []
-        self.db_session = db_session
         if roles:
-            self.set_roles(roles, db_session)
+            self.set_roles(roles, role_col)
 
     @hybrid_property
     def password(self):
@@ -112,7 +113,7 @@ class UserModel(BaseModel):
         """
         return pbkdf2_sha512.verify(password_attempt, self._password)
 
-    def set_roles(self, new_roles, db_session: Session):
+    def set_roles(self, new_roles, role_col):
         """Sets the roles for a User.
 
         Args:
@@ -120,9 +121,12 @@ class UserModel(BaseModel):
         """
 
         new_role_ids = set(new_roles)
-        new_roles = db_session.query(Role).filter(Role.id.in_(new_role_ids)).all() if new_role_ids else []
 
-        self.roles[:] = new_roles
+        ret = []
+        for id in new_role_ids:
+            new_roles.append(await role_col.find_one({"id": id}, projection={'_id': False}))
+
+        self.roles[:] = ret
 
         roles_not_added = new_role_ids - {role.id for role in new_roles}
         if roles_not_added:
@@ -140,13 +144,12 @@ class UserModel(BaseModel):
         self.current_login_ip = ip_address
         self.login_count += 1
 
-    def logout(self, db_session: Session = Depends(get_db)):
+    def logout(self):
         """Tracks login/logout information for the User upon logging out"""
         if self.login_count > 0:
             self.login_count -= 1
         else:
             logger.warning(f"User {self.id} logged out, but login count was already at 0")
-        db_session.commit()
 
     def has_role(self, role):
         """Checks if a User has a Role associated with it.

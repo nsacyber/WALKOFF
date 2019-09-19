@@ -128,4 +128,8 @@ def get_mongo_c(request: Request):
     return request.state.mongo_c
 
 
+def get_mongo_d(request: Request):
+    return request.state.mongo_d
+
+
 mongo = MongoEngine()
