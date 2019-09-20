@@ -7,11 +7,13 @@ from typing import Union
 
 from pydantic import UUID4
 from fastapi import APIRouter, Depends, File, UploadFile
+from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
 import pymongo
 from motor.motor_asyncio import AsyncIOMotorCollection
 
+from api.security import get_jwt_identity
 from api.server.db import get_mongo_c
 from api.server.db.workflow import WorkflowModel
 from api.server.db.permissions import PermissionsModel, AccessLevel
@@ -32,26 +34,22 @@ async def workflow_getter(workflow_col: AsyncIOMotorCollection, workflow: Union[
 
 
 @router.post("/")
-async def create_workflow(
-        new_workflow: WorkflowModel,
-        workflow_coll: AsyncIOMotorCollection = Depends(get_mongo_c),
-        source: str = None,
-        # file: UploadFile = File(...)
-):
+async def create_workflow(request: Request, new_workflow: WorkflowModel, workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c), source: str = None):
+    curr_user_id = get_jwt_identity(request)
     # if file:
     #     new_workflow = WorkflowModel(**json.loads((await file.read()).decode('utf-8')))
 
     if source:
-        old_workflow: WorkflowModel = await workflow_getter(workflow_coll, source)
+        old_workflow: WorkflowModel = await workflow_getter(workflow_col, source)
         new_workflow = await copy_workflow(old_workflow=old_workflow, new_workflow=new_workflow)
 
     # # ToDo: Why do we accept the same workflow again?
-    # if await workflow_getter(workflow_coll, new_workflow.id_):
+    # if await workflow_getter(workflow_col, new_workflow.id_):
     #     return import_workflow_and_regenerate_ids(new_workflow, None)
 
-    r: pymongo.results.InsertOneResult = await workflow_coll.insert_one(dict(new_workflow))
+    r: pymongo.results.InsertOneResult = await workflow_col.insert_one(dict(new_workflow))
     if r.acknowledged:
-        result = WorkflowModel(**(await workflow_getter(workflow_coll, new_workflow.id_)))
+        result = WorkflowModel(**(await workflow_getter(workflow_col, new_workflow.id_)))
         logger.info(f"Created Workflow {result.name} ({result.id_})")
         return result
 
@@ -110,13 +108,13 @@ async def copy_workflow(old_workflow: WorkflowModel, new_workflow: WorkflowModel
 
 @router.get("/")
 async def read_all_workflows(
-        workflow_coll: AsyncIOMotorCollection = Depends(get_mongo_c),
+        workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c),
 ):
     # username = get_jwt_claims().get('username', None)
     # curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
     ret = []
-    for workflow in (await workflow_coll.find().to_list(None)):
+    for workflow in (await workflow_col.find().to_list(None)):
         ret.append(WorkflowModel(**workflow))
     #
     # for workflow in r:
@@ -131,14 +129,14 @@ async def read_all_workflows(
 async def read_workflow(
         workflow_name_id: str,
         mode: str = None,
-        workflow_coll: AsyncIOMotorCollection = Depends(get_mongo_c)
+        workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)
 ):
     # username = get_jwt_claims().get('username', None)
     # curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
     # to_read = auth_check(str(workflow.id_), "read", "workflows")
 
-    workflow = await workflow_getter(workflow_coll, workflow_name_id)
+    workflow = await workflow_getter(workflow_col, workflow_name_id)
 
     if mode == "export":
         workflow_str = json.dumps(dict(workflow), sort_keys=True, indent=4, separators=(',', ': ')).encode('utf-8')
@@ -166,7 +164,7 @@ async def read_workflow(
 async def update_workflow(
         updated_workflow: WorkflowModel,
         workflow_name_id: str,
-        workflow_coll: AsyncIOMotorCollection = Depends(get_mongo_c)
+        workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)
 ):
     # username = get_jwt_claims().get('username', None)
     # curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
@@ -185,10 +183,10 @@ async def update_workflow(
     #     # else:
     #     #     default_permissions("workflows", str(workflow.id_), data=data)
 
-    old_workflow = await workflow_getter(workflow_coll, workflow_name_id)
-    r = await workflow_coll.replace_one(dict(old_workflow), dict(updated_workflow))
+    old_workflow = await workflow_getter(workflow_col, workflow_name_id)
+    r = await workflow_col.replace_one(dict(old_workflow), dict(updated_workflow))
     if r.acknowledged:
-        result = await workflow_getter(workflow_coll, updated_workflow.id_)
+        result = await workflow_getter(workflow_col, updated_workflow.id_)
         logger.info(f"Updated Workflow {result.name} ({result.id_})")
         return result
 
@@ -196,13 +194,13 @@ async def update_workflow(
 @router.delete("/{workflow_name_id}")
 async def delete_workflow(
         workflow_name_id: str,
-        workflow_coll: AsyncIOMotorCollection = Depends(get_mongo_c)
+        workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)
 ):
     # username = get_jwt_claims().get('username', None)
     # curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
-    workflow_to_delete = await workflow_getter(workflow_coll, workflow_name_id)
-    r = await workflow_coll.delete_one(dict(workflow_to_delete))
+    workflow_to_delete = await workflow_getter(workflow_col, workflow_name_id)
+    r = await workflow_col.delete_one(dict(workflow_to_delete))
     if r.acknowledged:
         return
 

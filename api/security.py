@@ -44,10 +44,10 @@ def verify_token_not_blacklisted(walkoff_db: AsyncIOMotorDatabase, decoded_token
     if not FastApiConfig.JWT_BLACKLIST_ENABLED:
         return
     if request_type == 'access':
-        if is_token_revoked(db_session=db_session, decoded_token=decoded_token):
+        if is_token_revoked(walkoff_db=walkoff_db, decoded_token=decoded_token):
             raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.", 'Token has been revoked.')
     if request_type == 'refresh':
-        if is_token_revoked(db_session=db_session, decoded_token=decoded_token):
+        if is_token_revoked(walkoff_db=walkoff_db, decoded_token=decoded_token):
             raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.", 'Token has been revoked.')
 
 
@@ -110,7 +110,7 @@ def get_jwt_claims(request: Request):
 
 
 def add_claims_to_access_token(user: UserModel):
-    return {'roles': [role.id_ for role in user.roles], 'username': user.username} if user is not None else {}
+    return {'roles': [role for role in user.roles], 'username': user.username} if user is not None else {}
 
 
 def user_has_correct_roles(accepted_roles, request: Request, all_required=False):
@@ -123,15 +123,14 @@ def user_has_correct_roles(accepted_roles, request: Request, all_required=False)
         return any(role in accepted_roles for role in user_roles)
 
 
-def get_roles_by_resource_permission(resource_name: str, resource_permission: str, db_session: Session):
-    roles = []
+# THIS ISNT DONE
+def get_roles_by_resource_permission(resource_name: str, resource_permission: str, walkoff_db: AsyncIOMotorDatabase):
+    roles_col = walkoff_db.getCollection("roles")
+    all_roles = roles_col.find().to_list(None)
+    accepted_roles = []
+    for role in all_roles:
+        if
     roles.extend(db_session.query(Role).join(Role.resources).join(Resource.permissions).filter(
         Resource.name == resource_name, Permission.name == resource_permission).all())
 
-    return {role_obj.id for role_obj in roles}
-
-
-class ResourcePermissions:
-    def __init__(self, resource, permissions):
-        self.resource = resource
-        self.permissions = permissions
+    return {role_obj.id for role_obj in accepted_roles}

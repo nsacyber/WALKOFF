@@ -3,9 +3,6 @@ from fastapi import APIRouter, Depends
 from http import HTTPStatus
 import logging
 
-from sqlalchemy.orm import Session
-from fastapi import HTTPException
-
 from api.security import (create_access_token, create_refresh_token, get_jwt_identity,
                           get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request)
 from api.fastapi_config import FastApiConfig
@@ -55,8 +52,9 @@ def _authenticate_and_grant_tokens(request: Request, users_col: AsyncIOMotorColl
 
 
 @router.post("/login")
-def login(creds: AuthModel, request: Request, users_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
-    return _authenticate_and_grant_tokens(request=request, users_col=users_col, creds=creds, with_refresh=True)
+def login(creds: AuthModel, request: Request, walkoff_db: AsyncIOMotorCollection = Depends(get_mongo_d)):
+    user_col = walkoff_db.getCollection("users")
+    return _authenticate_and_grant_tokens(request=request, users_col=user_col, creds=creds, with_refresh=True)
 
 
 # def fresh_login(creds: AuthModel, request: Request, users_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
@@ -65,24 +63,27 @@ def login(creds: AuthModel, request: Request, users_col: AsyncIOMotorCollection 
 
 @router.post("/refresh")
 def refresh(request: Request, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)):
+    user_col = walkoff_db.getCollection("users")
+
     verify_jwt_refresh_token_in_request(walkoff_db=walkoff_db, request=request)
     current_user_id = get_jwt_identity(request)
 
-    user = db_session.query(User).filter_by(id=current_user_id).first()
+    user = user_col.find_one({"id_": current_user_id}, projection={'_id': False})
     if user is None:
-        revoke_token(db_session=db_session, decoded_token=get_raw_jwt(request))
+        revoke_token(decoded_token=get_raw_jwt(request), walkoff_db=walkoff_db)
         raise ProblemException(
             HTTPStatus.UNAUTHORIZED,
             "Could not grant access token.",
             f"User {current_user_id} from refresh JWT identity could not be found.")
     if user.active:
-        return {'access_token': create_access_token(identity=current_user_id, user=user)}, HTTPStatus.CREATED
+        return {'access_token': create_access_token(user=user)}, HTTPStatus.CREATED
     else:
         raise user_deactivated_problem
 
 
 @router.post("/logout")
-def logout(json_in: TokenModel, request: Request, db_session: Session = Depends(get_db)):
+def logout(json_in: TokenModel, request: Request, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)):
+    user_col = walkoff_db.getCollection("users")
     data = dict(json_in)
     refresh_token = data.get('refresh_token', None) if data else None
     if refresh_token is None:
@@ -91,10 +92,10 @@ def logout(json_in: TokenModel, request: Request, db_session: Session = Depends(
     refresh_token_identity = decoded_refresh_token[FastApiConfig.JWT_IDENTITY_CLAIM]
     user_id = get_jwt_identity(request)
     if user_id == refresh_token_identity:
-        user = db_session.query(User).filter(User.id == user_id).first()
+        user = user_col.find_one({"id_": user_id}, projection={"_id": False})
         if user is not None:
-            user.logout(db_session=db_session)
-        revoke_token(db_session=db_session, decoded_token=decode_token(refresh_token))
+            user.logout(walkoff_db=walkoff_db)
+        revoke_token(walkoff_db=walkoff_db, decoded_token=decode_token(refresh_token))
         return None, HTTPStatus.NO_CONTENT
     else:
         raise ProblemException(
