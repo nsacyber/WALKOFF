@@ -26,39 +26,41 @@ from api.server.utils.problems import ProblemException
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
+logger = logging.getLogger(__name__)
 
 
-def verify_jwt_refresh_token_in_request(walkoff_db: AsyncIOMotorDatabase, request: Request):
-    decoded_token = get_raw_jwt(request)
-    verify_token_in_decoded(decoded_token=decoded_token, request_type='refresh')
-    verify_token_not_blacklisted(walkoff_db=walkoff_db, decoded_token=decoded_token, request_type='refresh')
+async def verify_jwt_refresh_token_in_request(walkoff_db: AsyncIOMotorDatabase, request: Request):
+    decoded_token = await get_raw_jwt(request)
+    await verify_token_in_decoded(decoded_token=decoded_token, request_type='refresh')
+    await verify_token_not_blacklisted(walkoff_db=walkoff_db, decoded_token=decoded_token, request_type='refresh')
     return True
 
 
-def verify_token_in_decoded(decoded_token: dict, request_type: str):
+async def verify_token_in_decoded(decoded_token: dict, request_type: str):
     if decoded_token['type'] != request_type:
-        raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.",'Only {} tokens are allowed'.format(request_type))
+        raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.",
+                               'Only {} tokens are allowed'.format(request_type))
 
 
-def verify_token_not_blacklisted(walkoff_db: AsyncIOMotorDatabase, decoded_token: dict, request_type: str):
+async def verify_token_not_blacklisted(walkoff_db: AsyncIOMotorDatabase, decoded_token: dict, request_type: str):
     if not FastApiConfig.JWT_BLACKLIST_ENABLED:
         return
     if request_type == 'access':
-        if is_token_revoked(walkoff_db=walkoff_db, decoded_token=decoded_token):
+        if await is_token_revoked(walkoff_db=walkoff_db, decoded_token=decoded_token):
             raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.", 'Token has been revoked.')
     if request_type == 'refresh':
-        if is_token_revoked(walkoff_db=walkoff_db, decoded_token=decoded_token):
+        if await is_token_revoked(walkoff_db=walkoff_db, decoded_token=decoded_token):
             raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.", 'Token has been revoked.')
 
 
-def create_access_token(user: UserModel, fresh=False, expires_delta: timedelta = None, user_claims=None):
+async def create_access_token(user: UserModel, fresh=False, expires_delta: timedelta = None, user_claims=None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         # defaults to 15 minutes
         expire = datetime.utcnow() + timedelta(minutes=FastApiConfig.JWT_ACCESS_TOKEN_EXPIRES)
     if user_claims is None:
-        user_claims = add_claims_to_access_token(user)
+        user_claims = await add_claims_to_access_token(user)
     to_encode = {"jti": str(uuid.uuid4()),
                  "exp": expire,
                  "identity": user.id_,
@@ -69,7 +71,7 @@ def create_access_token(user: UserModel, fresh=False, expires_delta: timedelta =
     return encoded_jwt
 
 
-def create_refresh_token(user: UserModel, expires_delta: timedelta = None):
+async def create_refresh_token(user: UserModel, expires_delta: timedelta = None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
@@ -83,52 +85,58 @@ def create_refresh_token(user: UserModel, expires_delta: timedelta = None):
     return encoded_jwt
 
 
-def decode_token(to_decode):
-    decoded_jtw = jwt.decode(to_decode, FastApiConfig.SECRET_KEY,
-                             algorithm=FastApiConfig.ALGORITHM)
+async def decode_token(to_decode):
+    try:
+        decoded_jtw = jwt.decode(to_decode, FastApiConfig.SECRET_KEY,
+                                 algorithm=FastApiConfig.ALGORITHM)
+    except jwt.exceptions.DecodeError:
+        return None
+
     return decoded_jtw
 
 
-def get_raw_jwt(request: Request):
+async def get_raw_jwt(request: Request):
     auth_header = request.headers.get('Authorization')
-
-    if auth_header is None:
+    logger.info(auth_header)
+    if not auth_header:
         return None
 
     jwt_token = auth_header[7:]
-    return decode_token(jwt_token)
+    return await decode_token(jwt_token)
 
 
-def get_jwt_identity(request: Request):
-    rjwt = get_raw_jwt(request) or {}
+async def get_jwt_identity(request: Request):
+    rjwt = await get_raw_jwt(request) or {}
     return rjwt.get("identity", "")
 
 
-def get_jwt_claims(request: Request):
-    rjwt = get_raw_jwt(request) or {}
+async def get_jwt_claims(request: Request):
+    rjwt = await get_raw_jwt(request) or {}
     return rjwt.get("user_claims", {})
 
 
-def add_claims_to_access_token(user: UserModel):
+async def add_claims_to_access_token(user: UserModel):
     return {'roles': [role for role in user.roles], 'username': user.username} if user is not None else {}
 
 
-def user_has_correct_roles(accepted_roles, request: Request, all_required=False):
+async def user_has_correct_roles(accepted_roles, request: Request, all_required=False):
     if not accepted_roles:
         return False
-    user_roles = set(get_jwt_claims(request).get('roles', []))
+    user_roles = set((await get_jwt_claims(request)).get('roles', []))
     if all_required:
         return not accepted_roles - user_roles
     else:
         return any(role in accepted_roles for role in user_roles)
 
 
-def get_roles_by_resource_permission(resource_name: str, resource_permission: str, walkoff_db: AsyncIOMotorDatabase):
+async def get_roles_by_resource_permission(resource_name: str, resource_permission: str,
+                                           walkoff_db: AsyncIOMotorDatabase):
     roles_col = walkoff_db.roles
 
-    all_roles = roles_col.find().to_list(None)
+    all_roles = await roles_col.find().to_list(None)
     accepted_roles = []
     for role in all_roles:
+        role = RoleModel(**role)
         for resource in role.resources:
             if resource.name == resource_name and resource_permission in resource.permissions:
                 accepted_roles.append(role)

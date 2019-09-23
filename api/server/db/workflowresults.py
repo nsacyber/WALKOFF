@@ -1,17 +1,18 @@
-from uuid import uuid4
+from uuid import uuid4, UUID
 
-from sqlalchemy import JSON, Enum
-from sqlalchemy.dialects.postgresql import UUID
 from pydantic import BaseModel
 from typing import List
 
 from api.server.db.parameter import ParameterModel
 from api.server.db.workflow_variable import WorkflowVariableModel
+from api.server.utils.helpers import JSON
+
+from common.message_types import StatusEnum
 
 
 class NodeStatus(BaseModel):
     name: str
-    status = Enum
+    status: StatusEnum
     started_at: str = ""
     completed_at: str = ""
     combined_id: str = None
@@ -25,7 +26,7 @@ class NodeStatus(BaseModel):
 
 class WorkflowStatus(BaseModel):
     name: str
-    status: Enum
+    status: StatusEnum
     started_at: str = ""
     completed_at: str = ""
     execution_id: UUID = uuid4()
@@ -46,7 +47,7 @@ class ExecuteWorkflow(BaseModel):
 
 
 class ControlWorkflow(BaseModel):
-    status: Enum[str]
+    status: str  # ToDo: enum this
     trigger_id: UUID = uuid4()
     trigger_data: dict
 

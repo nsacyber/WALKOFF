@@ -24,7 +24,7 @@ class ConsoleBody(BaseModel):
     message: str
 
 
-def push_to_console_stream_queue(console_message, execution_id):
+async def push_to_console_stream_queue(console_message, execution_id):
     sse_event_text = sse_format(data=console_message, event='log', event_id=execution_id)
     if execution_id in console_stream_subs:
         console_stream_subs[execution_id].put(sse_event_text)
@@ -33,7 +33,7 @@ def push_to_console_stream_queue(console_message, execution_id):
 
 
 @router.post("/logger")
-def create_console_message(body: ConsoleBody, wf_exec_id: UUID = None):
+async def create_console_message(body: ConsoleBody, wf_exec_id: UUID = None):
     workflow_execution_id = wf_exec_id
     logger.info(f"App console log: {body.message}")
     gevent.spawn(push_to_console_stream_queue, body.message, workflow_execution_id)
@@ -42,7 +42,7 @@ def create_console_message(body: ConsoleBody, wf_exec_id: UUID = None):
 
 
 @router.websocket_route("/log")
-def read_console_message(websocket: WebSocket, exec_id: UUID = None):
+async def read_console_message(websocket: WebSocket, exec_id: UUID = None):
     await websocket.accept()
     execution_id = exec_id
     logger.info(f"console log subscription for {execution_id}")
@@ -52,7 +52,7 @@ def read_console_message(websocket: WebSocket, exec_id: UUID = None):
         except ValueError:
             return invalid_id_problem('console log', 'read', execution_id)
 
-    def console_log_generator():
+    async def console_log_generator():
         console_stream_subs[execution_id] = events = console_stream_subs.get(execution_id, Queue())
         try:
             while True:

@@ -201,6 +201,16 @@ async def delete_dir_contents(path):
 
 
 @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
+async def delete_volume(docker_client, volume_name):
+    try:
+        await remove_volume(docker_client, volume_name)
+    except Exception as e:
+        logger.info(f"Failed to remove volume {volume_name}, a container may still be using it. "
+                    f"Waiting to try again...")
+        raise e
+
+
+@retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
 async def deploy_compose(compose):
     try:
         if not isinstance(compose, dict):
@@ -510,8 +520,8 @@ class Bootloader:
                 # await delete_dir_contents(static.POSTGRES_DATA_PATH)
                 await delete_dir_contents(static.REGISTRY_DATA_PATH)
                 await delete_dir_contents(static.MINIO_DATA_PATH)
-                await remove_volume(static.POSTGRES_VOLUME, wait=True)
-                await remove_volume(static.MONGO_VOLUME, wait=True)
+                await delete_volume(self.docker_client, static.POSTGRES_VOLUME)
+                await delete_volume(self.docker_client, static.MONGO_VOLUME)
 
         logger.info("Walkoff stack removed, it may take a few seconds to stop all containers.")
 

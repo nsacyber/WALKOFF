@@ -30,8 +30,8 @@ class AppExternalDocModel(BaseModel):
 class AppApiModel(BaseModel):
     id_: UUID = uuid4()
     name: str
-    app_version: str
-    walkoff_version: str
+    app_version: str = "1.0.0"
+    walkoff_version: str = "1.0.0"
     description: str = ""
     contact_info: AppApiContactModel = {}
     license_info: AppApiLicenseModel = {}

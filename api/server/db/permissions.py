@@ -26,7 +26,7 @@ class PermissionsModel(BaseModel):
     _walkoff_type: str = "permissions"
 
 
-def creator_only_permissions(creator):
+async def creator_only_permissions(creator):
     internal = {'role': 1, 'permissions': ["delete", "execute", "read", "update"]}
     internal_user_permission = RolePermissions(**internal)
     super_user = {'role': 2, 'permissions': ["delete", "execute", "read", "update"]}
@@ -36,7 +36,7 @@ def creator_only_permissions(creator):
                             role_permissions=[internal_user_permission, super_user_permission])
 
 
-def default_permissions(curr_user_id, walkoff_db, resource_name):
+async def default_permissions(curr_user_id, walkoff_db, resource_name):
     role_col = walkoff_db.roles
     roles = await role_col.find().to_list(None)
     role_permissions = []
@@ -52,9 +52,9 @@ def default_permissions(curr_user_id, walkoff_db, resource_name):
                             role_permissions=role_permissions)
 
 
-def auth_check(curr_user_id: int, resource_id: str, permission: str, resource_name: str, walkoff_db):
+async def auth_check(curr_user_id: int, resource_id: str, permission: str, resource_name: str, walkoff_db):
     user_col = walkoff_db.users
-    resource_col = walkoff_db.resource_name
+    resource_col = walkoff_db[resource_name]
 
     curr_user = await user_col.find_one({"id": curr_user_id}, projection={'_id': False})
     curr_roles = curr_user["roles"]

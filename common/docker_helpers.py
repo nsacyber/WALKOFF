@@ -143,20 +143,7 @@ async def update_service(client, service_id, *, version=None, image=None, rollba
     return resp
 
 
-async def remove_volume(volume: str, wait: bool = False):
-    client = docker.from_env()
-    if wait:
-        bl = client.containers.list(filters={"name": "walkoff_bootloader"})
-        container_set = set(client.containers.list()) - set(bl)
-        while len(container_set):
-            container_set = set(client.containers.list()) - set(bl)
-            logger.info(f"Waiting for containers to close: {[c.name for c in container_set]}")
-            time.sleep(1)
-            continue
-
-    # Brief pause to allow for cleanup
-    time.sleep(1)
-
+async def remove_volume(client: aiodocker.Docker, volume: str):
     try:
         client.volumes.get(volume).remove()
     except docker.errors.NotFound:

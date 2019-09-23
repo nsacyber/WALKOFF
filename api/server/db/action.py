@@ -15,10 +15,10 @@ class ActionApiModel(BaseModel):
     id_: UUID = uuid4()
     name: str
     node_type: str = ""
-    location: str = ""
     description: str = ""
     returns: ReturnApiModel = {}
     parameters: List[ParameterApiModel] = []
+    deprecated: bool = False
 
 
 class ActionModel(BaseModel):

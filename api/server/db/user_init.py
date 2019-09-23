@@ -3,6 +3,8 @@ from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 from api.server.db.role import RoleModel
 from api.server.db.user import UserModel
 
+from common.config import config
+
 default_resource_permissions_internal_user = [
     {"name": "app_apis", "permissions": ["create", "read", "update", "delete"]},
     {"name": "apps", "permissions": ["create", "read", "update", "delete"]},
@@ -127,28 +129,14 @@ default_roles = {
 }
 
 default_users = {
-    "internal_user": {
-        "id_": 1,
-        "username": "internal_user",
-        "password": None,
-        "hashed": False,
-        "roles": [1]
-    },
-    "super_admin": {
-        "id_": 2,
-        "username": "super_admin",
-        "password": "super_admin",
-        "hashed": False,
-        "roles": [2]
-    },
-    "admin": {
-        "id_": 3,
-        "username": "admin",
-        "password": "admin",
-        "hashed": False,
-        "roles": [3]
-    }
+    "internal_user": UserModel(id_=1, username="internal_user", password=config.get_from_file(config.INTERNAL_KEY_PATH),
+                               hashed=False, roles=[1]),
+    "super_admin": UserModel(id_=2, username="super_admin", password="super_admin",
+                             hashed=False, roles=[2]),
+    "admin": UserModel(id_=3, username="admin", password="admin",
+                       hashed=False, roles=[3])
 }
+
 default_resources = ['app_apis', 'apps', 'settings', 'global_variables', 'workflows', 'roles', 'scheduler', 'users']
 
 

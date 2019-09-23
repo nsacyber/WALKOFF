@@ -20,8 +20,6 @@ from starlette.websockets import WebSocket
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.problem import unique_constraint_problem, invalid_id_problem
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -34,11 +32,11 @@ class JSONPatch(BaseModel):
     start: str
 
 
-def workflow_status_getter(execution_id, workflow_col: AsyncIOMotorCollection):
+async def workflow_status_getter(execution_id, workflow_col: AsyncIOMotorCollection):
     return await workflow_col.find_one({"execution_id": execution_id}, projection={"_id": False})
 
 
-def node_status_getter(combined_id, node_col: AsyncIOMotorCollection):
+async def node_status_getter(combined_id, node_col: AsyncIOMotorCollection):
     return await node_col.find_one({"combined_id": combined_id}, projection={"_id": False})
 
 
@@ -47,7 +45,7 @@ workflow_stream_subs = {}
 action_stream_subs = {}
 
 
-def push_to_workflow_stream_queue(workflow_status, event):
+async def push_to_workflow_stream_queue(workflow_status, event):
     workflow_status.pop("node_statuses", None)
     workflow_status["execution_id"] = str(workflow_status["execution_id"])
     sse_event_text = sse_format(data=workflow_status, event=event, event_id=workflow_status["execution_id"])
@@ -57,7 +55,7 @@ def push_to_workflow_stream_queue(workflow_status, event):
         workflow_stream_subs['all'].put(sse_event_text)
 
 
-def push_to_action_stream_queue(node_statuses, event):
+async def push_to_action_stream_queue(node_statuses, event):
 
     event_id = 0
     for node_status in node_statuses:
@@ -105,7 +103,7 @@ def push_to_action_stream_queue(node_statuses, event):
 
 # TODO: maybe make an internal user for the worker/umpire?
 @router.put("/workflow_status/{execution_id}")
-def update_workflow_status(body: JSONPatch, event: str, execution_id: str, workflow_col: AsyncIOMotorCollection = Depends((get_mongo_c))):
+async def update_workflow_status(body: JSONPatch, event: str, execution_id: str, workflow_col: AsyncIOMotorCollection = Depends((get_mongo_c))):
     old_workflow = workflow_status_getter(execution_id, workflow_col)
     old_workflow_status = old_workflow.status
 
@@ -149,7 +147,7 @@ def update_workflow_status(body: JSONPatch, event: str, execution_id: str, workf
 
 
 @router.websocket_route('/workflow_status')
-def workflow_stream(websocket: WebSocket, exec_id: UUID = None):
+async def workflow_stream(websocket: WebSocket, exec_id: UUID = None):
     await websocket.accept()
     execution_id = exec_id
     logger.info(f"workflow_status subscription for {execution_id}")
@@ -159,7 +157,7 @@ def workflow_stream(websocket: WebSocket, exec_id: UUID = None):
         except ValueError:
             return invalid_id_problem('workflow status', 'read', execution_id)
 
-    def workflow_results_generator():
+    async def workflow_results_generator():
         workflow_stream_subs[execution_id] = events = workflow_stream_subs.get(execution_id, Queue())
         try:
             while True:
@@ -175,7 +173,7 @@ def workflow_stream(websocket: WebSocket, exec_id: UUID = None):
 
 
 @router.websocket_route('/actions')
-def action_stream(websocket: WebSocket, exec_id: UUID = None):
+async def action_stream(websocket: WebSocket, exec_id: UUID = None):
     await websocket.accept()
     execution_id = exec_id
     logger.info(f"action subscription for {execution_id}")
@@ -185,7 +183,7 @@ def action_stream(websocket: WebSocket, exec_id: UUID = None):
         except ValueError:
             return invalid_id_problem('action status', 'read', execution_id)
 
-    def action_results_generator():
+    async def action_results_generator():
         action_stream_subs[execution_id] = events = action_stream_subs.get(execution_id, Queue())
         try:
             while True:

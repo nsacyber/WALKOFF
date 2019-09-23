@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Union
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from passlib.hash import pbkdf2_sha512
@@ -64,19 +65,16 @@ class UserModel(BaseModel):
     current_login_ip: str = None
     login_count: int = 0
 
-    @classmethod
-    @validator('password')
-    def hash_pass(cls, password, user, **kwargs):
-        if not user.get("hashed"):
-            raise ValueError("Must specify whether password has been hashed.")
-
-        if user["hashed"] and not password.startswith("$pbkdf2-sha512$25000$"):
+    @validator('password', pre=True)
+    def hash_pass(cls, password, values):
+        if values["hashed"] and not password.startswith("$pbkdf2-sha512$25000$"):
             raise ValueError("Hashed password not in expected format.")
-        elif not user["hashed"] and password.startswith("$pbkdf2-sha512$25000$"):
+        elif not values["hashed"] and password.startswith("$pbkdf2-sha512$25000$"):
             raise ValueError("Got a hashed password but hashed flag was unset.")
-
-        if not user["hashed"]:
-            return pbkdf2_sha512.hash(password)
+        elif not values["hashed"]:
+            values["hashed"] = True
+            r = pbkdf2_sha512.hash(password)
+            return r
         else:
             return password
 
@@ -98,7 +96,7 @@ class UserModel(BaseModel):
             (bool): True if the passwords match, False if not.
         """
 
-        return pbkdf2_sha512.verify(password_attempt.encode('utf-8'), self.password)
+        return pbkdf2_sha512.verify(password_attempt, self.password)
 
     # async def set_roles(self, new_roles, role_col):
     #     """Sets the roles for a User.
@@ -149,3 +147,12 @@ class UserModel(BaseModel):
     #     """
     #     return role in [role.id_ for role in self.roles]
     #
+
+
+async def user_getter(user_coll: AsyncIOMotorCollection, user: Union[str, int]) -> Union[UserModel, None]:
+    if type(user) is int:
+        user_json = await user_coll.find_one({"id_": user}, projection={'_id': False})
+    else:
+        user_json = await user_coll.find_one({"username": user}, projection={'_id': False})
+
+    return UserModel(**user_json) if user_json else None

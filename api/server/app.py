@@ -3,13 +3,13 @@ from copy import deepcopy
 from http import HTTPStatus
 
 from fastapi import FastAPI, Depends
+from fastapi.openapi.utils import get_openapi
 from starlette.staticfiles import StaticFiles
 from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
-
-from api.server.endpoints import appapi, dashboards, workflows, users, console, results  # auth, roles, users,
+from api.server.endpoints import appapi, dashboards, workflows, users, console, results,  auth  #, roles, users,
 from api.server.db import DBEngine, get_db, MongoEngine, get_mongo_c
 from api.server.db.user import UserModel
 from api.server.db.role import RoleModel
@@ -22,7 +22,7 @@ from common.config import config, static
 
 logger = logging.getLogger("API")
 
-_app = FastAPI()
+_app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _walkoff = FastAPI(openapi_prefix="/walkoff/api")
 _db_manager = DBEngine()
 _mongo_manager = MongoEngine()
@@ -42,18 +42,15 @@ async def initialize_users():
     roles_col = walkoff_db.roles
     users_col = walkoff_db.users
 
-    for role_key, role_val in default_roles.items():
-        role_d = await roles_col.find_one({"id_": role_val["id_"]}, projection={'_id': False})
+    for role_name, role_val in default_roles.items():
+        role_d = await roles_col.find_one({"id_": role_val["id_"]})
         if not role_d:
             await roles_col.insert_one(role_val)
 
-    for user_key, user_val in default_users.items():
-        user_d = await users_col.find_one({"id_": user_val["id_"]}, projection={'_id': False})
+    for user_name, user in default_users.items():
+        user_d = await users_col.find_one({"id_": user.id_})
         if not user_d:
-            if user_val["password"] is None:
-                user_val["password"] = config.get_from_file(config.POSTGRES_KEY_PATH)
-
-            await users_col.insert_one(user_val)
+            await users_col.insert_one(dict(user))
 
     # # Setup internal user
     # internal_role = await role_col.find_one({"id_": 1}, projection={'_id': False})
@@ -87,22 +84,20 @@ async def initialize_users():
     #     await user_col.replace_one(dict(admin_user), dict(user_copy))
 
 
-
-
-
 @_app.on_event("startup")
 async def start_banner():
     logger.info("API Server started.")
 
 
 # Note: The request goes through middleware here in opposite order of instantiation, last to first.
-
 @_walkoff.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     try:
         request.state.db = _db_manager.session_maker()
         request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
         request.state.mongo_d = _mongo_manager.client.walkoff_db
+        response = await call_next(request)
+    except pymongo.errors.InvalidName:
         response = await call_next(request)
     # except Exception as e:
     #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
@@ -145,8 +140,8 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
             if request_method == "PATCH":
                 resource_permission = "execute"
 
-            accepted_roles |= get_roles_by_resource_permission(resource_name, resource_permission, walkoff_db)
-            if not user_has_correct_roles(accepted_roles, request):
+            accepted_roles |= await get_roles_by_resource_permission(resource_name, resource_permission, walkoff_db)
+            if not await user_has_correct_roles(accepted_roles, request):
                 return JSONResponse({"Error": "FORBIDDEN",
                                      "message": "User does not have correct permissions for this resource"},
                                     status_code=403)
@@ -163,15 +158,15 @@ async def jwt_required_middleware(request: Request, call_next):
     if len(request_path) >= 4:
         resource_name = request_path[3]
         if resource_name not in ("auth", "docs", "redoc", "openapi.json"):
-            decoded_token = get_raw_jwt(request)
+            decoded_token = await get_raw_jwt(request)
 
             if decoded_token is None:
                 e = ProblemException(HTTPStatus.UNAUTHORIZED, "No authorization provided.",
                                      "Authorization header is missing.")
                 return e.as_response()
 
-            verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
-            verify_token_not_blacklisted(walkoff_db=walkoff_db, decoded_token=decoded_token, request_type='access')
+            await verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
+            await verify_token_not_blacklisted(walkoff_db=walkoff_db, decoded_token=decoded_token, request_type='access')
 
     response = await call_next(request)
     return response
@@ -187,10 +182,10 @@ async def problem_exception_handler(request: Request, exc: ProblemException):
     return r
 
 # Include routers here
-# _walkoff.include_router(auth.router,
-#                         prefix="/auth",
-#                         tags=["auth"],
-#                         dependencies=[Depends(get_mongo_c)])
+_walkoff.include_router(auth.router,
+                        prefix="/auth",
+                        tags=["auth"],
+                        dependencies=[Depends(get_mongo_c)])
 
 # _walkoff.include_router(global_variables.router,
 #                         prefix="/globals",
@@ -212,15 +207,15 @@ _walkoff.include_router(appapi.router,
                         tags=["apps"],
                         dependencies=[Depends(get_mongo_c)])
 
-_walkoff.include_router(results.router,
-                        prefix="/internal",
-                        tags=["internal"],
-                        dependencies=[Depends(get_mongo_c)])
+# _walkoff.include_router(results.router,
+#                         prefix="/internal",
+#                         tags=["internal"],
+#                         dependencies=[Depends(get_mongo_c)])
 
-_walkoff.include_router(console.router,
-                        prefix="/streams/console",
-                        tags=["console"],
-                        dependencies=[Depends(get_mongo_c)])
+# _walkoff.include_router(console.router,
+#                         prefix="/streams/console",
+#                         tags=["console"],
+#                         dependencies=[Depends(get_mongo_c)])
 
 # _walkoff.include_router(dashboards.router,
 #                         prefix="/dashboards",
@@ -256,19 +251,33 @@ async def root_router():
 
     return HTMLResponse(index)
 
+
+def custom_openapi():
+    if _walkoff.openapi_schema:
+        return _walkoff.openapi_schema
+    else:
+        openapi_schema = get_openapi(
+            title="WALKOFF",
+            version="1.0.0-rc.2",
+            description="A flexible, easy to use, automation framework allowing users to integrate their "
+                        "capabilities and devices to cut through the repetitive, tedious tasks slowing them down.",
+            routes=_walkoff.routes
+        )
+        openapi_schema["info"]["x-logo"] = {
+            "url": "/walkoff/client/dist/walkoff/assets/img/walkoffLogo.png"
+        }
+        openapi_schema["tags"] = [
+            {"name": "apps", "description": "App API Operations"}
+        ]
+        _walkoff.openapi_schema = openapi_schema
+        return _walkoff.openapi_schema
+
+
+_walkoff.openapi = custom_openapi
+
 app = _app
 
-#
-# # Validate database models before saving them, here.
-# # This is here to avoid circular imports.
-# with _app.app_context():
-#     @event.listens_for(_app.running_context.execution_db.session, "before_flush")
-#     def validate_before_flush(session, flush_context, instances):
-#         for instance in session.dirty:
-#             if isinstance(instance, Workflow):
-#                 instance.validate()
-#
-#
+
 # @_app.after_request
 # def after_request(response):
 #     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, public, max-age=0"

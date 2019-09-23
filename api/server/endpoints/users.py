@@ -8,7 +8,7 @@ from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from api.fastapi_config import FastApiConfig
-from api.server.db.user import UserModel
+from api.server.db.user import UserModel, user_getter
 from api.server.db import get_mongo_c
 from api.security import get_jwt_identity
 from api.server.utils.problems import ProblemException
@@ -19,13 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 router = APIRouter()
-
-
-async def user_getter(user_coll: AsyncIOMotorCollection, user: Union[str, int]) -> UserModel:
-    if type(user) is int:
-        return await user_coll.find_one({"id_": user}, projection={'_id': False})
-    else:
-        return await user_coll.find_one({"name": user}, projection={'_id': False})
 
 
 @router.get("/")

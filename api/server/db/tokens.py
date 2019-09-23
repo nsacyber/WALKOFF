@@ -25,7 +25,7 @@ class BlacklistedToken(BaseModel):
     expires: datetime
 
 
-def revoke_token(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
+async def revoke_token(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
     """Adds a new token to the database. It is not revoked when it is added
 
     Args:
@@ -43,11 +43,11 @@ def revoke_token(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
         "user_identity": user_identity,
         "expires": expires
     }
-    token_col.insert_one(db_token)
-    prune_if_necessary(token_col)
+    await token_col.insert_one(db_token)
+    await prune_if_necessary(token_col)
 
 
-def is_token_revoked(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
+async def is_token_revoked(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
     """Checks if the given token is revoked or not. Because we are adding all the
     tokens that we create into this database, if the token is not present
     in the database we are going to consider it revoked, as we don't know where
@@ -58,26 +58,26 @@ def is_token_revoked(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
     """
     token_col = walkoff_db.tokens
     jti = decoded_token['jti']
-    token = token_col.find_one({"jti": jti}, projection={'_id': False})
-    return token is not None
+    token_json = await token_col.find_one({"jti": jti}, projection={'_id': False})
+    return token_json is not None
 
 
-def prune_if_necessary(walkoff_db: AsyncIOMotorDatabase):
+async def prune_if_necessary(walkoff_db: AsyncIOMotorDatabase):
     """Prunes the database if necessary"""
-    global NUMBER_OF_PRUNE_OPERATIONS
+    global NUMBER_OF_PRUNE_OPERATIONS  # ToDo: fix this please
     NUMBER_OF_PRUNE_OPERATIONS += 1
     if NUMBER_OF_PRUNE_OPERATIONS >= FastApiConfig.JWT_BLACKLIST_PRUNE_FREQUENCY:
-        prune_database(walkoff_db)
+        await prune_database(walkoff_db)
 
 
 # todo: fix expires LTE format
-def prune_database(walkoff_db):
+async def prune_database(walkoff_db):
     """Delete tokens that have expired from the database"""
     global NUMBER_OF_PRUNE_OPERATIONS
     token_col = walkoff_db.tokens
 
     now = datetime.now()
-    expired = token_col.find({"expires": {"$lte": now}}, projection={'_id': False})
+    expired = await token_col.find({"expires": {"$lte": now}}, projection={'_id': False})
     for token in expired:
-        token_col.delete(dict(token))
+        await token_col.delete(dict(token))
     NUMBER_OF_PRUNE_OPERATIONS = 0
