@@ -6,7 +6,7 @@ from starlette.responses import JSONResponse
 
 from http import HTTPStatus
 
-logger = logging.getLogger("API")
+logger = logging.getLogger(__name__)
 
 
 class ProblemException(HTTPException):

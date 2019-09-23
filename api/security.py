@@ -97,7 +97,6 @@ async def decode_token(to_decode):
 
 async def get_raw_jwt(request: Request):
     auth_header = request.headers.get('Authorization')
-    logger.info(auth_header)
     if not auth_header:
         return None
 

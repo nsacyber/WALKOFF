@@ -28,7 +28,7 @@ user_deactivated_problem = ProblemException(
 )
 
 router = APIRouter()
-logger = logging.getLogger("API")
+logger = logging.getLogger(__name__)
 
 
 async def _authenticate_and_grant_tokens(request: Request, users_col: AsyncIOMotorCollection, creds: AuthModel, with_refresh=False):
@@ -36,7 +36,6 @@ async def _authenticate_and_grant_tokens(request: Request, users_col: AsyncIOMot
         raise invalid_credentials_problem
 
     user = await user_getter(users_col, creds.username)
-    logger.info(user)
 
     if user is None:
         raise invalid_credentials_problem

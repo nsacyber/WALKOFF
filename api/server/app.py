@@ -20,7 +20,7 @@ from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_
     get_roles_by_resource_permission
 from common.config import config, static
 
-logger = logging.getLogger("API")
+logger = logging.getLogger(__name__)
 
 _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _walkoff = FastAPI(openapi_prefix="/walkoff/api")
