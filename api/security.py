@@ -133,12 +133,11 @@ async def get_roles_by_resource_permission(resource_name: str, resource_permissi
                                            walkoff_db: AsyncIOMotorDatabase):
     roles_col = walkoff_db.roles
 
-    all_roles = await roles_col.find().to_list(None)
+    all_roles = [RoleModel(**role_json) for role_json in await roles_col.find().to_list(None)]
     accepted_roles = []
     for role in all_roles:
-        role = RoleModel(**role)
         for resource in role.resources:
             if resource.name == resource_name and resource_permission in resource.permissions:
                 accepted_roles.append(role)
 
-    return {role_obj.id for role_obj in accepted_roles}
+    return {role_obj.id_ for role_obj in accepted_roles}
