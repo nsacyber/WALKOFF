@@ -245,12 +245,18 @@
 # # ToDo: make these clear db endpoints for more resources
 # def clear_workflow_status(all_=False, days=30, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
 #     if all_:
-#         await workflow_status_col.remove({ "$or": [{"status": StatusEnum.ABORTED}, {"status": StatusEnum.COMPLETED}]}, projection={'_id': False})
+#         await workflow_status_col.remove({ "$or":
+#                                                [{"status": StatusEnum.ABORTED}, {"status": StatusEnum.COMPLETED}]},
+#                                                 projection={'_id': False})
 #     elif days > 0:
 #         delete_date = datetime.datetime.today() - datetime.timedelta(days=days)
-#         await workflow_status_col.remove({ "$or": [{"status": StatusEnum.ABORTED}, {"status": StatusEnum.COMPLETED}]}, projection={'_id': False})
 #
-#         # await workflow_status_col.remove(
+#         temp = await workflow_status_col.find({ "$or":
+#                                                [{"status": StatusEnum.ABORTED}, {"status": StatusEnum.COMPLETED}]},
+#                                                 projection={'_id': False})
+#         temp2 = await workflow_status_col.find({"completed_at": {"$lte": delete_date}},
+#                                               projection={'_id': False})
+#         # await workflow_status_col.find(
 #         #     { "$and" [
 #         #           {"completed_at": {"$lte": delete_date}},
 #         #           {"status": [{"status": [StatusEnum.ABORTED, StatusEnum.COMPLETED]}

@@ -32,7 +32,7 @@ def revoke_token(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
         decoded_token (dict): The decoded token
         :param decoded_token:
     """
-    token_col = walkoff_db.getCollection("tokens")
+    token_col = walkoff_db.tokens
 
     jti = decoded_token['jti']
     user_identity = decoded_token[FastApiConfig.JWT_IDENTITY_CLAIM]
@@ -56,7 +56,7 @@ def is_token_revoked(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
     Returns:
         (bool): True if the token is revoked, False otherwise.
     """
-    token_col = walkoff_db.getCollection("tokens")
+    token_col = walkoff_db.tokens
     jti = decoded_token['jti']
     token = token_col.find_one({"jti": jti}, projection={'_id': False})
     return token is not None
@@ -74,7 +74,7 @@ def prune_if_necessary(walkoff_db: AsyncIOMotorDatabase):
 def prune_database(walkoff_db):
     """Delete tokens that have expired from the database"""
     global NUMBER_OF_PRUNE_OPERATIONS
-    token_col = walkoff_db.getCollection("tokens")
+    token_col = walkoff_db.tokens
 
     now = datetime.now()
     expired = token_col.find({"expires": {"$lte": now}}, projection={'_id': False})

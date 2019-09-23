@@ -53,7 +53,7 @@ def _authenticate_and_grant_tokens(request: Request, users_col: AsyncIOMotorColl
 
 @router.post("/login")
 def login(creds: AuthModel, request: Request, walkoff_db: AsyncIOMotorCollection = Depends(get_mongo_d)):
-    user_col = walkoff_db.getCollection("users")
+    user_col = walkoff_db.users
     return _authenticate_and_grant_tokens(request=request, users_col=user_col, creds=creds, with_refresh=True)
 
 
@@ -63,7 +63,7 @@ def login(creds: AuthModel, request: Request, walkoff_db: AsyncIOMotorCollection
 
 @router.post("/refresh")
 def refresh(request: Request, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)):
-    user_col = walkoff_db.getCollection("users")
+    user_col = walkoff_db.users
 
     verify_jwt_refresh_token_in_request(walkoff_db=walkoff_db, request=request)
     current_user_id = get_jwt_identity(request)
@@ -83,7 +83,7 @@ def refresh(request: Request, walkoff_db: AsyncIOMotorDatabase = Depends(get_mon
 
 @router.post("/logout")
 def logout(json_in: TokenModel, request: Request, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)):
-    user_col = walkoff_db.getCollection("users")
+    user_col = walkoff_db.users
     data = dict(json_in)
     refresh_token = data.get('refresh_token', None) if data else None
     if refresh_token is None:

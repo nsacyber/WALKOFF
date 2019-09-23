@@ -37,7 +37,7 @@ def creator_only_permissions(creator):
 
 
 def default_permissions(curr_user_id, walkoff_db, resource_name):
-    role_col = walkoff_db.getCollection("roles")
+    role_col = walkoff_db.roles
     roles = await role_col.find().to_list(None)
     role_permissions = []
 
@@ -53,8 +53,8 @@ def default_permissions(curr_user_id, walkoff_db, resource_name):
 
 
 def auth_check(curr_user_id: int, resource_id: str, permission: str, resource_name: str, walkoff_db):
-    user_col = walkoff_db.getCollection("users")
-    resource_col = walkoff_db.getCollection(resource_name)
+    user_col = walkoff_db.users
+    resource_col = walkoff_db.resource_name
 
     curr_user = await user_col.find_one({"id": curr_user_id}, projection={'_id': False})
     curr_roles = curr_user["roles"]
