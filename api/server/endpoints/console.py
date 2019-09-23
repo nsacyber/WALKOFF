@@ -3,17 +3,25 @@ from uuid import UUID
 from http import HTTPStatus
 
 import gevent
+from fastapi import APIRouter, Depends
 from gevent.lock import RLock
 from gevent.queue import Queue
 from flask import Blueprint, Response, current_app, request, jsonify
+from pydantic import BaseModel
+from starlette.websockets import WebSocket
 
-from api_gateway.helpers import sse_format
+from api.server.utils.helpers import sse_format
 from api_gateway.server.problem import invalid_id_problem
 
 console_stream = Blueprint('console_stream', __name__)
 console_stream_subs = {}
 
 logger = logging.getLogger(__name__)
+router = APIRouter()
+
+
+class ConsoleBody(BaseModel):
+    message: str
 
 
 def push_to_console_stream_queue(console_message, execution_id):
@@ -24,23 +32,19 @@ def push_to_console_stream_queue(console_message, execution_id):
         console_stream_subs['all'].put(sse_event_text)
 
 
-@console_stream.route('/logger', methods=['POST'])
-# @jwt_required
-# @permissions_accepted_for_resources(ResourcePermissions("consolelog", ["create"]))
-def create_console_message():
-    workflow_execution_id = request.args.get('workflow_execution_id', 'all')
-    message = request.get_json()
-    logger.info(f"App console log: {message}")
-    gevent.spawn(push_to_console_stream_queue, message, workflow_execution_id)
+@router.post("/logger")
+def create_console_message(body: ConsoleBody, wf_exec_id: UUID = None):
+    workflow_execution_id = wf_exec_id
+    logger.info(f"App console log: {body.message}")
+    gevent.spawn(push_to_console_stream_queue, body.message, workflow_execution_id)
 
-    return jsonify(message), HTTPStatus.OK
+    return body.message
 
 
-@console_stream.route('/log', methods=['GET'])
-# @jwt_required
-# @permissions_accepted_for_resources(ResourcePermissions("consolelog", ["create"]))
-def read_console_message():
-    execution_id = request.args.get('workflow_execution_id', 'all')
+@router.websocket_route("/log")
+def read_console_message(websocket: WebSocket, exec_id: UUID = None):
+    await websocket.accept()
+    execution_id = exec_id
     logger.info(f"console log subscription for {execution_id}")
     if execution_id != 'all':
         try:
@@ -54,9 +58,10 @@ def read_console_message():
             while True:
                 event = events.get().encode()
                 logger.info(f"Sending console message for {execution_id}: {event}")
-                yield event
+                await websocket.send_text(event)
         except GeneratorExit:
             console_stream_subs.pop(execution_id)
+            await websocket.close(code=1000)
             logger.info(f"console log unsubscription for {execution_id}")
 
     return Response(console_log_generator(), mimetype="text/event-stream")

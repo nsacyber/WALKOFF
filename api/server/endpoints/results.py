@@ -1,41 +1,46 @@
 import uuid
 import json
-from http import HTTPStatus
+from uuid import UUID
 import logging
 import gevent
 from gevent.queue import Queue
 
+from motor.motor_asyncio import AsyncIOMotorCollection
 from flask import Blueprint, Response, current_app, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy.exc import IntegrityError
-
+from pydantic import BaseModel
+from api.server.utils.problems import UniquenessException
 import jsonpatch
 
-from api_gateway.helpers import sse_format
-from api_gateway.server.decorators import with_resource_factory, paginate, is_valid_uid
-from api_gateway.executiondb.workflowresults import (WorkflowStatus, NodeStatus, WorkflowStatusSchema,
-                                                     NodeStatusSchema)
+from api.server.utils.helpers import sse_format
+from api.server.db import get_mongo_c
+from api.server.db.workflowresults import WorkflowStatus, NodeStatus
+from starlette.websockets import WebSocket
+
+from fastapi import APIRouter, Depends, HTTPException
 
 from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
 from api_gateway.server.problem import unique_constraint_problem, invalid_id_problem
 
 logger = logging.getLogger(__name__)
+router = APIRouter()
 
 
-def workflow_status_getter(execution_id):
-    return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
-        execution_id=execution_id).first()
+class JSONPatch(BaseModel):
+    op: str
+    path: str
+    value: str
+    start: str
 
 
-def node_status_getter(combined_id):
-    return current_app.running_context.execution_db.session.query(NodeStatus).filter_by(
-        combined_id=combined_id).first()
+def workflow_status_getter(execution_id, workflow_col: AsyncIOMotorCollection):
+    return await workflow_col.find_one({"execution_id": execution_id}, projection={"_id": False})
 
 
-with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
+def node_status_getter(combined_id, node_col: AsyncIOMotorCollection):
+    return await node_col.find_one({"combined_id": combined_id}, projection={"_id": False})
 
-node_status_schema = NodeStatusSchema()
-workflow_status_schema = WorkflowStatusSchema()
 
 results_stream = Blueprint('results_stream', __name__)
 workflow_stream_subs = {}
@@ -99,58 +104,54 @@ def push_to_action_stream_queue(node_statuses, event):
 #         return unique_constraint_problem('workflow_status', 'create', workflow.name)
 
 # TODO: maybe make an internal user for the worker/umpire?
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions("workflowstatus", ["create"]))
-@with_workflow_status('update', 'execution_id')
-def update_workflow_status(execution_id):
-    old_workflow_status = workflow_status_schema.dump(execution_id)
-    data = request.get_json()
+@router.put("/workflow_status/{execution_id}")
+def update_workflow_status(body: JSONPatch, event: str, execution_id: str, workflow_col: AsyncIOMotorCollection = Depends((get_mongo_c))):
+    old_workflow = workflow_status_getter(execution_id, workflow_col)
+    old_workflow_status = old_workflow.status
 
     # TODO: change these on the db model to be keyed by ID
     if "node_statuses" in old_workflow_status:
-        old_workflow_status["node_statuses"] = {astat['node_id']: astat for astat in
-                                                  old_workflow_status["node_statuses"]}
+        old_workflow_status.node_statuses = {astat['node_id']: astat for astat in old_workflow_status.node_statuses}
     else:
-        old_workflow_status["node_statuses"] = {}
+        old_workflow_status.node_statuses = {}
 
-    patch = jsonpatch.JsonPatch.from_string(json.dumps(data))
+    patch = jsonpatch.JsonPatch.from_string(json.dumps(body))
 
     logger.debug(f"Patch: {patch}")
     logger.debug(f"Old Workflow Status: {old_workflow_status}")
 
     new_workflow_status = patch.apply(old_workflow_status)
 
-    new_workflow_status["node_statuses"] = list(new_workflow_status["node_statuses"].values())
-
-    event = request.args.get("event")
+    new_workflow_status.node_statuses = list(new_workflow_status.node_statuses.values())
 
     try:
-        execution_id = workflow_status_schema.load(new_workflow_status, instance=execution_id)
-        current_app.running_context.execution_db.session.commit()
+        await workflow_col.replace_one(old_workflow, new_workflow_status)
+        # execution_id = workflow_status_schema.load(new_workflow_status, instance=execution_id)
+        # current_app.running_context.execution_db.session.commit()
 
         node_statuses = []
-        for patch in data:
+        for patch in body:
             if "node_statuses" in patch["path"]:
                 node_statuses.append(node_status_getter(patch["value"]["combined_id"]))
 
         # TODo: Replace this when moving to sanic
-        current_app.logger.info(f"Workflow Status update: {new_workflow_status}")
+        logger.info(f"Workflow Status update: {new_workflow_status}")
         gevent.spawn(push_to_workflow_stream_queue, new_workflow_status, event)
 
         if node_statuses:
-            current_app.logger.info(f"Action Status update:{node_statuses}")
+            logger.info(f"Action Status update:{node_statuses}")
             gevent.spawn(push_to_action_stream_queue, node_statuses, event)
 
-        current_app.logger.info(f"Updated workflow status {execution_id.execution_id} ({execution_id.name})")
-        return workflow_status_schema.dump(execution_id), HTTPStatus.OK
+        logger.info(f"Updated workflow status {old_workflow.execution_id} ({old_workflow.name})")
+        return new_workflow_status
     except IntegrityError:
-        current_app.running_context.execution_db.session.rollback()
-        return unique_constraint_problem('workflow status', 'update', execution_id.id_)
+        return UniquenessException('workflow status', 'update', old_workflow.id_)
 
 
-@results_stream.route('/workflow_status')
-def workflow_stream():
-    execution_id = request.args.get('workflow_execution_id', 'all')
+@router.websocket_route('/workflow_status')
+def workflow_stream(websocket: WebSocket, exec_id: UUID = None):
+    await websocket.accept()
+    execution_id = exec_id
     logger.info(f"workflow_status subscription for {execution_id}")
     if execution_id != 'all':
         try:
@@ -164,17 +165,19 @@ def workflow_stream():
             while True:
                 event = events.get().encode()
                 logger.info(f"Sending workflow_status SSE for {execution_id}: {event}")
-                yield event
+                await websocket.send_text(event)
         except GeneratorExit:
             workflow_stream_subs.pop(events, None)
+            await websocket.close(code=1000)
             logger.info(f"workflow_status unsubscription for {execution_id}")
 
     return Response(workflow_results_generator(), mimetype="test/event-stream")
 
 
-@results_stream.route('/actions')
-def action_stream():
-    execution_id = request.args.get('workflow_execution_id', 'all')
+@router.websocket_route('/actions')
+def action_stream(websocket: WebSocket, exec_id: UUID = None):
+    await websocket.accept()
+    execution_id = exec_id
     logger.info(f"action subscription for {execution_id}")
     if execution_id != 'all':
         try:
@@ -188,9 +191,10 @@ def action_stream():
             while True:
                 event = events.get().encode()
                 logger.info(f"Sending action SSE for {execution_id}: {event}")
-                yield event
+                await websocket.send_text(event)
         except GeneratorExit:
             action_stream_subs.pop(execution_id, None)
+            await websocket.close(code=1000)
             logger.info(f"action unsubscription for {execution_id}")
 
     return Response(action_results_generator(), mimetype="text/event-stream")
