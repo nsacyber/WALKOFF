@@ -82,9 +82,9 @@ class ImproperJSONException(ProblemException):
 
 
 class InvalidInputException(ProblemException):
-    def __init__(self, operation, resource, id_):
+    def __init__(self, operation, resource, id_, errors=None):
         detail = f"Could not {operation} {resource} {id_}, invalid input."
-        super().__init__(HTTPStatus.BAD_REQUEST, "Invalid Input.", detail=detail)
+        super().__init__(HTTPStatus.BAD_REQUEST, "Invalid Input.", detail=detail, ext={"errors": errors})
 
 
 class InvalidIDException(ProblemException):

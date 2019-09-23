@@ -147,8 +147,10 @@ def update_global(request: Request, updated_global: GlobalVariable, global_var: 
         try:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
             updated_global_dict['value'] = fernet_encrypt(key, updated_global_dict['value'])
-            await global_col.replace_one(old_global, updated_global_dict)
-            return updated_global_dict
+            r = await global_col.replace_one(old_global, updated_global_dict)
+            if r.acknowledged:
+                logger.info(f"Updated Global {updated_global.name} ({updated_global.id_})")
+                return updated_global_dict
         except (IntegrityError, StatementError):
             raise UniquenessException("global_variable", "update", updated_global["name"])
     else:

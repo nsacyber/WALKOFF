@@ -31,7 +31,6 @@ def revoke_token(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
     Args:
         decoded_token (dict): The decoded token
         :param decoded_token:
-        :param db_session:
     """
     token_col = walkoff_db.getCollection("tokens")
 
@@ -63,24 +62,6 @@ def is_token_revoked(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
     return token is not None
 
 
-# this is never used
-# def approve_token(token_id, user, walkoff_db):
-#     """Approves the given token
-#
-#     Args:
-#         token_id (int): The ID of the token
-#         user (User): The User
-#         :param user:
-#         :param token_id:
-#         :param db_session:
-#     """
-#     token = db_session.query(BlacklistedToken).filter_by(id=token_id, user_identity=user).first()
-#     if token is not None:
-#         db_session.delete(token)
-#         prune_if_necessary(db_session)
-#         db_session.commit()
-
-
 def prune_if_necessary(walkoff_db: AsyncIOMotorDatabase):
     """Prunes the database if necessary"""
     global NUMBER_OF_PRUNE_OPERATIONS
@@ -89,13 +70,14 @@ def prune_if_necessary(walkoff_db: AsyncIOMotorDatabase):
         prune_database(walkoff_db)
 
 
+# todo: fix expires LTE format
 def prune_database(walkoff_db):
     """Delete tokens that have expired from the database"""
     global NUMBER_OF_PRUNE_OPERATIONS
     token_col = walkoff_db.getCollection("tokens")
 
     now = datetime.now()
-    expired = token_col.find({"expires": {$lte: datetime.now()}}, projection={'_id': False})
+    expired = token_col.find({"expires": {"$lte": now}}, projection={'_id': False})
     for token in expired:
         token_col.delete(dict(token))
     NUMBER_OF_PRUNE_OPERATIONS = 0

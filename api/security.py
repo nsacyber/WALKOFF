@@ -123,14 +123,14 @@ def user_has_correct_roles(accepted_roles, request: Request, all_required=False)
         return any(role in accepted_roles for role in user_roles)
 
 
-# THIS ISNT DONE
 def get_roles_by_resource_permission(resource_name: str, resource_permission: str, walkoff_db: AsyncIOMotorDatabase):
-    roles_col = walkoff_db.getCollection("roles")
+    roles_col = walkoff_db.roles
+
     all_roles = roles_col.find().to_list(None)
     accepted_roles = []
     for role in all_roles:
-        if
-    roles.extend(db_session.query(Role).join(Role.resources).join(Resource.permissions).filter(
-        Resource.name == resource_name, Permission.name == resource_permission).all())
+        for resource in role.resources:
+            if resource.name == resource_name and resource_permission in resource.permissions:
+                accepted_roles.append(role)
 
     return {role_obj.id for role_obj in accepted_roles}

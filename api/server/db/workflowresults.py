@@ -5,6 +5,9 @@ from sqlalchemy.dialects.postgresql import UUID
 from pydantic import BaseModel
 from typing import List
 
+from api.server.db.parameter import ParameterModel
+from api.server.db.workflow_variable import WorkflowVariableModel
+
 
 class NodeStatus(BaseModel):
     name: str
@@ -32,6 +35,20 @@ class WorkflowStatus(BaseModel):
     app_name: str = ""
     action_name: str = ""
     label: str = ""
+
+
+class ExecuteWorkflow(BaseModel):
+    workflow_id: UUID = uuid4()
+    execution_id: UUID = uuid4()
+    start: UUID = uuid4()
+    parameters: List[ParameterModel]
+    workflow_variables: List[WorkflowVariableModel]
+
+
+class ControlWorkflow(BaseModel):
+    status: Enum[str]
+    trigger_id: UUID = uuid4()
+    trigger_data: dict
 
 # class WorkflowStatus(Base):
 #     """ORM for a Status of a Workflow in the database
