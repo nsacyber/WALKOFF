@@ -10,7 +10,6 @@ from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
-import pymongo
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from api.security import get_jwt_identity
@@ -20,7 +19,6 @@ from api.server.db.permissions import PermissionsModel, AccessLevel, auth_check,
     default_permissions
 from api.server.utils.helpers import regenerate_workflow_ids
 
-# from common.roles_helpers import auth_check, update_permissions, default_permissions
 from common.helpers import validate_uuid
 
 router = APIRouter()
@@ -35,63 +33,49 @@ async def workflow_getter(workflow_col: AsyncIOMotorCollection, workflow: Union[
 
 
 @router.post("/")
-async def create_workflow(request: Request, new_workflow: WorkflowModel, workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c), source: str = None):
+async def create_workflow(request: Request, new_workflow: WorkflowModel, file: UploadFile = None,
+                          workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c), source: str = None):
     walkoff_db = get_mongo_d(request)
     curr_user_id = get_jwt_identity(request)
 
-    # if file:
-    #     new_workflow = WorkflowModel(**json.loads((await file.read()).decode('utf-8')))
+    if file:
+        new_workflow = WorkflowModel(**json.loads((await file.read()).decode('utf-8')))
 
+    new_workflow_dict = dict(new_workflow)
+    permissions = new_workflow_dict["permissions"]
+    access_level = permissions["access_level"]
+
+    if access_level == AccessLevel.CREATOR_ONLY:
+        permissions_model = creator_only_permissions(curr_user_id)
+        new_workflow_dict["permissions"] = permissions_model
+    elif access_level == AccessLevel.EVERYONE:
+        permissions_model = default_permissions(curr_user_id, walkoff_db, "global_variables")
+        new_workflow_dict["permissions"] = permissions_model
+    elif access_level == AccessLevel.ROLE_BASED:
+        new_workflow_dict["permissions"]["creator"] = curr_user_id
+
+    # copying workflows
     if source:
         old_workflow: WorkflowModel = await workflow_getter(workflow_col, source)
-        new_workflow = await copy_workflow(old_workflow=old_workflow, new_workflow=new_workflow)
+        new_workflow = await copy_workflow(curr_user_id=curr_user_id, old_workflow=old_workflow,
+                                           new_workflow=new_workflow, walkoff_db=walkoff_db)
+    # importing existing workflow
+    if await workflow_getter(workflow_col, new_workflow_dict["id_"]):
+        old_workflow: WorkflowModel = await workflow_getter(workflow_col, new_workflow_dict["id_"])
+        new_workflow = await copy_workflow(curr_user_id=curr_user_id, old_workflow=old_workflow,
+                                           new_workflow=new_workflow, walkoff_db=walkoff_db)
 
-    # # ToDo: Why do we accept the same workflow again?
-    # if await workflow_getter(workflow_col, new_workflow.id_):
-    #     return import_workflow_and_regenerate_ids(new_workflow, None)
-
-    r: pymongo.results.InsertOneResult = await workflow_col.insert_one(dict(new_workflow))
+    r = await workflow_col.insert_one(dict(new_workflow))
     if r.acknowledged:
-        result = WorkflowModel(**(await workflow_getter(workflow_col, new_workflow.id_)))
+        result = WorkflowModel(**(await workflow_getter(workflow_col, new_workflow_dict["id_"])))
         logger.info(f"Created Workflow {result.name} ({result.id_})")
         return result
 
 
-# def import_workflow_and_regenerate_ids(workflow, creator=None):
-#     # new_permissions = workflow_json['permissions']
-#     # access_level = workflow_json['access_level']
-#
-#     regenerate_workflow_ids(workflow)
-#
-#     if workflow.access_level == AccessLevel.CREATOR_ONLY:
-#         update_permissions("workflows", workflow.id_,
-#                            new_permissions=[{"role": 1, "permissions": ["delete", "execute", "read", "update"]}],
-#                            creator=creator)
-#     elif workflow.access_level == AccessLevel.ROLE_BASED:
-#         default_permissions("workflows", workflow.id_, data=workflow, creator=creator)
-#     elif workflow.access_level == AccessLevel.EVERYONE:
-#         update_permissions("workflows", workflow.id_, new_permissions=workflow.permissions, creator=creator)
-#
-#     # if new_permissions:
-#     #     update_permissions("workflows", workflow_json['id_'], new_permissions=new_permissions, creator=creator)
-#     # else:
-#     #     default_permissions("workflows", workflow_json['id_'], data=workflow_json, creator=creator)
-#
-#     try:
-#         new_workflow = workflow_schema.load(workflow_json)
-#         current_app.running_context.execution_db.session.add(new_workflow)
-#         current_app.running_context.execution_db.session.commit()
-#         return workflow_schema.dump(new_workflow), HTTPStatus.CREATED
-#     except IntegrityError:
-#         current_app.running_context.execution_db.session.rollback()
-#         current_app.logger.error(f" Could not import workflow {workflow_json['name']}. Unique constraint failed")
-#         return unique_constraint_problem('workflow', 'import', workflow_json['name'])
-#
-
-async def copy_workflow(old_workflow: WorkflowModel, new_workflow: WorkflowModel):
-    # update_check = auth_check(workflow_json["id_"], "update", "workflows")
-    # if (not update_check) and (workflow_json['creator'] != creator):
-    #     return None, HTTPStatus.FORBIDDEN
+async def copy_workflow(curr_user_id: int, old_workflow: WorkflowModel, new_workflow: WorkflowModel, walkoff_db):
+    to_update = auth_check(curr_user_id, str(old_workflow.id_), "update", "workflows", walkoff_db=walkoff_db)
+    if (not to_update):
+        raise HTTPException(status_code=403, detail="Forbidden")
 
     regenerate_workflow_ids(old_workflow)
 
@@ -103,10 +87,6 @@ async def copy_workflow(old_workflow: WorkflowModel, new_workflow: WorkflowModel
     old_workflow.permissions = new_workflow.permissions
 
     return old_workflow
-    # if permissions:
-    #     update_permissions("workflows", workflow_json['id_'], new_permissions=permissions, creator=creator)
-    # else:
-    #     default_permissions("workflows", workflow_json['id_'], data=workflow_json, creator=creator)
 
 
 @router.get("/")
@@ -128,7 +108,8 @@ async def read_all_workflows(request: Request, workflow_col: AsyncIOMotorCollect
 
 
 @router.get("/{workflow_name_id}")
-async def read_workflow(request: Request, workflow_name_id: str, mode: str = None, workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def read_workflow(request: Request, workflow_name_id: str, mode: str = None,
+                        workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
     curr_user_id = get_jwt_identity(request)
     workflow = await workflow_getter(workflow_col, workflow_name_id)
@@ -149,7 +130,8 @@ async def read_workflow(request: Request, workflow_name_id: str, mode: str = Non
 
 
 @router.put("/{workflow_name_id}")
-async def update_workflow(request: Request, updated_workflow: WorkflowModel, workflow_name_id: str, workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def update_workflow(request: Request, updated_workflow: WorkflowModel, workflow_name_id: str,
+                          workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
     curr_user_id = get_jwt_identity(request)
     workflow = await workflow_getter(workflow_col, workflow_name_id)
@@ -170,7 +152,7 @@ async def update_workflow(request: Request, updated_workflow: WorkflowModel, wor
         old_workflow = await workflow_getter(workflow_col, workflow_name_id)
         r = await workflow_col.replace_one(dict(old_workflow), updated_workflow_dict)
         if r.acknowledged:
-            result = await workflow_getter(workflow_col, updated_workflow.id_)
+            result = await workflow_getter(workflow_col, updated_workflow_dict["id_"])
             logger.info(f"Updated Workflow {result.name} ({result.id_})")
             return result
     else:
@@ -178,12 +160,12 @@ async def update_workflow(request: Request, updated_workflow: WorkflowModel, wor
 
 
 @router.delete("/{workflow_name_id}")
-async def delete_workflow(request: Request, workflow_name_id: str, workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def delete_workflow(request: Request, workflow_name_id: str,
+                          workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
     curr_user_id = get_jwt_identity(request)
 
     to_delete = auth_check(curr_user_id, workflow_name_id, "delete", "workflows", walkoff_db=walkoff_db)
-
     if to_delete:
         workflow_to_delete = await workflow_getter(workflow_col, workflow_name_id)
         r = await workflow_col.delete_one(dict(workflow_to_delete))

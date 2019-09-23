@@ -124,10 +124,14 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         accepted_roles = set()
         resource_permission = ""
 
-        move_on = ["globals", "workflow", "auth", "workflowqueue", "appapi", "docs", "redoc", "openapi.json"]
+        role_based = ["globals", "workflows"]
+        move_on = ["auth", "workflowqueue", "appapi", "docs", "redoc", "openapi.json"]
         if resource_name not in move_on:
             if request_method == "POST":
                 resource_permission = "create"
+            elif resource_name in role_based:
+                response = await call_next(request)
+                return response
 
             if request_method == "GET":
                 resource_permission = "read"
