@@ -71,7 +71,7 @@ async def create_user(*, user_coll: AsyncIOMotorCollection = Depends(get_mongo_c
 # @router.get("/personal_data/{username}")
 # def read_personal_user(username: str, request: Request, db_session: Session = Depends(get_db)):
 #     user = username_getter(db_session=db_session, username=username)
-#     current_id = get_jwt_identity(request)
+#     current_id = await get_jwt_identity(request)
 #     if current_id == user.id:
 #         return user.as_json()
 #     else:
@@ -80,7 +80,7 @@ async def create_user(*, user_coll: AsyncIOMotorCollection = Depends(get_mongo_c
 #
 # @router.get("/permissions")
 # def list_permissions(request: Request, db_session: Session = Depends(get_db)):
-#     current_id = get_jwt_identity(request)
+#     current_id = await get_jwt_identity(request)
 #     current_user = db_session.query(User).filter_by(id=current_id).first()
 #     return current_user.permission_json()
 #
@@ -89,7 +89,7 @@ async def create_user(*, user_coll: AsyncIOMotorCollection = Depends(get_mongo_c
 # def update_user(user_id: int, body: EditUser, request: Request, db_session: Session = Depends(get_db)):
 #     user = userid_getter(db_session=db_session, user_id=user_id)
 #     data = dict(body)
-#     current_user = get_jwt_identity(request)
+#     current_user = await get_jwt_identity(request)
 #
 #     # check for internal user
 #     if user.id == 1:
@@ -122,7 +122,7 @@ async def create_user(*, user_coll: AsyncIOMotorCollection = Depends(get_mongo_c
 # def update_personal_user(username: str, body: EditPersonalUser, request: Request, db_session: Session = Depends(get_db)):
 #     user = username_getter(db_session=db_session, username=username)
 #     data = dict(body)
-#     current_user = get_jwt_identity(request)
+#     current_user = await get_jwt_identity(request)
 #
 #     # check for internal user
 #     if user.id == 1:
@@ -199,13 +199,13 @@ async def create_user(*, user_coll: AsyncIOMotorCollection = Depends(get_mongo_c
 # @router.delete("/{user_id}")
 # def delete_user(user_id: int, request: Request, db_session: Session = Depends(get_db)):
 #     user = userid_getter(db_session=db_session, user_id=user_id)
-#     if user.id != get_jwt_identity(request) and user.id != 1 and user.id != 2:
+#     if user.id != await get_jwt_identity(request) and user.id != 1 and user.id != 2:
 #         db_session.delete(user)
 #         db_session.commit()
 #         logger.info(f"User {user.username} deleted")
 #         return None, HTTPStatus.NO_CONTENT
 #     else:
-#         if user.id == get_jwt_identity(request):
+#         if user.id == await get_jwt_identity(request):
 #             logger.error(f"Could not delete user {user.id}. User is current user.")
 #             return ProblemException(HTTPStatus.FORBIDDEN, "Could not delete user.",
 #                                               'Current user cannot delete self.')

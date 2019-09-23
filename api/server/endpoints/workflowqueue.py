@@ -46,7 +46,7 @@ completed_statuses = (StatusEnum.ABORTED, StatusEnum.COMPLETED)
 @router.get("/")
 def get_all_workflow_status(request: Request, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     temp = []
     ret = []
@@ -70,7 +70,7 @@ def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Request, wor
     workflow = workflow_getter(workflow_id, workflow_status_col)
     data = dict(workflow_to_execute)
 
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     to_execute = auth_check(curr_user_id, str(workflow.id_), "execute", "workflows", walkoff_db=walkoff_db)
     if to_execute:
@@ -138,7 +138,7 @@ def execute_workflow_helper(request: Request, workflow_id, workflow_status_col: 
         "status": StatusEnum.PENDING.name,
         "started_at": str(datetime.now().isoformat()),
         "completed_at": None,
-        "user": get_jwt_claims(request).get('username', None),
+        "user": (await get_jwt_claims(request)).get('username', None),
         "node_statuses": [],
         "app_name": None,
         "action_name": None,
@@ -162,7 +162,7 @@ def execute_workflow_helper(request: Request, workflow_id, workflow_status_col: 
 @router.get("/{execution}")
 def get_workflow_status(request: Request, execution, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
     workflow_status = dict(workflow_status_getter(execution, workflow_status_col))
 
     to_read = auth_check(curr_user_id, str(workflow_status['workflow_id']), "read", "workflows", walkoff_db=walkoff_db)
@@ -175,7 +175,7 @@ def get_workflow_status(request: Request, execution, workflow_status_col: AsyncI
 @router.patch("/{execution}")
 def control_workflow(request: Request, execution, workflow_to_control: ControlWorkflow, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     data = dict(workflow_to_control)
     status = data['status']
@@ -188,7 +188,7 @@ def control_workflow(request: Request, execution, workflow_to_control: ControlWo
     # TODO: add in pause/resume here. Workers need to store and recover state for this
     if to_execute:
         if status == 'abort':
-            logger.info(f"User '{get_jwt_claims().get('username', None)}' aborting workflow: {execution_id}")
+            logger.info(f"User '{(await get_jwt_claims(request)).get('username', None)}' aborting workflow: {execution_id}")
             message = {"execution_id": execution_id, "status": status, "workflow": dict(workflow)}
             current_app.running_context.cache.smove(static.REDIS_PENDING_WORKFLOWS,
                                                     static.REDIS_ABORTING_WORKFLOWS, execution_id)
@@ -226,7 +226,7 @@ def control_workflow(request: Request, execution, workflow_to_control: ControlWo
                                              errors=[f"This trigger has already received data."])
 
             trigger_data = data.get('trigger_data')
-            logger.info(f"User '{get_jwt_claims(request).get('username', None)}' triggering workflow: {execution_id} at trigger "
+            logger.info(f"User '{(await get_jwt_claims(request)).get('username', None)}' triggering workflow: {execution_id} at trigger "
                         f"{trigger_id} with data {trigger_data}")
 
             current_app.running_context.cache.xadd(trigger_stream,

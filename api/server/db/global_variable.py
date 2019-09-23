@@ -1,9 +1,7 @@
 import logging
 from uuid import uuid4, UUID
-from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 
 from pydantic import BaseModel
-
 
 from common.helpers import fernet_decrypt, fernet_encrypt
 from api.server.db.permissions import PermissionsModel

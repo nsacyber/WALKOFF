@@ -41,7 +41,7 @@ def global_variable_getter(global_variable, global_col: AsyncIOMotorCollection):
 @router.get("/", status_code=200)
 async def read_all_globals(request: Request, to_decrypt: str = "false", global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
     query = await global_col.find().to_list(None)
@@ -63,7 +63,7 @@ async def read_all_globals(request: Request, to_decrypt: str = "false", global_c
 @router.get("/{global_var}")
 def read_global(request: Request, global_var: UUID, to_decrypt: str = "false", global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     global_dict = global_variable_getter(global_var, global_col)
     global_id = global_dict["id_"]
@@ -82,7 +82,7 @@ def read_global(request: Request, global_var: UUID, to_decrypt: str = "false", g
 @router.delete("/{global_var}")
 def delete_global(request: Request, global_var: UUID, global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     global_dict = global_variable_getter(global_var, global_col)
     global_id = global_dict['id_']
@@ -99,7 +99,7 @@ def delete_global(request: Request, global_var: UUID, global_col: AsyncIOMotorCo
 @router.post("/")
 def create_global(request: Request, new_global: GlobalVariable, global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     global_dict = dict(new_global)
     permissions = global_dict["permissions"]
@@ -126,7 +126,7 @@ def create_global(request: Request, new_global: GlobalVariable, global_col: Asyn
 @router.put("/{global_var}")
 def update_global(request: Request, updated_global: GlobalVariable, global_var: UUID,  global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     old_global = global_variable_getter(global_var, global_col)
     updated_global_dict = dict(updated_global)

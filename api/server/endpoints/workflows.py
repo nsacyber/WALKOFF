@@ -36,7 +36,7 @@ async def workflow_getter(workflow_col: AsyncIOMotorCollection, workflow: Union[
 async def create_workflow(request: Request, new_workflow: WorkflowModel, file: UploadFile = None,
                           workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c), source: str = None):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     if file:
         new_workflow = WorkflowModel(**json.loads((await file.read()).decode('utf-8')))
@@ -92,7 +92,7 @@ async def copy_workflow(curr_user_id: int, old_workflow: WorkflowModel, new_work
 @router.get("/")
 async def read_all_workflows(request: Request, workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     ret = []
     temp = []
@@ -111,7 +111,7 @@ async def read_all_workflows(request: Request, workflow_col: AsyncIOMotorCollect
 async def read_workflow(request: Request, workflow_name_id: str, mode: str = None,
                         workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
     workflow = await workflow_getter(workflow_col, workflow_name_id)
 
     to_read = auth_check(curr_user_id, str(workflow.id_), "read", "workflows", walkoff_db=walkoff_db)
@@ -133,7 +133,7 @@ async def read_workflow(request: Request, workflow_name_id: str, mode: str = Non
 async def update_workflow(request: Request, updated_workflow: WorkflowModel, workflow_name_id: str,
                           workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
     workflow = await workflow_getter(workflow_col, workflow_name_id)
 
     updated_workflow_dict = dict(updated_workflow)
@@ -163,7 +163,7 @@ async def update_workflow(request: Request, updated_workflow: WorkflowModel, wor
 async def delete_workflow(request: Request, workflow_name_id: str,
                           workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
-    curr_user_id = get_jwt_identity(request)
+    curr_user_id = await get_jwt_identity(request)
 
     to_delete = auth_check(curr_user_id, workflow_name_id, "delete", "workflows", walkoff_db=walkoff_db)
     if to_delete:
