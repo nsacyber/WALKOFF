@@ -91,6 +91,8 @@ async def decode_token(to_decode):
                                  algorithm=FastApiConfig.ALGORITHM)
     except jwt.exceptions.DecodeError:
         return None
+    except jwt.exceptions.ExpiredSignatureError:
+        return None
 
     return decoded_jtw
 

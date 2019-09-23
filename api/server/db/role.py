@@ -21,6 +21,7 @@ class RoleModel(BaseModel):
     name: str = None
     description: str = None
     resources: List[ResourceModel] = None
+    _secondary_id = "name"
 
     # def set_resources(self, new_resources, role_col: AsyncIOMotorCollection):
     #     """Adds the given list of resources to the Role object.

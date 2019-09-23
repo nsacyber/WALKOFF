@@ -132,7 +132,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
                 resource_permission = "read"
 
             if request_method == "PUT":
-                resource_permission = "put"
+                resource_permission = "update"
 
             if request_method == "DELETE":
                 resource_permission = "delete"
@@ -217,10 +217,10 @@ _walkoff.include_router(appapi.router,
 #                         tags=["console"],
 #                         dependencies=[Depends(get_mongo_c)])
 
-# _walkoff.include_router(dashboards.router,
-#                         prefix="/dashboards",
-#                         tags=["dashboards"],
-#                         dependencies=[Depends(get_mongo_c)])
+_walkoff.include_router(dashboards.router,
+                        prefix="/dashboards",
+                        tags=["dashboards"],
+                        dependencies=[Depends(get_mongo_c)])
 
 # _walkoff.include_router(workflowqueue.router,
 #                         prefix="/workflowqueue",

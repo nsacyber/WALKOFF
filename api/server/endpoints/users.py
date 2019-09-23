@@ -1,5 +1,5 @@
 import logging
-from typing import Union
+from typing import List, Union
 
 from http import HTTPStatus
 from sqlalchemy.orm import Session
@@ -8,65 +8,55 @@ from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from api.fastapi_config import FastApiConfig
-from api.server.db.user import UserModel, user_getter
+from api.server.db.user import UserModel
 from api.server.db import get_mongo_c
 from api.security import get_jwt_identity
-from api.server.utils.problems import ProblemException
+from api.server.utils.problems import ProblemException, DoesNotExistException
 from common.helpers import validate_uuid
-
+from common import mongo_helpers
 
 logger = logging.getLogger(__name__)
-
 
 router = APIRouter()
 
 
-@router.get("/")
-async def read_all_users(user_coll: AsyncIOMotorCollection = Depends(get_mongo_c), page: int = 1):
-    # page = request.args.get('page', 1, type=int)
-    users = []
-    for user in (await user_coll.find().to_list(None)):
-        # for user in User.query.paginate(page, FastApiConfig.ITEMS_PER_PAGE, False).items:
-        # check for internal user
-        if user.id != 1:
-            users.append(user.as_json())
-    return users
+async def user_getter(user_col: AsyncIOMotorCollection,
+                      username: Union[int, str],
+                      operation: str = None) -> UserModel:
+    user = await mongo_helpers.get_item(user_col, username, UserModel)
+    if user is None and operation:
+        raise DoesNotExistException(operation, "User", username)
+    return user
 
 
-@router.post("/", status_code=201)
-async def create_user(*, user_coll: AsyncIOMotorCollection = Depends(get_mongo_c), user: UserModel):
-    if not await user_getter(user_coll, user.username):
-        # user = add_user(username=user.username, password=user.password, db_session=db_session)
+@router.get("/",
+            response_model=List[UserModel], response_description="List of all users")
+async def read_all_users(user_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Returns a list of all Users.
+    """
+    r = await mongo_helpers.get_all_items(user_col, UserModel)
+    return r
 
-        # if request.roles or request.active
-        r = await user_coll.insert_one(dict(user))
-        if r.acknowledged:
-            result = await user_getter(user_coll, user.id_)
-            logger.info(f"Created User {result.username} ({result.id_})")
-            return result
-        #
-        # if user.roles or user.active:
-        #     role_update_user_fields(data, user, db_session)
-        #
-        # logger.info(f'User added: {user.as_json()}')
-        # return user.as_json()
-    else:
-        logger.warning(f'Cannot create user {user.username}. User already exists.')
-        return ProblemException(
-            HTTPStatus.BAD_REQUEST,
-            "Could not create user.",
-            f'User with username {user.username} already exists')
-#
-#
-# @router.get("/{user_id}")
-# def read_user(user_id: int, db_session: Session = Depends(get_db)):
-#     user = userid_getter(db_session=db_session, user_id=user_id)
-#     # check for internal user
-#     if user.id == 1:
-#         return None, HTTPStatus.FORBIDDEN
-#     else:
-#         return user.as_json()
-#
+
+@router.post("/", status_code=HTTPStatus.CREATED,
+             response_model=UserModel, response_description="The newly created User.")
+async def create_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c), new_user: UserModel):
+    """
+    Creates a new User and returns it.
+    """
+    return await mongo_helpers.create_item(user_col, new_user)
+
+
+@router.get("/{user_id}",
+            response_model=UserModel, response_description="The requested User.")
+async def read_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                    user_id: Union[int, str]):
+    """
+    Returns the User for the specified username.
+    """
+    return await mongo_helpers.get_item(user_col, user_id, UserModel)
+
 #
 # @router.get("/personal_data/{username}")
 # def read_personal_user(username: str, request: Request, db_session: Session = Depends(get_db)):
@@ -83,7 +73,7 @@ async def create_user(*, user_coll: AsyncIOMotorCollection = Depends(get_mongo_c
 #     current_id = get_jwt_identity(request)
 #     current_user = db_session.query(User).filter_by(id=current_id).first()
 #     return current_user.permission_json()
-#
+
 #
 # @router.put("/{user_id}")
 # def update_user(user_id: int, body: EditUser, request: Request, db_session: Session = Depends(get_db)):

@@ -40,6 +40,7 @@ class WorkflowModel(BaseModel):
     transforms: List[TransformModel] = []
     workflow_variables: List[WorkflowVariableModel] = []
     triggers: List[TriggerModel] = []
+    _secondary_id = "name"
 
     @classmethod
     @validator('start')

@@ -71,32 +71,32 @@ class ProblemException(HTTPException):
 
 class UniquenessException(ProblemException):
     def __init__(self, operation, resource, id_):
-        detail = f"Could not {operation} {resource} {id_}, possibly because of invalid or non-unique IDs."
+        detail = f"Could not {operation} {resource} '{id_}', possibly because of invalid or non-unique IDs."
         super().__init__(HTTPStatus.BAD_REQUEST, "Uniqueness Constraint Failed.", detail=detail)
 
 
 class ImproperJSONException(ProblemException):
     def __init__(self, operation, resource, id_, errors=None):
-        detail = f"Could not {operation} {resource} {id_}, invalid JSON."
+        detail = f"Could not {operation} {resource} '{id_}', invalid JSON."
         super().__init__(HTTPStatus.BAD_REQUEST, "Improper JSON.", detail=detail, ext={"errors": errors})
 
 
 class InvalidInputException(ProblemException):
     def __init__(self, operation, resource, id_, errors=None):
-        detail = f"Could not {operation} {resource} {id_}, invalid input."
+        detail = f"Could not {operation} {resource} '{id_}', invalid input."
         super().__init__(HTTPStatus.BAD_REQUEST, "Invalid Input.", detail=detail, ext={"errors": errors})
 
 
 class InvalidIDException(ProblemException):
     def __init__(self, operation, resource, id_):
-        detail = f"Could not {operation} {resource} {id_}, invalid ID."
+        detail = f"Could not {operation} {resource} '{id_}', invalid ID."
         super().__init__(HTTPStatus.BAD_REQUEST, "Invalid ID.", detail=detail)
 
 
 class DoesNotExistException(ProblemException):
     def __init__(self, operation, resource, id_):
-        detail = f"Could not {operation} {resource} {id_}, it does not exist."
-        super().__init__(HTTPStatus.BAD_REQUEST, "Uniqueness Constraint Failed.", detail=detail)
+        detail = f"Could not {operation} {resource} '{id_}', does not exist."
+        super().__init__(HTTPStatus.NOT_FOUND, f"{resource} does not exist", detail=detail)
 
 
 # def unique_constraint_problem(resource, operation, id_):

@@ -16,6 +16,7 @@ class WorkflowVariableModel(BaseModel):
     value: JSON = None
     _walkoff_type: str = "workflow_variable"
     description: str = ""
+    _secondary_id = "name"
 
 
 # class WorkflowVariable(Base):
