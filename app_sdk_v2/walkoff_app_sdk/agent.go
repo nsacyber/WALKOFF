@@ -23,6 +23,12 @@ const REDIS_ABORTING_WORKFLOWS = "aborting-workflows"
 
 const hostname = "ANDREWPC"
 
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func main(){
 	fmt.Println("Starting App SDK")
 	if app_name == ""{
@@ -92,10 +98,7 @@ func get_streams(client *redis.Client) []string {
 	//Gets the streams
 	iter := client.Scan(0, fmt.Sprintf("%s:%s", UUID_GLOB, app_group), 0).Iterator()
 	aborted, err := client.SMembers(REDIS_ABORTING_WORKFLOWS).Result()
-	if err != nil {
-		fmt.Println("Error scanning for streams in fn get_streams")
-		fmt.Println(err)
-	}
+	check(err)
 	
 	// Checks if stream is in the aborted list
 	for iter.Next() {
@@ -161,7 +164,7 @@ func get_actions(client *redis.Client, streams []string) {
 			json.Unmarshal(in, &data)
 
 			command := "python"
-			arguments := "hello_world.py"
+			arguments := "echo_string.py"
 
 			binary := "/app/walkoff_app_sdk/action.exe"
 			args := []string{"action.exe",
@@ -182,11 +185,10 @@ func get_actions(client *redis.Client, streams []string) {
 				//"-dir_watch_path=",
 
 				}
-			env := os.Environ()
+
+			env := setParameters(data["parameters"].([]interface{}))
 			execErr := syscall.Exec(binary, args, env)
-			if execErr != nil {
-				panic(execErr)
-			}
+			check(execErr)
 			os.Exit(1)
 		}
 	} else {
@@ -195,7 +197,16 @@ func get_actions(client *redis.Client, streams []string) {
 	}
 }
 
-
+func setParameters(parameters []interface{}) []string {
+	env := os.Environ()
+	for p := range parameters{
+		param := parameters[p].(map[string]interface{})
+		name := s.Replace(fmt.Sprintf("%v", param["name"]), " ", "_", -1)
+		value := fmt.Sprintf("%s=%s", name, param["value"])
+		env = append(env, value)
+	}
+	return env
+}
 
 
 

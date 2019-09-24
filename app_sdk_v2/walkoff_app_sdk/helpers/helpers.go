@@ -1,5 +1,10 @@
 package helpers
 
+import (
+	"fmt"
+	"os"
+)
+
 /**
   HELPER FUNCTIONS
 */
@@ -34,4 +39,25 @@ func Same(new []string, old []string) []string {
 		}
 	}
 	return out
+}
+
+func CreateFile(p string) *os.File {
+	f, err := os.Create(p)
+	if err != nil {
+		panic(err)
+	}
+	return f
+}
+
+func WriteFile(f *os.File) {
+	fmt.Fprintln(f, "data")
+}
+
+func CloseFile(f *os.File) {
+	err := f.Close()
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
 }

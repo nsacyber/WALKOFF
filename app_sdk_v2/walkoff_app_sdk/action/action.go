@@ -29,6 +29,12 @@ var command, args []string
 var stream, id_ string
 var msg map[string]interface{}
 
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func main() {
 	localPtr := flag.Bool("local", false, "run action locally")
 
@@ -87,7 +93,6 @@ func main() {
 	})
 
 	fmt.Println("Executing Action")
-
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go execute_action(app_name, command, watchers, *streaming_ptr, &wg, cwd)
@@ -189,12 +194,8 @@ func process_result(watchers executors.Watchers, group *sync.WaitGroup, msg map[
 
 func shutdown(client *redis.Client){
 	err := client.XAck(stream, app_group, id_).Err()
-	if err != nil {
-		fmt.Println(err)
-	}
+	check(err)
 
 	err = client.XDel(stream, id_).Err()
-	if err != nil {
-		fmt.Println(err)
-	}
+	check(err)
 }
