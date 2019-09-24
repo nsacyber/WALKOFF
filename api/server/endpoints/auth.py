@@ -3,15 +3,17 @@ from fastapi import APIRouter, Depends
 from http import HTTPStatus
 import logging
 
+from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+
 from api.security import (create_access_token, create_refresh_token, get_jwt_identity,
                           get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request)
 from api.fastapi_config import FastApiConfig
 from api.server.db import get_db, get_mongo_c, get_mongo_d
+from api.server.db.user import UserModel
 from api.server.db.tokens import revoke_token, AuthModel, TokenModel
-from api.server.endpoints.users import user_getter
-
 from api.server.utils.problems import ProblemException, InvalidInputException
-from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+
+from common import mongo_helpers
 
 token_problem_title = 'Could not grant access token.'
 
@@ -35,7 +37,7 @@ async def _authenticate_and_grant_tokens(request: Request, users_col: AsyncIOMot
     if not (creds.username and creds.password):
         raise invalid_credentials_problem
 
-    user = await user_getter(users_col, creds.username)
+    user = await mongo_helpers.get_item(users_col, UserModel, creds.username, raise_exc=False)
 
     if user is None:
         raise invalid_credentials_problem
@@ -70,7 +72,7 @@ async def refresh(request: Request, walkoff_db: AsyncIOMotorDatabase = Depends(g
     await verify_jwt_refresh_token_in_request(walkoff_db=walkoff_db, request=request)
     current_user_id = await get_jwt_identity(request)
 
-    user = await user_getter(user_col, current_user_id)
+    user = await mongo_helpers.get_item(user_col, UserModel, current_user_id, raise_exc=False)
 
     if user is None:
         await revoke_token(decoded_token=await get_raw_jwt(request), walkoff_db=walkoff_db)
@@ -98,7 +100,7 @@ async def logout(json_in: TokenModel, request: Request, walkoff_db: AsyncIOMotor
     refresh_token_identity = decoded_refresh_token[FastApiConfig.JWT_IDENTITY_CLAIM]
     user_id = await get_jwt_identity(request)
     if user_id == refresh_token_identity:
-        user = await user_getter(user_col, user_id)
+        user = await mongo_helpers.get_item(user_col, UserModel, user_id, raise_exc=False)
         if user is not None:
             await user.logout()
         await revoke_token(walkoff_db=walkoff_db, decoded_token=decoded_refresh_token)

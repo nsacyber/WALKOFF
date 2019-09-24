@@ -1,3 +1,5 @@
+from enum import Enum
+
 from pydantic import BaseModel
 from sqlalchemy import Column, String, JSON, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref, Session
@@ -8,6 +10,18 @@ from api.server.db.resource import ResourceModel
 
 # from api.server.db import TrackModificationsMixIn
 from api.server.db import Base
+
+
+class DefaultRoles(int, Enum):
+    INTERNAL_USER = 1
+    SUPER_ADMIN = 2
+    ADMIN = 3
+    APP_DEV = 4
+    WF_DEV = 5
+    WF_OP = 6
+
+
+PROTECTED_ROLES = range(DefaultRoles.INTERNAL_USER, DefaultRoles.WF_OP)
 
 
 class AddRoleModel(BaseModel):

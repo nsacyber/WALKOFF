@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from enum import Enum
 from typing import Union
 
 from motor.motor_asyncio import AsyncIOMotorCollection
@@ -20,7 +21,6 @@ logger = logging.getLogger(__name__)
 #                                   Column('role_id', Integer, ForeignKey('role.id')),
 #                                   Column('user_id', Integer, ForeignKey('user.id_')))
 
-
 # class AddUser(BaseModel):
 #     username: str
 #     password: str
@@ -28,21 +28,29 @@ logger = logging.getLogger(__name__)
 #     active: bool = None
 
 
+class DefaultUsers(int, Enum):
+    INTERNAL_USER = 1
+    SUPER_ADMIN = 2
+    ADMIN = 3
+
+
+PROTECTED_USERS = range(DefaultUsers.INTERNAL_USER, DefaultUsers.ADMIN)
+
+
 class EditUser(BaseModel):
     id_: int
-    old_username: str = None
-    new_username: str = None
-    old_password: str = None
-    new_password: str = None
-    active: bool = None
-    roles: List[RoleModel] = None
+    username: str = ""
+    new_username: str = ""
+    old_password: str = ""
+    new_password: str = ""
+    active: bool = True
+    roles: List[RoleModel] = []
 
 
 class EditPersonalUser(BaseModel):
-    old_username: str
-    new_username: str = None
-    old_password: str = None
-    new_password: str = None
+    new_username: str = ""
+    old_password: str = ""
+    new_password: str = ""
 
 
 # class DisplayUser(BaseModel):
@@ -53,10 +61,10 @@ class EditPersonalUser(BaseModel):
 
 
 class UserModel(BaseModel):
-    id_: int = None
-    hashed: bool
+    id_: int
+    hashed: bool = False
     username: str
-    password: str
+    password: str = None
     roles: List[int]
     active: bool = True
     last_login_at: datetime = None
@@ -70,12 +78,14 @@ class UserModel(BaseModel):
     def hash_pass(cls, password, values):
         if not values:
             return password
+        if values.get("hashed") and not password:
+            return password
 
-        if values["hashed"] and not password.startswith("$pbkdf2-sha512$25000$"):
+        if values.get("hashed") and not password.startswith("$pbkdf2-sha512$25000$"):
             raise ValueError("Hashed password not in expected format.")
-        elif not values["hashed"] and password.startswith("$pbkdf2-sha512$25000$"):
+        elif not values.get("hashed") and password.startswith("$pbkdf2-sha512$25000$"):
             raise ValueError("Got a hashed password but hashed flag was unset.")
-        elif not values["hashed"]:
+        elif not values.get("hashed"):
             values["hashed"] = True
             r = pbkdf2_sha512.hash(password)
             return r
@@ -102,6 +112,19 @@ class UserModel(BaseModel):
         """
 
         return pbkdf2_sha512.verify(password_attempt, self.password)
+
+    async def hash_and_set_password(self, password: str):
+        """Verifies that the input password matches with the stored password.
+
+        Args:
+            password_attempt(str): The input password.
+
+        Returns:
+            (bool): True if the passwords match, False if not.
+        """
+
+        self.password = pbkdf2_sha512.hash(password)
+
 
     # async def set_roles(self, new_roles, role_col):
     #     """Sets the roles for a User.

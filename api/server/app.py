@@ -42,10 +42,10 @@ async def initialize_users():
     roles_col = walkoff_db.roles
     users_col = walkoff_db.users
 
-    for role_name, role_val in default_roles.items():
-        role_d = await roles_col.find_one({"id_": role_val["id_"]})
+    for role_name, role in default_roles.items():
+        role_d = await roles_col.find_one({"id_": role.id_})
         if not role_d:
-            await roles_col.insert_one(role_val)
+            await roles_col.insert_one(dict(role))
 
     for user_name, user in default_users.items():
         user_d = await users_col.find_one({"id_": user.id_})
