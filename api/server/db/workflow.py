@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class WorkflowModel(BaseModel):
     id_: UUID
     errors: List[str] = []
-    is_valid: bool = True
+    is_valid: bool = self.error_check()
     name: str
     start: UUID
     description: str = ""
@@ -46,6 +46,8 @@ class WorkflowModel(BaseModel):
     def start_must_be_action(cls, start, workflow, **kwargs):
         if not any(start == action["id_"] for action in workflow["actions"]):
             raise ValidationError
+        else:
+            return start
 
     @classmethod
     @validator('branches')
@@ -64,9 +66,97 @@ class WorkflowModel(BaseModel):
     @validator('actions')
     def actions_must_exist(cls, actions, workflow, **kwargs):
         app_api_col = mongo.client.walkoff_db.apps
+        ret = []
         for action in actions:
-            app_api_col.find({"name": action["app_name"], "actions.name": action["name"]})
+            action_api = await app_api_col.find({"name": action["app_name"], "actions.name": action["name"]})
+            if not action_api:
+                workflow.errors.append(f"Action {action.app_name}.{action.name} does not exist")
+                continue
+            else:
+                ret += action
+        return ret
 
+    @classmethod
+    @validator('actions')
+    def action_result_parameter_check(cls, actions, workflow, **kwargs):
+        nodes = {node for node in workflow.actions + workflow.conditions
+                    + workflow.transforms + workflow.triggers}
+        ret = []
+        for node in nodes:
+            if node.parameters:
+                for param in node.parameters:
+
+                else:
+                    ret += action
+        return ret
+
+    @classmethod
+    @validator('actions')
+    def parallelized_actions_parameters_check(cls, actions, workflow, **kwargs):
+        app_api_col = mongo.client.walkoff_db.apps
+        ret = []
+
+        for action in actions:
+            action_api = await app_api_col.find({"name": action["app_name"], "actions.name": action["name"]})
+            params = {}
+            for p in action_api.parameters:
+                params[p.name] = {"api": p}
+
+            count = 0
+            for p in action.parameters:
+                params.get(p.name, {})["wf"] = p
+                if p.parallelized:
+                    count += 1
+
+            if count == 0 and action.parallelized:
+                action.errors.append("No parallelized parameter set.")
+            elif count == 1 and not action.parallelized:
+                action.errors.append("Set action to be parallelized.")
+            elif count > 1:
+                action.errors.append("Too many parallelized parameters")
+
+    @classmethod
+    @validator('actions')
+    def parameter_checking(cls, actions, workflow, **kwargs):
+        app_api_col = mongo.client.walkoff_db.apps
+        ret = []
+
+        for action in actions:
+            action_api = await app_api_col.find({"name": action["app_name"], "actions.name": action["name"]})
+            params = {}
+            for p in action_api.parameters:
+                params[p.name] = {"api": p}
+
+            for name, pair in params.items():
+                api = pair.get("api")
+                wf = pair.get("wf")
+
+                message = ""
+
+                if not api:
+                    message = f"Parameter '{wf.name}' found in workflow but not in '{action.app_name}' API."
+                elif not wf:
+                    if api.required:
+                        message = (f"Parameter '{api.name}' not found in workflow but is required in "
+                                   f"'{action.app_name}' API.")
+                elif wf.variant == ParameterVariant.STATIC_VALUE:
+                    try:
+                        Draft4Validator(api.schema).validate(wf.value)
+                    except JSONSchemaValidationError as e:
+                        message = (f"Parameter {wf.name} value {wf.value} is not valid under given schema "
+                                   f"{api.schema}. JSONSchema output: {e}")
+                elif wf.parallelized and not api.parallelizable:
+                    action.errors.append(f"Parameter {wf.name} is marked parallelized in workflow, but is not "
+                                         f"parallelizable in api")
+
+                if message is not "":
+                    workflow.errors.append(message)
+
+    def error_check(self):
+        if self.errors:
+            return False
+        else:
+            return True
 
 # class Workflow(Base):
 #     __tablename__ = "workflow"
