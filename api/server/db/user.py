@@ -37,6 +37,9 @@ class DefaultUserUUID(Enum):
     ADMIN = preset_uuid("admin_user")
 
 
+DefaultUserUUIDS = [v.value for v in DefaultUserUUID.__members__.values()]
+
+
 class EditUser(BaseModel):
     id_: int
     username: str = ""

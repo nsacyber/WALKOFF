@@ -22,6 +22,8 @@ class DefaultRoleUUID(Enum):
     WF_OP = preset_uuid("wf_op_role")
 
 
+DefaultRoleUUIDS = [v.value for v in DefaultRoleUUID.__members__.values()]
+
 # class AddRoleModel(BaseModel):
 #     name: str
 #     description: str = None

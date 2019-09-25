@@ -19,6 +19,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 ignore_password = {"password": False}
 
+hidden_users = [
+    DUsers.INTERNAL_USER.value,
+]
+
 
 @router.get("/",
             response_model=List[UserModel], response_description="List of all users")
@@ -26,7 +30,9 @@ async def read_all_users(*, user_col: AsyncIOMotorCollection = Depends(get_mongo
     """
     Returns a list of all Users.
     """
-    return await mongo_helpers.get_all_items(user_col, UserModel, projection=ignore_password)
+    return await mongo_helpers.get_all_items(user_col, UserModel,
+                                             query={"id_": {"$nin": hidden_users}},
+                                             projection=ignore_password)
 
 
 @router.get("/{user_id}",
@@ -36,7 +42,9 @@ async def read_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
     """
     Returns the User for the specified username.
     """
-    return await mongo_helpers.get_item(user_col, UserModel, user_id, projection=ignore_password)
+    return await mongo_helpers.get_item(user_col, UserModel, user_id,
+                                        query={"id_": {"$nin": hidden_users}},
+                                        projection=ignore_password)
 
 
 @router.post("/", status_code=HTTPStatus.CREATED,

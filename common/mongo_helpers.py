@@ -62,6 +62,7 @@ async def get_item(collection: AsyncIOMotorCollection,
                    model: Union[Type[BaseModel], Type[dict]],
                    item_id: Union[UUID, str],
                    *,
+                   query: dict = None,
                    projection: dict = None,
                    raise_exc: bool = True):
     """
@@ -70,6 +71,7 @@ async def get_item(collection: AsyncIOMotorCollection,
     :param collection: Collection to query
     :param model: Class which the JSON in the collection represents
     :param item_id: UUID or name of desired item
+    :param query: Return only objects that contain the query
     :param projection: Filter to exclude from mongo query result
     :param raise_exc: Whether to raise exception if item is not found.
     :return: Requested object from collection
@@ -77,7 +79,10 @@ async def get_item(collection: AsyncIOMotorCollection,
     projection = {} if projection is None else projection
     projection.update(ignore_mongo_id)
 
-    item_json = await collection.find_one(await mongo_filter(model, item_id), projection=projection)
+    query = {} if query is None else query
+    query.update(await mongo_filter(model, item_id))
+
+    item_json = await collection.find_one(query, projection=projection)
 
     if item_json is None and raise_exc:
         raise problems.DoesNotExistException("read", model.__name__, await mongo_filter(model, item_id))

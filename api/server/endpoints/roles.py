@@ -7,13 +7,17 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 
 from api.server.db import get_mongo_c
 from api.server.db.user_init import clear_resources_for_role, get_all_available_resource_actions
-from api.server.db.role import RoleModel, DefaultRoleUUID
+from api.server.db.role import RoleModel, DefaultRoleUUID, DefaultRoleUUIDS
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
                                        DoesNotExistException)
 from common import mongo_helpers
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+hidden_roles = [
+    DefaultRoleUUID.INTERNAL_USER.value,
+]
 
 
 @router.get("/",
@@ -23,20 +27,33 @@ async def read_all_roles(role_col: AsyncIOMotorCollection = Depends(get_mongo_c)
     Returns a list of all roles.
     """
     return await mongo_helpers.get_all_items(role_col, RoleModel,
-                                             query={"id_": {"$nin": [
-                                                 DefaultRoleUUID.INTERNAL_USER.value,
-                                                 DefaultRoleUUID.SUPER_ADMIN.value
-                                             ]}})
+                                             query={"id_": {"$nin": hidden_roles}})
+
+
+@router.get('/{role_id}',
+            response_model=RoleModel, response_description="The requested Role.")
+async def read_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                    role_id: Union[int, str]):
+    """
+    Returns the Role for the specified role name or ID
+    """
+    role = await mongo_helpers.get_item(role_col, RoleModel, role_id)
+    role_string = f"{role.name} ({role.id_})"
+    if role.id_ in hidden_roles:
+        raise UnauthorizedException("read", "Role", role_string)
+    else:
+        return role
 
 
 @router.post("/",
              response_model=RoleModel, response_description="The newly created Role.")
 async def create_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                       new_role: RoleModel):
-
+    """
+    Creates a new role and returns it.
+    """
     return await mongo_helpers.create_item(role_col, RoleModel, new_role)
 
-    #
     # json_data = dict(add_role)
     #
     # if not role_col.find_one({"name": add_role.name}, projection={'_id': False}):
@@ -58,45 +75,21 @@ async def create_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c)
     #         f"Role with name {json_data['name']} already exists")
 
 
-@router.get('/{role_id}',
-            response_model=RoleModel, response_description="The requested Role.")
-async def read_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c),
-                    role_id: Union[int, str]):
-    """
-    Returns the Role for the specified role name or ID
-    """
-    role = await mongo_helpers.get_item(role_col, RoleModel, role_id)
-    role_string = f"{role.name} ({role.id_})"
-    if role.id_ in range(1, 2):
-        raise UnauthorizedException("update", "role", role_string)
-    else:
-        return role
-
-    # role = await role_getter(role_col, role_id=role_id)
-    # if role is None:
-    #     return ProblemException(
-    #         HTTPStatus.BAD_REQUEST,
-    #         'Could not logout.',
-    #         'The identity of the refresh token does not match the identity of the authentication token.')
-    # # check for internal or super_admin
-    # if role.id_ != 1 or role.id_ != 2:
-    #     return dict(role)
-    # else:
-    #     return None
-
-
-@router.put('/{role_id}')
+@router.put('/{role_id}',
+            response_model=RoleModel, response_description="The newly updated Role")
 async def update_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                       role_id: Union[int, str],
                       new_role: RoleModel):
-
+    """
+    Updates a role and returns it.
+    """
     role: RoleModel = await mongo_helpers.get_item(role_col, RoleModel, role_id, raise_exc=False)
     if not role:
         raise DoesNotExistException("update", "Role", role_id)
 
     role_string = f"{role.name} ({role.id_})"
 
-    if role.id_ in range(1, 6):
+    if role.id_ in DefaultRoleUUIDS:
         raise UnauthorizedException("update", "role", role_string)
 
     if new_role.name:
@@ -137,24 +130,18 @@ async def update_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c)
 @router.delete('/{role_id}')
 async def delete_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                       role_id: Union[int, str]):
-
+    """
+    Deletes a role.
+    """
     role = await mongo_helpers.get_item(role_col, RoleModel, role_id, raise_exc=False)
     role_string = f"{role.rolename} ({role.id_})"
 
-    if role.id_ in range(1, 6):
+    if role.id_ in DefaultRoleUUIDS:
         raise UnauthorizedException("delete", "role", role_string)
     else:
         return await mongo_helpers.delete_item(role_col, RoleModel, role_id)
-
-    # role = await role_getter(role_col, role_id=role_id)
-    # if role.id_ != 1 or role.id_ != 2:
-    #     r = await role_col.delete_one(role)
-    #     return r
-    # else:
-    #     return None
 
 
 @router.get('/availableresourceactions')
 async def read_available_resource_actions():
     return get_all_available_resource_actions(), HTTPStatus.OK
-
