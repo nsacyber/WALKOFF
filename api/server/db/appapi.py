@@ -37,6 +37,7 @@ class AppApiModel(BaseModel):
     license_info: AppApiLicenseModel = {}
     external_docs: AppExternalDocModel = {}
     actions: List[ActionApiModel] = []
+    _secondary_id = "name"
 
     @classmethod
     @validator('app_version')

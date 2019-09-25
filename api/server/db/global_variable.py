@@ -18,6 +18,7 @@ class GlobalVariable(BaseModel):
     permissions: PermissionsModel
     value: str
     description: str = None
+    _secondary_id = "name"
 
 
 class GlobalVariableTemplate(BaseModel):
@@ -26,3 +27,4 @@ class GlobalVariableTemplate(BaseModel):
     name: str
     json_schema: JSON = {}
     description: str = None
+    _secondary_id = "name"

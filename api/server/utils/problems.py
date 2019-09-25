@@ -26,7 +26,6 @@ class ProblemException(HTTPException):
         headers (dict, optional): Headers to use for this response
 
     """
-
     def __init__(self, status, title, detail, instance=None, type_=None, ext=None, headers=None):
         # response = Problem.make_response_body(status, title, detail, instance, type_, ext)
         super().__init__(status_code=status, detail=detail, headers=headers)
@@ -69,34 +68,40 @@ class ProblemException(HTTPException):
     #     return cls(status, title, detail, instance=instance, type_=type_, ext=ext, headers=headers)
 
 
+class UnauthorizedException(ProblemException):
+    def __init__(self, operation, resource, id_):
+        detail = f"Could not {operation} {resource} {id_}, user is unauthorized to perform this action."
+        super().__init__(HTTPStatus.BAD_REQUEST, "Unauthorized", detail=detail)
+
+
 class UniquenessException(ProblemException):
     def __init__(self, operation, resource, id_):
-        detail = f"Could not {operation} {resource} {id_}, possibly because of invalid or non-unique IDs."
-        super().__init__(HTTPStatus.BAD_REQUEST, "Uniqueness Constraint Failed.", detail=detail)
+        detail = f"Could not {operation} {resource} {id_}, another object with this name or ID already exists."
+        super().__init__(HTTPStatus.BAD_REQUEST, "Uniqueness Constraint Failed", detail=detail)
 
 
 class ImproperJSONException(ProblemException):
     def __init__(self, operation, resource, id_, errors=None):
         detail = f"Could not {operation} {resource} {id_}, invalid JSON."
-        super().__init__(HTTPStatus.BAD_REQUEST, "Improper JSON.", detail=detail, ext={"errors": errors})
+        super().__init__(HTTPStatus.BAD_REQUEST, "Improper JSON", detail=detail, ext={"errors": errors})
 
 
 class InvalidInputException(ProblemException):
     def __init__(self, operation, resource, id_, errors=None):
         detail = f"Could not {operation} {resource} {id_}, invalid input."
-        super().__init__(HTTPStatus.BAD_REQUEST, "Invalid Input.", detail=detail, ext={"errors": errors})
+        super().__init__(HTTPStatus.BAD_REQUEST, "Invalid Input", detail=detail, ext={"errors": errors})
 
 
 class InvalidIDException(ProblemException):
     def __init__(self, operation, resource, id_):
         detail = f"Could not {operation} {resource} {id_}, invalid ID."
-        super().__init__(HTTPStatus.BAD_REQUEST, "Invalid ID.", detail=detail)
+        super().__init__(HTTPStatus.BAD_REQUEST, "Invalid ID", detail=detail)
 
 
 class DoesNotExistException(ProblemException):
     def __init__(self, operation, resource, id_):
-        detail = f"Could not {operation} {resource} {id_}, it does not exist."
-        super().__init__(HTTPStatus.BAD_REQUEST, "Uniqueness Constraint Failed.", detail=detail)
+        detail = f"Could not {operation} {resource} {id_}, does not exist."
+        super().__init__(HTTPStatus.NOT_FOUND, f"{resource} does not exist", detail=detail)
 
 
 # def unique_constraint_problem(resource, operation, id_):

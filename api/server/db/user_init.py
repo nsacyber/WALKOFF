@@ -1,7 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
-from api.server.db.role import RoleModel
-from api.server.db.user import UserModel
+from api.server.db.role import RoleModel, DefaultRoles
+from api.server.db.user import UserModel, DefaultUsers
 
 from common.config import config
 
@@ -90,42 +90,20 @@ default_resource_permissions_workflow_operator = [
 ]
 
 default_roles = {
-    "internal_user_role": {
-        "id_": 1,
-        "name": "internal_user",
-        "description": "Used by WALKOFF components.",
-        "resources": default_resource_permissions_internal_user
-    },
-    "super_admin_role": {
-        "id_": 2,
-        "name": "super_admin",
-        "description": "Permanent admin role.",
-        "resources": default_resource_permissions_super_admin
-    },
-    "admin_role": {
-        "id_": 3,
-        "name": "admin",
-        "description": "General admin role.",
-        "resources": default_resource_permissions_admin
-    },
-    "app_developer_role": {
-        "id_": 4,
-        "name": "app_developer",
-        "description": "Provides access to the App Editor.",
-        "resources": default_resource_permissions_app_developer
-    },
-    "workflow_developer_role": {
-        "id_": 5,
-        "name": "workflow_developer",
-        "description": "Provides access to the Workflow Editor",
-        "resources": default_resource_permissions_workflow_developer
-    },
-    "workflow_operator_role": {
-        "id_": 6,
-        "name": "workflow_operator",
-        "description": "Only provides access to run Workflows.",
-        "resources": default_resource_permissions_workflow_operator
-    }
+    "internal_user_role": RoleModel(id_=1, name="internal_user", description="Used by WALKOFF components.",
+                                    resources=default_resource_permissions_internal_user),
+    "super_admin_role": RoleModel(id_=2, name="super_admin", description="Permanent admin role.",
+                                  resources=default_resource_permissions_super_admin),
+    "admin_role": RoleModel(id_=3, name="admin", description="General admin role.",
+                            resources=default_resource_permissions_admin),
+    "app_developer_role": RoleModel(id_=4, name="app_developer", description="Provides access to the App Editor.",
+                                    resources=default_resource_permissions_app_developer),
+    "workflow_developer_role": RoleModel(id_=5, name="workflow_developer",
+                                         description="Provides access to the Workflow Editor",
+                                         resources=default_resource_permissions_workflow_developer),
+    "workflow_operator_role": RoleModel(id_=6, name="workflow_operator",
+                                        description="Only provides access to run Workflows.",
+                                        resources=default_resource_permissions_workflow_operator)
 }
 
 default_users = {

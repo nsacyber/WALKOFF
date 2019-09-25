@@ -31,7 +31,7 @@ export class ReportService {
     }
 
     newReport(report: Report) {
-        return this.http.post('api/dashboards', classToPlain(report))
+        return this.http.post('api/dashboards/', classToPlain(report))
             .toPromise()
             .then((data) => this.emitChange(data))
 			.then((data: object) => plainToClass(Report, data))
@@ -39,7 +39,7 @@ export class ReportService {
     }
 
     updateReport(report: Report) {
-        return this.http.put('api/dashboards', classToPlain(report))
+        return this.http.put(`api/dashboards/${ report.id }`, classToPlain(report))
             .toPromise()
             .then((data) => this.emitChange(data))
 			.then((data: object) => plainToClass(Report, data))
@@ -54,7 +54,7 @@ export class ReportService {
     }
 
     getReports() : Promise<Report[]> {
-        return this.http.get('api/dashboards')
+        return this.http.get('api/dashboards/')
 			.toPromise()
 			.then((data) => plainToClass(Report, data))
             .catch(this.utils.handleResponseError);

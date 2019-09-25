@@ -1,10 +1,12 @@
 import logging
-from typing import List
+from typing import List, Union
 from uuid import uuid4, UUID
 
+from motor.motor_asyncio import AsyncIOMotorCollection
 from pydantic import BaseModel
 
-from api.server.db import Base
+from common.helpers import validate_uuid
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,7 @@ class DashboardModel(BaseModel):
     id_: UUID = uuid4()
     name: str
     widgets: List[WidgetModel]
+    _secondary_id = "name"
 
 # class Dashboard(Base):
 #     __tablename__ = 'dashboard'

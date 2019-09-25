@@ -42,10 +42,10 @@ async def initialize_users():
     roles_col = walkoff_db.roles
     users_col = walkoff_db.users
 
-    for role_name, role_val in default_roles.items():
-        role_d = await roles_col.find_one({"id_": role_val["id_"]})
+    for role_name, role in default_roles.items():
+        role_d = await roles_col.find_one({"id_": role.id_})
         if not role_d:
-            await roles_col.insert_one(role_val)
+            await roles_col.insert_one(dict(role))
 
     for user_name, user in default_users.items():
         user_d = await users_col.find_one({"id_": user.id_})
@@ -132,7 +132,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
                 resource_permission = "read"
 
             if request_method == "PUT":
-                resource_permission = "put"
+                resource_permission = "update"
 
             if request_method == "DELETE":
                 resource_permission = "delete"
@@ -217,10 +217,10 @@ _walkoff.include_router(appapi.router,
 #                         tags=["console"],
 #                         dependencies=[Depends(get_mongo_c)])
 
-# _walkoff.include_router(dashboards.router,
-#                         prefix="/dashboards",
-#                         tags=["dashboards"],
-#                         dependencies=[Depends(get_mongo_c)])
+_walkoff.include_router(dashboards.router,
+                        prefix="/dashboards",
+                        tags=["dashboards"],
+                        dependencies=[Depends(get_mongo_c)])
 
 # _walkoff.include_router(workflowqueue.router,
 #                         prefix="/workflowqueue",

@@ -36,6 +36,7 @@ class WorkflowStatus(BaseModel):
     app_name: str = ""
     action_name: str = ""
     label: str = ""
+    _secondary_id = "name"
 
 
 class ExecuteWorkflow(BaseModel):

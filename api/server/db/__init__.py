@@ -107,29 +107,22 @@ class MongoEngine(object):
                                                              host=config.MONGO_HOST)
 
     async def init_db(self):
-        await self.client.walkoff_db.apps.create_index([("id_", pymongo.ASCENDING),
-                                                        ("name", pymongo.ASCENDING)],
-                                                       unique=True)
 
-        await self.client.walkoff_db.workflows.create_index([("id_", pymongo.ASCENDING),
-                                                             ("name", pymongo.ASCENDING)],
-                                                            unique=True)
+        id_index = pymongo.IndexModel([("id_", pymongo.ASCENDING)], unique=True)
+        name_index = pymongo.IndexModel([("name", pymongo.ASCENDING)], unique=True)
+        username_index = pymongo.IndexModel([("username", pymongo.ASCENDING)], unique=True)
 
-        await self.client.walkoff_db.globals.create_index([("id_", pymongo.ASCENDING),
-                                                           ("name", pymongo.ASCENDING)],
-                                                          unique=True)
+        await self.client.walkoff_db.apps.create_indexes([id_index, name_index])
 
-        await self.client.walkoff_db.roles.create_index([("id_", pymongo.ASCENDING),
-                                                         ("name", pymongo.ASCENDING)],
-                                                        unique=True)
+        await self.client.walkoff_db.workflows.create_indexes([id_index, name_index])
 
-        await self.client.walkoff_db.users.create_index([("id_", pymongo.ASCENDING),
-                                                         ("name", pymongo.ASCENDING)],
-                                                        unique=True)
+        await self.client.walkoff_db.globals.create_indexes([id_index, name_index])
 
-        await self.client.walkoff_db.dashboards.create_index([("id_", pymongo.ASCENDING),
-                                                              ("name", pymongo.ASCENDING)],
-                                                             unique=True)
+        await self.client.walkoff_db.roles.create_indexes([id_index, name_index])
+
+        await self.client.walkoff_db.users.create_indexes([id_index, username_index])
+
+        await self.client.walkoff_db.dashboards.create_indexes([id_index, name_index])
 
     def collection_from_url(self, path: str):
         parts = path.split("/")
