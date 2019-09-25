@@ -16,7 +16,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from api.server.db.permissions import auth_check
 from common.config import config, static
 from common.message_types import StatusEnum, message_dumps
-from api.server.db import get_db, get_mongo_d, get_mongo_c
+from api.server.db import get_mongo_d, get_mongo_c
 from api.server.db.workflowresults import WorkflowStatus, ExecuteWorkflow, ControlWorkflow
 from api.security import get_jwt_claims, get_jwt_identity
 from api.server.endpoints.results import push_to_workflow_stream_queue

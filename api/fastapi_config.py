@@ -1,17 +1,9 @@
 import logging
 
-#from common.config import config
-from api.server.utils.helpers import format_db_path
-
 logger = logging.getLogger(__name__)
 
 
 class FastApiConfig(object):
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # SQLALCHEMY_DATABASE_URI = format_db_path(config.DB_TYPE, config.SERVER_DB_NAME,
-    #                                          config.DB_USERNAME, config.get_from_file(config.POSTGRES_KEY_PATH),
-    #                                          config.DB_HOST)
-
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
     JWT_TOKEN_LOCATION = 'headers'
@@ -24,7 +16,6 @@ class FastApiConfig(object):
 
     ITEMS_PER_PAGE = 20
 
-    SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7" #config.get_from_file(config.ENCRYPTION_KEY_PATH)
+    SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7" # ToDo: config.get_from_file(config.ENCRYPTION_KEY_PATH)
     ACCESS_TOKEN_EXPIRE_MINUTES = 30
     ALGORITHM = "HS256"
-    # ALEMBIC_CONFIG = join('.', 'alembic.ini')

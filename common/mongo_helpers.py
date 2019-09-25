@@ -1,6 +1,6 @@
 import logging
 from typing import Union, Type
-from uuid import UUID
+from uuid import uuid4, UUID
 
 import pymongo
 from pydantic import BaseModel
@@ -40,6 +40,8 @@ async def id_and_name(model: Union[Type[BaseModel], Type[dict]],
 async def get_all_items(collection: AsyncIOMotorCollection,
                         model: Type[BaseModel],
                         *,
+                        page: int = 1,
+                        num_per_page: int = 20,
                         query: dict = None,
                         projection: dict = None):
     """
@@ -47,14 +49,20 @@ async def get_all_items(collection: AsyncIOMotorCollection,
 
     :param collection: Collection to query
     :param model: Class which the JSON in the collection represents
+    :param page: Page number to retrieve.  #ToDo: implement correct server-side pagination
+    :param num_per_page: Number of items per page to retrieve. Defaults to 20.
     :param query: Return only objects that contain the query
     :param projection: Filter to exclude keys from each result
     :return: List of objects in the collection
     """
+
     projection = {} if projection is None else projection
     projection.update(ignore_mongo_id)
 
-    collection_json = await collection.find(filter=query, projection=projection).to_list(None)
+    collection_json = await collection.find(filter=query, projection=projection) \
+        .skip((page-1) * num_per_page) \
+        .limit(num_per_page) \
+        .to_list(None)
     return [model(**item_json) for item_json in collection_json]
 
 
@@ -109,6 +117,8 @@ async def create_item(collection: AsyncIOMotorCollection,
     :return: Created object in collection
     """
     try:
+        if not new_item_obj.id_:
+            new_item_obj.id_ = uuid4()
         r = await collection.insert_one(dict(new_item_obj))
         if r.acknowledged:
             return await get_item(collection, model, new_item_obj.id_, projection=projection, raise_exc=False)

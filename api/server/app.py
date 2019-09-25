@@ -9,8 +9,8 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
-from api.server.endpoints import appapi, dashboards, workflows, users, console, results,  auth, roles
-from api.server.db import DBEngine, get_db, MongoEngine, get_mongo_c
+from api.server.endpoints import appapi, dashboards, users, auth, roles
+from api.server.db import MongoManager, get_mongo_c
 from api.server.db.user import UserModel
 from api.server.db.role import RoleModel
 
@@ -24,8 +24,7 @@ logger = logging.getLogger(__name__)
 
 _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _walkoff = FastAPI(openapi_prefix="/walkoff/api")
-_db_manager = DBEngine()
-_mongo_manager = MongoEngine()
+_mongo_manager = MongoManager()
 
 _app.mount("/walkoff/api", _walkoff)
 _app.mount("/walkoff/client", StaticFiles(directory=static.CLIENT_PATH), name="static")
@@ -52,37 +51,6 @@ async def initialize_users():
         if not user_d:
             await users_col.insert_one(dict(user))
 
-    # # Setup internal user
-    # internal_role = await role_col.find_one({"id_": 1}, projection={'_id': False})
-    # internal_user = await user_col.find_one({"username": "internal_user"}, projection={'_id': False})
-    # if not internal_user:
-    #     key = config.get_from_file(config.INTERNAL_KEY_PATH)
-    #     user_col.insert_one(UserModel(username="internal_user", password=key, hashed=False, roles=[2]))
-    # elif internal_role not in internal_user.roles:
-    #     user_copy = deepcopy(internal_user)
-    #     user_copy.roles.append(internal_role)
-    #     await user_col.replace_one(dict(internal_user), dict(user_copy))
-    #
-    # # Setup Super Admin user
-    # super_admin_role = await role_col.find_one({"id_": 2}, projection={'_id': False})
-    # super_admin_user = await user_col.find_one({"username": "super_admin"}, projection={'_id': False})
-    # if not super_admin_user:
-    #     user_col.insert_one(UserModel(username="super_admin", password="super_admin", hashed=False, roles=[2]))
-    # elif super_admin_role not in super_admin_user.roles:
-    #     user_copy = deepcopy(super_admin_user)
-    #     user_copy.roles.append(super_admin_role)
-    #     await user_col.replace_one(dict(super_admin_user), dict(user_copy))
-    #
-    # # Setup Admin user
-    # admin_role = await role_col.find_one({"id_": 3}, projection={'_id': False})
-    # admin_user = await user_col.find_one({"username": "admin"}, projection={'_id': False})
-    # if not admin_user:
-    #     user_col.insert_one(UserModel(username="admin", password="admin", hashed=False, roles=[3]))
-    # elif admin_role not in admin_user.roles:
-    #     user_copy = deepcopy(admin_user)
-    #     user_copy.roles.append(admin_role)
-    #     await user_col.replace_one(dict(admin_user), dict(user_copy))
-
 
 @_app.on_event("startup")
 async def start_banner():
@@ -93,7 +61,6 @@ async def start_banner():
 @_walkoff.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     try:
-        request.state.db = _db_manager.session_maker()
         request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
         request.state.mongo_d = _mongo_manager.client.walkoff_db
         response = await call_next(request)
@@ -101,8 +68,6 @@ async def db_session_middleware(request: Request, call_next):
         response = await call_next(request)
     # except Exception as e:
     #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
-    finally:
-        request.state.db.close()
 
     return response
 
@@ -285,7 +250,3 @@ app = _app
 #     response.headers["Pragma"] = "no-cache"
 #     response.headers["X-Accel-Buffering"] = "no"
 #     return response
-#
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="0.0.0.0", port=8000)

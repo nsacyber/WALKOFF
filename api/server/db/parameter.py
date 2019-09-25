@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class ParameterApiModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     name: str
     location: str = ""
     description: str = ""
@@ -34,7 +34,7 @@ class ParameterApiModel(BaseModel):
 
 
 class ParameterModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     name: str
     value: dict = {}
     parallelized: bool = False

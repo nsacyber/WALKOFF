@@ -6,9 +6,6 @@ import gevent
 from gevent.queue import Queue
 
 from motor.motor_asyncio import AsyncIOMotorCollection
-from flask import Blueprint, Response, current_app, request
-from flask_jwt_extended import jwt_required
-from sqlalchemy.exc import IntegrityError
 from pydantic import BaseModel
 from api.server.utils.problems import UniquenessException
 import jsonpatch

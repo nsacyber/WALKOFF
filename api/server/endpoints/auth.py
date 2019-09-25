@@ -8,7 +8,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 from api.security import (create_access_token, create_refresh_token, get_jwt_identity,
                           get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request)
 from api.fastapi_config import FastApiConfig
-from api.server.db import get_db, get_mongo_c, get_mongo_d
+from api.server.db import get_mongo_c, get_mongo_d
 from api.server.db.user import UserModel
 from api.server.db.tokens import revoke_token, AuthModel, TokenModel
 from api.server.utils.problems import ProblemException, InvalidInputException

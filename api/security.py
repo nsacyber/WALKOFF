@@ -9,7 +9,6 @@ import json
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 import jwt
-from sqlalchemy.orm import Session
 from starlette.requests import Request
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm

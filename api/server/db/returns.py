@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReturnApiModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     location: str = ""
     description: str = ""
     example: Union[str, int, bool, dict, list, None] = None

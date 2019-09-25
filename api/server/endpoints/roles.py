@@ -22,12 +22,15 @@ hidden_roles = [
 
 @router.get("/",
             response_model=List[RoleModel], response_description="List of all roles.")
-async def read_all_roles(role_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def read_all_roles(role_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                         page: int = 1,
+                         num_per_page: int = 20):
     """
     Returns a list of all roles.
     """
     return await mongo_helpers.get_all_items(role_col, RoleModel,
-                                             query={"id_": {"$nin": hidden_roles}})
+                                             query={"id_": {"$nin": hidden_roles}},
+                                             page=page, num_per_page=num_per_page)
 
 
 @router.get('/{role_id}',
@@ -142,6 +145,6 @@ async def delete_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c)
         return await mongo_helpers.delete_item(role_col, RoleModel, role_id)
 
 
-@router.get('/availableresourceactions')
+@router.get('/availableresourceactions/')
 async def read_available_resource_actions():
-    return get_all_available_resource_actions(), HTTPStatus.OK
+    return await get_all_available_resource_actions()

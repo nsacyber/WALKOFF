@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowVariableModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     name: str
     value: JSON = None
     _walkoff_type: str = "workflow_variable"

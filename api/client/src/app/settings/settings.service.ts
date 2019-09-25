@@ -33,14 +33,14 @@ export class SettingsService {
 	}
 
 	getUsers(page: number = 1): Promise<User[]> {
-		return this.http.get(`api/users?page=${ page }`)
+		return this.http.get(`api/users/?page=${ page }`)
 			.toPromise()
 			.then((data: object[]) => plainToClass(User, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	addUser(user: User): Promise<User> {
-		return this.http.post('api/users', user)
+		return this.http.post('api/users/', user)
 			.toPromise()
 			.then((data: object) => plainToClass(User, data))
 			.catch(this.utils.handleResponseError);
@@ -61,14 +61,14 @@ export class SettingsService {
 	}
 
 	getRoles(): Promise<Role[]> {
-		return this.http.get('api/roles')
+		return this.http.get('api/')
 			.toPromise()
 			.then((data: object[]) => plainToClass(Role, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	addRole(role: Role): Promise<Role> {
-		return this.http.post('api/roles', role)
+		return this.http.post('api/roles/', role)
 			.toPromise()
 			.then((data: object) => plainToClass(Role, data))
 			.catch(this.utils.handleResponseError);
@@ -114,7 +114,7 @@ export class SettingsService {
 		// ];
 
 		// return Promise.resolve(testData);
-		return this.http.get('api/availableresourceactions')
+		return this.http.get('api/roles/availableresourceactions/')
 			.toPromise()
 			.then((data: object[]) => plainToClass(AvailableResourceAction, data))
 			.catch(this.utils.handleResponseError);

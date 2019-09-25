@@ -64,7 +64,7 @@ class EditPersonalUser(BaseModel):
 
 
 class UserModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     hashed: bool = False
     username: str
     password: str = None
