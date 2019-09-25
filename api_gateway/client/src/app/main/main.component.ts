@@ -75,9 +75,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		};
 		
 		this.clipboardService.copyResponse$.subscribe(res => {
-			console.log(res);
-			if(res.isSuccess)
-				this.toastrService.success('Copied to clipboard');
+			if(res.isSuccess) this.toastrService.success('Copied to clipboard');
 		})
 	}
 

@@ -7,13 +7,12 @@
 			<button type=“submit” style="display: none;"></button>
 			<div *ngIf="user" class="row">
 				<div class="col">
-					
-					<div class="form-group">
-						<label for="username">
-							Username
-						</label>
-						<input type="text" readonly class="form-control-plaintext px-2"
-							[value]="editPersonalUser.old_username">
+					<p class="h5 text-center">{{ editPersonalUser.old_username }}</p>
+					<div class="form-group justify-content-around d-flex">
+						<button type="button" class="btn btn-link btn-sm mr-3 p-0"
+							(click)="changeType = 'username'">Change Username</button>
+						<button type="button" class="btn btn-link btn-sm p-0" (click)="changeType = 'password'">Change
+							Password</button>
 					</div>
 					<ng-container *ngIf="changeType == 'username'">
 						<div class="form-group">
@@ -72,12 +71,6 @@
 							</div>
 						</div>
 					</div>
-					<div class="form-group justify-content-start d-flex">
-							<button type="button" class="btn btn-link btn-sm mr-3 p-0"
-								(click)="changeType = 'username'">Change Username</button>
-							<button type="button" class="btn btn-link btn-sm p-0" (click)="changeType = 'password'">Change
-								Password</button>
-						</div>
 				</div>
 			</div>
 		</form>
