@@ -1,9 +1,13 @@
+from uuid import UUID
+
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
-from api.server.db.role import RoleModel, DefaultRoles
-from api.server.db.user import UserModel, DefaultUsers
+from api.server.db.role import RoleModel, DefaultRoleUUID
+from api.server.db.user import UserModel, DefaultUserUUID
 
 from common.config import config
+from common.helpers import preset_uuid
+
 
 default_resource_permissions_internal_user = [
     {"name": "app_apis", "permissions": ["create", "read", "update", "delete"]},
@@ -89,30 +93,41 @@ default_resource_permissions_workflow_operator = [
     {"name": "users", "permissions": ["read"]}
 ]
 
+
+
 default_roles = {
-    "internal_user_role": RoleModel(id_=1, name="internal_user", description="Used by WALKOFF components.",
+    "internal_user_role": RoleModel(id_=DefaultRoleUUID.INTERNAL_USER.value,
+                                    name="internal_user", description="Used by WALKOFF components.",
                                     resources=default_resource_permissions_internal_user),
-    "super_admin_role": RoleModel(id_=2, name="super_admin", description="Permanent admin role.",
+    "super_admin_role": RoleModel(id_=DefaultRoleUUID.SUPER_ADMIN.value,
+                                  name="super_admin", description="Permanent admin role.",
                                   resources=default_resource_permissions_super_admin),
-    "admin_role": RoleModel(id_=3, name="admin", description="General admin role.",
+    "admin_role": RoleModel(id_=DefaultRoleUUID.ADMIN.value,
+                            name="admin", description="General admin role.",
                             resources=default_resource_permissions_admin),
-    "app_developer_role": RoleModel(id_=4, name="app_developer", description="Provides access to the App Editor.",
+    "app_developer_role": RoleModel(id_=DefaultRoleUUID.APP_DEV.value,
+                                    name="app_developer", description="Provides access to the App Editor.",
                                     resources=default_resource_permissions_app_developer),
-    "workflow_developer_role": RoleModel(id_=5, name="workflow_developer",
+    "workflow_developer_role": RoleModel(id_=DefaultRoleUUID.WF_DEV.value,
+                                         name="workflow_developer",
                                          description="Provides access to the Workflow Editor",
                                          resources=default_resource_permissions_workflow_developer),
-    "workflow_operator_role": RoleModel(id_=6, name="workflow_operator",
+    "workflow_operator_role": RoleModel(id_=DefaultRoleUUID.WF_OP.value,
+                                        name="workflow_operator",
                                         description="Only provides access to run Workflows.",
                                         resources=default_resource_permissions_workflow_operator)
 }
 
 default_users = {
-    "internal_user": UserModel(id_=1, username="internal_user", password=config.get_from_file(config.INTERNAL_KEY_PATH),
-                               hashed=False, roles=[1]),
-    "super_admin": UserModel(id_=2, username="super_admin", password="super_admin",
-                             hashed=False, roles=[2]),
-    "admin": UserModel(id_=3, username="admin", password="admin",
-                       hashed=False, roles=[3])
+    "internal_user": UserModel(id_=DefaultUserUUID.INTERNAL_USER.value,
+                               username="internal_user", password=config.get_from_file(config.INTERNAL_KEY_PATH),
+                               hashed=False, roles=[DefaultRoleUUID.INTERNAL_USER.value]),
+    "super_admin": UserModel(id_=DefaultUserUUID.SUPER_ADMIN.value,
+                             username="super_admin", password="super_admin",
+                             hashed=False, roles=[DefaultRoleUUID.SUPER_ADMIN.value]),
+    "admin": UserModel(id_=DefaultUserUUID.ADMIN.value,
+                       username="admin", password="admin",
+                       hashed=False, roles=[DefaultRoleUUID.ADMIN.value])
 }
 
 default_resources = ['app_apis', 'apps', 'settings', 'global_variables', 'workflows', 'roles', 'scheduler', 'users']

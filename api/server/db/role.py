@@ -1,8 +1,7 @@
 from enum import Enum
+from uuid import uuid4, UUID
 
 from pydantic import BaseModel
-from sqlalchemy import Column, String, JSON, Integer, DateTime, ForeignKey
-from sqlalchemy.orm import relationship, backref, Session
 from typing import List
 from motor.motor_asyncio import AsyncIOMotorCollection
 
@@ -11,27 +10,28 @@ from api.server.db.resource import ResourceModel
 # from api.server.db import TrackModificationsMixIn
 from api.server.db import Base
 
-
-class DefaultRoles(int, Enum):
-    INTERNAL_USER = 1
-    SUPER_ADMIN = 2
-    ADMIN = 3
-    APP_DEV = 4
-    WF_DEV = 5
-    WF_OP = 6
+from common.helpers import preset_uuid
 
 
-PROTECTED_ROLES = range(DefaultRoles.INTERNAL_USER, DefaultRoles.WF_OP)
+class DefaultRoleUUID(Enum):
+    INTERNAL_USER = preset_uuid("internal_role")
+    SUPER_ADMIN = preset_uuid("sadmin_role")
+    ADMIN = preset_uuid("admin_role")
+    APP_DEV = preset_uuid("app_dev_role")
+    WF_DEV = preset_uuid("wf_dev_role")
+    WF_OP = preset_uuid("wf_op_role")
 
 
-class AddRoleModel(BaseModel):
-    name: str
-    description: str = None
-    resources: List[ResourceModel] = None
+DefaultRoleUUIDS = [v.value for v in DefaultRoleUUID.__members__.values()]
+
+# class AddRoleModel(BaseModel):
+#     name: str
+#     description: str = None
+#     resources: List[ResourceModel] = None
 
 
 class RoleModel(BaseModel):
-    id_: int
+    id_: UUID = uuid4()
     name: str = None
     description: str = None
     resources: List[ResourceModel] = None
