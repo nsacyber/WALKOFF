@@ -94,7 +94,9 @@ async def decode_token(to_decode):
     except jwt.exceptions.ExpiredSignatureError:
         return None
 
-    decoded_jtw["user_claims"]["roles"] = [uuid.UUID(role) for role in decoded_jtw["user_claims"]["roles"]]
+    if "user_claims" in decoded_jtw and "roles" in decoded_jtw["user_claims"]:
+        decoded_jtw["user_claims"]["roles"] = [uuid.UUID(role) for role in decoded_jtw["user_claims"]["roles"]]
+
     return decoded_jtw
 
 
