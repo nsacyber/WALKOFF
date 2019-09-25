@@ -34,7 +34,6 @@ COMPOSE_BASE = {"version": "3.5",
 
 APP_NAME_PREFIX = "walkoff_"
 
-DOCKER_HOST_IP = os.getenv("DOCKER_HOST_IP")
 p = Path('./apps').glob('**/*')
 
 
@@ -199,6 +198,16 @@ async def delete_dir_contents(path):
 
 
 @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
+async def delete_volume(docker_client, volume_name):
+    try:
+        await remove_volume(docker_client, volume_name)
+    except Exception as e:
+        logger.info(f"Failed to remove volume {volume_name}, a container may still be using it. "
+                    f"Waiting to try again...")
+        raise e
+
+
+@retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
 async def deploy_compose(compose):
     try:
         if not isinstance(compose, dict):
@@ -332,7 +341,7 @@ class Bootloader:
     @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
     async def wait_for_registry(self):
         try:
-            async with self.session.get(f"http://{DOCKER_HOST_IP}:5000") as resp:
+            async with self.session.get(f"http://{static.REGISTRY_SERVICE}:5000") as resp:
                 if resp.status == 200:
                     return True
                 else:
@@ -501,7 +510,7 @@ class Bootloader:
             await delete_encryption_key(self.docker_client, "walkoff_minio_secret_key")
 
         if args.volume:
-            await remove_volume("walkoff_postgres-data", wait=True)
+            await remove_volume(self.docker_client, "walkoff_postgres-data")
 
 
         logger.info("Walkoff stack removed, it may take a little time to stop all services. "
