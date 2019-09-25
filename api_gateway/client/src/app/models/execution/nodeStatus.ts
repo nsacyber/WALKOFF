@@ -39,4 +39,13 @@ export class NodeStatus {
 	completed_at?: string;
 
 	parameters?: any;
+
+	public format(input: any, expanded = false) {
+		if (!input) return 'N/A';
+		const output = (expanded) ? 
+			JSON.stringify(input, null, 2) : 
+			JSON.stringify(input);
+		
+		return (output) ? output : 'N/A'
+	}
 }

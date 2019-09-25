@@ -300,13 +300,25 @@ else:
                             <ngb-tab id="returns-results-tab" title="Execution Result"
                                 [disabled]="!selectedActionResults">
                                 <ng-template ngbTabContent>
-                                    <div class="d-flex m-2" *ngIf="selectedActionResults">
+                                    <!-- <div class="d-flex m-2" *ngIf="selectedActionResults">
                                         <div class="card bg-light flex-grow-1">
                                             <div class="card-body">
-                                                <!-- <pre class="card-text">{{ selectedActionResults }}</pre> -->
-                                                {{ getFriendlyJSON(selectedActionResults) }}
+                                                {{ selectedActionResults }}
                                             </div>
                                         </div>
+                                    </div> -->
+                                    <div class="d-flex flex-column align-items-center m-2"
+                                        *ngIf="selectedActionResults">
+                                        <div class="card bg-light flex-grow-1 w-100">
+                                            <div class="card-body p-2">
+                                                <pre
+                                                    class="card-text code-block code-block-xl">{{ selectedActionResults.format(selectedActionResults.result) }}</pre>
+                                            </div>
+                                        </div>
+                                        <a class="m-2" href="#"
+                                            (click)="resultsModal(selectedActionResults.result)">
+                                            View Full <i class="fa fa-external-link"></i>
+                                        </a>
                                     </div>
                                 </ng-template>
                             </ngb-tab>
@@ -361,7 +373,7 @@ else:
                     </div>
                 </ng-template>
                 <ng-template ngbTabContent>
-                    <ngx-codemirror #consoleArea [options]="{
+                    <ngx-codemirror #consoleArea [(ngModel)]="consoleContent" [options]="{
                         lineNumbers: true,
                         mode: 'shell',
                         theme: 'darcula',
@@ -380,39 +392,83 @@ else:
                 <ng-template ngbTabContent>
                     <div id="executionResultsModal">
                         <div #workflowResultsContainer>
-                            <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'"
+                            <ngx-datatable #workflowResultsTable class='material ' [columnMode]="'flex'"
                                 [rows]="nodeStatuses" [sortType]="'multi'" [headerHeight]="35" [footerHeight]="25"
                                 [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]" [limit]="10">
                                 <!-- Column Templates -->
-                                <ngx-datatable-column name="ID" prop="node_id" [flexGrow]="2">
-                                </ngx-datatable-column>
-                                <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1">
-                                </ngx-datatable-column>
-                                <ngx-datatable-column name="Action Name" prop="name" [flexGrow]="1">
-                                </ngx-datatable-column>
-                                <ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
+                                <ngx-datatable-column name="Name" prop="label" [flexGrow]="2">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
-                                        <span ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
-                                            {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}
-                                        </span>
+                                        {{ row.label }}
+                                        <i class="fa fa-clipboard cursor-pointer" ngxClipboard [cbContent]="row.node_id"
+                                            container="body" ngbTooltip="Copy ID ({{ row.node_id }})"></i><br>
+                                        <span class="text-muted">{{row.app_name}} / {{row.name}}</span>
                                     </ng-template>
                                 </ngx-datatable-column>
-                                <ngx-datatable-column name="Completed At" prop="completed_at" [flexGrow]="1">
+                                <ngx-datatable-column name="Status" prop="started_at" [flexGrow]="2">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
-                                        <span ngbTooltip="{{ row.completed_at ? (row.completed_at | amFromUtc | amLocal ) : 'N/A' }}">
-                                            {{ row.completed_at ? (row.completed_at | amFromUtc | amTimeAgo ) : 'N/A' }}
-                                        </span>
+                                        <ng-container *ngIf="row.status == NodeStatuses.EXECUTING">
+                                            <b class="text-muted">Started</b>
+                                            <span
+                                                ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                                {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}...
+                                            </span>
+                                        </ng-container>
+                                        <ng-container *ngIf="row.status == NodeStatuses.SUCCESS">
+                                            <b class="text-muted">Started</b>
+                                            <span
+                                                ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                                {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}...
+                                            </span><br>
+                                            <b class="text-success">Success</b>
+                                            <span
+                                                ngbTooltip="{{ row.completed_at ? (row.completed_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                                {{ row.completed_at ? (row.completed_at | amFromUtc | amTimeAgo ) : 'N/A' }}
+                                            </span>
+                                        </ng-container>
+                                        <ng-container *ngIf="row.status == NodeStatuses.FAILURE">
+                                            <b class="text-muted">Started</b>
+                                            <span
+                                                ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                                {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}...
+                                            </span><br>
+                                            <b class="text-danger">Failed</b>
+                                            <span
+                                                ngbTooltip="{{ row.completed_at ? (row.completed_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                                {{ row.completed_at ? (row.completed_at | amFromUtc | amTimeAgo ) : 'N/A' }}
+                                            </span>
+                                        </ng-container>
                                     </ng-template>
                                 </ngx-datatable-column>
-                                <ngx-datatable-column name="Status" prop="status" [flexGrow]="1"></ngx-datatable-column>
-                                <ngx-datatable-column name="Parameters" [sortable]="false" [flexGrow]="1">
+                                <ngx-datatable-column name="Parameters" [sortable]="false" [flexGrow]="3">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
-                                        {{getFriendlyJSON(row.parameters)}}
+                                        <div class="d-flex align-items-baseline">
+                                            <div class="card bg-light flex-grow-1">
+                                                <div class="card-body p-2">
+                                                    <pre
+                                                        class="card-text code-block code-block-sm">{{ row.format(row.parameters) }}</pre>
+                                                </div>
+                                            </div>
+                                            <a href="#" (click)="resultsModal(row.parameters)">
+                                                <i class="fa fa-external-link cursor-pointer h5 mt-1 p-1"
+                                                    ngbTooltip="View Full"></i>
+                                            </a>
+                                        </div>
                                     </ng-template>
                                 </ngx-datatable-column>
                                 <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="3">
                                     <ng-template let-row="row" ngx-datatable-cell-template>
-                                        {{getFriendlyJSON(row.result)}}
+                                        <div class="d-flex align-items-baseline">
+                                            <div class="card bg-light flex-grow-1">
+                                                <div class="card-body p-2">
+                                                    <pre class="card-text code-block code-block-sm"
+                                                        [class.text-danger]="row.status == NodeStatuses.FAILURE">{{ row.format(row.result) }}</pre>
+                                                </div>
+                                            </div>
+                                            <a href="#" (click)="resultsModal(row.result)">
+                                                <i class="fa fa-external-link cursor-pointer h5 mt-1 p-1"
+                                                    ngbTooltip="View Full"></i>
+                                            </a>
+                                        </div>
                                     </ng-template>
                                 </ngx-datatable-column>
                             </ngx-datatable>
@@ -451,8 +507,9 @@ else:
                             </button>
                         </div>
                         <small class="mx-2 form-text text-muted">
-                            Local Variables are unique to this workflow.  
-                            They are reusable in multiple actions and the value can be overridden on each run from the execution page.
+                            Local Variables are unique to this workflow.
+                            They are reusable in multiple actions and the value can be overridden on each run from the
+                            execution page.
                         </small>
                     </div>
                     <ngx-datatable #environmentVariableTable class='material expandable' [columnMode]="'flex'"
@@ -492,12 +549,14 @@ else:
                     <div class="p-2">
                         <div class="d-flex">
                             <h4 class="mx-2 mb-0">Global Variables</h4>
-                            <button *hasPermission="['editGlobals']" type="button" class="btn btn-sm btn-outline-primary" (click)="addGlobal()">
+                            <button *hasPermission="['editGlobals']" type="button"
+                                class="btn btn-sm btn-outline-primary" (click)="addGlobal()">
                                 Create New
                             </button>
                         </div>
                         <small class="mx-2 form-text text-muted">
-                            Global Variables are system-wide encrypted variables ideal for sharing authentication and configuration settings between multiple workflows.
+                            Global Variables are system-wide encrypted variables ideal for sharing authentication and
+                            configuration settings between multiple workflows.
                         </small>
                     </div>
                     <ngx-datatable #globalTable class='material expandable' [columnMode]="'flex'" [rows]="globals"
@@ -509,8 +568,8 @@ else:
                         <ngx-datatable-column name="Value" prop="value" [flexGrow]="3" [sortable]="false">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <div class="d-flex align-items-center">
-                                    <span [class.pt-2]="row.isHidden"> 
-                                        {{ row.isHidden ? '********************' : row.value | json }} 
+                                    <span [class.pt-2]="row.isHidden">
+                                        {{ row.isHidden ? '********************' : row.value | json }}
                                     </span>
                                     <button (click)="row.isHidden = !row.isHidden" class="btn btn-link mx-1 p-0">
                                         <i class="fa" [class.fa-eye]="row.isHidden" [class.fa-eye-slash]="!row.isHidden"
@@ -521,8 +580,8 @@ else:
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Description" prop="description" [flexGrow]="3">
                         </ngx-datatable-column>
-                        <ngx-datatable-column *hasPermission="['editGlobals']" name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false"
-                            [flexGrow]="1">
+                        <ngx-datatable-column *hasPermission="['editGlobals']" name="Actions" [resizeable]="false"
+                            [sortable]="false" [draggable]="false" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 <button (click)="editGlobal(row)" class="btn btn-primary mx-1" ngbTooltip="Edit"><i
                                         class="fa fa-edit"></i></button>

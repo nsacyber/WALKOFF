@@ -26,6 +26,7 @@ import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { NodeStatusSummary } from '../models/execution/nodeStatusSummary';
 import { Router } from '@angular/router';
 import * as moment from 'moment';
+import { ResultsModalComponent } from './results.modal.component';
 
 @Component({
 	selector: 'execution-component',
@@ -57,6 +58,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	workflowStatusEventSource: any;
 	nodeStatusEventSource: any;
 	recalculateTableCallback: any;
+	NodeStatuses = NodeStatuses;
 
 	constructor(
 		private executionService: ExecutionService, private authService: AuthService, private cdr: ChangeDetectorRef,
@@ -405,39 +407,12 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		}
 
 		nodeResultsPromise.then(() => {
-			($('.nodeStatusModal') as any).modal('show');
+			//($('.nodeStatusModal') as any).modal('show');
+			const modalRef = this.modalService.open(ResultsModalComponent, { windowClass: 'modal-xxl', centered: true });
+			modalRef.componentInstance.loadedWorkflowStatus = this.loadedWorkflowStatus;
 		});
 	}
-
-	/**
-	 * Converts an input object/value to a friendly string for display in the workflow status table.
-	 * @param input Input object / value to convert
-	 */
-	getFriendlyJSON(input: any): string {
-		if (!input) { return 'N/A'; }
-		let out = JSON.stringify(input, null, 1);
-		out = out.replace(/[\{\[\}\]"]/g, '').trim();
-		if (!out) { return 'N/A'; }
-		return out;
-	}
-
-	/**
-	 * Converts an input argument array to a friendly string for display in the workflow status table.
-	 * @param args Array of arguments to convert
-	 */
-	getFriendlyArguments(args: Argument[]): string {
-		if (!args || !args.length) { return 'N/A'; }
-
-		const obj: { [key: string]: string } = {};
-		args.forEach(element => {
-			if (element.value) { obj[element.name] = element.value; }
-		});
-
-		let out = JSON.stringify(obj, null, 1);
-		out = out.replace(/[\{\}"]/g, '');
-		return out;
-	}
-
+	
 	/**
 	 * Gets the app name from a current node object or returns N/A if undefined.
 	 * @param nodeStatusSummary NodeStatusSummary to use as input
@@ -495,4 +470,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		if (propA.name.toLowerCase() < propB.name.toLowerCase()) { return -1; }
 		if (propA.name.toLowerCase() > propB.name.toLowerCase()) { return 1; }
 	}
+
+	getClipboard(results) {
+        return  $.isPlainObject(results) ? JSON.stringify(results, null, 2) : results;
+    }
 }

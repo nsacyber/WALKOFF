@@ -52,6 +52,8 @@ import { ExecutionVariableModalComponent } from './execution/execution.variable.
 import { PlaybookEnvironmentVariableModalComponent } from './playbook/playbook.environment.variable.modal.component';
 import { MainProfileModalComponent } from './main/main.profile.modal.component';
 import { StatusModalComponent } from './apps/status.modal.component';
+import { ResultsModalComponent } from './execution/results.modal.component';
+import { JsonModalComponent } from './execution/json.modal.component';
 
 import { PlaybookArgumentComponent } from './playbook/playbook.argument.component';
 import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
@@ -134,6 +136,8 @@ import { HasPermissionDirective } from './permission.directive';
 		ExecutionVariableModalComponent,
 		StatusModalComponent,
 		FileModalComponent,
+		ResultsModalComponent,
+		JsonModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
 		PlaybookConditionsComponent,
@@ -179,7 +183,9 @@ import { HasPermissionDirective } from './permission.directive';
 		MetadataModalComponent,
 		StatusModalComponent,
 		WidgetModalComponent,
-		FileModalComponent
+		FileModalComponent,
+		ResultsModalComponent,
+		JsonModalComponent
 	],
 	bootstrap: [MainComponent],
 })

@@ -52,6 +52,8 @@ import { Trigger } from '../models/playbook/trigger';
 import { WorkflowNode } from '../models/playbook/WorkflowNode';
 import { Transform } from '../models/playbook/transform';
 import { VariableModalComponent } from '../globals/variable.modal.component';
+import { ResultsModalComponent } from '../execution/results.modal.component';
+import { JsonModalComponent } from '../execution/json.modal.component';
 
 @Component({
 	selector: 'workflow-editor-component',
@@ -110,6 +112,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	actionTypes = ActionType;
 	sseErrorTimeout: any;
 	showConsole: boolean = false;
+	NodeStatuses = NodeStatuses;
 
 	conditionalOptions = {
 		tabSize: 4,
@@ -412,8 +415,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 			switch (message.type) {
 				case NodeStatuses.EXECUTING:
-					// shouldn't happen
-					matchingNodeStatus.started_at = nodeStatusEvent.started_at;
+					if (!matchingNodeStatus.started_at)
+						matchingNodeStatus.started_at = nodeStatusEvent.started_at;
 					break;
 				case NodeStatuses.SUCCESS:
 				case NodeStatuses.FAILURE:
@@ -459,11 +462,12 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	get selectedActionResults(): any {
 		if (this.selectedAction) {
 			const nodeStatus = this.nodeStatuses.find(n => n.node_id == this.selectedAction.id);
-			if (nodeStatus && nodeStatus.status == NodeStatuses.SUCCESS) return nodeStatus.result;
+			if (nodeStatus && nodeStatus.status == NodeStatuses.SUCCESS) return nodeStatus;
 		}
 	}
 
 	updateConsole() {
+		if (!this.consoleArea || !this.consoleArea.codeMirror) return;
 		const cm = this.consoleArea.codeMirror;
 		const $scroller = $(cm.getScrollerElement());
 		const atBottom = $scroller[0].scrollHeight - $scroller.scrollTop() - $scroller.outerHeight() <= 0;
@@ -1333,7 +1337,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.clearExecutionHighlighting();
 		this.consoleLog = [];
 		this.nodeStatuses = [];
-		this.consoleArea.codeMirror.getDoc().setValue('');
+		if (this.consoleArea && this.consoleArea.codeMirror) 
+			this.consoleArea.codeMirror.getDoc().setValue('');
 	}
 
 	/**
@@ -1484,35 +1489,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	/**
-	 * Converts an input object/value to a friendly string for display in the workflow status table.
-	 * @param input Input object / value to convert
-	 */
-	getFriendlyJSON(input: any): string {
-		if (!input) { return 'N/A'; }
-		let out = JSON.stringify(input, null, 1);
-		out = out.replace(/[\{\[\}\]"]/g, '').trim();
-		if (!out) { return 'N/A'; }
-		return out;
-	}
-
-	/**
-	 * Converts an input argument array to a friendly string for display in the workflow status table.
-	 * @param args Array of arguments to convert
-	 */
-	getFriendlyArguments(args: Argument[]): string {
-		if (!args || !args.length) { return 'N/A'; }
-
-		const obj: { [key: string]: string } = {};
-		args.forEach(element => {
-			if (element.value) { obj[element.name] = element.value; }
-		});
-
-		let out = JSON.stringify(obj, null, 1);
-		out = out.replace(/[\{\}"]/g, '');
-		return out;
-	}
-
-	/**
 	 * Removes the white space in a given string.
 	 * @param input Input string to remove the whitespace of
 	 */
@@ -1619,6 +1595,12 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			this.loadedWorkflow.environment_variables.push(variable);
 			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
 		}).catch(() => null)
+	}
+
+	resultsModal(results) {
+		const modalRef = this.modalService.open(JsonModalComponent, { size: 'lg', centered: true });
+		modalRef.componentInstance.results = results;
+		return false;
 	}
 
 	/**

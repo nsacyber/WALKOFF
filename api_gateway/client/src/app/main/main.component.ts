@@ -21,6 +21,7 @@ import { WorkingUser } from '../models/workingUser';
 import { User } from '../models/user';
 import { getDefaultService } from 'selenium-webdriver/edge';
 import { MainProfileModalComponent } from './main.profile.modal.component';
+import { ClipboardService } from 'ngx-clipboard';
 
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
@@ -45,25 +46,39 @@ export class MainComponent implements OnInit, OnDestroy {
 	constructor(
 		private mainService: MainService, private authService: AuthService,
 		private modalService: NgbModal, private toastrService: ToastrService,
-		public utils: UtilitiesService, private reportService: ReportService
+		public utils: UtilitiesService, private reportService: ReportService,
+		private clipboardService: ClipboardService
 	) {
+
+		const hideBackdrop = () => {
+			const backdropNodes = document.querySelectorAll('.modal-backdrop');
+			backdropNodes.item(backdropNodes.length - 1).classList.remove('show');
+
+			const modalNodes = document.querySelectorAll('.modal.show')
+			modalNodes.item(modalNodes.length - 1).classList.remove('show');
+		}
+
 		/* Hack along with styles.scss for modal animations in ng-bootstrap */
 		NgbModalRef.prototype['c'] = NgbModalRef.prototype.close;
         NgbModalRef.prototype.close = function (reason: string) {
-            document.querySelector('.modal-backdrop').classList.remove('show');
-            document.querySelector('.modal.show').classList.remove('show');
+			hideBackdrop();
             setTimeout(() => {
                 this['c'](reason);
             }, 250);
         };
         NgbModalRef.prototype['d'] = NgbModalRef.prototype.dismiss;
         NgbModalRef.prototype.dismiss = function (reason: string) {
-			document.querySelector('.modal-backdrop').classList.remove('show');
-			document.querySelector('.modal.show').classList.remove('show');
+			hideBackdrop();
             setTimeout(() => {
                 this['d'](reason);
             }, 250);
-        };
+		};
+		
+		this.clipboardService.copyResponse$.subscribe(res => {
+			console.log(res);
+			if(res.isSuccess)
+				this.toastrService.success('Copied to clipboard');
+		})
 	}
 
 	/**
