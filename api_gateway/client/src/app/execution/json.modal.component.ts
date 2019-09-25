@@ -42,4 +42,14 @@ export class JsonModalComponent implements OnInit, OnDestroy {
     getClipboard() {
         return  $.isPlainObject(this.results) ? JSON.stringify(this.results, null, 2) : this.results;
     }
+
+    downloadResults() {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(this.getClipboard()));
+        element.setAttribute('download', 'action-results.json');  
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
 }
