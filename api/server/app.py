@@ -9,7 +9,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
-from api.server.endpoints import appapi, dashboards, workflows, users, console, results,  auth  #, roles, users,
+from api.server.endpoints import appapi, dashboards, workflows, users, console, results,  auth, global_variables  #, roles, users,
 from api.server.db import DBEngine, get_db, MongoEngine, get_mongo_c
 from api.server.db.user import UserModel
 from api.server.db.role import RoleModel
@@ -52,37 +52,6 @@ async def initialize_users():
         if not user_d:
             await users_col.insert_one(dict(user))
 
-    # # Setup internal user
-    # internal_role = await role_col.find_one({"id_": 1}, projection={'_id': False})
-    # internal_user = await user_col.find_one({"username": "internal_user"}, projection={'_id': False})
-    # if not internal_user:
-    #     key = config.get_from_file(config.INTERNAL_KEY_PATH)
-    #     user_col.insert_one(UserModel(username="internal_user", password=key, hashed=False, roles=[2]))
-    # elif internal_role not in internal_user.roles:
-    #     user_copy = deepcopy(internal_user)
-    #     user_copy.roles.append(internal_role)
-    #     await user_col.replace_one(dict(internal_user), dict(user_copy))
-    #
-    # # Setup Super Admin user
-    # super_admin_role = await role_col.find_one({"id_": 2}, projection={'_id': False})
-    # super_admin_user = await user_col.find_one({"username": "super_admin"}, projection={'_id': False})
-    # if not super_admin_user:
-    #     user_col.insert_one(UserModel(username="super_admin", password="super_admin", hashed=False, roles=[2]))
-    # elif super_admin_role not in super_admin_user.roles:
-    #     user_copy = deepcopy(super_admin_user)
-    #     user_copy.roles.append(super_admin_role)
-    #     await user_col.replace_one(dict(super_admin_user), dict(user_copy))
-    #
-    # # Setup Admin user
-    # admin_role = await role_col.find_one({"id_": 3}, projection={'_id': False})
-    # admin_user = await user_col.find_one({"username": "admin"}, projection={'_id': False})
-    # if not admin_user:
-    #     user_col.insert_one(UserModel(username="admin", password="admin", hashed=False, roles=[3]))
-    # elif admin_role not in admin_user.roles:
-    #     user_copy = deepcopy(admin_user)
-    #     user_copy.roles.append(admin_role)
-    #     await user_col.replace_one(dict(admin_user), dict(user_copy))
-
 
 @_app.on_event("startup")
 async def start_banner():
@@ -120,13 +89,13 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         resource_permission = ""
 
         role_based = ["globals", "workflows"]
-        move_on = ["auth", "workflowqueue", "appapi", "docs", "redoc", "openapi.json"]
+        move_on = ["globals", "workflows", "auth", "workflowqueue", "appapi", "docs", "redoc", "openapi.json"]
         if resource_name not in move_on:
             if request_method == "POST":
                 resource_permission = "create"
-            elif resource_name in role_based:
-                response = await call_next(request)
-                return response
+            # elif resource_name in role_based:
+            #     response = await call_next(request)
+            #     return response
 
             if request_method == "GET":
                 resource_permission = "read"
@@ -187,10 +156,10 @@ _walkoff.include_router(auth.router,
                         tags=["auth"],
                         dependencies=[Depends(get_mongo_c)])
 
-# _walkoff.include_router(global_variables.router,
-#                         prefix="/globals",
-#                         tags=["globals"],
-#                         dependencies=[Depends(get_db)])
+_walkoff.include_router(global_variables.router,
+                        prefix="/globals",
+                        tags=["globals"],
+                        dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(users.router,
                         prefix="/users",

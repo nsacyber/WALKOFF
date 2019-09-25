@@ -1,21 +1,27 @@
 import logging
 from http import HTTPStatus
 from typing import List, Union
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from api.server.db import get_mongo_c, get_mongo_d
-from api.server.db.user import UserModel, EditUser, EditPersonalUser
-from api.server.db.role import DefaultRoles as Roles, RoleModel
-from api.server.utils.problems import UnauthorizedException, UniquenessException, InvalidInputException
+from api.server.db.user import DefaultUserUUID as DUsers, UserModel, EditUser, EditPersonalUser
+from api.server.db.role import DefaultRoleUUID as DRoles, RoleModel
+from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
+                                       DoesNotExistException)
 from api.security import get_jwt_identity
 from common import mongo_helpers
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 ignore_password = {"password": False}
+
+hidden_users = [
+    DUsers.INTERNAL_USER.value,
+]
 
 
 @router.get("/",
@@ -24,17 +30,21 @@ async def read_all_users(*, user_col: AsyncIOMotorCollection = Depends(get_mongo
     """
     Returns a list of all Users.
     """
-    return await mongo_helpers.get_all_items(user_col, UserModel, projection=ignore_password)
+    return await mongo_helpers.get_all_items(user_col, UserModel,
+                                             query={"id_": {"$nin": hidden_users}},
+                                             projection=ignore_password)
 
 
 @router.get("/{user_id}",
             response_model=UserModel, response_description="The requested User.")
 async def read_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
-                    user_id: Union[int, str]):
+                    user_id: Union[UUID, str]):
     """
     Returns the User for the specified username.
     """
-    return await mongo_helpers.get_item(user_col, UserModel, user_id, projection=ignore_password)
+    return await mongo_helpers.get_item(user_col, UserModel, user_id,
+                                        query={"id_": {"$nin": hidden_users}},
+                                        projection=ignore_password)
 
 
 @router.post("/", status_code=HTTPStatus.CREATED,
@@ -50,7 +60,7 @@ async def create_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c)
 @router.put("/{user_id}",
             response_model=UserModel, response_description="The newly updated User.")
 async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
-                      user_id: Union[int, str],
+                      user_id: Union[UUID, str],
                       new_user: EditUser,
                       request: Request):
     """
@@ -59,16 +69,20 @@ async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)
     user_col = walkoff_db.users
     role_col = walkoff_db.roles
 
-    user: UserModel = await mongo_helpers.get_item(user_col, UserModel, user_id)
+    user: UserModel = await mongo_helpers.get_item(user_col, UserModel, user_id, raise_exc=False)
+    if not user:
+        raise DoesNotExistException("update", "User", user_id)
     current_user: UserModel = await mongo_helpers.get_item(user_col, UserModel, await get_jwt_identity(request))
     user_string = f"{user.username} ({user.id_})"
 
-    if user.id_ == Roles.INTERNAL_USER or \
-            user.id_ == Roles.SUPER_ADMIN and Roles.SUPER_ADMIN not in current_user.roles:
+    if user.id_ == DUsers.INTERNAL_USER.value or \
+            user.id_ == DUsers.SUPER_ADMIN and DRoles.SUPER_ADMIN not in current_user.roles:
         raise UnauthorizedException("update", "User", f"{user.username} ({user.id_})")
 
-    if user.id_ == current_user.id_ or Roles.SUPER_ADMIN in current_user.roles or Roles.ADMIN in current_user.roles:
-        if Roles.SUPER_ADMIN not in current_user.roles and Roles.ADMIN not in current_user.roles:
+    if user.id_ == current_user.id_ \
+            or DRoles.SUPER_ADMIN in current_user.roles \
+            or DRoles.ADMIN in current_user.roles:
+        if DRoles.SUPER_ADMIN not in current_user.roles and DRoles.ADMIN not in current_user.roles:
             if new_user.roles and set(user.roles) != set(new_user.roles):
                 raise UnauthorizedException("edit roles for", "User", user_string)
             elif user.active != new_user.active:
@@ -100,7 +114,7 @@ async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)
 
 @router.delete("/{user_id}")
 async def delete_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
-                      user_id: Union[int, str],
+                      user_id: Union[UUID, str],
                       request: Request):
     user = await mongo_helpers.get_item(user_col, UserModel, user_id, projection=ignore_password, raise_exc=False)
     user_string = f"{user.username} ({user.id_})"
@@ -108,105 +122,6 @@ async def delete_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c)
     if user.id_ in range(1, 3) or user.id_ == await get_jwt_identity(request):
         raise UnauthorizedException("delete", "User", user_string)
     else:
-<<<<<<< HEAD
-        logger.warning(f'Cannot create user {user.username}. User already exists.')
-        return ProblemException(
-            HTTPStatus.BAD_REQUEST,
-            "Could not create user.",
-            f'User with username {user.username} already exists')
-#
-#
-# @router.get("/{user_id}")
-# def read_user(user_id: int, db_session: Session = Depends(get_db)):
-#     user = userid_getter(db_session=db_session, user_id=user_id)
-#     # check for internal user
-#     if user.id == 1:
-#         return None, HTTPStatus.FORBIDDEN
-#     else:
-#         return user.as_json()
-#
-#
-# @router.get("/personal_data/{username}")
-# def read_personal_user(username: str, request: Request, db_session: Session = Depends(get_db)):
-#     user = username_getter(db_session=db_session, username=username)
-#     current_id = await get_jwt_identity(request)
-#     if current_id == user.id:
-#         return user.as_json()
-#     else:
-#         return None, HTTPStatus.FORBIDDEN
-#
-#
-# @router.get("/permissions")
-# def list_permissions(request: Request, db_session: Session = Depends(get_db)):
-#     current_id = await get_jwt_identity(request)
-#     current_user = db_session.query(User).filter_by(id=current_id).first()
-#     return current_user.permission_json()
-#
-#
-# @router.put("/{user_id}")
-# def update_user(user_id: int, body: EditUser, request: Request, db_session: Session = Depends(get_db)):
-#     user = userid_getter(db_session=db_session, user_id=user_id)
-#     data = dict(body)
-#     current_user = await get_jwt_identity(request)
-#
-#     # check for internal user
-#     if user.id == 1:
-#         return None, HTTPStatus.FORBIDDEN
-#
-#     if user.id == current_user:
-#         # check for super_admin, allows ability to update username/password but not roles/active
-#         if user.id == 2:
-#             user.set_roles([2])
-#             user.active = True
-#             return update_user_fields(data, user, db_session)
-#         return role_update_user_fields(data, user, db_session, update=True)
-#     else:
-#         # check for super_admin
-#         if user.id == 2:
-#             return None, HTTPStatus.FORBIDDEN
-#         else:
-#             response = role_update_user_fields(data, user, db_session, update=True)
-#             if isinstance(response, tuple) and response[1] == HTTPStatus.FORBIDDEN:
-#                 logger.error(f"User {current_user} does not have permission to update user {user_id.id}")
-#                 return ProblemException(
-#                     HTTPStatus.FORBIDDEN,
-#                     "User could not be updated.",
-#                     f"Current user does not have permission to update user {user.id}.")
-#             else:
-#                 return response
-#
-#
-# @router.put("/personal_data/{username}")
-# def update_personal_user(username: str, body: EditPersonalUser, request: Request, db_session: Session = Depends(get_db)):
-#     user = username_getter(db_session=db_session, username=username)
-#     data = dict(body)
-#     current_user = await get_jwt_identity(request)
-#
-#     # check for internal user
-#     if user.id == 1:
-#         return ProblemException(
-#             HTTPStatus.FORBIDDEN,
-#             "Could not update user.",
-#             f"Current user does not have permission to update user {user.id}.")
-#
-#     # check password
-#     if user.verify_password(body.old_password):
-#         if user.id == current_user:
-#             # allow ability to update username/password but not roles/active
-#             if user.id == 2:
-#                 user.set_roles([2])
-#                 user.active = True
-#                 return update_user_fields(data, user, db_session)
-#             else:
-#                 return update_user_fields(data, user, db_session)
-#         else:
-#             return ProblemException(
-#                 HTTPStatus.FORBIDDEN,
-#                 "Could not update user.",
-#                 f"Current user does not have permission to update user {user.id}.")
-#     else:
-#         return None, HTTPStatus.FORBIDDEN
-=======
         return await mongo_helpers.delete_item(user_col, UserModel, user_id)
 
 
@@ -228,7 +143,6 @@ async def update_personal_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get
     return await update_user(walkoff_db=walkoff_db, user_id=await get_jwt_identity(request),
                              new_user=EditUser(**d), request=request)
 
->>>>>>> fa1476822f9d6fd8f115a8548b98741e41760d71
 #
 #
 # def role_update_user_fields(data, user, db_session, update=False):
@@ -277,29 +191,3 @@ async def update_personal_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get
 #         return None, HTTPStatus.FORBIDDEN
 #
 #
-<<<<<<< HEAD
-# @router.delete("/{user_id}")
-# def delete_user(user_id: int, request: Request, db_session: Session = Depends(get_db)):
-#     user = userid_getter(db_session=db_session, user_id=user_id)
-#     if user.id != await get_jwt_identity(request) and user.id != 1 and user.id != 2:
-#         db_session.delete(user)
-#         db_session.commit()
-#         logger.info(f"User {user.username} deleted")
-#         return None, HTTPStatus.NO_CONTENT
-#     else:
-#         if user.id == await get_jwt_identity(request):
-#             logger.error(f"Could not delete user {user.id}. User is current user.")
-#             return ProblemException(HTTPStatus.FORBIDDEN, "Could not delete user.",
-#                                               'Current user cannot delete self.')
-#         if user.id == 2:
-#             logger.error(f"Could not delete user {user.username}. "
-#                                      f"You do not have permission to delete Super Admin.")
-#             return ProblemException(HTTPStatus.FORBIDDEN, "Could not delete user.",
-#                                               'A user cannot delete Super Admin.')
-#         if user.id == 1:
-#             logger.error(f"Could not delete user {user.username}. "
-#                                      f"You do not have permission to delete WALKOFF's internal user.")
-#             return ProblemException(HTTPStatus.FORBIDDEN, "Could not delete user.",
-#                                               "A user cannot delete WALKOFF's internal user.")
-=======
->>>>>>> fa1476822f9d6fd8f115a8548b98741e41760d71

@@ -2,8 +2,12 @@ import logging
 from copy import deepcopy
 from typing import List
 from enum import Enum
+from uuid import UUID
 
 from pydantic import BaseModel
+
+from api.server.db.user import UserModel
+from common import mongo_helpers
 
 logger = logging.getLogger(__name__)
 
@@ -52,12 +56,13 @@ async def default_permissions(curr_user_id, walkoff_db, resource_name):
                             role_permissions=role_permissions)
 
 
-async def auth_check(curr_user_id: int, resource_id: str, permission: str, resource_name: str, walkoff_db):
+async def auth_check(curr_user_id: UUID, resource_id: str, permission: str, resource_name: str, walkoff_db):
     user_col = walkoff_db.users
     resource_col = walkoff_db[resource_name]
 
-    curr_user = await user_col.find_one({"id": curr_user_id}, projection={'_id': False})
-    curr_roles = curr_user["roles"]
+    # curr_user = await user_col.find_one({"id": curr_user_id}, projection={'_id': False})
+    curr_user = await mongo_helpers.get_item(user_col, UserModel, curr_user_id)
+    curr_roles = curr_user.roles
 
     resource = await resource_col.find_one({"id_": resource_id}, projection={'_id': False})
     if resource:

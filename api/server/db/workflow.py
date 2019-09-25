@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class WorkflowModel(BaseModel):
     id_: UUID
     errors: List[str] = []
-    is_valid: bool = self.error_check()
+    is_valid: bool = False  # self.error_check()
     name: str
     start: UUID
     description: str = ""
@@ -65,7 +65,7 @@ class WorkflowModel(BaseModel):
 
     @classmethod
     @validator('actions')
-    def actions_must_exist(cls, actions, workflow, **kwargs):
+    async def actions_must_exist(cls, actions, workflow, **kwargs):
         app_api_col = mongo.client.walkoff_db.apps
         ret = []
         for action in actions:
