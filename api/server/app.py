@@ -9,7 +9,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
-from api.server.endpoints import appapi, dashboards, workflows, users, console, results,  auth  #, roles, users,
+from api.server.endpoints import appapi, dashboards, workflows, users, console, results,  auth, roles
 from api.server.db import DBEngine, get_db, MongoEngine, get_mongo_c
 from api.server.db.user import UserModel
 from api.server.db.role import RoleModel
@@ -196,11 +196,11 @@ _walkoff.include_router(users.router,
                         prefix="/users",
                         tags=["users"],
                         dependencies=[Depends(get_mongo_c)])
-#
-# _walkoff.include_router(roles.router,
-#                         prefix="/roles",
-#                         tags=["roles"],
-#                         dependencies=[Depends(get_mongo_c)])
+
+_walkoff.include_router(roles.router,
+                        prefix="/roles",
+                        tags=["roles"],
+                        dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(appapi.router,
                         prefix="/apps",

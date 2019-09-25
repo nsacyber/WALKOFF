@@ -1,15 +1,17 @@
 import logging
 from http import HTTPStatus
 from typing import List, Union
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from api.server.db import get_mongo_c, get_mongo_d
-from api.server.db.user import UserModel, EditUser, EditPersonalUser
-from api.server.db.role import DefaultRoles as Roles, RoleModel
-from api.server.utils.problems import UnauthorizedException, UniquenessException, InvalidInputException
+from api.server.db.user import DefaultUserUUID as DUsers, UserModel, EditUser, EditPersonalUser
+from api.server.db.role import DefaultRoleUUID as DRoles, RoleModel
+from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
+                                       DoesNotExistException)
 from api.security import get_jwt_identity
 from common import mongo_helpers
 
@@ -30,7 +32,7 @@ async def read_all_users(*, user_col: AsyncIOMotorCollection = Depends(get_mongo
 @router.get("/{user_id}",
             response_model=UserModel, response_description="The requested User.")
 async def read_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
-                    user_id: Union[int, str]):
+                    user_id: Union[UUID, str]):
     """
     Returns the User for the specified username.
     """
@@ -50,7 +52,7 @@ async def create_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c)
 @router.put("/{user_id}",
             response_model=UserModel, response_description="The newly updated User.")
 async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
-                      user_id: Union[int, str],
+                      user_id: Union[UUID, str],
                       new_user: EditUser,
                       request: Request):
     """
@@ -59,16 +61,20 @@ async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)
     user_col = walkoff_db.users
     role_col = walkoff_db.roles
 
-    user: UserModel = await mongo_helpers.get_item(user_col, UserModel, user_id)
+    user: UserModel = await mongo_helpers.get_item(user_col, UserModel, user_id, raise_exc=False)
+    if not user:
+        raise DoesNotExistException("update", "User", user_id)
     current_user: UserModel = await mongo_helpers.get_item(user_col, UserModel, await get_jwt_identity(request))
     user_string = f"{user.username} ({user.id_})"
 
-    if user.id_ == Roles.INTERNAL_USER or \
-            user.id_ == Roles.SUPER_ADMIN and Roles.SUPER_ADMIN not in current_user.roles:
+    if user.id_ == DUsers.INTERNAL_USER.value or \
+            user.id_ == DUsers.SUPER_ADMIN and DRoles.SUPER_ADMIN not in current_user.roles:
         raise UnauthorizedException("update", "User", f"{user.username} ({user.id_})")
 
-    if user.id_ == current_user.id_ or Roles.SUPER_ADMIN in current_user.roles or Roles.ADMIN in current_user.roles:
-        if Roles.SUPER_ADMIN not in current_user.roles and Roles.ADMIN not in current_user.roles:
+    if user.id_ == current_user.id_ \
+            or DRoles.SUPER_ADMIN in current_user.roles \
+            or DRoles.ADMIN in current_user.roles:
+        if DRoles.SUPER_ADMIN not in current_user.roles and DRoles.ADMIN not in current_user.roles:
             if new_user.roles and set(user.roles) != set(new_user.roles):
                 raise UnauthorizedException("edit roles for", "User", user_string)
             elif user.active != new_user.active:
@@ -100,7 +106,7 @@ async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)
 
 @router.delete("/{user_id}")
 async def delete_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
-                      user_id: Union[int, str],
+                      user_id: Union[UUID, str],
                       request: Request):
     user = await mongo_helpers.get_item(user_col, UserModel, user_id, projection=ignore_password, raise_exc=False)
     user_string = f"{user.username} ({user.id_})"

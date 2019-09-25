@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from enum import Enum
 from typing import Union
+from uuid import uuid4, UUID
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from passlib.hash import pbkdf2_sha512
@@ -13,6 +14,8 @@ from typing import List
 from pydantic import BaseModel, Any, validator, Schema
 from api.server.db import mongo
 from fastapi import Depends
+
+from common.helpers import preset_uuid
 
 
 logger = logging.getLogger(__name__)
@@ -28,13 +31,10 @@ logger = logging.getLogger(__name__)
 #     active: bool = None
 
 
-class DefaultUsers(int, Enum):
-    INTERNAL_USER = 1
-    SUPER_ADMIN = 2
-    ADMIN = 3
-
-
-PROTECTED_USERS = range(DefaultUsers.INTERNAL_USER, DefaultUsers.ADMIN)
+class DefaultUserUUID(Enum):
+    INTERNAL_USER = preset_uuid("internal_user")
+    SUPER_ADMIN = preset_uuid("sadmin_user")
+    ADMIN = preset_uuid("admin_user")
 
 
 class EditUser(BaseModel):
@@ -44,7 +44,7 @@ class EditUser(BaseModel):
     old_password: str = ""
     new_password: str = ""
     active: bool = True
-    roles: List[RoleModel] = []
+    roles: List[UUID] = []
 
 
 class EditPersonalUser(BaseModel):
@@ -61,11 +61,11 @@ class EditPersonalUser(BaseModel):
 
 
 class UserModel(BaseModel):
-    id_: int
+    id_: UUID = uuid4()
     hashed: bool = False
     username: str
     password: str = None
-    roles: List[int]
+    roles: List[UUID]
     active: bool = True
     last_login_at: datetime = None
     current_login_at: datetime = None

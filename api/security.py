@@ -63,7 +63,7 @@ async def create_access_token(user: UserModel, fresh=False, expires_delta: timed
         user_claims = await add_claims_to_access_token(user)
     to_encode = {"jti": str(uuid.uuid4()),
                  "exp": expire,
-                 "identity": user.id_,
+                 "identity": str(user.id_),
                  "fresh": fresh,
                  "type": "access",
                  "user_claims": user_claims}
@@ -79,7 +79,7 @@ async def create_refresh_token(user: UserModel, expires_delta: timedelta = None)
         expire = datetime.utcnow() + timedelta(days=FastApiConfig.JWT_REFRESH_TOKEN_EXPIRES)
     to_encode = {"jti": str(uuid.uuid4()),
                  "exp": expire,
-                 "identity": user.id_,
+                 "identity": str(user.id_),
                  "type": "refresh"}
     encoded_jwt = jwt.encode(to_encode, FastApiConfig.SECRET_KEY, algorithm=FastApiConfig.ALGORITHM)
     return encoded_jwt
@@ -94,6 +94,7 @@ async def decode_token(to_decode):
     except jwt.exceptions.ExpiredSignatureError:
         return None
 
+    decoded_jtw["user_claims"]["roles"] = [uuid.UUID(role) for role in decoded_jtw["user_claims"]["roles"]]
     return decoded_jtw
 
 
@@ -117,7 +118,7 @@ async def get_jwt_claims(request: Request):
 
 
 async def add_claims_to_access_token(user: UserModel):
-    return {'roles': [role for role in user.roles], 'username': user.username} if user is not None else {}
+    return {'roles': [str(role) for role in user.roles], 'username': user.username} if user is not None else {}
 
 
 async def user_has_correct_roles(accepted_roles, request: Request, all_required=False):

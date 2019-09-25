@@ -173,4 +173,3 @@ async def delete_workflow(request: Request, workflow_name_id: str,
             return
     else:
         raise HTTPException(status_code=403, detail="Forbidden")
-

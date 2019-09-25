@@ -21,7 +21,7 @@ async def mongo_filter(model: Union[Type[BaseModel], Type[dict]],
     :param item_id: UUID or name of desired item
     :return: dict which acts as a mongo filter
     """
-    identifier = "id_" if type(item_id) in (UUID, int) else model._secondary_id
+    identifier = "id_" if type(item_id) is UUID else model._secondary_id
     return {identifier: item_id}
 
 
@@ -40,19 +40,21 @@ async def id_and_name(model: Union[Type[BaseModel], Type[dict]],
 async def get_all_items(collection: AsyncIOMotorCollection,
                         model: Type[BaseModel],
                         *,
+                        query: dict = None,
                         projection: dict = None):
     """
     Retrieve all items from a collection
 
     :param collection: Collection to query
     :param model: Class which the JSON in the collection represents
-    :param projection: Filter to exclude from mongo query result
+    :param query: Return only objects that contain the query
+    :param projection: Filter to exclude keys from each result
     :return: List of objects in the collection
     """
     projection = {} if projection is None else projection
     projection.update(ignore_mongo_id)
 
-    collection_json = await collection.find(projection=projection).to_list(None)
+    collection_json = await collection.find(filter=query, projection=projection).to_list(None)
     return [model(**item_json) for item_json in collection_json]
 
 

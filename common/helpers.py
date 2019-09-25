@@ -161,3 +161,8 @@ def validate_uuid(id_, stringify=False):
         return uuid_ if not stringify else id_
     except (ValueError, TypeError):
         return None
+
+
+def preset_uuid(s: str):
+    """Generates a UUID from string (deterministic)"""
+    return UUID(bytes=s.encode().rjust(16, b'\0'))
