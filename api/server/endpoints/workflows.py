@@ -57,7 +57,7 @@ async def create_workflow(request: Request, new_workflow: WorkflowModel,
         permissions_model = await default_permissions(curr_user_id, walkoff_db, "global_variables")
         new_workflow.permissions = permissions_model
     elif access_level == AccessLevel.ROLE_BASED:
-        await append_super_and_internal(new_workflow.permissions)
+        new_workflow.permissions = await append_super_and_internal(new_workflow.permissions)
         new_workflow.permissions.creator = curr_user_id
 
     # copying workflows
@@ -68,7 +68,7 @@ async def create_workflow(request: Request, new_workflow: WorkflowModel,
     try:
         return await mongo_helpers.create_item(workflow_col, WorkflowModel, new_workflow)
     except:
-        UniquenessException("workflow", "create", new_workflow.name)
+        raise UniquenessException("workflow", "create", new_workflow.name)
 
 
 async def import_existing(curr_user_id: UUID, old_workflow: WorkflowModel, new_workflow: WorkflowModel, walkoff_db):
@@ -135,6 +135,7 @@ async def read_workflow(request: Request, workflow_name_id, mode: str = None,
     """
     walkoff_db = get_mongo_d(request)
     curr_user_id = UUID(await get_jwt_identity(request))
+
     workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, workflow_name_id)
 
     to_read = await auth_check(workflow, curr_user_id, "read", walkoff_db=walkoff_db)
@@ -178,7 +179,11 @@ async def update_workflow(request: Request, updated_workflow: WorkflowModel, wor
             await append_super_and_internal(updated_workflow.permissions)
             updated_workflow.permissions.creator = curr_user_id
 
-        return await mongo_helpers.update_item(workflow_col, WorkflowModel, old_workflow.id_, updated_workflow)
+        try:
+            return await mongo_helpers.update_item(workflow_col, WorkflowModel, old_workflow.id_, updated_workflow)
+        except:
+            raise UniquenessException("workflow", "update", updated_workflow.name)
+
     else:
         raise HTTPException(status_code=403, detail="Forbidden")
 

@@ -138,7 +138,7 @@ async def create_global(request: Request, new_global: GlobalVariable,
         new_global.value = fernet_encrypt(key, new_global.value)
         return await mongo_helpers.create_item(global_col, GlobalVariable, new_global)
     except:
-        UniquenessException("global_variable", "create", new_global.name)
+        raise UniquenessException("global_variable", "create", new_global.name)
 
 
 @router.put("/{global_var}",

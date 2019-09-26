@@ -50,26 +50,23 @@ async def append_super_and_internal(permissions_model):
     super_user_permission = RolePermissions(**super_user)
 
     count = 0
-    copy = deepcopy(permissions_model.role_permissions)
     for elem in permissions_model.role_permissions:
         if elem.role == DefaultRoleUUID.INTERNAL_USER.value:
-            copy[count] = internal_user_permission
+            permissions_model.role_permissions[count] = internal_user_permission
         elif elem.role == DefaultRoleUUID.SUPER_ADMIN.value:
-            copy[count] = super_user_permission
+            permissions_model.role_permissions[count] = super_user_permission
         count = count + 1
-    permissions_model.role_permissions = copy
-    print(copy)
 
-    print(count)
-    #
-    # to_append = []
-    # if DefaultRoleUUID.INTERNAL_USER.value not in existing_roles:
-    #     to_append.append(internal_user_permission)
-    # if DefaultRoleUUID.SUPER_ADMIN.value not in existing_roles:
-    #     to_append.append(super_user_permission)
-    #
-    # if to_append:
-    #     permissions_model.role_permissions += to_append
+    to_append = []
+    if DefaultRoleUUID.INTERNAL_USER.value not in existing_roles:
+        to_append.append(internal_user_permission)
+    if DefaultRoleUUID.SUPER_ADMIN.value not in existing_roles:
+        to_append.append(super_user_permission)
+
+    if to_append:
+        permissions_model.role_permissions += to_append
+
+    return permissions_model
 
 
 async def default_permissions(curr_user_id, walkoff_db, resource_name):
