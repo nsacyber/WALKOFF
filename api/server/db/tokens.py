@@ -3,7 +3,7 @@ from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 
-from api.fastapi_config import FastApiConfig
+from api.server.fastapi_config import FastApiConfig
 
 
 NUMBER_OF_PRUNE_OPERATIONS = 0

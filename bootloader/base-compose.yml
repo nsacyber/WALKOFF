@@ -26,8 +26,8 @@ services:
     image: bitnami/redis:latest
     networks:
       - walkoff_network
-#    ports:
-#      - "6379:6379"
+    ports:
+      - "6379:6379"
     environment:
 #      - REDIS_REPLICATION_MODE=master
       - REDIS_MASTER_PASSWORD_FILE=/run/secrets/walkoff_redis_key

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class WidgetModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     name: str
     type_: str
     x: int
@@ -23,7 +23,7 @@ class WidgetModel(BaseModel):
 
 
 class DashboardModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     name: str
     widgets: List[WidgetModel]
     _secondary_id = "name"

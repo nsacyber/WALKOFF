@@ -12,7 +12,7 @@ from api.server.db.user import DefaultUserUUID as DUsers, UserModel, EditUser, E
 from api.server.db.role import DefaultRoleUUID as DRoles, RoleModel
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
                                        DoesNotExistException)
-from api.security import get_jwt_identity
+from api.server.security import get_jwt_identity
 from common import mongo_helpers
 
 logger = logging.getLogger(__name__)
@@ -26,13 +26,16 @@ hidden_users = [
 
 @router.get("/",
             response_model=List[UserModel], response_description="List of all users")
-async def read_all_users(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def read_all_users(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                         page: int = 1,
+                         num_per_page: int = 20):
     """
     Returns a list of all Users.
     """
     return await mongo_helpers.get_all_items(user_col, UserModel,
                                              query={"id_": {"$nin": hidden_users}},
-                                             projection=ignore_password)
+                                             projection=ignore_password,
+                                             page=page, num_per_page=num_per_page)
 
 
 @router.get("/{user_id}",

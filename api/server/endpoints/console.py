@@ -1,70 +1,95 @@
 import logging
 from uuid import UUID
-from http import HTTPStatus
+import asyncio
+import json
 
-import gevent
-from fastapi import APIRouter, Depends
-from gevent.lock import RLock
-from gevent.queue import Queue
-from flask import Blueprint, Response, current_app, request, jsonify
+from fastapi import APIRouter
 from pydantic import BaseModel
 from starlette.websockets import WebSocket
 
-from api.server.utils.helpers import sse_format
+from common.message_types import message_dumps
 from api_gateway.server.problem import invalid_id_problem
+from common.config import config
+from common.redis_helpers import connect_to_redis_pool
 
-console_stream = Blueprint('console_stream', __name__)
-console_stream_subs = {}
+# console_stream = Blueprint('console_stream', __name__)
+console_stream_subs = set()
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+CONSOLE_STREAM_GLOB = "console_stream"
+
 
 class ConsoleBody(BaseModel):
     message: str
+    close: str = None
 
 
-async def push_to_console_stream_queue(console_message, execution_id):
-    sse_event_text = sse_format(data=console_message, event='log', event_id=execution_id)
-    if execution_id in console_stream_subs:
-        console_stream_subs[execution_id].put(sse_event_text)
-    if 'all' in console_stream_subs:
-        console_stream_subs['all'].put(sse_event_text)
+# async def push_to_console_stream_queue(console_message, execution_id):
+#     sse_event_text = sse_format(data=console_message, event='log', event_id=execution_id)
+#     if execution_id in console_stream_subs:
+#         console_stream_subs[execution_id].put(sse_event_text)
+#     if 'all' in console_stream_subs:
+#         console_stream_subs['all'].put(sse_event_text)
 
 
-@router.post("/logger")
+@router.post("/logger/")
 async def create_console_message(body: ConsoleBody, wf_exec_id: UUID = None):
-    workflow_execution_id = wf_exec_id
     logger.info(f"App console log: {body.message}")
-    gevent.spawn(push_to_console_stream_queue, body.message, workflow_execution_id)
+    if wf_exec_id in console_stream_subs:
+        redis_stream = CONSOLE_STREAM_GLOB + "." + str(wf_exec_id)
+    elif 'all' in console_stream_subs:
+        redis_stream = CONSOLE_STREAM_GLOB + ".all"
+    else:
+        # return body.message
+        redis_stream = CONSOLE_STREAM_GLOB + "." + str(wf_exec_id)
+    async with connect_to_redis_pool(config.REDIS_URI) as conn:
+        key = f"{redis_stream}"
+        value = body.json()
+        await conn.lpush(key, value)
 
-    return body.message
+    return str(body.message)
 
 
-@router.websocket_route("/log")
+
+@router.websocket("/log/")
 async def read_console_message(websocket: WebSocket, exec_id: UUID = None):
     await websocket.accept()
-    execution_id = exec_id
-    logger.info(f"console log subscription for {execution_id}")
-    if execution_id != 'all':
-        try:
-            UUID(execution_id)
-        except ValueError:
-            return invalid_id_problem('console log', 'read', execution_id)
+    redis_stream = CONSOLE_STREAM_GLOB + "." + str(exec_id)
+    if exec_id not in console_stream_subs:
+        console_stream_subs.add(exec_id)
+    logger.info(f"console log subscription for {exec_id}")
+    # if execution_id != 'all':
+    #     try:
+    #         UUID(execution_id)
+    #     except ValueError:
+    #         return invalid_id_problem('console log', 'read', execution_id)
 
     async def console_log_generator():
-        console_stream_subs[execution_id] = events = console_stream_subs.get(execution_id, Queue())
-        try:
-            while True:
-                event = events.get().encode()
-                logger.info(f"Sending console message for {execution_id}: {event}")
-                await websocket.send_text(event)
-        except GeneratorExit:
-            console_stream_subs.pop(execution_id)
-            await websocket.close(code=1000)
-            logger.info(f"console log unsubscription for {execution_id}")
+        async with connect_to_redis_pool(config.REDIS_URI) as conn:
+            try:
+                while True:
+                    await asyncio.sleep(1)
+                    event = await conn.rpop(redis_stream)
+                    if event is not None:
+                        event_object = json.loads(event.decode("ascii"))
+                        message = event_object["message"]
+                        await websocket.send_text(message)
+                        logger.info(f"Sending console message for {exec_id}: {message}")
+                        if event_object["close"] == "Done":
+                            await conn.delete(redis_stream)
+                            console_stream_subs.remove(exec_id)
+                            await websocket.close(code=1000)
+            except Exception as e:
+                await conn.delete(redis_stream)
+                console_stream_subs.remove(exec_id)
+                await websocket.close(code=1000)
+                logger.info(f"Error: {e}")
 
-    return Response(console_log_generator(), mimetype="text/event-stream")
+    return await console_log_generator()
+
+    # Response(console_log_generator(), mimetype="text/event-stream")
 
 
 #

@@ -128,7 +128,9 @@ class Worker:
                                                                        worker.workflow.id_,
                                                                        worker.workflow.name)
                 finally:
+                    status.websocket_finished = True
                     await send_status_update(session, workflow.execution_id, status)
+
 
             await Worker.shutdown()
 

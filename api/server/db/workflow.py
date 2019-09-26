@@ -12,7 +12,6 @@ from api.server.db.condition import ConditionModel
 from api.server.db.transform import TransformModel
 from api.server.db.branch import BranchModel
 from api.server.db.workflow_variable import WorkflowVariableModel
-from api.server.db import Base
 from api.server.db.action import ActionModel
 from api.server.db.trigger import TriggerModel
 from api.server.db.permissions import PermissionsModel

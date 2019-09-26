@@ -25,11 +25,13 @@ async def read_all_app_names(*, app_api_col: AsyncIOMotorCollection = Depends(ge
 
 @router.get("/apis/",
             response_model=List[AppApiModel], response_description="List of all App APIs currently loaded in WALKOFF")
-async def read_all_app_apis(*, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def read_all_app_apis(*, app_api_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                            page: int = 1,
+                            num_per_page: int = 20):
     """
     Returns a list of all App APIs currently loaded in WALKOFF.
     """
-    return await mongo_helpers.get_all_items(app_api_col, AppApiModel)
+    return await mongo_helpers.get_all_items(app_api_col, AppApiModel, page=page, num_per_page=num_per_page)
 
 
 @router.post("/apis/", status_code=HTTPStatus.CREATED,

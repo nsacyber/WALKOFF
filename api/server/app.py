@@ -1,5 +1,4 @@
 import logging
-from copy import deepcopy
 from http import HTTPStatus
 
 from fastapi import FastAPI, Depends
@@ -10,22 +9,20 @@ from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
 from api.server.endpoints import appapi, dashboards, workflows, users, console, results,  auth, roles, global_variables
-from api.server.db import DBEngine, get_db, MongoEngine, get_mongo_c
-from api.server.db.user import UserModel
-from api.server.db.role import RoleModel
+from api.server.endpoints import appapi, dashboards, users, auth, roles
+from api.server.db import MongoManager, get_mongo_c
 
 from api.server.db.user_init import default_roles, default_users
 from api.server.utils.problems import ProblemException
-from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
+from api.server.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
     get_roles_by_resource_permission
-from common.config import config, static
+from common.config import static
 
 logger = logging.getLogger(__name__)
 
 _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _walkoff = FastAPI(openapi_prefix="/walkoff/api")
-_db_manager = DBEngine()
-_mongo_manager = MongoEngine()
+_mongo_manager = MongoManager()
 
 _app.mount("/walkoff/api", _walkoff)
 _app.mount("/walkoff/client", StaticFiles(directory=static.CLIENT_PATH), name="static")
@@ -62,7 +59,6 @@ async def start_banner():
 @_walkoff.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     try:
-        request.state.db = _db_manager.session_maker()
         request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
         request.state.mongo_d = _mongo_manager.client.walkoff_db
         response = await call_next(request)
@@ -70,8 +66,6 @@ async def db_session_middleware(request: Request, call_next):
         response = await call_next(request)
     # except Exception as e:
     #     response = JSONResponse({"Error": "Internal Server Error", "message": str(e)}, status_code=500)
-    finally:
-        request.state.db.close()
 
     return response
 
@@ -176,15 +170,15 @@ _walkoff.include_router(appapi.router,
                         tags=["apps"],
                         dependencies=[Depends(get_mongo_c)])
 
-# _walkoff.include_router(results.router,
-#                         prefix="/internal",
-#                         tags=["internal"],
-#                         dependencies=[Depends(get_mongo_c)])
+_walkoff.include_router(results.router,
+                        prefix="/internal",
+                        tags=["internal"],
+                        dependencies=[Depends(get_mongo_c)])
 
-# _walkoff.include_router(console.router,
-#                         prefix="/streams/console",
-#                         tags=["console"],
-#                         dependencies=[Depends(get_mongo_c)])
+_walkoff.include_router(console.router,
+                        prefix="/console",
+                        tags=["console"],
+                        dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(dashboards.router,
                         prefix="/dashboards",
@@ -254,7 +248,3 @@ app = _app
 #     response.headers["Pragma"] = "no-cache"
 #     response.headers["X-Accel-Buffering"] = "no"
 #     return response
-#
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class BranchModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     source_id: UUID
     destination_id: UUID
     _walkoff_type: str = "branch"

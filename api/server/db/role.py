@@ -1,14 +1,13 @@
 from enum import Enum
 from uuid import uuid4, UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import List
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from api.server.db.resource import ResourceModel
 
 # from api.server.db import TrackModificationsMixIn
-from api.server.db import Base
 
 from common.helpers import preset_uuid
 
@@ -24,14 +23,9 @@ class DefaultRoleUUID(Enum):
 
 DefaultRoleUUIDS = [v.value for v in DefaultRoleUUID.__members__.values()]
 
-# class AddRoleModel(BaseModel):
-#     name: str
-#     description: str = None
-#     resources: List[ResourceModel] = None
-
 
 class RoleModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     name: str = None
     description: str = None
     resources: List[ResourceModel] = None

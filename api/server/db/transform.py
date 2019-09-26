@@ -3,13 +3,12 @@ from uuid import uuid4, UUID
 from typing import List
 from pydantic import BaseModel, ValidationError, validator
 
-from api.server.db import Base
 
 logger = logging.getLogger(__name__)
 
 
 class TransformModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     errors: List[str] = []
     is_valid: bool = True
     app_name: str

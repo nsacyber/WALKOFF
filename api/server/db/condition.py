@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConditionModel(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     errors: List[str] = []
     is_valid: bool = True
     app_name: str

@@ -3,18 +3,18 @@ import logging
 from typing import List, Union
 
 from motor.motor_asyncio import AsyncIOMotorCollection
-from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
-from uuid import uuid4
 from uuid import UUID
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.requests import Request
 
-from api.server.db.global_variable import GlobalVariableTemplate, GlobalVariable
+from api.server.db.global_variable import GlobalVariable
 
 from api.server.db import get_mongo_c, get_mongo_d
-from api.security import get_jwt_identity
+
+from api.server.security import get_jwt_identity
+
 from api.server.db.permissions import auth_check, default_permissions, creator_only_permissions, AccessLevel
 from api.server.utils.problems import UniquenessException
 from common import mongo_helpers
@@ -137,7 +137,7 @@ async def create_global(request: Request, new_global: GlobalVariable,
         key = base64.b64encode(key)
         new_global.value = fernet_encrypt(key, new_global.value)
         return await mongo_helpers.create_item(global_col, GlobalVariable, new_global)
-    except IntegrityError:
+    except:
         UniquenessException("global_variable", "create", new_global.name)
 
 
@@ -174,7 +174,7 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
             key = base64.b64encode(key)
             updated_global.value = fernet_encrypt(key, updated_global.value)
             return await mongo_helpers.update_item(global_col, GlobalVariable, global_id, updated_global)
-        except (IntegrityError, StatementError):
+        except:
             raise UniquenessException("global_variable", "update", updated_global.name)
     else:
         raise HTTPException(status_code=403, detail="Forbidden")

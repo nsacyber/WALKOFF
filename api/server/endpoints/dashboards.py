@@ -17,11 +17,13 @@ router = APIRouter()
 
 @router.get("/",
             response_model=List[DashboardModel], response_description="List of all Dashboards.")
-async def read_all_dashboards(*, dashboard_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def read_all_dashboards(*, dashboard_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                              page: int = 1,
+                              num_per_page: int = 20):
     """
     Returns a list of all Dashboards.
     """
-    return await mongo_helpers.get_all_items(dashboard_col, DashboardModel)
+    return await mongo_helpers.get_all_items(dashboard_col, DashboardModel, page=page, num_per_page=num_per_page)
 
 
 @router.post("/", status_code=HTTPStatus.CREATED,

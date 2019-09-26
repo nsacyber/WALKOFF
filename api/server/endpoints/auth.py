@@ -5,13 +5,13 @@ import logging
 
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
-from api.security import (create_access_token, create_refresh_token, get_jwt_identity,
-                          get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request)
-from api.fastapi_config import FastApiConfig
-from api.server.db import get_db, get_mongo_c, get_mongo_d
+from api.server.security import (create_access_token, create_refresh_token, get_jwt_identity,
+                                 get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request)
+from api.server.fastapi_config import FastApiConfig
+from api.server.db import get_mongo_d
 from api.server.db.user import UserModel
 from api.server.db.tokens import revoke_token, AuthModel, TokenModel
-from api.server.utils.problems import ProblemException, InvalidInputException
+from api.server.utils.problems import ProblemException
 
 from common import mongo_helpers
 
@@ -33,11 +33,18 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-async def _authenticate_and_grant_tokens(request: Request, users_col: AsyncIOMotorCollection, creds: AuthModel, with_refresh=False):
+@router.post("/login")
+async def login(*, walkoff_db: AsyncIOMotorCollection = Depends(get_mongo_d),
+                creds: AuthModel,
+                request: Request):
+
+    user_col = walkoff_db.users
+    settings_col = walkoff_db.settings
+
     if not (creds.username and creds.password):
         raise invalid_credentials_problem
 
-    user = await mongo_helpers.get_item(users_col, UserModel, creds.username, raise_exc=False)
+    user = await mongo_helpers.get_item(user_col, UserModel, creds.username, raise_exc=False)
 
     if user is None:
         raise invalid_credentials_problem
@@ -46,27 +53,17 @@ async def _authenticate_and_grant_tokens(request: Request, users_col: AsyncIOMot
         raise user_deactivated_problem
 
     if await user.verify_password(creds.password):
-        response = {'access_token': await create_access_token(user=user, fresh=True)}
-        if with_refresh:
-            response['refresh_token'] = await create_refresh_token(user=user)
+        response = {'access_token': await create_access_token(settings_col, user=user, fresh=True),
+                    'refresh_token': await create_refresh_token(settings_col, user=user)}
         await user.login(request.client.host)
         return response
     else:
         raise invalid_credentials_problem
 
 
-@router.post("/login")
-async def login(creds: AuthModel, request: Request, walkoff_db: AsyncIOMotorCollection = Depends(get_mongo_d)):
-    user_col = walkoff_db.users
-    return await _authenticate_and_grant_tokens(request=request, users_col=user_col, creds=creds, with_refresh=True)
-
-
-# def fresh_login(creds: AuthModel, request: Request, users_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
-#     return _authenticate_and_grant_tokens(request=request, users_col=users_col, creds=creds)
-
-
 @router.post("/refresh")
-async def refresh(request: Request, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)):
+async def refresh(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
+                  request: Request):
     user_col = walkoff_db.users
 
     await verify_jwt_refresh_token_in_request(walkoff_db=walkoff_db, request=request)
