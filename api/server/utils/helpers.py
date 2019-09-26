@@ -24,10 +24,8 @@ def __list_valid_directories(path):
 
 def list_apps(path):
     """Get a list of the apps.
-
     Args:
         path (str): The path to the apps folder
-
     Returns:
         A list of the apps given the apps path or the apps_path in the configuration.
     """
@@ -142,8 +140,8 @@ def regenerate_workflow_ids(workflow):
     tags = workflow.get('tags', [])
     id_mapping["tags"] = tags
 
-    # for action in actions:
-    #     regenerate_ids(action, id_mapping, regenerate_id=False)
+    for action in actions:
+        regenerate_ids(action, id_mapping, regenerate_id=False)
 
     # ToDo: These will be needed if condition/transform parameters are changed to be more like actions
     # for condition in conditions:
@@ -158,7 +156,6 @@ def regenerate_workflow_ids(workflow):
         regenerate_ids(branch, id_mapping)
 
     workflow['start'] = id_mapping[workflow['start']]
-
 
 
 def regenerate_ids(json_in, id_mapping=None, regenerate_id=True, is_arguments=False):

@@ -49,7 +49,7 @@ def fresh_login():
 
 @jwt_refresh_token_required
 def refresh(body=None, token_info=None, user=None):
-    current_user_id = get_jwt_identity()
+    current_user_id = await get_jwt_identity()
     user = User.query.filter(User.id == current_user_id).first()
     if user is None:
         revoke_token(get_raw_jwt())
@@ -74,7 +74,7 @@ def logout():
             return Problem(HTTPStatus.BAD_REQUEST, 'Could not logout.', 'A refresh token is required to logout.')
         decoded_refresh_token = decode_token(refresh_token)
         refresh_token_identity = decoded_refresh_token[current_app.config['JWT_IDENTITY_CLAIM']]
-        user_id = get_jwt_identity()
+        user_id = await get_jwt_identity()
         if user_id == refresh_token_identity:
             user = User.query.filter(User.id == user_id).first()
             if user is not None:

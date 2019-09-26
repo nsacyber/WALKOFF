@@ -84,6 +84,10 @@ async def get_item(collection: AsyncIOMotorCollection,
     :param raise_exc: Whether to raise exception if item is not found.
     :return: Requested object from collection
     """
+    try:
+        item_id = UUID(item_id)
+    except:
+        item_id = item_id
     projection = {} if projection is None else projection
     projection.update(ignore_mongo_id)
 
@@ -147,7 +151,7 @@ async def update_item(collection: AsyncIOMotorCollection,
     """
     old_item_obj = await get_item(collection, model, old_item_id, projection=projection, raise_exc=False)
     if old_item_obj is None and raise_exc:
-        raise problems.DoesNotExistException("update", model.__name__, old_item_obj.id_)
+        raise problems.DoesNotExistException("update", model.__name__, old_item_id)
 
     try:
         new_item_obj.id_ = old_item_obj.id_

@@ -8,6 +8,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
+from api.server.endpoints import appapi, dashboards, workflows, users, console, results,  auth, roles, global_variables
 from api.server.endpoints import appapi, dashboards, users, auth, roles
 from api.server.db import MongoManager, get_mongo_c
 
@@ -82,25 +83,34 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         resource_permission = ""
 
         role_based = ["globals", "workflows"]
-        move_on = ["auth", "workflowqueue", "appapi", "console", "docs", "redoc", "openapi.json"]
+        move_on = ["globals", "workflows", "auth", "workflowqueue", "appapi", "docs", "redoc", "openapi.json"]
         if resource_name not in move_on:
             if request_method == "POST":
                 resource_permission = "create"
+
+            if request_method == "GET":
+                resource_permission = "read"
             elif resource_name in role_based:
                 response = await call_next(request)
                 return response
 
-            if request_method == "GET":
-                resource_permission = "read"
-
             if request_method == "PUT":
                 resource_permission = "update"
+            elif resource_name in role_based:
+                response = await call_next(request)
+                return response
 
             if request_method == "DELETE":
                 resource_permission = "delete"
+            elif resource_name in role_based:
+                response = await call_next(request)
+                return response
 
             if request_method == "PATCH":
                 resource_permission = "execute"
+            elif resource_name in role_based:
+                response = await call_next(request)
+                return response
 
             accepted_roles |= await get_roles_by_resource_permission(resource_name, resource_permission, walkoff_db)
             if not await user_has_correct_roles(accepted_roles, request):
@@ -149,10 +159,10 @@ _walkoff.include_router(auth.router,
                         tags=["auth"],
                         dependencies=[Depends(get_mongo_c)])
 
-# _walkoff.include_router(global_variables.router,
-#                         prefix="/globals",
-#                         tags=["globals"],
-#                         dependencies=[Depends(get_db)])
+_walkoff.include_router(global_variables.router,
+                        prefix="/globals",
+                        tags=["globals"],
+                        dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(users.router,
                         prefix="/users",
@@ -189,10 +199,10 @@ _walkoff.include_router(dashboards.router,
 #                         tags=["workflowqueue"],
 #                         dependencies=[Depends(get_mongo_c)])
 #
-# _walkoff.include_router(workflows.router,
-#                         prefix="/workflows",
-#                         tags=["workflows"],
-#                         dependencies=[Depends(get_mongo_c)])
+_walkoff.include_router(workflows.router,
+                        prefix="/workflows",
+                        tags=["workflows"],
+                        dependencies=[Depends(get_mongo_c)])
 
 
 @_app.get("/walkoff/login")

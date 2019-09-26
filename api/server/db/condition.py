@@ -16,6 +16,7 @@ class ConditionModel(BaseModel):
     name: str
     label: str
     position: dict = {"x": 0, "y": 0, "_walkoff_type": "position"}
+    conditional = str
     _walkoff_type: str = "condition"
 
 

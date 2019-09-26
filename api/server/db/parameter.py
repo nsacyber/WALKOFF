@@ -3,9 +3,10 @@ from uuid import uuid4, UUID
 from enum import Enum
 from typing import Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError, validator
 from common.workflow_types import ParameterVariant
 
+from api.server.db import mongo
 # from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 #
 # from sqlalchemy import Column, ForeignKey, String, JSON, Enum, Boolean
@@ -41,6 +42,38 @@ class ParameterModel(BaseModel):
     variant: ParameterVariant
     _walkoff_type: str = "parameter"
 
+    @classmethod
+    @validator('value')
+    def global_variable_check(cls, value, parameter, **kwargs):
+        global_col = mongo.client.walkoff_db.globals
+        if parameter.variant == ParameterVariant.GLOBAL:
+            global_check = global_col.find_one({"id_": parameter.id_})
+            if not global_check:
+                raise ValidationError
+        else:
+            return value
+
+    @classmethod
+    @validator('value')
+    def workflow_variable_check(cls, value, parameter, **kwargs):
+        global_col = mongo.client.walkoff_db.globals
+        if parameter.variant == ParameterVariant.WORKFLOW_VARIABLE:
+            global_check = global_col.find_one({"id_": parameter.id_})
+            if not global_check:
+                raise ValidationError
+        else:
+            return value
+
+    @classmethod
+    @validator('value')
+    def action_result_check(cls, value, parameter, **kwargs):
+        global_col = mongo.client.walkoff_db.globals
+        if parameter.variant == ParameterVariant.ACTION_RESULT:
+            global_check = global_col.find_one({"id_": parameter.id_})
+            if not global_check:
+                raise ValidationError
+        else:
+            return value
 
 # class ParameterApi(Base):
 #     __tablename__ = 'parameter_api'
