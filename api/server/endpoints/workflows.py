@@ -7,7 +7,7 @@ from typing import List
 from uuid import UUID
 
 from pydantic import UUID4
-from fastapi import APIRouter, Depends, UploadFile, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, HTTPException, File
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
@@ -19,12 +19,52 @@ from api.server.db.workflow import WorkflowModel
 from api.server.db.permissions import AccessLevel, auth_check, creator_only_permissions, \
     default_permissions, append_super_and_internal
 from api.server.utils.helpers import regenerate_workflow_ids
-from api.server.utils.problems import UniquenessException
+from api.server.utils.problems import UniquenessException, DoesNotExistException
 from common import mongo_helpers
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
+@router.post("/upload",
+             response_model=WorkflowModel,
+             response_description="The newly created Workflow.",
+             status_code=201)
+async def upload_workflow(request: Request, file: UploadFile = File(...),
+                          workflow_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Creates a new Workflow in WALKOFF and returns it.
+    """
+    walkoff_db = get_mongo_d(request)
+    curr_user_id = UUID(await get_jwt_identity(request))
+
+    new_workflow = WorkflowModel(**json.loads((await file.read()).decode('utf-8')))
+
+    try:
+        workflow_exists_already = await mongo_helpers.get_item(workflow_col, WorkflowModel, new_workflow.id_)
+    except DoesNotExistException:
+        workflow_exists_already = None
+
+    if workflow_exists_already:
+        old_workflow: WorkflowModel = await mongo_helpers.get_item(workflow_col, WorkflowModel, new_workflow.id_)
+        new_workflow = await import_existing(curr_user_id=curr_user_id, old_workflow=old_workflow,
+                                             new_workflow=new_workflow, walkoff_db=walkoff_db)
+    permissions = new_workflow.permissions
+    access_level = permissions.access_level
+    if access_level == AccessLevel.CREATOR_ONLY:
+        permissions_model = await creator_only_permissions(curr_user_id)
+        new_workflow.permissions = permissions_model
+    elif access_level == AccessLevel.EVERYONE:
+        permissions_model = await default_permissions(curr_user_id, walkoff_db, "global_variables")
+        new_workflow.permissions = permissions_model
+    elif access_level == AccessLevel.ROLE_BASED:
+        new_workflow.permissions = await append_super_and_internal(new_workflow.permissions)
+        new_workflow.permissions.creator = curr_user_id
+
+    try:
+        return await mongo_helpers.create_item(workflow_col, WorkflowModel, new_workflow)
+    except:
+        raise UniquenessException("workflow", "create", new_workflow.name)
 
 @router.post("/",
              response_model=WorkflowModel,
@@ -37,15 +77,6 @@ async def create_workflow(request: Request, new_workflow: WorkflowModel,
     """
     walkoff_db = get_mongo_d(request)
     curr_user_id = UUID(await get_jwt_identity(request))
-
-    # if file:
-    #     new_workflow = WorkflowModel(**json.loads((await file.read()).decode('utf-8')))
-    #
-    #     # importing existing workflow
-    #     if await mongo_helpers.get_item(workflow_col, WorkflowModel, new_workflow.id_):
-    #         old_workflow: WorkflowModel = await mongo_helpers.get_item(workflow_col, WorkflowModel, new_workflow.id_)
-    #         new_workflow = await import_existing(curr_user_id=curr_user_id, old_workflow=old_workflow,
-    #                                              new_workflow=new_workflow, walkoff_db=walkoff_db)
 
     permissions = new_workflow.permissions
     access_level = permissions.access_level
@@ -76,8 +107,11 @@ async def import_existing(curr_user_id: UUID, old_workflow: WorkflowModel, new_w
     if (not to_update):
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    regenerate_workflow_ids(new_workflow)
-    new_workflow.name += new_workflow.id_
+    to_regenerate = dict(new_workflow)
+    regenerate_workflow_ids(to_regenerate)
+    new_workflow = WorkflowModel(**to_regenerate)
+
+    new_workflow.name += "." + str(new_workflow.id_)
 
     return new_workflow
 
