@@ -1,8 +1,10 @@
 import logging
 
+from starlette.requests import Request
+
 from apscheduler.schedulers.base import JobLookupError
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
-from apscheduler.schedulers.gevent import GeventScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
@@ -47,7 +49,7 @@ def construct_task_id(scheduled_task_id, workflow_id):
     Returns:
         (str) A task id to use in the scheduler
     """
-    return '{0}{1}{2}'.format(scheduled_task_id, task_id_separator, workflow_id)
+    return f'{scheduled_task_id}{task_id_separator}{workflow_id}'
 
 
 def split_task_id(task_id):
@@ -66,7 +68,7 @@ def split_task_id(task_id):
 # A thin wrapper around APScheduler
 class Scheduler(object):
     def __init__(self, app=None):
-        self.scheduler = GeventScheduler()
+        self.scheduler = AsyncIOScheduler()
         self.id = 'controller'
         self.app = app
 
@@ -245,3 +247,7 @@ class Scheduler(object):
                 logger.info('Resumed job {0}'.format(job_id))
             except JobLookupError:
                 logger.warning('Cannot resume scheduled workflow {}. Workflow ID not found'.format(job_id))
+
+
+def get_scheduler(request: Request):
+    return request.state.scheduler

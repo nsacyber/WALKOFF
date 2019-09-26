@@ -10,18 +10,20 @@ import pymongo
 
 from api.server.endpoints import appapi, dashboards, workflows, users, console, results, umpire, auth, roles, global_variables
 from api.server.db import MongoManager, get_mongo_c
-
+from api.server.scheduler import Scheduler, get_scheduler
 from api.server.db.user_init import default_roles, default_users
 from api.server.utils.problems import ProblemException
 from api.server.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
     get_roles_by_resource_permission
 from common.config import static
 
+
 logger = logging.getLogger(__name__)
 
 _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _walkoff = FastAPI(openapi_prefix="/walkoff/api")
 _mongo_manager = MongoManager()
+_scheduler = Scheduler()
 
 _app.mount("/walkoff/api", _walkoff)
 _app.mount("/walkoff/client", StaticFiles(directory=static.CLIENT_PATH), name="static")
@@ -60,6 +62,7 @@ async def db_session_middleware(request: Request, call_next):
     try:
         request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
         request.state.mongo_d = _mongo_manager.client.walkoff_db
+        request.state.scheduler = _scheduler
         response = await call_next(request)
     except pymongo.errors.InvalidName:
         response = await call_next(request)
@@ -72,7 +75,6 @@ async def db_session_middleware(request: Request, call_next):
 @_walkoff.middleware("http")
 async def permissions_accepted_for_resource_middleware(request: Request, call_next):
     walkoff_db = _mongo_manager.client.walkoff_db
-
     request_path = request.url.path.split("/")
 
     if len(request_path) >= 4:

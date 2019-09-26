@@ -29,6 +29,18 @@ class ScheduledTask(BaseModel):
     trigger_type: TaskType
     trigger_args: str
 
+
+class SchedulerStatus(str, Enum):
+    STARTED = "started"
+    STOPPED = "stopped"
+    PAUSED = "paused"
+    RESUMED = "resumed"
+
+
+class SchedulerStatusResp(BaseModel):
+    status: SchedulerStatus
+
+
 # class ScheduledWorkflow(db.Model):
 #     """A SqlAlchemy table representing a workflow scheduled for execution
 #
