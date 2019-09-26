@@ -37,10 +37,6 @@ async def load_secret_key():
     return config.get_from_file(config.ENCRYPTION_KEY_PATH)
 
 
-async def load_settings():
-    return await mongo_helpers.get_item()
-
-
 async def verify_jwt_refresh_token_in_request(walkoff_db: AsyncIOMotorDatabase, request: Request):
     decoded_token = await get_raw_jwt(request)
     await verify_token_in_decoded(decoded_token=decoded_token, request_type='refresh')
