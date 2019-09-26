@@ -46,7 +46,7 @@ async def upload_workflow(request: Request, file: UploadFile = File(...),
         workflow_exists_already = None
 
     if workflow_exists_already:
-        old_workflow: WorkflowModel = await mongo_helpers.get_item(workflow_col, WorkflowModel, new_workflow.id_)
+        old_workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, new_workflow.id_)
         new_workflow = await import_existing(curr_user_id=curr_user_id, old_workflow=old_workflow,
                                              new_workflow=new_workflow, walkoff_db=walkoff_db)
     permissions = new_workflow.permissions
@@ -93,7 +93,7 @@ async def create_workflow(request: Request, new_workflow: WorkflowModel,
 
     # copying workflows
     if source:
-        old_workflow: WorkflowModel = await mongo_helpers.get_item(workflow_col, WorkflowModel, UUID(source))
+        old_workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, UUID(source))
         new_workflow = await copy_workflow(curr_user_id=curr_user_id, old_workflow=old_workflow,
                                            new_workflow=new_workflow, walkoff_db=walkoff_db)
     try:
@@ -102,7 +102,7 @@ async def create_workflow(request: Request, new_workflow: WorkflowModel,
         raise UniquenessException("workflow", "create", new_workflow.name)
 
 
-async def import_existing(curr_user_id: UUID, old_workflow: WorkflowModel, new_workflow: WorkflowModel, walkoff_db):
+async def import_existing(curr_user_id: UUID, old_workflow, new_workflow: WorkflowModel, walkoff_db):
     to_update = await auth_check(old_workflow, curr_user_id, "update", walkoff_db=walkoff_db)
     if (not to_update):
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -116,7 +116,7 @@ async def import_existing(curr_user_id: UUID, old_workflow: WorkflowModel, new_w
     return new_workflow
 
 
-async def copy_workflow(curr_user_id: UUID, old_workflow: WorkflowModel, new_workflow: WorkflowModel, walkoff_db):
+async def copy_workflow(curr_user_id: UUID, old_workflow, new_workflow: WorkflowModel, walkoff_db):
     to_update = await auth_check(old_workflow, curr_user_id, "update", walkoff_db=walkoff_db)
     if (not to_update):
         raise HTTPException(status_code=403, detail="Forbidden")
