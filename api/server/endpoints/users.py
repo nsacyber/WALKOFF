@@ -12,7 +12,7 @@ from api.server.db.user import DefaultUserUUID as DUsers, UserModel, EditUser, E
 from api.server.db.role import DefaultRoleUUID as DRoles, RoleModel
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
                                        DoesNotExistException)
-from api.security import get_jwt_identity
+from api.server.security import get_jwt_identity
 from common import mongo_helpers
 
 logger = logging.getLogger(__name__)

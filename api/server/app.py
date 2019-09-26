@@ -1,5 +1,4 @@
 import logging
-from copy import deepcopy
 from http import HTTPStatus
 
 from fastapi import FastAPI, Depends
@@ -11,14 +10,12 @@ import pymongo
 
 from api.server.endpoints import appapi, dashboards, users, auth, roles
 from api.server.db import MongoManager, get_mongo_c
-from api.server.db.user import UserModel
-from api.server.db.role import RoleModel
 
 from api.server.db.user_init import default_roles, default_users
 from api.server.utils.problems import ProblemException
-from api.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
+from api.server.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
     get_roles_by_resource_permission
-from common.config import config, static
+from common.config import static
 
 logger = logging.getLogger(__name__)
 

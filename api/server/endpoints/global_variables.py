@@ -2,16 +2,15 @@ import logging
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from copy import deepcopy
-from uuid import uuid4
 from uuid import UUID
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.requests import Request
 
-from api.server.db.global_variable import GlobalVariableTemplate, GlobalVariable
+from api.server.db.global_variable import GlobalVariable
 
 from api.server.db import get_mongo_c, get_mongo_d
-from api.security import get_jwt_identity
+from api.server.security import get_jwt_identity
 from api.server.db.permissions import auth_check, default_permissions, creator_only_permissions, AccessLevel
 from api.server.utils.problems import UniquenessException
 from common.config import config

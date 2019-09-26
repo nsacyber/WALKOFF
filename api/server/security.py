@@ -1,29 +1,21 @@
 from datetime import datetime, timedelta
 import logging
-import os
-import sys
 import uuid
-from functools import wraps
 from http import HTTPStatus
-import json
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 import jwt
 from starlette.requests import Request
-from fastapi import Depends, FastAPI, HTTPException
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jwt import PyJWTError
-from starlette.status import HTTP_401_UNAUTHORIZED
+from fastapi import FastAPI
+from fastapi.security import OAuth2PasswordBearer
 
-from api.fastapi_config import FastApiConfig
+from api.server.fastapi_config import FastApiConfig
 from api.server.db.tokens import is_token_revoked
 from api.server.db.user import UserModel
 from api.server.db.role import RoleModel
 from api.server.db.settings import SettingsModel
-from api.server.db.resource import ResourceModel
-from api.server.db.permissions import PermissionsModel
 from api.server.utils.problems import ProblemException
-from common.config import config, static
+from common.config import config
 from common import mongo_helpers
 from common.helpers import preset_uuid
 
