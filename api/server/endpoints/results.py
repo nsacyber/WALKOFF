@@ -1,25 +1,28 @@
 import uuid
 import json
 from uuid import UUID
+import asyncio
 import logging
-import gevent
-from gevent.queue import Queue
 
 from motor.motor_asyncio import AsyncIOMotorCollection
+from sqlalchemy.exc import IntegrityError
 from pydantic import BaseModel
 from api.server.utils.problems import UniquenessException
 import jsonpatch
+from starlette.websockets import WebSocket
+from fastapi import APIRouter, Depends, HTTPException
 
 from api.server.utils.helpers import sse_format
 from api.server.db import get_mongo_c
-from api.server.db.workflowresults import WorkflowStatus, NodeStatus
-from starlette.websockets import WebSocket
-
-from fastapi import APIRouter, Depends, HTTPException
-
+from common.redis_helpers import connect_to_redis_pool
+from common.config import config
+from api_gateway.server.problem import invalid_id_problem
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+WORKFLOW_STREAM_GLOB = "workflow_stream"
+ACTION_STREAM_GLOB = "action_stream"
 
 
 class JSONPatch(BaseModel):
@@ -37,9 +40,9 @@ async def node_status_getter(combined_id, node_col: AsyncIOMotorCollection):
     return await node_col.find_one({"combined_id": combined_id}, projection={"_id": False})
 
 
-results_stream = Blueprint('results_stream', __name__)
-workflow_stream_subs = {}
-action_stream_subs = {}
+# results_stream = Blueprint('results_stream', __name__)
+workflow_stream_subs = set()
+action_stream_subs = set()
 
 
 async def push_to_workflow_stream_queue(workflow_status, event):
@@ -47,25 +50,44 @@ async def push_to_workflow_stream_queue(workflow_status, event):
     workflow_status["execution_id"] = str(workflow_status["execution_id"])
     sse_event_text = sse_format(data=workflow_status, event=event, event_id=workflow_status["execution_id"])
     if workflow_status["execution_id"] in workflow_stream_subs:
-        workflow_stream_subs[workflow_status["execution_id"]].put(sse_event_text)
-    if 'all' in workflow_stream_subs:
-        workflow_stream_subs['all'].put(sse_event_text)
+        redis_stream = WORKFLOW_STREAM_GLOB + "." + workflow_status["execution_id"]
+        # workflow_stream_subs[workflow_status["execution_id"]].put(sse_event_text)
+    elif 'all' in workflow_stream_subs:
+        redis_stream = WORKFLOW_STREAM_GLOB + ".all"
+        # workflow_stream_subs['all'].put(sse_event_text)
+    else:
+        redis_stream = WORKFLOW_STREAM_GLOB + "." + workflow_status["execution_id"]
+        workflow_stream_subs.add(workflow_status["execution_id"])
+
+    async with connect_to_redis_pool(config.REDIS_URI) as conn:
+        key = f"{redis_stream}"
+        value = workflow_status
+        conn.lpush(key, value)
 
 
 async def push_to_action_stream_queue(node_statuses, event):
 
-    event_id = 0
     for node_status in node_statuses:
-        node_status_json = node_status_schema.dump(node_status)
+        node_status_json = node_status
         node_status_json["execution_id"] = str(node_status_json["execution_id"])
         execution_id = str(node_status_json["execution_id"])
-        sse_event_text = sse_format(data=node_status_json, event=event, event_id=event_id)
+        # sse_event_text = sse_format(data=node_status_json, event=event, event_id=event_id)
 
         if execution_id in action_stream_subs:
-            action_stream_subs[execution_id].put(sse_event_text)
-        if 'all' in action_stream_subs:
-            action_stream_subs['all'].put(sse_event_text)
-        event_id += 1
+            redis_stream = ACTION_STREAM_GLOB + "." + node_status_json["execution_id"]
+            # action_stream_subs[execution_id].put(sse_event_text)
+        elif 'all' in action_stream_subs:
+            redis_stream = ACTION_STREAM_GLOB + ".all"
+            # action_stream_subs['all'].put(sse_event_text)
+        else:
+            redis_stream = WORKFLOW_STREAM_GLOB + "." + node_status_json["execution_id"]
+            action_stream_subs.add(node_status_json["execution_id"])
+            redis_stream = ACTION_STREAM_GLOB + "." + node_status_json["execution_id"]
+
+        async with connect_to_redis_pool(config.REDIS_URI) as conn:
+            key = f"{redis_stream}"
+            value = node_status_json
+            conn.lpush(key, value)
 
 
 # @jwt_required
@@ -100,7 +122,8 @@ async def push_to_action_stream_queue(node_statuses, event):
 
 # TODO: maybe make an internal user for the worker/umpire?
 @router.put("/workflow_status/{execution_id}")
-async def update_workflow_status(body: JSONPatch, event: str, execution_id: str, workflow_col: AsyncIOMotorCollection = Depends((get_mongo_c))):
+async def update_workflow_status(body: JSONPatch, event: str, execution_id: str,
+                                 workflow_col: AsyncIOMotorCollection = Depends((get_mongo_c)), close: str = None):
     old_workflow = workflow_status_getter(execution_id, workflow_col)
     old_workflow_status = old_workflow.status
 
@@ -118,6 +141,10 @@ async def update_workflow_status(body: JSONPatch, event: str, execution_id: str,
     new_workflow_status = patch.apply(old_workflow_status)
 
     new_workflow_status.node_statuses = list(new_workflow_status.node_statuses.values())
+    if close == "Done":
+        new_workflow_status.websocket_finished = True
+    else:
+        new_workflow_status.websocket_finished = False
 
     try:
         await workflow_col.replace_one(old_workflow, new_workflow_status)
@@ -131,11 +158,13 @@ async def update_workflow_status(body: JSONPatch, event: str, execution_id: str,
 
         # TODo: Replace this when moving to sanic
         logger.info(f"Workflow Status update: {new_workflow_status}")
-        gevent.spawn(push_to_workflow_stream_queue, new_workflow_status, event)
+        await push_to_workflow_stream_queue(new_workflow_status, event)
+        # gevent.spawn(push_to_workflow_stream_queue, new_workflow_status, event)
 
         if node_statuses:
             logger.info(f"Action Status update:{node_statuses}")
-            gevent.spawn(push_to_action_stream_queue, node_statuses, event)
+            await push_to_action_stream_queue(node_statuses, event)
+            # gevent.spawn(push_to_action_stream_queue, node_statuses, event)
 
         logger.info(f"Updated workflow status {old_workflow.execution_id} ({old_workflow.name})")
         return new_workflow_status
@@ -146,50 +175,74 @@ async def update_workflow_status(body: JSONPatch, event: str, execution_id: str,
 @router.websocket_route('/workflow_status')
 async def workflow_stream(websocket: WebSocket, exec_id: UUID = None):
     await websocket.accept()
-    execution_id = exec_id
-    logger.info(f"workflow_status subscription for {execution_id}")
-    if execution_id != 'all':
-        try:
-            uuid.UUID(execution_id)
-        except ValueError:
-            return invalid_id_problem('workflow status', 'read', execution_id)
+    redis_stream = WORKFLOW_STREAM_GLOB + "." + str(exec_id)
+    if exec_id not in workflow_stream_subs:
+        workflow_stream_subs.add(exec_id)
+    logger.info(f"workflow_status subscription for {exec_id}")
+    # if exec_id != 'all':
+    #     try:
+    #         uuid.UUID(exec_id)
+    #     except ValueError:
+    #         return invalid_id_problem('workflow status', 'read', exec_id)
 
     async def workflow_results_generator():
-        workflow_stream_subs[execution_id] = events = workflow_stream_subs.get(execution_id, Queue())
-        try:
-            while True:
-                event = events.get().encode()
-                logger.info(f"Sending workflow_status SSE for {execution_id}: {event}")
-                await websocket.send_text(event)
-        except GeneratorExit:
-            workflow_stream_subs.pop(events, None)
-            await websocket.close(code=1000)
-            logger.info(f"workflow_status unsubscription for {execution_id}")
+        async with connect_to_redis_pool(config.REDIS_URI) as conn:
+            try:
+                while True:
+                    await asyncio.sleep(1)
+                    event = conn.rpop(redis_stream)
+                    if event is not None:
+                        event_object = json.loads(event.decode("ascii"))
+                        message = event_object["message"]
+                        await websocket.send_text(message)
+                        logger.info(f"Sending workflow_status SSE for {exec_id}: {event}")
+                        if event_object["close"] == "Done":
+                            await conn.delete(redis_stream)
+                            workflow_stream_subs.remove(exec_id)
+                            await websocket.close(code=1000)
+            except Exception as e:
+                await conn.delete(redis_stream)
+                workflow_stream_subs.remove(exec_id)
+                await websocket.close(code=1000)
+                logger.info(f"Error: {e}")
 
-    return Response(workflow_results_generator(), mimetype="test/event-stream")
+    return await workflow_results_generator()
+        # Response(workflow_results_generator(), mimetype="test/event-stream")
 
 
 @router.websocket_route('/actions')
 async def action_stream(websocket: WebSocket, exec_id: UUID = None):
     await websocket.accept()
-    execution_id = exec_id
-    logger.info(f"action subscription for {execution_id}")
-    if execution_id != 'all':
-        try:
-            uuid.UUID(execution_id)
-        except ValueError:
-            return invalid_id_problem('action status', 'read', execution_id)
+    redis_stream = ACTION_STREAM_GLOB + "." + str(exec_id)
+    if exec_id not in action_stream_subs:
+        action_stream_subs.add(exec_id)
+    logger.info(f"action subscription for {exec_id}")
+    # if execution_id != 'all':
+    #     try:
+    #         uuid.UUID(execution_id)
+    #     except ValueError:
+    #         return invalid_id_problem('action status', 'read', execution_id)
 
     async def action_results_generator():
-        action_stream_subs[execution_id] = events = action_stream_subs.get(execution_id, Queue())
-        try:
-            while True:
-                event = events.get().encode()
-                logger.info(f"Sending action SSE for {execution_id}: {event}")
-                await websocket.send_text(event)
-        except GeneratorExit:
-            action_stream_subs.pop(execution_id, None)
-            await websocket.close(code=1000)
-            logger.info(f"action unsubscription for {execution_id}")
+        async with connect_to_redis_pool(config.REDIS_URI) as conn:
+            try:
+                while True:
+                    await asyncio.sleep(1)
+                    event = conn.rpop(redis_stream)
+                    if event is not None:
+                        event_object = json.loads(event.decode("ascii"))
+                        message = event_object["message"]
+                        await websocket.send_text(message)
+                        logger.info(f"Sending action websocket for for {exec_id}: {message}")
+                        if event_object["close"] == "Done":
+                            await conn.delete(redis_stream)
+                            action_stream_subs.remove(exec_id)
+                            await websocket.close(code=1000)
+            except Exception as e:
+                await conn.delete(redis_stream)
+                action_stream_subs.remove(exec_id)
+                await websocket.close(code=1000)
+                logger.info(f"Error: {e}")
 
-    return Response(action_results_generator(), mimetype="text/event-stream")
+    return await action_results_generator()
+        # Response(action_results_generator(), mimetype="text/event-stream")

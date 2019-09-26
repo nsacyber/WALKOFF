@@ -82,7 +82,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         resource_permission = ""
 
         role_based = ["globals", "workflows"]
-        move_on = ["auth", "workflowqueue", "appapi", "docs", "redoc", "openapi.json"]
+        move_on = ["auth", "workflowqueue", "appapi", "console", "docs", "redoc", "openapi.json"]
         if resource_name not in move_on:
             if request_method == "POST":
                 resource_permission = "create"
@@ -169,15 +169,15 @@ _walkoff.include_router(appapi.router,
                         tags=["apps"],
                         dependencies=[Depends(get_mongo_c)])
 
-# _walkoff.include_router(results.router,
-#                         prefix="/internal",
-#                         tags=["internal"],
-#                         dependencies=[Depends(get_mongo_c)])
+_walkoff.include_router(results.router,
+                        prefix="/internal",
+                        tags=["internal"],
+                        dependencies=[Depends(get_mongo_c)])
 
-# _walkoff.include_router(console.router,
-#                         prefix="/streams/console",
-#                         tags=["console"],
-#                         dependencies=[Depends(get_mongo_c)])
+_walkoff.include_router(console.router,
+                        prefix="/console",
+                        tags=["console"],
+                        dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(dashboards.router,
                         prefix="/dashboards",

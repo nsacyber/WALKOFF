@@ -113,8 +113,12 @@ async def send_status_update(session, execution_id, message, headers=None):
 
     if len(patches) < 1:
         raise ValueError(f"Attempting to send improper message type: {type(message)}")
+    if message.websocket_finished:
+        close = "Done"
+    else:
+        close = ""
 
-    params = {"event": message.status.value}
+    params = {"event": message.status.value, "close": close}
     url = f"{config.API_URI}/walkoff/api/internal/workflowstatus/{execution_id}"
     headers, token = await get_walkoff_auth_header(session)
     headers["content-type"] = "application/json"
