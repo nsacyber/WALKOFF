@@ -37,6 +37,20 @@ async def id_and_name(model: Union[Type[BaseModel], Type[dict]],
     return f"{getattr(obj, model._secondary_id)} ({obj.id_})"
 
 
+async def count_items(collection: AsyncIOMotorCollection,
+                      *,
+                      query: dict = None) -> int:
+    """
+    Returns the number of items in a collection matching the query
+
+    :param collection: Collection to query
+    :param query: Only match objects that contain the query (or all if None)
+    :return:
+    """
+    query = {} if query is None else query
+    return await collection.count_documents(query)
+
+
 async def get_all_items(collection: AsyncIOMotorCollection,
                         model: Type[BaseModel],
                         *,
@@ -60,7 +74,7 @@ async def get_all_items(collection: AsyncIOMotorCollection,
     projection.update(ignore_mongo_id)
 
     collection_json = await collection.find(filter=query, projection=projection) \
-        .skip((page-1) * num_per_page) \
+        .skip((page - 1) * num_per_page) \
         .limit(num_per_page) \
         .to_list(None)
     return [model(**item_json) for item_json in collection_json]
@@ -72,7 +86,7 @@ async def get_item(collection: AsyncIOMotorCollection,
                    *,
                    query: dict = None,
                    projection: dict = None,
-                   raise_exc: bool = True):
+                   raise_exc: bool = True) -> BaseModel:
     """
     Retrieve a single item from a collection
 
@@ -109,7 +123,7 @@ async def create_item(collection: AsyncIOMotorCollection,
                       new_item_obj: BaseModel,
                       *,
                       projection: dict = None,
-                      raise_exc: bool = True):
+                      raise_exc: bool = True) -> BaseModel:
     """
     Create an item in the collection
 
@@ -137,7 +151,7 @@ async def update_item(collection: AsyncIOMotorCollection,
                       new_item_obj: BaseModel,
                       *,
                       projection: dict = None,
-                      raise_exc: bool = True):
+                      raise_exc: bool = True) -> BaseModel:
     """
     Update an item in the collection
 
@@ -170,7 +184,7 @@ async def delete_item(collection: AsyncIOMotorCollection,
                       old_item_id: Union[UUID, str],
                       *,
                       projection: dict = None,
-                      raise_exc: bool = True):
+                      raise_exc: bool = True) -> bool:
     """
     Delete an item in the collection
 

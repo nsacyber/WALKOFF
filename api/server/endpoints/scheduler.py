@@ -1,148 +1,157 @@
+import logging
 from uuid import UUID
-
-from flask import current_app, request
-from flask_jwt_extended import jwt_required
-
-from api_gateway.extensions import db
-from api_gateway.scheduler import InvalidTriggerArgs
-from api_gateway.security import permissions_accepted_for_resources, ResourcePermissions
-from api_gateway.server.decorators import with_resource_factory
-from api_gateway.server.problem import Problem
 from http import HTTPStatus
-from api_gateway.serverdb.scheduledtasks import ScheduledTask
+from typing import Union, List
 
-with_task = with_resource_factory('Scheduled task', lambda task_id: ScheduledTask.query.filter_by(id=task_id).first())
+from fastapi import APIRouter, Depends
+from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.schedulers import SchedulerAlreadyRunningError, SchedulerNotRunningError
 
+from api.server.utils.problems import InvalidInputException
+from api.server.scheduler import get_scheduler
+from api.server.db import get_mongo_c, get_mongo_d
+from api.server.db.workflow import WorkflowModel
+from api.server.db.scheduledtasks import ScheduledTask, SchedulerStatus, SchedulerStatusResp
+from common import mongo_helpers
 
-def validate_uuids(uuids):
-    invalid_uuids = []
-    for uuid in uuids:
-        try:
-            UUID(uuid)
-        except ValueError:
-            invalid_uuids.append(uuid)
-    return invalid_uuids
-
-
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
-def get_scheduler_status():
-    return {"status": current_app.running_context.scheduler.scheduler.state}, HTTPStatus.OK
+logger = logging.getLogger(__name__)
+router = APIRouter()
 
 
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['update', 'execute']))
-def update_scheduler_status():
-    status = request.get_json()['status']
-    updated_status = current_app.running_context.scheduler.scheduler.state
-    if status == "start":
-        updated_status = current_app.running_context.scheduler.start()
-        current_app.logger.info('Scheduler started. Status {0}'.format(updated_status))
-    elif status == "stop":
-        updated_status = current_app.running_context.scheduler.stop()
-        current_app.logger.info('Scheduler stopped. Status {0}'.format(updated_status))
-    elif status == "pause":
-        updated_status = current_app.running_context.scheduler.pause()
-        current_app.logger.info('Scheduler paused. Status {0}'.format(updated_status))
-    elif status == "resume":
-        updated_status = current_app.running_context.scheduler.resume()
-        current_app.logger.info('Scheduler resumed. Status {0}'.format(updated_status))
-    return {"status": updated_status}, HTTPStatus.OK
+async def check_workflows_exist(workflow_col: AsyncIOMotorCollection, task: ScheduledTask):
+    workflow: WorkflowModel
+    for workflow in task.workflows:
+        if not await mongo_helpers.count_items(workflow_col, query={"id_": workflow.id_}):
+            raise InvalidInputException("create", "ScheduledTask", task.name,
+                                        errors={"error": f"{workflow.id_} does not exist"})
 
-
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
-def read_all_scheduled_tasks():
-    page = request.args.get('page', 1, type=int)
-    return [task.as_json() for task in
-            ScheduledTask.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], HTTPStatus.OK
-
-
-def invalid_uuid_problem(invalid_uuids):
-    return Problem(
-        HTTPStatus.BAD_REQUEST,
-        'Invalid scheduled task.',
-        'Specified UUIDs {} are not valid.'.format(invalid_uuids))
-
-
-def scheduled_task_name_already_exists_problem(name, operation):
-    return Problem.from_crud_resource(
-        HTTPStatus.BAD_REQUEST,
-        'scheduled task',
-        operation,
-        'Could not {} scheduled task. Scheduled task with name {} already exists.'.format(operation, name))
-
-
-invalid_scheduler_args_problem = Problem(HTTPStatus.BAD_REQUEST, 'Invalid scheduled task.',
-                                         'Invalid scheduler arguments.')
-
-
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['create', 'execute']))
-def create_scheduled_task():
-    data = request.get_json()
-    invalid_uuids = validate_uuids(data['workflows'])
-    if invalid_uuids:
-        return invalid_uuid_problem(invalid_uuids)
-    task = ScheduledTask.query.filter_by(name=data['name']).first()
-    if task is None:
-        try:
-            task = ScheduledTask(**data)
-        except InvalidTriggerArgs:
-            return invalid_scheduler_args_problem
-        else:
-            db.session.add(task)
-            db.session.commit()
-            return task.as_json(), HTTPStatus.CREATED
-    else:
-        return scheduled_task_name_already_exists_problem(data['name'], 'create')
-
-
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
-@with_task('read', 'scheduled_task_id')
-def read_scheduled_task(scheduled_task_id):
-    return scheduled_task_id.as_json(), HTTPStatus.OK
-
-
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['update', 'execute']))
-@with_task('update', 'scheduled_task_id')
-def update_scheduled_task(scheduled_task_id):
-    data = request.get_json()
-    invalid_uuids = validate_uuids(data.get('workflows', []))
-    if invalid_uuids:
-        return invalid_uuid_problem(invalid_uuids)
-    if 'name' in data:
-        same_name = ScheduledTask.query.filter_by(name=data['name']).first()
-        if same_name is not None and same_name.id != data['id']:
-            return scheduled_task_name_already_exists_problem(same_name, 'update')
+def construct_trigger(trigger_args):
+    trigger_type = trigger_args['type']
+    trigger_args = trigger_args['args']
     try:
-        scheduled_task_id.update(data)
-    except InvalidTriggerArgs:
-        return invalid_scheduler_args_problem
-    else:
-        db.session.commit()
-        return scheduled_task_id.as_json(), HTTPStatus.OK
+        if trigger_type == 'date':
+            return DateTrigger(**trigger_args)
+        elif trigger_type == 'interval':
+            return IntervalTrigger(**trigger_args)
+        elif trigger_type == 'cron':
+            return CronTrigger(**trigger_args)
+        else:
+            raise InvalidTriggerArgs(
+                'Invalid scheduler type {0} with args {1}.'.format(trigger_type, trigger_args))
+    except (KeyError, ValueError, TypeError):
+        raise InvalidTriggerArgs('Invalid scheduler arguments')
 
 
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['delete']))
-@with_task('delete', 'scheduled_task_id')
-def delete_scheduled_task(scheduled_task_id):
-    db.session.delete(scheduled_task_id)
-    db.session.commit()
-    return None, HTTPStatus.NO_CONTENT
+@router.get("/",
+            response_model=SchedulerStatusResp, response_description="Current scheduler status in WALKOFF.")
+async def get_scheduler_status(*, scheduler: AsyncIOScheduler = Depends(get_scheduler)):
+    return SchedulerStatusResp(status=scheduler.state)
 
 
-@jwt_required
-@permissions_accepted_for_resources(ResourcePermissions('scheduler', ['execute']))
-@with_task('control', 'scheduled_task_id')
-def control_scheduled_task(scheduled_task_id):
-    action = request.get_json()['action']
-    if action == 'start':
+@router.put("/",
+            response_model=SchedulerStatus, response_description="The updated scheduler status in WALKOFF.")
+async def update_scheduler_status(*, scheduler: AsyncIOScheduler = Depends(get_scheduler),
+                                  new_state: SchedulerStatus):
+    try:
+        if new_state == "start":
+            scheduler.start()
+        elif new_state == "stop":
+            scheduler.shutdown()
+        elif new_state == "pause":
+            scheduler.pause()
+        elif new_state == "resume":
+            scheduler.resume()
+    except SchedulerAlreadyRunningError:
+        raise InvalidInputException(new_state, "Scheduler", "", errors={"error": "Scheduler already running."})
+    except SchedulerNotRunningError:
+        raise InvalidInputException(new_state, "Scheduler", "", errors={"error": "Scheduler is not running."})
+    return SchedulerStatusResp(status=scheduler.state)
+
+
+@router.get("/tasks")
+async def read_all_scheduled_tasks(*, task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                                   page: int = 1,
+                                   num_per_page: int = 20):
+    return await mongo_helpers.get_all_items(task_col, ScheduledTask, page=page, num_per_page=num_per_page)
+    # page = request.args.get('page', 1, type=int)
+    # return [task.as_json() for task in
+    #         ScheduledTask.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], HTTPStatus.OK
+
+
+@router.post("/tasks")
+async def create_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
+                                new_task: ScheduledTask):
+    task_col = walkoff_db.tasks
+    workflow_col = walkoff_db.workflows
+
+    await check_workflows_exist(workflow_col, new_task)
+    await mongo_helpers.create_item(task_col, ScheduledTask, new_task)
+    # data = request.get_json()
+    # invalid_uuids = validate_uuids(data['workflows'])
+    # if invalid_uuids:
+    #     return invalid_uuid_problem(invalid_uuids)
+    # task = ScheduledTask.query.filter_by(name=data['name']).first()
+    # if task is None:
+    #     try:
+    #         task = ScheduledTask(**data)
+    #     except InvalidTriggerArgs:
+    #         return invalid_scheduler_args_problem
+    #     else:
+    #         db.session.add(task)
+    #         db.session.commit()
+    #         return task.as_json(), HTTPStatus.CREATED
+    # else:
+    #     return scheduled_task_name_already_exists_problem(data['name'], 'create')
+
+
+@router.get("/tasks/{task_id}")
+async def read_scheduled_task(*, task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                              task_id: Union[UUID, str]):
+    return await mongo_helpers.get_item(task_col, ScheduledTask, task_id)
+
+
+@router.post("/tasks/{task_id}")
+async def control_scheduled_task(*, task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                                 task_id: Union[UUID, str],
+                                 new_status: SchedulerStatus):
+
+    if new_status == 'start':
         scheduled_task_id.start()
     elif action == 'stop':
         scheduled_task_id.stop()
     db.session.commit()
     return {}, HTTPStatus.OK
+
+
+@router.put("/tasks/{task_id}")
+async def update_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
+                                task_id: Union[UUID, str],
+                                new_task: ScheduledTask):
+    task_col = walkoff_db.tasks
+    workflow_col = walkoff_db.workflows
+
+    await check_workflows_exist(workflow_col, new_task)
+    return await mongo_helpers.update_item(task_col, ScheduledTask, task_id, new_task)
+    #
+    # data = request.get_json()
+    # invalid_uuids = validate_uuids(data.get('workflows', []))
+    # if invalid_uuids:
+    #     return invalid_uuid_problem(invalid_uuids)
+    # if 'name' in data:
+    #     same_name = ScheduledTask.query.filter_by(name=data['name']).first()
+    #     if same_name is not None and same_name.id != data['id']:
+    #         return scheduled_task_name_already_exists_problem(same_name, 'update')
+    # try:
+    #     scheduled_task_id.update(data)
+    # except InvalidTriggerArgs:
+    #     return invalid_scheduler_args_problem
+    # else:
+    #     db.session.commit()
+    #     return scheduled_task_id.as_json(), HTTPStatus.OK
+
+
+@router.delete("/tasks/{task_id}")
+async def delete_scheduled_task(*, task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                                task_id: Union[UUID, str]):
+    return await mongo_helpers.delete_item(task_col, ScheduledTask, task_id)
