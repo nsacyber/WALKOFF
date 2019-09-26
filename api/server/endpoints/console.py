@@ -52,7 +52,6 @@ async def create_console_message(body: ConsoleBody, wf_exec_id: UUID = None):
     return str(body.message)
 
 
-
 @router.websocket("/log/")
 async def read_console_message(websocket: WebSocket, exec_id: UUID = None):
     await websocket.accept()
