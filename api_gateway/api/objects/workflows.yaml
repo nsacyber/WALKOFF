@@ -124,6 +124,10 @@ Action:
       description: The name of the function this Action will take
       type: string
       example: pause
+    cmd:
+      description: The command to run
+      type: string
+      example: python hello_world.py
     label:
       description: User-specified label for the action
       type: string

@@ -1,19 +1,20 @@
 package main
 
 import (
-	"../executors"
-	"../status_messages"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	s"strings"
-	"github.com/go-redis/redis"
+	s "strings"
 	"sync"
 	"syscall"
 	"time"
+
+	"../executors"
+	"../status_messages"
+	"github.com/go-redis/redis"
 )
 
 var cwd, _ = os.Getwd()
@@ -67,10 +68,10 @@ func main() {
 	// Execute Command Line Parsing
 	flag.Parse()
 
-	host  := ""
-	if *localPtr == true{
+	host := ""
+	if *localPtr == true {
 		host = "localhost:6379"
-	}else{
+	} else {
 		host = "resource_redis:6379"
 	}
 
@@ -78,7 +79,7 @@ func main() {
 
 	//Generate Command and Arguments
 	command = []string{*cmd_ptr}
-	args = s.Split(*arg_ptr, ",")
+	args = s.Split(*arg_ptr, " ")
 	command = append(command, args...)
 
 	//Parse Message
@@ -93,6 +94,7 @@ func main() {
 	})
 
 	fmt.Println("Executing Action")
+	fmt.Println("---------------------------------------------------------------")
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go execute_action(app_name, command, watchers, *streaming_ptr, &wg, cwd)
@@ -105,11 +107,11 @@ func main() {
 	shutdown(client)
 }
 
-func execute_action(action string, command []string, watchers executors.Watchers, streaming bool,  group *sync.WaitGroup, cwd string){
+func execute_action(action string, command []string, watchers executors.Watchers, streaming bool, group *sync.WaitGroup, cwd string) {
 	var wg sync.WaitGroup
 
 	cmd_state := executors.ExecutionState{State: 0}
-
+	fmt.Println(command)
 	cmd := exec.Command(command[0], command[1:]...)
 	stdoutIn, _ := cmd.StdoutPipe()
 	stderrIn, _ := cmd.StderrPipe()
@@ -117,23 +119,22 @@ func execute_action(action string, command []string, watchers executors.Watchers
 	watchers.Status <- 1
 	cmd.Start()
 
-	if watchers.Stdout{
+	if watchers.Stdout {
 		wg.Add(1)
 		go executors.Stdout(stdoutIn, watchers.Stdwatch, &wg)
 	}
-	if watchers.Stderr{
+	if watchers.Stderr {
 		wg.Add(1)
 		go executors.Stderr(stderrIn, watchers.Errwatch, &wg)
 	}
-	if watchers.File{
+	if watchers.File {
 		wg.Add(1)
-		go executors.File(watchers.FileArgs.Path, watchers.Filewatch, cmd_state, watchers.FileArgs.Delim, &wg)
+		go executors.File(watchers.FileArgs.Path, watchers.Filewatch, &cmd_state, watchers.FileArgs.Delim, &wg)
 	}
-	if watchers.Dir{
+	if watchers.Dir {
 		wg.Add(1)
 		go executors.Dir(watchers.DirArgs.Path, watchers.Dirwatch, watchers.Status, &wg)
 	}
-
 
 	err := cmd.Wait()
 	cmd_state.Set(2)
@@ -147,10 +148,10 @@ func execute_action(action string, command []string, watchers executors.Watchers
 	wg.Wait()
 
 	//Check if non-zero error code
-	if err != nil{
+	if err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			if st, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				fmt.Println("Exit status %d", st.ExitStatus())
+				fmt.Println(st.ExitStatus())
 				watchers.Status <- -1
 			}
 		}
@@ -163,36 +164,35 @@ func process_result(watchers executors.Watchers, group *sync.WaitGroup, msg map[
 	var starting_time, completed_time string
 	var out []byte
 
-	for{
+	for {
 		select {
-		case s := <- watchers.Status:
-			if s == 1{
+		case s := <-watchers.Status:
+			if s == 1 {
 				starting_time = time.Now().Format("2006-01-02 15:04:05.999999")
 				status_messages.Action_start_message(msg, starting_time, client)
-			} else if s == 3{
+			} else if s == 3 {
 				completed_time = time.Now().Format("2006-01-02 15:04:05.999999")
-				fmt.Println(out)
 				status_messages.Action_result_message(msg, string(out), "SUCCESS", starting_time, completed_time, client)
 				group.Done()
-			} else if s == -1{
+			} else if s == -1 {
 				completed_time = time.Now().Format("2006-01-02 15:04:05.999999")
 				status_messages.Action_result_message(msg, string(out), "FAILURE", starting_time, completed_time, client)
 				group.Done()
 			}
-		case data := <- watchers.Stdwatch:
+		case data := <-watchers.Stdwatch:
 			out = append(out, data...)
-		case data := <- watchers.Errwatch:
+		case data := <-watchers.Errwatch:
 			out = append(out, data...)
-		case data := <- watchers.Filewatch:
+		case data := <-watchers.Filewatch:
 			out = append(out, data...)
-		case data := <- watchers.Dirwatch:
+		case data := <-watchers.Dirwatch:
 			out = append(out, data...)
 		}
 
 	}
 }
 
-func shutdown(client *redis.Client){
+func shutdown(client *redis.Client) {
 	err := client.XAck(stream, app_group, id_).Err()
 	check(err)
 

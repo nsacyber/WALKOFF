@@ -40,7 +40,6 @@ def add_locations(app_api):
             action['returns']['location'] = f"{app_name}.{action['name']}.returns"
     return app_api
 
-
 def remove_locations(app_api):
     for action in app_api.get('actions', []):
         action.pop('location', None)
@@ -50,6 +49,13 @@ def remove_locations(app_api):
             action['returns'].pop('location', None)
     return app_api
 
+# ToDo: App APIs should be stored in some nosql db instead to avoid this
+def check_version(app_api):
+    app_version = app_api["walkoff_version"]
+    if app_version == "1.0.0":
+        for action in app_api.get('actions', []):
+            action["cmd"] = ""
+    return app_api
 
 @jwt_required
 @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
@@ -70,6 +76,7 @@ def create_app_api():
         data = json.loads(request.files['file'].read().decode('utf-8'))
 
     add_locations(data)
+    data = check_version(data)
     try:
         # ToDo: make a proper common type for this when the other components need it
         app_api = app_api_schema.load(data)

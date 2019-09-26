@@ -212,8 +212,8 @@ class NodeStatusMessage(object):
                    parameters=parameters)
 
     @classmethod
-    def executing_from_node(cls, node, execution_id, parameters=None, started_at=None):
-        return cls(node.name, node.id_, node.label, node.app_name, execution_id, started_at=started_at,
+    def executing_from_node(cls, node, execution_id, cmd="", parameters=None, started_at=None):
+        return cls(node.name, node.id_, cmd, node.label, node.app_name, execution_id, started_at=started_at,
                    status=StatusEnum.EXECUTING, parameters=parameters)
 
     @classmethod

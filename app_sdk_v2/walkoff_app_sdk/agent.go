@@ -1,23 +1,25 @@
 package main
 
 import (
-	"./helpers"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	s "strings"
 	"syscall"
+	"time"
+
+	"./helpers"
+	"github.com/go-redis/redis"
 )
-import "time"
-import "encoding/json"
-import "github.com/go-redis/redis"
 
 var cwd, _ = os.Getwd()
 var path = filepath.Dir(cwd)
 var app_name = os.Getenv("APP_NAME")
 var app_version = os.Getenv("APP_VERSION")
 var app_group = app_name + ":" + app_version
+
 const UUID_GLOB = "[abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789]-[abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789]-[abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789]-[abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789]-[abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789][abcdefABCDEF0123456789]"
 const REDIS_ABORTING_WORKFLOWS = "aborting-workflows"
 
@@ -29,32 +31,31 @@ func check(e error) {
 	}
 }
 
-func main(){
+func main() {
 	fmt.Println("Starting App SDK")
-	if app_name == ""{
+	if app_name == "" {
 		panic("set APP_NAME environment variable!")
 		os.Exit(2)
 	}
-	if app_version == ""{
+	if app_version == "" {
 		panic("set APP_VERSION environment variable!")
 		os.Exit(2)
 	}
 	fmt.Println("App: " + app_name + ", Version: " + app_version)
 	fmt.Println("Working Directory: " + cwd)
 	fmt.Println("App Path: " + path)
-
+	fmt.Println("---------------------------------------------------------------")
 	// API Execution Options
 	localPtr := flag.Bool("local", false, "run action locally")
 	longPtr := flag.Bool("long", false, "run app_sdk forever")
 
-
 	// Execute Command Line Parsing
 	flag.Parse()
 
-	host  := ""
-	if *localPtr == true{
+	host := ""
+	if *localPtr == true {
 		host = "localhost:6379"
-	}else{
+	} else {
 		host = "resource_redis:6379"
 	}
 
@@ -65,11 +66,10 @@ func main(){
 		DB:       0,  // use default DB
 	})
 
-
 	listen(client, *localPtr, *longPtr)
 }
 
-func listen(client *redis.Client, local bool, long bool){
+func listen(client *redis.Client, local bool, long bool) {
 	streams := []string{}
 	old_streams := []string{}
 
@@ -82,10 +82,10 @@ func listen(client *redis.Client, local bool, long bool){
 			streams = helpers.Diff(new_streams, streams)
 			old_streams = append(old_streams, streams...)
 
-			//If there is a new stream... 
+			//If there is a new stream...
 			if len(streams) >= 1 {
 				get_actions(client, streams)
-			} else if len(streams) < 1 && long == false{
+			} else if len(streams) < 1 && long == false {
 				os.Exit(0)
 			}
 		}
@@ -94,12 +94,12 @@ func listen(client *redis.Client, local bool, long bool){
 
 func get_streams(client *redis.Client) []string {
 	streams := []string{}
-	
+
 	//Gets the streams
 	iter := client.Scan(0, fmt.Sprintf("%s:%s", UUID_GLOB, app_group), 0).Iterator()
 	aborted, err := client.SMembers(REDIS_ABORTING_WORKFLOWS).Result()
 	check(err)
-	
+
 	// Checks if stream is in the aborted list
 	for iter.Next() {
 		val := iter.Val()
@@ -111,14 +111,14 @@ func get_streams(client *redis.Client) []string {
 		fmt.Println("Error iterating streams in fn get_streams")
 		fmt.Println(err)
 	}
-	
+
 	return streams
 }
 
 func get_message(client *redis.Client, streams []string) []redis.XStream {
 	//format XReadGroupArgs streams
 	pendingids := []string{}
-	for i := range streams{
+	for i := range streams {
 		pendingids = append(pendingids, streams[i])
 		pendingids = append(pendingids, "0")
 	}
@@ -129,11 +129,11 @@ func get_message(client *redis.Client, streams []string) []redis.XStream {
 		fmt.Println(err)
 	}
 	if len(message) > 0 {
-		if len(message[0].Messages) < 1{
+		if len(message[0].Messages) < 1 {
 
 			//format XReadGroupArgs streams
 			newids := []string{}
-			for i := range streams{
+			for i := range streams {
 				newids = append(newids, streams[i])
 				newids = append(newids, ">")
 			}
@@ -152,7 +152,7 @@ func get_actions(client *redis.Client, streams []string) {
 	var data map[string]interface{}
 
 	result := get_message(client, streams)
-	if len(result) >= 1{
+	if len(result) >= 1 {
 		if len(result[0].Messages) == 1 {
 			message := result[0].Messages[0]
 			stream := result[0].Stream
@@ -163,8 +163,7 @@ func get_actions(client *redis.Client, streams []string) {
 			in := []byte(value.(string))
 			json.Unmarshal(in, &data)
 
-			command := "python"
-			arguments := "echo_string.py"
+			command, arguments := split_command_string(fmt.Sprintf("%s", data["cmd"]))
 
 			binary := "/app/walkoff_app_sdk/action.exe"
 			args := []string{"action.exe",
@@ -177,14 +176,13 @@ func get_actions(client *redis.Client, streams []string) {
 				//"-streaming"
 				"-stdout",
 				//"-stderr",
-				//"-stdout",
 				//"-file",
 				//"-dir",
 				//"-file_watch_path=log_file.log",
 				//"-file_delim=",
 				//"-dir_watch_path=",
 
-				}
+			}
 
 			env := setParameters(data["parameters"].([]interface{}))
 			execErr := syscall.Exec(binary, args, env)
@@ -197,9 +195,14 @@ func get_actions(client *redis.Client, streams []string) {
 	}
 }
 
+func split_command_string(command string) (string, string) {
+	splitArgs := s.SplitN(command, " ", 2)
+	return splitArgs[0], splitArgs[1]
+}
+
 func setParameters(parameters []interface{}) []string {
 	env := os.Environ()
-	for p := range parameters{
+	for p := range parameters {
 		param := parameters[p].(map[string]interface{})
 		name := s.Replace(fmt.Sprintf("%v", param["name"]), " ", "_", -1)
 		value := fmt.Sprintf("%s=%s", name, param["value"])
@@ -207,7 +210,3 @@ func setParameters(parameters []interface{}) []string {
 	}
 	return env
 }
-
-
-
-

@@ -2,9 +2,7 @@ import asyncio
 import logging
 import signal
 import os
-from pathlib import Path
 from itertools import compress
-import uuid
 
 import aiodocker
 import aiohttp

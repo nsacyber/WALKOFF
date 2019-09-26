@@ -3,13 +3,14 @@ package executors
 import (
 	"bufio"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"io"
 	"os"
 	"sync"
+
+	"github.com/fsnotify/fsnotify"
 )
 
-func File(filename string, output chan []byte, state ExecutionState, delim byte, wg *sync.WaitGroup){
+func File(filename string, output chan []byte, state *ExecutionState, delim byte, wg *sync.WaitGroup) {
 	doneFlag := false
 	file, _ := os.Open(filename)
 	watcher, _ := fsnotify.NewWatcher()

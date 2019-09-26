@@ -91,6 +91,9 @@ ActionApi:
       type: boolean
       default: false
       description: Is this action deprecated?
+    cmd:
+      type: string
+      description: Command to run
     description:
       type: string
       description: A longer description of the operation

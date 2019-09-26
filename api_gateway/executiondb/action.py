@@ -27,6 +27,7 @@ class ActionApi(Base):
     node_type = Column(String(), nullable=False, default="ACTION")
     location = Column(String(), nullable=False)
     description = Column(String(), default="")
+    cmd = Column(String(), nullable=False)
     returns = relationship("ReturnApi", uselist=False, cascade="all, delete-orphan", passive_deletes=True)
     parameters = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
 
@@ -41,6 +42,7 @@ class ActionApiSchema(BaseSchema):
     location = field_for(ActionApi, "location", load_only=True)
     returns = fields.Nested(ReturnApiSchema)
     parameters = fields.Nested(ParameterApiSchema, many=True)
+    cmd = field_for(ActionApi, "cmd")
 
     class Meta:
         model = ActionApi
@@ -71,7 +73,7 @@ class Action(Base):
     _walkoff_type = Column(String(80), default=__tablename__)
     parameters = relationship('Parameter', cascade='all, delete, delete-orphan', foreign_keys=[Parameter.action_id],
                               passive_deletes=True)
-
+    cmd = Column(String(), nullable=False)
     children = []
 
     def __init__(self, **kwargs):
@@ -110,6 +112,7 @@ class ActionSchema(BaseSchema):
     errors = field_for(Action, "errors", dump_only=True)
     is_valid = field_for(Action, "is_valid", dump_only=True)
     parameters = fields.Nested(ParameterSchema, many=True)
+    cmd = field_for(Action, "cmd")
     # parallel_parameter = fields.Nested(ParameterSchema, allow_none=True)
 
     class Meta:
