@@ -1,51 +1,42 @@
 import base64
 import logging
+from typing import List, Union
 
-from cryptography.fernet import Fernet
 from motor.motor_asyncio import AsyncIOMotorCollection
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
 from uuid import uuid4
 from uuid import UUID
-from sqlalchemy.orm import Session
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.requests import Request
 
 from api.server.db.global_variable import GlobalVariableTemplate, GlobalVariable
 
-from api.server.db import get_db, get_mongo_c, get_mongo_d
+from api.server.db import get_mongo_c, get_mongo_d
 from api.security import get_jwt_identity
 from api.server.db.permissions import auth_check, default_permissions, creator_only_permissions, AccessLevel
 from api.server.utils.problems import UniquenessException
 from common import mongo_helpers
 from common.config import config
-from common.helpers import fernet_encrypt, fernet_decrypt, validate_uuid
+from common.helpers import fernet_encrypt, fernet_decrypt
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
-async def global_variable_getter(global_variable, global_col: AsyncIOMotorCollection):
-    if validate_uuid(global_variable):
-        return await global_col.find_one({"id_": global_variable}, projection={'_id': False})
-    else:
-        return await global_col.find_one({"name": global_variable}, projection={'_id': False})
-
-
-# def global_variable_template_getter(global_template, global_col: AsyncIOMotorCollection):
-#     if validate_uuid(global_template):
-#         return await global_col.find_one({"id_": global_template}, projection={'_id': False})
-#     else:
-#         return await global_col.find_one({"name": global_template}, projection={'_id': False})
-
-
-@router.get("/", status_code=200)
-async def read_all_globals(request: Request, to_decrypt: str = "false",
+@router.get("/",
+            response_model=List[GlobalVariable],
+            response_description="List of all Global Variables currently loaded in WALKOFF",
+            status_code=200)
+async def read_all_globals(request: Request, to_decrypt: str = False,
                            global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Returns a list of all Global Variables currently loaded in WALKOFF.
+    """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = await get_jwt_identity(request)
+    curr_user_id = UUID(await get_jwt_identity(request))
 
     key = b'walkoff123456walkoff123456walkof'
     key = base64.b64encode(key)
@@ -58,28 +49,34 @@ async def read_all_globals(request: Request, to_decrypt: str = "false",
         return query
     else:
         for global_var in query:
-            to_read = await auth_check(curr_user_id, global_var["id_"], "read", "globals", walkoff_db=walkoff_db)
+            to_read = await auth_check(global_var, curr_user_id, "read", walkoff_db)
             if to_read:
                 temp_var = deepcopy(global_var)
-                temp_var["value"] = fernet_decrypt(key, global_var["value"])
+                temp_var.value = fernet_decrypt(key, global_var.value)
                 ret.append(temp_var)
 
         return ret
 
 
-@router.get("/{global_var}")
+@router.get("/{global_var}",
+            response_model=str,
+            response_description="The requested Global Variable.",
+            status_code=200)
 async def read_global(request: Request, global_var: UUID, to_decrypt: str = "false",
                       global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Returns the Global Variable for the specified id.
+    """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = await get_jwt_identity(request)
+    curr_user_id = UUID(await get_jwt_identity(request))
 
     global_variable = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
     global_id = global_variable.id_
 
-    to_read = await auth_check(curr_user_id, global_id, "read", "globals", walkoff_db=walkoff_db)
+    to_read = await auth_check(global_variable, curr_user_id, "read", walkoff_db)
     if to_read:
         if to_decrypt == "false":
-            return global_variable
+            return global_variable.value
         else:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
             key = b'walkoff123456walkoff123456walkof'
@@ -89,38 +86,47 @@ async def read_global(request: Request, global_var: UUID, to_decrypt: str = "fal
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
-@router.delete("/{global_var}")
+@router.delete("/{global_var}",
+               response_model=bool,
+               response_description="Whether the specified Global Variable was deleted.",
+               status_code=204)
 async def delete_global(request: Request, global_var: UUID,
                         global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Deletes a specific Global Variable (fetched by id).
+    """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = await get_jwt_identity(request)
+    curr_user_id = UUID(await get_jwt_identity(request))
 
-    global_dict = await global_variable_getter(global_var, global_col)
-    global_id = global_dict['id_']
+    global_variable = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
+    global_id = global_variable.id_
 
-    to_delete = await auth_check(curr_user_id, global_id, "delete", "globals", walkoff_db=walkoff_db)
+    to_delete = await auth_check(global_variable, curr_user_id, "delete", walkoff_db)
     if to_delete:
-        await global_col.delete_one(global_dict)
-        logger.info(f"Global_variable removed {global_dict['name']}")
-        return None, HTTPStatus.NO_CONTENT
+        return await mongo_helpers.delete_item(global_col, GlobalVariable, global_id)
     else:
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
-@router.post("/")
+@router.post("/",
+             response_model=GlobalVariable,
+             response_description="The newly created Global Variable.",
+             status_code=201)
 async def create_global(request: Request, new_global: GlobalVariable,
                         global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Creates a new Global Variable in WALKOFF and returns it.
+    """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = await get_jwt_identity(request)
+    curr_user_id = UUID(await get_jwt_identity(request))
 
     permissions = new_global.permissions
     access_level = permissions.access_level
-
     if access_level == AccessLevel.CREATOR_ONLY:
-        permissions_model = creator_only_permissions(curr_user_id)
+        permissions_model = await creator_only_permissions(curr_user_id)
         new_global.permissions = permissions_model
     elif access_level == AccessLevel.EVERYONE:
-        permissions_model = default_permissions(curr_user_id, walkoff_db, "global_variables")
+        permissions_model = await default_permissions(curr_user_id, walkoff_db, "global_variables")
         new_global.permissions = permissions_model
     elif access_level == AccessLevel.ROLE_BASED:
         new_global.permissions.creator = curr_user_id
@@ -135,20 +141,25 @@ async def create_global(request: Request, new_global: GlobalVariable,
         UniquenessException("global_variable", "create", new_global.name)
 
 
-@router.put("/{global_var}")
+@router.put("/{global_var}",
+            response_model=GlobalVariable,
+            response_description="The newly updated Global Variable.",
+            status_code=200)
 async def update_global(request: Request, updated_global: GlobalVariable, global_var: UUID,
                         global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Updates a specific Global Variable (fetched by id) and returns it.
+    """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = await get_jwt_identity(request)
+    curr_user_id = UUID(await get_jwt_identity(request))
 
-    old_global = await global_variable_getter(global_var, global_col)
-    old_global = GlobalVariable(**old_global)
-    global_id = str(old_global.id_)
+    old_global = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
+    global_id = old_global.id_
 
     new_permissions = updated_global.permissions
     access_level = new_permissions.access_level
 
-    to_update = await auth_check(curr_user_id, global_id, "update", "global_variables", walkoff_db)
+    to_update = await auth_check(old_global, curr_user_id, "update", walkoff_db)
     if to_update:
         if access_level == AccessLevel.CREATOR_ONLY:
             updated_global.permissions = creator_only_permissions(curr_user_id)

@@ -196,10 +196,10 @@ _walkoff.include_router(dashboards.router,
 #                         tags=["workflowqueue"],
 #                         dependencies=[Depends(get_mongo_c)])
 #
-# _walkoff.include_router(workflows.router,
-#                         prefix="/workflows",
-#                         tags=["workflows"],
-#                         dependencies=[Depends(get_mongo_c)])
+_walkoff.include_router(workflows.router,
+                        prefix="/workflows",
+                        tags=["workflows"],
+                        dependencies=[Depends(get_mongo_c)])
 
 
 @_app.get("/walkoff/login")

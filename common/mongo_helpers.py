@@ -76,6 +76,10 @@ async def get_item(collection: AsyncIOMotorCollection,
     :param raise_exc: Whether to raise exception if item is not found.
     :return: Requested object from collection
     """
+    try:
+        item_id = UUID(item_id)
+    except:
+        item_id = item_id
     projection = {} if projection is None else projection
     projection.update(ignore_mongo_id)
 

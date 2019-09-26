@@ -24,10 +24,8 @@ def __list_valid_directories(path):
 
 def list_apps(path):
     """Get a list of the apps.
-
     Args:
         path (str): The path to the apps folder
-
     Returns:
         A list of the apps given the apps path or the apps_path in the configuration.
     """
@@ -57,94 +55,6 @@ def sse_format(data, event_id, event=None, retry=None):
     if data:
         formatted += 'data: {}\n'.format(data)
     return formatted + '\n'
-
-# def list_interfaces(path=None):
-#     return __list_valid_directories(path)
-
-
-# def locate_playbooks_in_directory(path):
-#     """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
-#
-#     Args:
-#         path (str, optional): The directory path from which to locate the workflows.
-#
-#     Returns:
-#         A list of workflow names from the specified path, or the directory specified in the configuration.
-#     """
-#     if os.path.exists(path):
-#         return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
-#                                                               and workflow.endswith('.playbook'))]
-#     else:
-#         logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
-#         return []
-
-
-# def import_submodules(package, recursive=False):
-#     """Imports the submodules from a given package.
-#
-#     Args:
-#         package (str): The name of the package from which to import the submodules.
-#         recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
-#             Defaults to False.
-#
-#     Returns:
-#         A dictionary containing the imported module objects.
-#     """
-#     successful_base_import = True
-#     if isinstance(package, str):
-#         try:
-#             package = importlib.import_module(package)
-#         except ImportError:
-#             successful_base_import = False
-#             logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
-#     if successful_base_import:
-#         results = {}
-#         if hasattr(package, '__path__'):
-#             for loader, name, is_package in pkgutil.walk_packages(package.__path__):
-#                 full_name = '{0}.{1}'.format(package.__name__, name)
-#                 try:
-#                     results[full_name] = importlib.import_module(full_name)
-#                 except ImportError:
-#                     logger.warning('Could not import {}. Skipping.'.format(full_name), exc_info=True)
-#                 if recursive and is_package:
-#                     results.update(import_submodules(full_name))
-#         return results
-#     return {}
-
-
-def format_db_path(db_type, path, username=None, password=None, host=None):
-    """
-    Formats the path to the database
-
-    Args:
-        db_type (str): Type of database being used
-        path (str): Path to the database
-        username (str): Username for this db
-        password (str): Password for this db
-        host (str): The hostname where the database is hosted
-    Returns:
-        (str): The path of the database formatted for SqlAlchemy
-    """
-    supported_dbs = ['postgresql', 'postgresql+psycopg2', 'postgresql+pg8000',
-                     'mysql', 'mysql+mysqldb', 'mysql+mysqlconnector', 'mysql+oursql',
-                     'oracle', 'oracle+cx_oracle', 'mssql+pyodbc', 'mssql+pymssql']
-    sqlalchemy_path = None
-
-    if db_type == 'sqlite':
-        sqlalchemy_path = f"{db_type}:///{path}"
-
-    elif db_type in supported_dbs:
-        if username and password:
-            sqlalchemy_path = f"{db_type}://{username}:{password}@{host}/{path}"
-        elif username:
-            sqlalchemy_path = f"{db_type}://{username}@{host}/{path}"
-        else:
-            logger.error(f"Database type was set to {db_type}, but no login was provided.")
-
-    else:
-        logger.error(f"Database type {db_type} not supported for database {path}")
-
-    return sqlalchemy_path
 
 
 def get_function_arg_names(func):
@@ -230,8 +140,8 @@ def regenerate_workflow_ids(workflow):
     tags = workflow.get('tags', [])
     id_mapping["tags"] = tags
 
-    # for action in actions:
-    #     regenerate_ids(action, id_mapping, regenerate_id=False)
+    for action in actions:
+        regenerate_ids(action, id_mapping, regenerate_id=False)
 
     # ToDo: These will be needed if condition/transform parameters are changed to be more like actions
     # for condition in conditions:
@@ -270,32 +180,6 @@ def __regenerate_ids_of_list(value, id_mapping, is_arguments=False):
     for list_element in (list_element_ for list_element_ in value
                          if isinstance(list_element_, dict)):
         regenerate_ids(list_element, id_mapping=id_mapping, is_arguments=is_arguments)
-
-
-# def strip_device_ids(workflow):
-#     for action in workflow.get('actions', []):
-#         action.pop('device_id', None)
-#
-#
-# def strip_argument_ids(workflow):
-#     for action in workflow.get('actions', []):
-#         strip_argument_ids_from_element(action)
-#         if 'device_id' in action:
-#             action['device_id'].pop('id_', None)
-#
-#
-# def strip_argument_ids_from_conditional(conditional):
-#     for conditional_expression in conditional.get('child_expressions', []):
-#         strip_argument_ids_from_conditional(conditional_expression)
-#     for condition in conditional.get('conditions', []):
-#         strip_argument_ids_from_element(condition)
-#         for transform in condition.get('transforms', []):
-#             strip_argument_ids_from_element(transform)
-#
-#
-# def strip_argument_ids_from_element(element):
-#     for argument in element.get('arguments', []):
-#         argument.pop('id_', None)
 
 
 def utc_as_rfc_datetime(timestamp):
