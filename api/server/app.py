@@ -8,8 +8,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
-from api.server.endpoints import appapi, dashboards, workflows, users, console, results,  auth, roles, global_variables
-from api.server.endpoints import appapi, dashboards, users, auth, roles
+from api.server.endpoints import appapi, dashboards, workflows, users, console, results, umpire, auth, roles, global_variables
 from api.server.db import MongoManager, get_mongo_c
 
 from api.server.db.user_init import default_roles, default_users
@@ -83,7 +82,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         resource_permission = ""
 
         role_based = ["globals", "workflows"]
-        move_on = ["globals", "workflows", "auth", "workflowqueue", "appapi", "docs", "redoc", "openapi.json"]
+        move_on = ["globals", "workflows", "console", "auth", "workflowqueue", "appapi", "docs", "redoc", "openapi.json"]
         if resource_name not in move_on:
             if request_method == "POST":
                 resource_permission = "create"
@@ -187,6 +186,11 @@ _walkoff.include_router(results.router,
 _walkoff.include_router(console.router,
                         prefix="/console",
                         tags=["console"],
+                        dependencies=[Depends(get_mongo_c)])
+
+_walkoff.include_router(umpire.router,
+                        prefix="/umpire",
+                        tags=["umpire"],
                         dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(dashboards.router,
