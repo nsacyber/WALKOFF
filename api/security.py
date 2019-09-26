@@ -6,7 +6,7 @@ import uuid
 from functools import wraps
 from http import HTTPStatus
 import json
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 import jwt
 from starlette.requests import Request
@@ -19,13 +19,26 @@ from api.fastapi_config import FastApiConfig
 from api.server.db.tokens import is_token_revoked
 from api.server.db.user import UserModel
 from api.server.db.role import RoleModel
+from api.server.db.settings import SettingsModel
 from api.server.db.resource import ResourceModel
 from api.server.db.permissions import PermissionsModel
 from api.server.utils.problems import ProblemException
+from common.config import config, static
+from common import mongo_helpers
+from common.helpers import preset_uuid
+
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 logger = logging.getLogger(__name__)
+
+
+async def load_secret_key():
+    return config.get_from_file(config.ENCRYPTION_KEY_PATH)
+
+
+async def load_settings():
+    return await mongo_helpers.get_item()
 
 
 async def verify_jwt_refresh_token_in_request(walkoff_db: AsyncIOMotorDatabase, request: Request):
@@ -38,7 +51,7 @@ async def verify_jwt_refresh_token_in_request(walkoff_db: AsyncIOMotorDatabase, 
 async def verify_token_in_decoded(decoded_token: dict, request_type: str):
     if decoded_token['type'] != request_type:
         raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.",
-                               'Only {} tokens are allowed'.format(request_type))
+                               f'Only {request_type} tokens are allowed')
 
 
 async def verify_token_not_blacklisted(walkoff_db: AsyncIOMotorDatabase, decoded_token: dict, request_type: str):
@@ -52,12 +65,13 @@ async def verify_token_not_blacklisted(walkoff_db: AsyncIOMotorDatabase, decoded
             raise ProblemException(HTTPStatus.BAD_REQUEST, "Could not verify token.", 'Token has been revoked.')
 
 
-async def create_access_token(user: UserModel, fresh=False, expires_delta: timedelta = None, user_claims=None):
+async def create_access_token(settings_col: AsyncIOMotorCollection,
+                              user: UserModel, fresh=False, expires_delta: timedelta = None, user_claims=None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        # defaults to 15 minutes
-        expire = datetime.utcnow() + timedelta(minutes=FastApiConfig.JWT_ACCESS_TOKEN_EXPIRES)
+        settings: SettingsModel = await mongo_helpers.get_item(settings_col, SettingsModel, preset_uuid("settings"))
+        expire = datetime.utcnow() + timedelta(minutes=settings.access_token_life_mins)
     if user_claims is None:
         user_claims = await add_claims_to_access_token(user)
     to_encode = {"jti": str(uuid.uuid4()),
@@ -66,27 +80,28 @@ async def create_access_token(user: UserModel, fresh=False, expires_delta: timed
                  "fresh": fresh,
                  "type": "access",
                  "user_claims": user_claims}
-    encoded_jwt = jwt.encode(to_encode, FastApiConfig.SECRET_KEY, algorithm=FastApiConfig.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, await load_secret_key(), algorithm=FastApiConfig.ALGORITHM)
     return encoded_jwt
 
 
-async def create_refresh_token(user: UserModel, expires_delta: timedelta = None):
+async def create_refresh_token(settings_col: AsyncIOMotorCollection,
+                               user: UserModel, expires_delta: timedelta = None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        # defaults to 30 days
-        expire = datetime.utcnow() + timedelta(days=FastApiConfig.JWT_REFRESH_TOKEN_EXPIRES)
+        settings: SettingsModel = await mongo_helpers.get_item(settings_col, SettingsModel, preset_uuid("settings"))
+        expire = datetime.utcnow() + timedelta(days=settings.refresh_token_life_days)
     to_encode = {"jti": str(uuid.uuid4()),
                  "exp": expire,
                  "identity": str(user.id_),
                  "type": "refresh"}
-    encoded_jwt = jwt.encode(to_encode, FastApiConfig.SECRET_KEY, algorithm=FastApiConfig.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, await load_secret_key(), algorithm=FastApiConfig.ALGORITHM)
     return encoded_jwt
 
 
 async def decode_token(to_decode):
     try:
-        decoded_jtw = jwt.decode(to_decode, FastApiConfig.SECRET_KEY,
+        decoded_jtw = jwt.decode(to_decode, await load_secret_key(),
                                  algorithm=FastApiConfig.ALGORITHM)
     except jwt.exceptions.DecodeError:
         return None

@@ -4,7 +4,7 @@ import motor.motor_asyncio
 import pymongo
 
 from common.config import config, static
-
+from common.helpers import preset_uuid
 
 class MongoManager(object):
     def __init__(self):
@@ -29,6 +29,13 @@ class MongoManager(object):
         await self.client.walkoff_db.users.create_indexes([id_index, username_index])
 
         await self.client.walkoff_db.dashboards.create_indexes([id_index, name_index])
+
+        if "settings" not in await self.client.walkoff_db.list_collection_names():
+            await self.client.walkoff_db.settings.insert_one({
+                "id_": preset_uuid("settings"),
+                "access_token_life_mins": 15,
+                "refresh_token_life_days": 90
+            })
 
     def collection_from_url(self, path: str):
         parts = path.split("/")

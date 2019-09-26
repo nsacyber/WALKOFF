@@ -15,14 +15,14 @@ export class SettingsService {
 	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 
 	getConfiguration(): Promise<Configuration> {
-		return this.http.get('api/settings')
+		return this.http.get('api/settings/')
 			.toPromise()
 			.then((data: object) => plainToClass(Configuration, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	updateConfiguration(configuration: Configuration): Promise<Configuration> {
-		return this.http.put('api/settings', configuration)
+		return this.http.put('api/settings/', configuration)
 			.toPromise()
 			.then((data: object) => plainToClass(Configuration, data))
 			.catch(this.utils.handleResponseError);
