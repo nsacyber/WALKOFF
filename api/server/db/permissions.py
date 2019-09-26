@@ -41,6 +41,37 @@ async def creator_only_permissions(creator):
                             role_permissions=[internal_user_permission, super_user_permission])
 
 
+async def append_super_and_internal(permissions_model):
+    existing_roles = [elem.role for elem in permissions_model.role_permissions]
+
+    internal = {'role': DefaultRoleUUID.INTERNAL_USER.value, 'permissions': ["delete", "execute", "read", "update"]}
+    internal_user_permission = RolePermissions(**internal)
+    super_user = {'role': DefaultRoleUUID.SUPER_ADMIN.value, 'permissions': ["delete", "execute", "read", "update"]}
+    super_user_permission = RolePermissions(**super_user)
+
+    count = 0
+    copy = deepcopy(permissions_model.role_permissions)
+    for elem in permissions_model.role_permissions:
+        if elem.role == DefaultRoleUUID.INTERNAL_USER.value:
+            copy[count] = internal_user_permission
+        elif elem.role == DefaultRoleUUID.SUPER_ADMIN.value:
+            copy[count] = super_user_permission
+        count = count + 1
+    permissions_model.role_permissions = copy
+    print(copy)
+
+    print(count)
+    #
+    # to_append = []
+    # if DefaultRoleUUID.INTERNAL_USER.value not in existing_roles:
+    #     to_append.append(internal_user_permission)
+    # if DefaultRoleUUID.SUPER_ADMIN.value not in existing_roles:
+    #     to_append.append(super_user_permission)
+    #
+    # if to_append:
+    #     permissions_model.role_permissions += to_append
+
+
 async def default_permissions(curr_user_id, walkoff_db, resource_name):
     role_col = walkoff_db.roles
     roles = await role_col.find().to_list(None)
@@ -67,7 +98,6 @@ async def auth_check(resource, curr_user_id: UUID, permission: str, walkoff_db):
         permission_model = resource.permissions
         if permission_model.creator == curr_user_id:
             return True
-
         role_permissions = permission_model.role_permissions
         for role_perm_elem in role_permissions:
             if role_perm_elem.role in curr_roles:

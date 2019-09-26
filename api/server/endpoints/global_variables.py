@@ -15,7 +15,8 @@ from api.server.db import get_mongo_c, get_mongo_d
 
 from api.server.security import get_jwt_identity
 
-from api.server.db.permissions import auth_check, default_permissions, creator_only_permissions, AccessLevel
+from api.server.db.permissions import auth_check, default_permissions, creator_only_permissions, AccessLevel, \
+    append_super_and_internal
 from api.server.utils.problems import UniquenessException
 from common import mongo_helpers
 from common.config import config
@@ -123,12 +124,11 @@ async def create_global(request: Request, new_global: GlobalVariable,
     permissions = new_global.permissions
     access_level = permissions.access_level
     if access_level == AccessLevel.CREATOR_ONLY:
-        permissions_model = await creator_only_permissions(curr_user_id)
-        new_global.permissions = permissions_model
+        new_global.permissions = await creator_only_permissions(curr_user_id)
     elif access_level == AccessLevel.EVERYONE:
-        permissions_model = await default_permissions(curr_user_id, walkoff_db, "global_variables")
-        new_global.permissions = permissions_model
+        new_global.permissions = await default_permissions(curr_user_id, walkoff_db, "global_variables")
     elif access_level == AccessLevel.ROLE_BASED:
+        await append_super_and_internal(new_global.permissions)
         new_global.permissions.creator = curr_user_id
 
     try:
@@ -166,6 +166,7 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
         elif access_level == AccessLevel.EVERYONE:
             updated_global.permissions = default_permissions(curr_user_id, walkoff_db, "global_variables")
         elif access_level == AccessLevel.ROLE_BASED:
+            await append_super_and_internal(updated_global.permissions)
             updated_global.permissions.creator = curr_user_id
 
         try:

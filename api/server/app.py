@@ -87,21 +87,30 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         if resource_name not in move_on:
             if request_method == "POST":
                 resource_permission = "create"
-            # elif resource_name in role_based:
-            #     response = await call_next(request)
-            #     return response
 
             if request_method == "GET":
                 resource_permission = "read"
+            elif resource_name in role_based:
+                response = await call_next(request)
+                return response
 
             if request_method == "PUT":
                 resource_permission = "update"
+            elif resource_name in role_based:
+                response = await call_next(request)
+                return response
 
             if request_method == "DELETE":
                 resource_permission = "delete"
+            elif resource_name in role_based:
+                response = await call_next(request)
+                return response
 
             if request_method == "PATCH":
                 resource_permission = "execute"
+            elif resource_name in role_based:
+                response = await call_next(request)
+                return response
 
             accepted_roles |= await get_roles_by_resource_permission(resource_name, resource_permission, walkoff_db)
             if not await user_has_correct_roles(accepted_roles, request):

@@ -158,7 +158,6 @@ def regenerate_workflow_ids(workflow):
     workflow['start'] = id_mapping[workflow['start']]
 
 
-
 def regenerate_ids(json_in, id_mapping=None, regenerate_id=True, is_arguments=False):
     if regenerate_id:
         json_in['id_'] = str(uuid4())

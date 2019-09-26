@@ -17,7 +17,7 @@ from api.server.security import get_jwt_identity
 from api.server.db import get_mongo_c, get_mongo_d
 from api.server.db.workflow import WorkflowModel
 from api.server.db.permissions import AccessLevel, auth_check, creator_only_permissions, \
-    default_permissions
+    default_permissions, append_super_and_internal
 from api.server.utils.helpers import regenerate_workflow_ids
 from api.server.utils.problems import UniquenessException
 from common import mongo_helpers
@@ -57,16 +57,14 @@ async def create_workflow(request: Request, new_workflow: WorkflowModel,
         permissions_model = await default_permissions(curr_user_id, walkoff_db, "global_variables")
         new_workflow.permissions = permissions_model
     elif access_level == AccessLevel.ROLE_BASED:
+        await append_super_and_internal(new_workflow.permissions)
         new_workflow.permissions.creator = curr_user_id
 
     # copying workflows
     if source:
-        print("Performing Copy")
         old_workflow: WorkflowModel = await mongo_helpers.get_item(workflow_col, WorkflowModel, UUID(source))
-        print(f"Old Workflow: {old_workflow}")
         new_workflow = await copy_workflow(curr_user_id=curr_user_id, old_workflow=old_workflow,
                                            new_workflow=new_workflow, walkoff_db=walkoff_db)
-        print(f"New Workflow: {new_workflow}")
     try:
         return await mongo_helpers.create_item(workflow_col, WorkflowModel, new_workflow)
     except:
@@ -177,6 +175,7 @@ async def update_workflow(request: Request, updated_workflow: WorkflowModel, wor
         elif access_level == AccessLevel.EVERYONE:
             updated_workflow.permissions = await default_permissions(curr_user_id, walkoff_db, "global_variables")
         elif access_level == AccessLevel.ROLE_BASED:
+            await append_super_and_internal(updated_workflow.permissions)
             updated_workflow.permissions.creator = curr_user_id
 
         return await mongo_helpers.update_item(workflow_col, WorkflowModel, old_workflow.id_, updated_workflow)
