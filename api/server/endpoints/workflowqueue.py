@@ -24,9 +24,18 @@ from api.server.endpoints.results import push_to_workflow_stream_queue
 from api.server.utils.problems import InvalidInputException, ImproperJSONException, DoesNotExistException
 from common.redis_helpers import connect_to_redis_pool
 from common.config import config
+from common.mongo_helpers import get_item, create_item
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+# def workflow_status_getter(execution_id, app_api_col: AsyncIOMotorCollection):
+    # return await app_api_col.find_one({"execution_id": execution_id}, projection={'_id': False})
+
+
+# def workflow_getter(workflow_id, app_api_col: AsyncIOMotorCollection):
+#     return await app_api_col.find_one({"workflow_id": workflow_id}, projection={'_id': False})
 
 
 status_order = OrderedDict(
@@ -93,7 +102,8 @@ def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Request, wor
 
     workflow_id = workflow_to_execute.workflow_id
     execution_id = workflow_to_execute.execution_id
-    workflow = workflow_getter(workflow_id, workflow_status_col)
+    workflow = await get_item(workflow_status_col, WorkflowStatus, workflow_id)
+    # workflow = workflow_getter(workflow_id, workflow_status_col)
     data = dict(workflow_to_execute)
 
     curr_user_id = await get_jwt_identity(request)
@@ -156,7 +166,7 @@ def execute_workflow_helper(request: Request, workflow_id, workflow_status_col: 
     if not execution_id:
         execution_id = str(uuid.uuid4())
     if not workflow:
-        workflow = dict(workflow_getter(workflow_id, workflow_status_col))
+        workflow = dict(await get_item(workflow_status_col, WorkflowStatus, workflow_id))
     workflow_status_json = {  # ToDo: Probably load this directly into db model?
         "execution_id": execution_id,
         "workflow_id": workflow_id,
@@ -171,15 +181,14 @@ def execute_workflow_helper(request: Request, workflow_id, workflow_status_col: 
         "label": None
     }
     workflow_status = WorkflowStatus(**workflow_status_json)
-    await workflow_status_col.insert_one(workflow_status_json)
+    await create_item(workflow_status_col, WorkflowStatus, workflow_status)
 
     # Assign the execution id to the workflow so the worker knows it
     workflow["execution_id"] = execution_id
     # ToDo: self.__box.encrypt(message))
     async with connect_to_redis_pool(config.REDIS_URI) as conn:
         await conn.sadd(static.REDIS_PENDING_WORKFLOWS, execution_id)
-        await conn.xadd(static.REDIS_WORKFLOW_QUEUE,
-                                               {execution_id: json.dumps(workflow)})
+        await conn.xadd(static.REDIS_WORKFLOW_QUEUE, {execution_id: json.dumps(workflow)})
     push_to_workflow_stream_queue(workflow_status_json, "PENDING")
     logger.info(f"Created Workflow Status {workflow['name']} ({execution_id})")
 
@@ -200,7 +209,8 @@ def control_workflow(request: Request, execution, workflow_to_control: ControlWo
     data = dict(workflow_to_control)
     status = data['status']
 
-    workflow = workflow_getter(execution.workflow_id, workflow_status_col)
+    workflow = await get_item(workflow_status_col, WorkflowModel, execution.workflow_id)
+    # workflow = workflow_getter(execution.workflow_id, workflow_status_col)
     # The resource factory returns the WorkflowStatus model but we want the string of the execution ID
     execution_id = str(execution.execution_id)
 
@@ -273,7 +283,6 @@ def clear_workflow_status(all_=False, days=30, workflow_status_col: AsyncIOMotor
                                                 projection={'_id': False})
     elif days > 0:
         delete_date = datetime.datetime.today() - datetime.timedelta(days=days)
-
         temp = await workflow_status_col.find({ "$or":
                                                [{"status": StatusEnum.ABORTED}, {"status": StatusEnum.COMPLETED}]},
                                                 projection={'_id': False})
