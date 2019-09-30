@@ -40,7 +40,8 @@ export class JsonModalComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {}
 
     getClipboard() {
-        return  $.isPlainObject(this.results) ? JSON.stringify(this.results, null, 2) : this.results;
+        return  ($.isPlainObject(this.results) || $.isArray(this.results)) ?
+            JSON.stringify(this.results, null, 2) : this.results;
     }
 
     downloadResults() {

@@ -78,5 +78,5 @@
 </div>
 <div class="modal-footer">
 	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Close</button>
-	<button type="button" class="btn btn-primary ml-2" *ngIf="user.id && changeType" (click)="submit()">Save</button>
+	<button type="button" class="btn btn-primary ml-2" *ngIf="user?.id && changeType" (click)="submit()">Save</button>
 </div>
