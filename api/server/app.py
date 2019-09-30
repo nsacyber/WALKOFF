@@ -15,8 +15,8 @@ from api.server.db.user_init import default_roles, default_users
 from api.server.utils.problems import ProblemException
 from api.server.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
     get_roles_by_resource_permission
-from common.config import static
 
+from common.config import static
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _walkoff = FastAPI(openapi_prefix="/walkoff/api")
 _mongo_manager = MongoManager()
 _scheduler = Scheduler()
+
 
 _app.mount("/walkoff/api", _walkoff)
 _app.mount("/walkoff/client", StaticFiles(directory=static.CLIENT_PATH), name="static")
