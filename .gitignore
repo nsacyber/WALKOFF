@@ -47,3 +47,4 @@ app_sdk/walkoff_app_sdk.egg-info
 venv/
 *.unison.*
 tmp-compose.yml
+.pytest_cache

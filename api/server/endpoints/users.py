@@ -122,7 +122,7 @@ async def delete_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c)
     user = await mongo_helpers.get_item(user_col, UserModel, user_id, projection=ignore_password, raise_exc=False)
     user_string = f"{user.username} ({user.id_})"
 
-    if user.id_ in range(1, 3) or user.id_ == await get_jwt_identity(request):
+    if user.id_ in (DUsers.INTERNAL_USER, DUsers.SUPER_ADMIN) or user.id_ == await get_jwt_identity(request):
         raise UnauthorizedException("delete", "User", user_string)
     else:
         return await mongo_helpers.delete_item(user_col, UserModel, user_id)

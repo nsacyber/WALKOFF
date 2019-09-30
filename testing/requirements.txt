@@ -1,3 +1,5 @@
-birdisle
+starlette
 pytest
 semver
+pytest
+pytest-asyncio
