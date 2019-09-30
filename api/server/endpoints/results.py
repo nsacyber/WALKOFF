@@ -48,7 +48,7 @@ action_stream_subs = set()
 async def push_to_workflow_stream_queue(workflow_status, event):
     workflow_status.pop("node_statuses", None)
     workflow_status["execution_id"] = str(workflow_status["execution_id"])
-    sse_event_text = sse_format(data=workflow_status, event=event, event_id=workflow_status["execution_id"])
+    # sse_event_text = sse_format(data=workflow_status, event=event, event_id=workflow_status["execution_id"])
     if workflow_status["execution_id"] in workflow_stream_subs:
         redis_stream = WORKFLOW_STREAM_GLOB + "." + workflow_status["execution_id"]
         # workflow_stream_subs[workflow_status["execution_id"]].put(sse_event_text)
@@ -141,7 +141,7 @@ async def update_workflow_status(body: JSONPatch, event: str, execution_id: str,
     new_workflow_status = patch.apply(old_workflow_status)
 
     new_workflow_status.node_statuses = list(new_workflow_status.node_statuses.values())
-    if close == "Done":
+    if close is not None and close == "Done":
         new_workflow_status.websocket_finished = True
     else:
         new_workflow_status.websocket_finished = False
@@ -245,4 +245,3 @@ async def action_stream(websocket: WebSocket, exec_id: UUID = None):
                 logger.info(f"Error: {e}")
 
     return await action_results_generator()
-        # Response(action_results_generator(), mimetype="text/event-stream")

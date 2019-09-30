@@ -7,9 +7,8 @@ from collections import OrderedDict
 from datetime import datetime
 
 
-import gevent
 from starlette.requests import Request
-
+from pydantic import ValidationError
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorCollection
 
@@ -21,6 +20,8 @@ from api.server.db.workflowresults import WorkflowStatus, ExecuteWorkflow, Contr
 from api.server.security import get_jwt_claims, get_jwt_identity
 from api.server.endpoints.results import push_to_workflow_stream_queue
 from api.server.utils.problems import InvalidInputException, ImproperJSONException, DoesNotExistException
+from common.redis_helpers import connect_to_redis_pool
+from common.config import config
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -150,10 +151,11 @@ def execute_workflow_helper(request: Request, workflow_id, workflow_status_col: 
     # Assign the execution id to the workflow so the worker knows it
     workflow["execution_id"] = execution_id
     # ToDo: self.__box.encrypt(message))
-    current_app.running_context.cache.sadd(static.REDIS_PENDING_WORKFLOWS, execution_id)
-    current_app.running_context.cache.xadd(static.REDIS_WORKFLOW_QUEUE,
-                                           {execution_id: json.dumps(workflow)})
-    gevent.spawn(push_to_workflow_stream_queue, workflow_status_json, "PENDING")
+    async with connect_to_redis_pool(config.REDIS_URI) as conn:
+        await conn.sadd(static.REDIS_PENDING_WORKFLOWS, execution_id)
+        await conn.xadd(static.REDIS_WORKFLOW_QUEUE,
+                                               {execution_id: json.dumps(workflow)})
+    push_to_workflow_stream_queue(workflow_status_json, "PENDING")
     logger.info(f"Created Workflow Status {workflow['name']} ({execution_id})")
 
     return execution_id
@@ -167,9 +169,9 @@ def get_workflow_status(request: Request, execution, workflow_status_col: AsyncI
 
     to_read = auth_check(curr_user_id, str(workflow_status['workflow_id']), "read", "workflows", walkoff_db=walkoff_db)
     if to_read:
-        return workflow_status, HTTPStatus.OK
+        return workflow_status
     else:
-        return None, HTTPStatus.FORBIDDEN
+        return None
 
 
 @router.patch("/{execution}")
@@ -190,9 +192,10 @@ def control_workflow(request: Request, execution, workflow_to_control: ControlWo
         if status == 'abort':
             logger.info(f"User '{(await get_jwt_claims(request)).get('username', None)}' aborting workflow: {execution_id}")
             message = {"execution_id": execution_id, "status": status, "workflow": dict(workflow)}
-            current_app.running_context.cache.smove(static.REDIS_PENDING_WORKFLOWS,
+            async with connect_to_redis_pool(config.REDIS_URI) as conn:
+                await conn.smove(static.REDIS_PENDING_WORKFLOWS,
                                                     static.REDIS_ABORTING_WORKFLOWS, execution_id)
-            current_app.running_context.cache.xadd(static.REDIS_WORKFLOW_CONTROL, message)
+                await conn.xadd(static.REDIS_WORKFLOW_CONTROL, message)
 
             return None, HTTPStatus.NO_CONTENT
         elif status == 'trigger':
@@ -216,7 +219,8 @@ def control_workflow(request: Request, execution, workflow_to_control: ControlWo
             trigger_stream = f"{execution_id}-{trigger_id}:triggers"
 
             try:
-                info = current_app.running_context.cache.xinfo_stream(trigger_stream)
+                async with connect_to_redis_pool(config.REDIS_URI) as conn:
+                    info = await conn.xinfo_stream(trigger_stream)
                 stream_length = info["length"]
             except Exception:
                 stream_length = 0
@@ -228,13 +232,12 @@ def control_workflow(request: Request, execution, workflow_to_control: ControlWo
             trigger_data = data.get('trigger_data')
             logger.info(f"User '{(await get_jwt_claims(request)).get('username', None)}' triggering workflow: {execution_id} at trigger "
                         f"{trigger_id} with data {trigger_data}")
+            async with connect_to_redis_pool(config.REDIS_URI) as conn:
+                await conn.xadd(trigger_stream, {execution_id: message_dumps({"trigger_data": trigger_data})})
 
-            current_app.running_context.cache.xadd(trigger_stream,
-                                                   {execution_id: message_dumps({"trigger_data": trigger_data})})
-
-            return ({"trigger_stream": trigger_stream}), HTTPStatus.OK
+            return ({"trigger_stream": trigger_stream})
     else:
-        return None, HTTPStatus.FORBIDDEN
+        return None
 
 
 @router.delete("/cleardb")
@@ -255,4 +258,4 @@ def clear_workflow_status(all_=False, days=30, workflow_status_col: AsyncIOMotor
 
         to_delete = list((set(temp)).intersection(set(temp2)))
         await workflow_status_col.deleteMany(to_delete)
-    return None, HTTPStatus.NO_CONTENT
+    return None
