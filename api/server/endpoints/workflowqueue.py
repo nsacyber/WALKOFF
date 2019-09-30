@@ -81,7 +81,8 @@ def get_workflow_status(request: Request, execution, workflow_status_col: AsyncI
     """
     walkoff_db = get_mongo_d(request)
     curr_user_id = await get_jwt_identity(request)
-    workflow_status = workflow_status_getter(execution, workflow_status_col)
+    workflow_status = get_item(workflow_status_col, WorkflowStatus, execution)
+    # workflow_status = workflow_status_getter(execution, workflow_status_col)
 
     to_read = await auth_check(workflow_status, curr_user_id, "read", walkoff_db=walkoff_db)
     if to_read:
