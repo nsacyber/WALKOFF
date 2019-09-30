@@ -29,14 +29,6 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-def workflow_status_getter(execution_id, app_api_col: AsyncIOMotorCollection):
-    return await app_api_col.find_one({"execution_id": execution_id}, projection={'_id': False})
-
-
-def workflow_getter(workflow_id, app_api_col: AsyncIOMotorCollection):
-    return await app_api_col.find_one({"workflow_id": workflow_id}, projection={'_id': False})
-
-
 status_order = OrderedDict(
     [((StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA, StatusEnum.PAUSED),
       WorkflowStatus.started_at),
@@ -48,11 +40,11 @@ completed_statuses = (StatusEnum.ABORTED, StatusEnum.COMPLETED)
 
 @router.get("/",
             response_model=List[WorkflowModel],
-            response_description="List of all WorkflowStatuses currently in WALKOFF",
+            response_description="List of status information of all workflows currently executing.",
             status_code=200)
 def get_all_workflow_status(request: Request, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     """
-    Returns a list of all WorkflowStatuses currently in WALKOFF.
+    Returns a list of status information of workflows currently executing WALKOFF.
     """
     walkoff_db = get_mongo_d(request)
     curr_user_id = await get_jwt_identity(request)
@@ -70,8 +62,33 @@ def get_all_workflow_status(request: Request, workflow_status_col: AsyncIOMotorC
     return ret, HTTPStatus.OK
 
 
-@router.post("/")
+@router.get("/{execution}",
+            response_model=WorkflowStatus,
+            response_description="Returns status information of a workflow specified by execution ID.",
+            status_code=200)
+def get_workflow_status(request: Request, execution, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Returns status information of a workflow currently executing WALKOFF.
+    """
+    walkoff_db = get_mongo_d(request)
+    curr_user_id = await get_jwt_identity(request)
+    workflow_status = workflow_status_getter(execution, workflow_status_col)
+
+    to_read = await auth_check(workflow_status, curr_user_id, "read", walkoff_db=walkoff_db)
+    if to_read:
+        return workflow_status
+    else:
+        return None
+
+
+@router.post("/",
+             response_model=str,
+             response_description="Execute a workflow.",
+             status_code=202)
 def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Request, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Executes a WALKOFF workflow.
+    """
     walkoff_db = get_mongo_d(request)
 
     workflow_id = workflow_to_execute.workflow_id
@@ -169,21 +186,14 @@ def execute_workflow_helper(request: Request, workflow_id, workflow_status_col: 
     return execution_id
 
 
-@router.get("/{execution}")
-def get_workflow_status(request: Request, execution, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
-    walkoff_db = get_mongo_d(request)
-    curr_user_id = await get_jwt_identity(request)
-    workflow_status = workflow_status_getter(execution, workflow_status_col)
-
-    to_read = await auth_check(workflow_status, curr_user_id, "read", walkoff_db=walkoff_db)
-    if to_read:
-        return workflow_status
-    else:
-        return None
-
-
-@router.patch("/{execution}")
+@router.patch("/{execution}",
+              response_model=str,
+              response_description="Pause, resume, or abort a workflow.",
+              status_code=204)
 def control_workflow(request: Request, execution, workflow_to_control: ControlWorkflow, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Pause, resume, or abort a workflow currently executing in WALKOFF.
+    """
     walkoff_db = get_mongo_d(request)
     curr_user_id = await get_jwt_identity(request)
 
@@ -248,9 +258,15 @@ def control_workflow(request: Request, execution, workflow_to_control: ControlWo
         return None
 
 
-@router.delete("/cleardb")
+@router.delete("/cleardb",
+               response_model=str,
+               response_description="Removes workflow statuses from the execution database. It will delete all of them or ones older than a certain number of days",
+               status_code=204)
 # ToDo: make these clear db endpoints for more resources
 def clear_workflow_status(all_=False, days=30, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Removes workflow statuses from the execution database."
+    """
     if all_:
         await workflow_status_col.remove({ "$or":
                                                [{"status": StatusEnum.ABORTED}, {"status": StatusEnum.COMPLETED}]},
