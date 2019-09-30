@@ -82,8 +82,6 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         request_method = request.method
         accepted_roles = set()
         resource_permission = ""
-
-        role_based = ["globals", "workflows"]
         move_on = ["globals", "workflows", "console", "auth", "workflowqueue", "appapi", "docs", "redoc", "openapi.json"]
         if resource_name not in move_on:
             if request_method == "POST":
@@ -91,25 +89,45 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
 
             if request_method == "GET":
                 resource_permission = "read"
-            elif resource_name in role_based:
-                response = await call_next(request)
-                return response
 
             if request_method == "PUT":
                 resource_permission = "update"
-            elif resource_name in role_based:
-                response = await call_next(request)
-                return response
 
             if request_method == "DELETE":
                 resource_permission = "delete"
-            elif resource_name in role_based:
-                response = await call_next(request)
-                return response
 
             if request_method == "PATCH":
                 resource_permission = "execute"
-            elif resource_name in role_based:
+
+            accepted_roles |= await get_roles_by_resource_permission(resource_name, resource_permission, walkoff_db)
+            if not await user_has_correct_roles(accepted_roles, request):
+                return JSONResponse({"Error": "FORBIDDEN",
+                                     "message": "User does not have correct permissions for this resource"},
+                                    status_code=403)
+
+    response = await call_next(request)
+    return response
+
+
+@_walkoff.middleware("http")
+async def permissions_accepted_for_roles_resource_middleware(request: Request, call_next):
+    walkoff_db = _mongo_manager.client.walkoff_db
+    request_path = request.url.path.split("/")
+
+    if len(request_path) >= 4:
+        resource_name = request_path[3]
+        request_method = request.method
+        accepted_roles = set()
+        resource_permission = ""
+
+        current_role_based = ["globals", "workflows", "workflowqueue"]
+        if resource_name in current_role_based:
+            if resource_name == "globals":
+                resource_name = "global_variables"
+
+            if request_method == "POST":
+                resource_permission = "create"
+            else:
                 response = await call_next(request)
                 return response
 
