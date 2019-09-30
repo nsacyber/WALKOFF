@@ -6,6 +6,7 @@ import logging
 from collections import OrderedDict
 from datetime import datetime
 
+from typing import List
 
 from starlette.requests import Request
 from pydantic import ValidationError
@@ -13,6 +14,7 @@ from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from api.server.db.permissions import auth_check
+from api.server.db.workflow import WorkflowModel
 from common.config import static
 from common.message_types import StatusEnum, message_dumps
 from api.server.db import get_mongo_d, get_mongo_c
@@ -44,8 +46,14 @@ executing_statuses = (StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA, StatusEnum
 completed_statuses = (StatusEnum.ABORTED, StatusEnum.COMPLETED)
 
 
-@router.get("/")
+@router.get("/",
+            response_model=List[WorkflowModel],
+            response_description="List of all WorkflowStatuses currently in WALKOFF",
+            status_code=200)
 def get_all_workflow_status(request: Request, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+    """
+    Returns a list of all WorkflowStatuses currently in WALKOFF.
+    """
     walkoff_db = get_mongo_d(request)
     curr_user_id = await get_jwt_identity(request)
 
@@ -55,7 +63,7 @@ def get_all_workflow_status(request: Request, workflow_status_col: AsyncIOMotorC
         temp.append(WorkflowStatus(**wf_status))
 
     for wf_status in temp:
-        to_read = auth_check(curr_user_id, str(wf_status.workflow_id), "read", "workflows", walkoff_db=walkoff_db)
+        to_read = await auth_check(wf_status, curr_user_id, "read", walkoff_db=walkoff_db)
         if to_read:
             ret.append(wf_status)
 
@@ -73,7 +81,7 @@ def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Request, wor
 
     curr_user_id = await get_jwt_identity(request)
 
-    to_execute = auth_check(curr_user_id, str(workflow.id_), "execute", "workflows", walkoff_db=walkoff_db)
+    to_execute = await auth_check(workflow, curr_user_id, "execute", walkoff_db=walkoff_db)
     if to_execute:
         if not workflow:
             return DoesNotExistException("workflow", "execute", workflow_id)
@@ -165,9 +173,9 @@ def execute_workflow_helper(request: Request, workflow_id, workflow_status_col: 
 def get_workflow_status(request: Request, execution, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     walkoff_db = get_mongo_d(request)
     curr_user_id = await get_jwt_identity(request)
-    workflow_status = dict(workflow_status_getter(execution, workflow_status_col))
+    workflow_status = workflow_status_getter(execution, workflow_status_col)
 
-    to_read = auth_check(curr_user_id, str(workflow_status['workflow_id']), "read", "workflows", walkoff_db=walkoff_db)
+    to_read = await auth_check(workflow_status, curr_user_id, "read", walkoff_db=walkoff_db)
     if to_read:
         return workflow_status
     else:
@@ -186,7 +194,7 @@ def control_workflow(request: Request, execution, workflow_to_control: ControlWo
     # The resource factory returns the WorkflowStatus model but we want the string of the execution ID
     execution_id = str(execution.execution_id)
 
-    to_execute = auth_check(curr_user_id, str(workflow.id_), "execute", "workflows", walkoff_db=walkoff_db)
+    to_execute = await auth_check(workflow, curr_user_id, "execute", walkoff_db=walkoff_db)
     # TODO: add in pause/resume here. Workers need to store and recover state for this
     if to_execute:
         if status == 'abort':

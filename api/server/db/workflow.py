@@ -76,6 +76,120 @@ class WorkflowModel(BaseModel):
                 ret += action
         return ret
 
+    class Config:
+        schema_extra = {
+            'example': [
+                {
+                    "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "string",
+                    "start": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "permissions": {
+                        "access_level": 2,
+                        "creator": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                        "role_permissions": [
+                            {
+                                "role": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                                "permissions": [
+                                    "read",
+                                    "update",
+                                    "delete"
+                                ]
+                            }
+                        ]
+                    },
+                    "actions": [
+                        {
+                            "app_name": "hello_world",
+                            "app_version": "1.0.0",
+                            "name": "hello_world",
+                            "label": "string",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "errors": [
+                                "string"
+                            ],
+                            "is_valid": True,
+                            "position": {},
+                            "priority": 0,
+                            "parallelized": False,
+                            "parameters": [
+                                {
+                                    "name": "string",
+                                    "variant": "STATIC_VALUE",
+                                    "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                                    "value": {},
+                                    "parallelized": False
+                                }
+                            ]
+                        }
+                    ],
+                    "errors": [
+                        "string"
+                    ],
+                    "is_valid": False,
+                    "description": "string",
+                    "tags": [
+                        "string"
+                    ],
+                    "branches": [
+                        {
+                            "source_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "destination_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                        }
+                    ],
+                    "conditions": [
+                        {
+                            "app_name": "string",
+                            "app_version": "string",
+                            "name": "string",
+                            "label": "string",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "errors": [
+                                "string"
+                            ],
+                            "is_valid": True,
+                            "position": {}
+                        }
+                    ],
+                    "transforms": [
+                        {
+                            "app_name": "string",
+                            "app_version": "string",
+                            "name": "string",
+                            "label": "string",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "errors": [
+                                "string"
+                            ],
+                            "is_valid": True,
+                            "position": {}
+                        }
+                    ],
+                    "workflow_variables": [
+                        {
+                            "name": "string",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "description": "string"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "app_name": "string",
+                            "app_version": "string",
+                            "name": "string",
+                            "label": "string",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "errors": [
+                                "string"
+                            ],
+                            "is_valid": True,
+                            "position": {}
+                        }
+                    ]
+                }
+            ]
+        }
+
     # @classmethod
     # @validator('actions')
     # def action_result_parameter_check(cls, actions, workflow, **kwargs):

@@ -6,7 +6,6 @@ from copy import deepcopy
 from typing import List
 from uuid import UUID
 
-from pydantic import UUID4
 from fastapi import APIRouter, Depends, UploadFile, HTTPException, File
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
@@ -65,6 +64,7 @@ async def upload_workflow(request: Request, file: UploadFile = File(...),
         return await mongo_helpers.create_item(workflow_col, WorkflowModel, new_workflow)
     except:
         raise UniquenessException("workflow", "create", new_workflow.name)
+
 
 @router.post("/",
              response_model=WorkflowModel,
