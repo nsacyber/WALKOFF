@@ -146,6 +146,11 @@ Action:
       type: array
       items:
         $ref: '#/components/schemas/Parameter'
+    watchers:
+      description: Output configuration
+      type: array
+      items:
+        $ref: '#/components/schemas/Watcher'
     priority:
       description: The priority for this Action, which will be compared to other Actions with the same parent Action, descending, i.e. 5 is the highest priority.
       type: integer
@@ -155,6 +160,27 @@ Action:
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
       $ref: '#/components/schemas/Position'
+    _walkoff_type:
+      type: string
+      description: Workflow type for json decoder
+
+Watcher:
+  type: object
+  nullable: true
+  required: [name]
+  description: Object which watches output
+  additionalProperties: false
+  properties:
+    id_:
+      $ref: '#/components/schemas/Uuid'
+    name:
+      type: string
+      example: regex
+    arguments:
+      type: object
+      default: {}
+    description:
+      type: string
     _walkoff_type:
       type: string
       description: Workflow type for json decoder

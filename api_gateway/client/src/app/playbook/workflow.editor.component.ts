@@ -932,7 +932,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	saveWorkflow(cyData: any[]): void {
 		// Unselect anything selected first (will trigger onUnselect)
 		this.cy.$(':selected').unselect();
-
 		// Clone the loadedWorkflow first, so we don't change the parameters
 		// in the editor when converting it to the format the backend expects.
 		const workflowToSave: Workflow = classToClass(this.loadedWorkflow, { ignoreDecorators: true });
@@ -941,7 +940,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			this.toastrService.warning('Workflow cannot be saved without a starting action.');
 			return;
 		}
-
 		// Go through our workflow and update some parameters
 		workflowToSave.nodes.forEach(action => {
 			// Set action name if empty
@@ -1268,6 +1266,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 				break;
 			default:
 				node = new Action();
+				node.cmd = actionApi.cmd;
+				node.watchers = actionApi.watchers;
 		}
 
 		node.id = id ? id : UUID.UUID();

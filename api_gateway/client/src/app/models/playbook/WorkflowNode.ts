@@ -1,5 +1,6 @@
 import { Argument } from './argument';
 import { GraphPosition } from './graphPosition';
+import { Watcher } from '../api/watcher';
 import { ActionType } from '../api/actionApi';
 
 export interface WorkflowNode {
@@ -15,6 +16,10 @@ export interface WorkflowNode {
 	app_version: string;
 
 	action_name: string;
+
+  cmd ?: string;
+
+  watchers ?: Watcher[];
 
 	position: GraphPosition;
 

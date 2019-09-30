@@ -68,6 +68,11 @@ class WorkflowJSONDecoder(json.JSONDecoder):
                 o["variant"] = ParameterVariant[o["variant"]]
                 return Parameter(**o)
 
+            elif o["_walkoff_type"] == "watcher":
+                # "variant" in o
+                o.pop("_walkoff_type")
+                return Watcher(**o)
+
             elif o["_walkoff_type"] == "branch":
                 # "source_id" in o and "destination_id" in o
                 o.pop("_walkoff_type")
@@ -154,7 +159,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
             position = {"x": o.position.x, "y": o.position.y, "_walkoff_type": "position"}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
                     "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
-                    "execution_id": o.execution_id, "_walkoff_type": "action", "cmd": o.cmd}
+                    "execution_id": o.execution_id, "_walkoff_type": "action", "cmd": o.cmd, "watchers": o.watchers}
 
         elif isinstance(o, Condition):
             position = {"x": o.position.x, "y": o.position.y, "_walkoff_type": "position"}
@@ -174,6 +179,9 @@ class WorkflowJSONEncoder(json.JSONEncoder):
 
         elif isinstance(o, Parameter):
             return {"name": o.name, "variant": o.variant, "value": o.value, "id_": o.id_, "_walkoff_type": "parameter"}
+
+        elif isinstance(o, Watcher):
+            return {"name": o.name, "id_": o.id_, "arguments": o.arguments, "_walkoff_type": "watcher"}
 
         elif isinstance(o, ParameterVariant):
             return o.value
@@ -221,6 +229,24 @@ class Parameter:
     def __hash__(self):
         return hash(id(self))
 
+class Watcher:
+    __slots__ = ("name", "arguments", "id_", )
+
+    def __init__(self, name, id_=None, arguments=None):
+        self.id_ = id_
+        self.name = name
+        self.arguments = arguments
+
+    def __str__(self):
+        return f"Watcher-{self.name}"
+
+    def __eq__(self, other):
+        if isinstance(other, Watcher) and self.__slots__ == other.__slots__:
+            return attrs_equal(self, other)
+        return False
+
+    def __hash__(self):
+        return hash(id(self))
 
 class Variable:
     """
@@ -283,12 +309,13 @@ class Node:
 
 
 class Action(Node):
-    __slots__ = ("parameters", "execution_id", "parallelized", "started_at", "cmd")
+    __slots__ = ("parameters", "execution_id", "parallelized", "started_at", "cmd", "watchers")
 
-    def __init__(self, name, position, app_name, app_version, label, priority, cmd="", parallelized=False, parameters=None,
+    def __init__(self, name, position, app_name, app_version, label, priority, cmd="", watchers=None, parallelized=False, parameters=None,
                  id_=None, execution_id=None, errors=None, is_valid=None, started_at=None, **kwargs):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.parameters = parameters if parameters is not None else list()
+        self.watchers = watchers if watchers is not None else list()
         self.parallelized = parallelized
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue

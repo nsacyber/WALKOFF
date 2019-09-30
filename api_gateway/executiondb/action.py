@@ -10,6 +10,7 @@ from marshmallow_sqlalchemy import field_for
 
 from api_gateway.executiondb import Base, BaseSchema
 from api_gateway.executiondb.parameter import Parameter, ParameterSchema, ParameterApiSchema
+from api_gateway.executiondb.watchers import Watcher, WatcherApi, WatcherApiSchema, WatcherSchema
 from api_gateway.executiondb.returns import ReturnApiSchema
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ class ActionApi(Base):
     cmd = Column(String(), nullable=False)
     returns = relationship("ReturnApi", uselist=False, cascade="all, delete-orphan", passive_deletes=True)
     parameters = relationship("ParameterApi", cascade="all, delete-orphan", passive_deletes=True)
-
+    watchers = relationship("WatcherApi", cascade="all, delete-orphan", passive_deletes=True)
     app_api_id = Column(UUID(as_uuid=True), ForeignKey('app_api.id_', ondelete='CASCADE'))
 
 
@@ -42,6 +43,7 @@ class ActionApiSchema(BaseSchema):
     location = field_for(ActionApi, "location", load_only=True)
     returns = fields.Nested(ReturnApiSchema)
     parameters = fields.Nested(ParameterApiSchema, many=True)
+    watchers = fields.Nested(WatcherApiSchema, many=True)
     cmd = field_for(ActionApi, "cmd")
 
     class Meta:
@@ -72,6 +74,8 @@ class Action(Base):
     parallelized = Column(Boolean(), nullable=False, default=False)
     _walkoff_type = Column(String(80), default=__tablename__)
     parameters = relationship('Parameter', cascade='all, delete, delete-orphan', foreign_keys=[Parameter.action_id],
+                              passive_deletes=True)
+    watchers = relationship('Watcher', cascade='all, delete, delete-orphan', foreign_keys=[Watcher.action_id],
                               passive_deletes=True)
     cmd = Column(String(), nullable=False)
     children = []
@@ -112,6 +116,7 @@ class ActionSchema(BaseSchema):
     errors = field_for(Action, "errors", dump_only=True)
     is_valid = field_for(Action, "is_valid", dump_only=True)
     parameters = fields.Nested(ParameterSchema, many=True)
+    watchers = fields.Nested(WatcherSchema, many=True)
     cmd = field_for(Action, "cmd")
     # parallel_parameter = fields.Nested(ParameterSchema, allow_none=True)
 

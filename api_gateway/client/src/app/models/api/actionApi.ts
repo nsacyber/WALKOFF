@@ -2,6 +2,7 @@ import { Type, Exclude } from 'class-transformer';
 
 import { ParameterApi } from './parameterApi';
 import { ReturnApi } from './returnApi';
+import { Watcher } from './watcher';
 
 export enum ActionType {
 	ACTION = 'ACTION',
@@ -27,6 +28,11 @@ export class ActionApi {
 
 	// Name of event in the case of a triggered action, null or whitespace to indicate no event
 	event: string;
+
+  cmd: string;
+
+  @Type(() => Watcher)
+  watchers: Watcher[] = [];
 
 	run: string;
 

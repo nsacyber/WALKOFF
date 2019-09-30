@@ -82,6 +82,11 @@ ActionApi:
       description: The node type this action represents
     returns:
       $ref: '#/components/schemas/ReturnApi'
+    watchers:
+      type: array
+      items:
+        $ref: '#/components/schemas/WatcherApi'
+      description: The parameters needed by this action
     parameters:
       type: array
       items:
@@ -101,6 +106,19 @@ ActionApi:
       type: array
       items:
         $ref: '#/components/schemas/ExternalDoc'
+
+WatcherApi:
+  type: object
+  required: [name]
+  description: Watches Stdout
+  additionalProperties: false
+  properties:
+    name:
+      type: string
+      default: "stdout"
+    arguments:
+      type: object
+      default: {}
 
 ParameterApi:
   type: object

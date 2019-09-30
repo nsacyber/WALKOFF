@@ -114,6 +114,7 @@ def read_app_api(app):
 def update_app_api(app):
     data = request.get_json()
     add_locations(data)
+    data = check_version(data)
     try:
         app_api_schema.load(data, instance=app)
         current_app.running_context.execution_db.session.commit()

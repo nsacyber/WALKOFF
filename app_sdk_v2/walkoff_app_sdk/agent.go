@@ -35,11 +35,9 @@ func main() {
 	fmt.Println("Starting App SDK")
 	if app_name == "" {
 		panic("set APP_NAME environment variable!")
-		os.Exit(2)
 	}
 	if app_version == "" {
 		panic("set APP_VERSION environment variable!")
-		os.Exit(2)
 	}
 	fmt.Println("App: " + app_name + ", Version: " + app_version)
 	fmt.Println("Working Directory: " + cwd)
@@ -162,8 +160,9 @@ func get_actions(client *redis.Client, streams []string) {
 			value := message.Values[key]
 			in := []byte(value.(string))
 			json.Unmarshal(in, &data)
-
+			fmt.Println(data)
 			command, arguments := split_command_string(fmt.Sprintf("%s", data["cmd"]))
+			isStdOut, isStdErr, isFile, isDir := check_watchers(data["watchers"].([]interface{}))
 
 			binary := "/app/walkoff_app_sdk/action.exe"
 			args := []string{"action.exe",
@@ -172,17 +171,24 @@ func get_actions(client *redis.Client, streams []string) {
 				"-message_id=" + id_,
 				"-message=" + value.(string),
 				"-command=" + command,
-				"-arguments=" + arguments,
-				//"-streaming"
-				"-stdout",
-				//"-stderr",
-				//"-file",
-				//"-dir",
-				//"-file_watch_path=log_file.log",
-				//"-file_delim=",
-				//"-dir_watch_path=",
+				"-arguments=" + arguments}
 
+			if isStdOut {
+				args = append(args, "-stdout")
 			}
+			if isStdErr {
+				args = append(args, "-stderr")
+			}
+			if isFile {
+				args = append(args, "-file")
+			}
+			if isDir {
+				args = append(args, "-dir")
+			}
+			//"-streaming"
+			//"-file_watch_path=log_file.log",
+			//"-file_delim=",
+			//"-dir_watch_path=",
 
 			env := setParameters(data["parameters"].([]interface{}))
 			execErr := syscall.Exec(binary, args, env)
@@ -193,6 +199,26 @@ func get_actions(client *redis.Client, streams []string) {
 		//No messages exit
 		os.Exit(1)
 	}
+}
+
+func check_watchers(watchers []interface{}) (bool, bool, bool, bool) {
+	isStdOut := false
+	isStdErr := false
+	isFile := false
+	isDir := false
+	for w := range watchers {
+		watch := watchers[w].(map[string]interface{})
+		if watch["name"] == "stdout" {
+			isStdOut = true
+		} else if watch["name"] == "stderr" {
+			isStdErr = true
+		} else if watch["name"] == "file" {
+			isFile = true
+		} else if watch["name"] == "dir" {
+			isDir = true
+		}
+	}
+	return isStdOut, isStdErr, isFile, isDir
 }
 
 func split_command_string(command string) (string, string) {

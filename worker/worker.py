@@ -500,7 +500,7 @@ class Worker:
                                                                                    action_name=node.name,
                                                                                    app_name=node.app_name,
                                                                                    label=node.label))
-
+                logger.info(workflow_dumps(node))
                 await self.redis.xadd(stream, {node.execution_id: workflow_dumps(node)})
 
         elif isinstance(node, Condition):
