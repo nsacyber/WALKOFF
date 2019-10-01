@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 # def workflow_status_getter(execution_id, app_api_col: AsyncIOMotorCollection):
-    # return await app_api_col.find_one({"execution_id": execution_id}, projection={'_id': False})
+# return await app_api_col.find_one({"execution_id": execution_id}, projection={'_id': False})
 
 
 # def workflow_getter(workflow_id, app_api_col: AsyncIOMotorCollection):
@@ -77,7 +77,8 @@ async def get_all_workflow_status(request: Request, workflow_status_col: AsyncIO
             response_model=WorkflowStatus,
             response_description="Returns status information of a workflow specified by execution ID.",
             status_code=200)
-async def get_workflow_status(request: Request, execution, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def get_workflow_status(request: Request, execution,
+                              workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     """
     Returns status information of a workflow currently executing WALKOFF.
     """
@@ -99,7 +100,8 @@ async def get_workflow_status(request: Request, execution, workflow_status_col: 
              response_model=dict,
              response_description="Execute a workflow.",
              status_code=202)
-async def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Request, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Request,
+                           workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     """
     Executes a WALKOFF workflow.
     """
@@ -133,7 +135,7 @@ async def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Reques
                 workflow.start = data["start"]
             else:
                 raise InvalidInputException("execute", "workflow", workflow.id_,
-                                             errors=["Start override must be an action or a trigger in this workflow."])
+                                            errors=["Start override must be an action or a trigger in this workflow."])
 
         if "workflow_variables" in workflow and "workflow_variables" in data:
             # TODO: change these on the db model to be keyed by ID
@@ -156,21 +158,24 @@ async def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Reques
                 workflow.actions = list(actions_by_id.values())
             else:
                 raise InvalidInputException("workflow", "execute", workflow.id_,
-                                             errors=["Cannot override starting parameters for anything but an action."])
+                                            errors=["Cannot override starting parameters for anything but an action."])
 
         try:
             # TODO: add check for workflow_col VALIDATION
-            execution_id = await execute_workflow_helper(request=request, workflow_id=workflow_id, workflow_col=workflow_col, execution_id=execution_id,
-                                                   workflow=workflow, workflow_status_col=workflow_status_col)
+            execution_id = await execute_workflow_helper(request=request, workflow_id=workflow_id,
+                                                         workflow_col=workflow_col, execution_id=execution_id,
+                                                         workflow=workflow, workflow_status_col=workflow_status_col)
             return {'execution_id': execution_id}
         except ValidationError as e:
             raise ImproperJSONException('workflow_status', 'create', workflow.name, e)
-            #raise e.messages
+            # raise e.messages
     else:
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
-async def execute_workflow_helper(request: Request, workflow_id, workflow_status_col: AsyncIOMotorCollection, workflow_col: AsyncIOMotorCollection = None, execution_id=None, workflow: WorkflowModel = None):
+async def execute_workflow_helper(request: Request, workflow_id, workflow_status_col: AsyncIOMotorCollection,
+                                  workflow_col: AsyncIOMotorCollection = None, execution_id=None,
+                                  workflow: WorkflowModel = None):
     if not execution_id:
         execution_id = str(uuid.uuid4())
     if not workflow:
@@ -208,7 +213,8 @@ async def execute_workflow_helper(request: Request, workflow_id, workflow_status
               response_model=str,
               response_description="Pause, resume, or abort a workflow.",
               status_code=204)
-async def control_workflow(request: Request, execution, workflow_to_control: ControlWorkflow, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def control_workflow(request: Request, execution, workflow_to_control: ControlWorkflow,
+                           workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     """
     Pause, resume, or abort a workflow currently executing in WALKOFF.
     """
@@ -227,23 +233,24 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
     # TODO: add in pause/resume here. Workers need to store and recover state for this
     if to_execute:
         if status == 'abort':
-            logger.info(f"User '{(await get_jwt_claims(request)).get('username', None)}' aborting workflow: {execution_id}")
+            logger.info(
+                f"User '{(await get_jwt_claims(request)).get('username', None)}' aborting workflow: {execution_id}")
             message = {"execution_id": execution_id, "status": status, "workflow": dict(workflow)}
             async with connect_to_redis_pool(config.REDIS_URI) as conn:
                 await conn.smove(static.REDIS_PENDING_WORKFLOWS,
-                                                    static.REDIS_ABORTING_WORKFLOWS, execution_id)
+                                 static.REDIS_ABORTING_WORKFLOWS, execution_id)
                 await conn.xadd(static.REDIS_WORKFLOW_CONTROL, message)
 
             return None, HTTPStatus.NO_CONTENT
         elif status == 'trigger':
             if execution.status not in (StatusEnum.PENDING, StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA):
                 raise InvalidInputException("workflow", "trigger", execution_id,
-                                             errors=["Workflow must be in a running state to accept triggers."])
+                                            errors=["Workflow must be in a running state to accept triggers."])
 
             trigger_id = data.get('trigger_id')
             if not trigger_id:
                 raise InvalidInputException("workflow", "trigger", execution_id,
-                                             errors=["ID of the trigger must be specified in trigger_id."])
+                                            errors=["ID of the trigger must be specified in trigger_id."])
             seen = False
             for trigger in workflow.triggers:
                 if str(trigger.id_) == trigger_id:
@@ -251,7 +258,7 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
 
             if not seen:
                 raise InvalidInputException("workflow", "trigger", execution_id,
-                                             errors=[f"trigger_id {trigger_id} was not found in this workflow."])
+                                            errors=[f"trigger_id {trigger_id} was not found in this workflow."])
 
             trigger_stream = f"{execution_id}-{trigger_id}:triggers"
 
@@ -267,8 +274,9 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
                                              errors=[f"This trigger has already received data."])
 
             trigger_data = data.get('trigger_data')
-            logger.info(f"User '{(await get_jwt_claims(request)).get('username', None)}' triggering workflow: {execution_id} at trigger "
-                        f"{trigger_id} with data {trigger_data}")
+            logger.info(
+                f"User '{(await get_jwt_claims(request)).get('username', None)}' triggering workflow: {execution_id} at trigger "
+                f"{trigger_id} with data {trigger_data}")
             async with connect_to_redis_pool(config.REDIS_URI) as conn:
                 await conn.xadd(trigger_stream, {execution_id: message_dumps({"trigger_data": trigger_data})})
 
@@ -282,21 +290,22 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
                response_description="Removes workflow statuses from the execution database. It will delete all of them or ones older than a certain number of days",
                status_code=204)
 # ToDo: make these clear db endpoints for more resources
-async def clear_workflow_status(all_=False, days=30, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+async def clear_workflow_status(all_=False, days=30,
+                                workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     """
     Removes workflow statuses from the execution database."
     """
     if all_:
-        await workflow_status_col.remove({ "$or":
-                                               [{"status": StatusEnum.ABORTED}, {"status": StatusEnum.COMPLETED}]},
-                                                projection={'_id': False})
+        await workflow_status_col.remove({"$or":
+                                              [{"status": StatusEnum.ABORTED}, {"status": StatusEnum.COMPLETED}]},
+                                         projection={'_id': False})
     elif days > 0:
         delete_date = datetime.datetime.today() - datetime.timedelta(days=days)
-        temp = await workflow_status_col.find({ "$or":
-                                               [{"status": StatusEnum.ABORTED}, {"status": StatusEnum.COMPLETED}]},
-                                                projection={'_id': False})
-        temp2 = await workflow_status_col.find({"completed_at": {"$lte": delete_date}},
+        temp = await workflow_status_col.find({"$or":
+                                                   [{"status": StatusEnum.ABORTED}, {"status": StatusEnum.COMPLETED}]},
                                               projection={'_id': False})
+        temp2 = await workflow_status_col.find({"completed_at": {"$lte": delete_date}},
+                                               projection={'_id': False})
 
         to_delete = list((set(temp)).intersection(set(temp2)))
         await workflow_status_col.deleteMany(to_delete)

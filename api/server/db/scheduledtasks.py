@@ -1,8 +1,9 @@
 import json
 import logging
+from datetime import datetime, timezone
 from enum import Enum
 from uuid import UUID
-from typing import List
+from typing import List, Union
 
 from pydantic import BaseModel
 
@@ -20,6 +21,45 @@ class TaskType(str, Enum):
     CRON = "cron"
 
 
+class DateTrigger(BaseModel):
+    run_date: datetime
+    timezone: str
+
+8667297740
+27080445
+
+class CronTrigger(BaseModel):
+    year: Union[int, str] = "*"
+    month: Union[int, str] = "*"
+    day: Union[int, str] = "*"
+    week: Union[int, str] = "*"
+    day_of_week: Union[int, str] = "*"
+    hour: Union[int, str] = "*"
+    minute: Union[int, str] = "*"
+    second: Union[int, str] = "*"
+    start_date: datetime
+    end_date: datetime
+    timezone: str
+    jitter: int = None
+
+
+class IntervalTrigger(BaseModel):
+    weeks: int
+    days: int
+    hours: int
+    minutes: int
+    seconds: int
+    start_date: datetime
+    end_date: datetime
+    timezone: str
+    jitter: int = None
+
+
+class SchedulerTrigger(BaseModel):
+    type: TaskType
+    args: Union[DateTrigger, CronTrigger, IntervalTrigger]
+
+
 class ScheduledTask(BaseModel):
     id_: UUID = None
     name: str
@@ -27,7 +67,7 @@ class ScheduledTask(BaseModel):
     status: TaskStatus
     workflows: List[UUID] = []
     trigger_type: TaskType
-    trigger_args: str
+    trigger_args: SchedulerTrigger
 
 
 class SchedulerStatus(str, Enum):

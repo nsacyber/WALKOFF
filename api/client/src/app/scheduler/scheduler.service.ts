@@ -20,14 +20,14 @@ export class SchedulerService {
 	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 
 	getSchedulerStatus(): Promise<string> {
-		return this.http.get('api/scheduler')
+		return this.http.get('api/scheduler/')
 			.toPromise()
 			.then((statusObj: any) => schedulerStatusNumberMapping[statusObj.status])
 			.catch(this.utils.handleResponseError);
 	}
 
 	changeSchedulerStatus(status: string): Promise<string> {
-		return this.http.put('api/scheduler', { status })
+		return this.http.put('api/scheduler/', { status })
 			.toPromise()
 			.then((statusObj: any) => schedulerStatusNumberMapping[statusObj.status])
 			.catch(this.utils.handleResponseError);
@@ -38,35 +38,35 @@ export class SchedulerService {
 	}
 
 	getScheduledTasks(page: number = 1): Promise<ScheduledTask[]> {
-		return this.http.get(`api/scheduledtasks?page=${ page }`)
+		return this.http.get(`api/scheduler/tasks/?page=${ page }`)
 			.toPromise()
 			.then((data: object[]) => plainToClass(ScheduledTask, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	addScheduledTask(scheduledTask: ScheduledTask): Promise<ScheduledTask> {
-		return this.http.post('api/scheduledtasks', scheduledTask)
+		return this.http.post('api/scheduler/tasks/', scheduledTask)
 			.toPromise()
 			.then((data: object) => plainToClass(ScheduledTask, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	editScheduledTask(scheduledTask: ScheduledTask): Promise<ScheduledTask> {
-		return this.http.put(`api/scheduledtasks/${ scheduledTask.id }`, scheduledTask)
+		return this.http.put(`api/scheduler/tasks/${ scheduledTask.id }`, scheduledTask)
 			.toPromise()
 			.then((data: object) => plainToClass(ScheduledTask, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	deleteScheduledTask(scheduledTaskId: number): Promise<void> {
-		return this.http.delete(`api/scheduledtasks/${scheduledTaskId}`)
+		return this.http.delete(`api/scheduler/tasks/${scheduledTaskId}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
 	}
 
 	changeScheduledTaskStatus(scheduledTaskId: number, actionName: string): Promise<void> {
-		return this.http.patch(`api/scheduledtasks/${ scheduledTaskId }`, { action: actionName })
+		return this.http.patch(`api/scheduler/tasks/${ scheduledTaskId }`, { action: actionName })
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);

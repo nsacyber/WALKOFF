@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from starlette.requests import Request
 
@@ -43,13 +44,13 @@ def construct_task_id(scheduled_task_id, workflow_id):
     Constructs a task id
 
     Args:
-        scheduled_task_id (int|str): Id of the scheduled task (presumably from the database)
-        workflow_id (str): ID of the workflow to execute
+        scheduled_task_id (UUID): Id of the scheduled task (presumably from the database)
+        workflow_id (UUID): ID of the workflow to execute
 
     Returns:
         (str) A task id to use in the scheduler
     """
-    return f'{scheduled_task_id}{task_id_separator}{workflow_id}'
+    return f"{scheduled_task_id}{task_id_separator}{workflow_id}"
 
 
 def split_task_id(task_id):
@@ -77,18 +78,18 @@ class Scheduler(object):
         Schedules a workflow for execution
 
         Args:
-            task_id (int): Id of the scheduled task
+            task_id (UUID): Id of the scheduled task
             executable (func): A callable to execute must take in one argument -- a workflow id
-            workflow_ids (iterable(str)): An iterable of workflow ids
+            workflow_ids (iterable(UUID)): An iterable of workflow ids
             trigger (Trigger): The trigger to use for this scheduled task
         """
 
-        def execute(id_):
-            with self.app.app_context():
-                executable(id_)
+        # def execute(id_):
+        #     with self.app.app_context():
+        #         executable(id_)
 
         for workflow_id in workflow_ids:
-            self.scheduler.add_job(execute, args=(workflow_id,),
+            self.scheduler.add_job(executable, args=(workflow_id,),
                                    id=construct_task_id(task_id, workflow_id),
                                    trigger=trigger, replace_existing=True)
 
@@ -143,8 +144,8 @@ class Scheduler(object):
         Unschedule a workflow
 
         Args:
-            task_id (str|int): The task ID to unschedule
-            workflow_execution_ids (list[str]): The list of workflow execution IDs to update
+            task_id (UUID): The task ID to unschedule
+            workflow_execution_ids (list[UUID]): The list of workflow execution IDs to update
         """
         for workflow_execution_id in workflow_execution_ids:
             try:

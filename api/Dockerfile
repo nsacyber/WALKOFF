@@ -21,4 +21,4 @@ COPY ./common /app/common
 COPY ./api /app/api
 WORKDIR /app
 
-CMD uvicorn api.server.app:app --host 0.0.0.0 --port 8080
+CMD uvicorn api.server.app:app --host 0.0.0.0 --port 8080 --lifespan on

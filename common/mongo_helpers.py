@@ -1,5 +1,5 @@
 import logging
-from typing import Union, Type
+from typing import Union, Type, List, TypeVar
 from uuid import uuid4, UUID
 
 import pymongo
@@ -10,6 +10,7 @@ from api.server.utils import problems
 
 logger = logging.getLogger(__name__)
 ignore_mongo_id = {'_id': False}
+BaseModelClass = TypeVar("BaseModelClass", bound='BaseModel')
 
 
 async def mongo_filter(model: Union[Type[BaseModel], Type[dict]],
@@ -57,7 +58,7 @@ async def get_all_items(collection: AsyncIOMotorCollection,
                         page: int = 1,
                         num_per_page: int = 20,
                         query: dict = None,
-                        projection: dict = None):
+                        projection: dict = None) -> BaseModelClass:
     """
     Retrieve all items from a collection
 
@@ -86,7 +87,7 @@ async def get_item(collection: AsyncIOMotorCollection,
                    *,
                    query: dict = None,
                    projection: dict = None,
-                   raise_exc: bool = True) -> BaseModel:
+                   raise_exc: bool = True) -> BaseModelClass:
     """
     Retrieve a single item from a collection
 
@@ -123,7 +124,7 @@ async def create_item(collection: AsyncIOMotorCollection,
                       new_item_obj: BaseModel,
                       *,
                       projection: dict = None,
-                      raise_exc: bool = True) -> BaseModel:
+                      raise_exc: bool = True) -> BaseModelClass:
     """
     Create an item in the collection
 
@@ -151,7 +152,7 @@ async def update_item(collection: AsyncIOMotorCollection,
                       new_item_obj: BaseModel,
                       *,
                       projection: dict = None,
-                      raise_exc: bool = True) -> BaseModel:
+                      raise_exc: bool = True) -> BaseModelClass:
     """
     Update an item in the collection
 

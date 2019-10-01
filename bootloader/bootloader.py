@@ -387,7 +387,7 @@ class Bootloader:
             docker_logger.setLevel("DEBUG")
 
             if args.yes or await are_you_sure(
-                    "You specified -d/--debug, which will use 'walkoff' as the password for all "
+                    "You specified -d/--debug, which will use 'walkoff123456' as the password for all "
                     "resources, This should be used for debug only. "
                     "(Choose 'no' to use randomly generated passwords.)"):
                 debug_pw = b"walkoff123456"
@@ -397,9 +397,6 @@ class Bootloader:
 
         # Create internal user key
         await create_encryption_key(self.docker_client, static.INTERNAL_KEY, debug_pw)
-
-        # Create Postgres user password
-        await create_encryption_key(self.docker_client, static.POSTGRES_KEY, debug_pw)
 
         # Create Minio secret key
         await create_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY, b"walkoff")
@@ -411,18 +408,15 @@ class Bootloader:
         # Create Redis key
         await create_encryption_key(self.docker_client, static.REDIS_KEY, debug_pw)
 
-        logger.info("Creating persistent directories for registry, postgres, portainer...")
-        os.makedirs(static.REGISTRY_DATA_PATH, exist_ok=True)
-        # os.makedirs(static.POSTGRES_DATA_PATH, exist_ok=True)
-        os.makedirs(static.PORTAINER_DATA_PATH, exist_ok=True)
-        os.makedirs(static.MINIO_DATA_PATH, exist_ok=True)
-
-        # Create Postgres Volume
-        await self.docker_client.volumes.create({"name": static.POSTGRES_VOLUME})
+        # Create volumes
+        logger.info("Creating volumes for persisting (registry, minio, mongo, portainer)...")
+        await self.docker_client.volumes.create({"name": static.REGISTRY_VOLUME})
+        await self.docker_client.volumes.create({"name": static.MINIO_VOLUME})
         await self.docker_client.volumes.create({"name": static.MONGO_VOLUME})
+        await self.docker_client.volumes.create({"name": static.PORTAINER_VOLUME})
 
         # Bring up the base compose with the registry
-        logger.info("Deploying base services (registry, postgres, portainer, redis)...")
+        logger.info("Deploying base services (registry, minio, mongo, portainer, redis)...")
         base_compose = parse_yaml(config.BASE_COMPOSE)
 
         await deploy_compose(base_compose)
@@ -511,17 +505,15 @@ class Bootloader:
                                               "walkoff_resource services,"):
                 await delete_encryption_key(self.docker_client, static.ENCRYPTION_KEY)
                 await delete_encryption_key(self.docker_client, static.INTERNAL_KEY)
-                await delete_encryption_key(self.docker_client, static.POSTGRES_KEY)
                 await delete_encryption_key(self.docker_client, static.MONGO_KEY)
                 await delete_encryption_key(self.docker_client, static.REDIS_KEY)
                 await delete_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY)
                 await delete_encryption_key(self.docker_client, static.MINIO_SECRET_KEY)
 
-                # await delete_dir_contents(static.POSTGRES_DATA_PATH)
-                await delete_dir_contents(static.REGISTRY_DATA_PATH)
-                await delete_dir_contents(static.MINIO_DATA_PATH)
-                await delete_volume(self.docker_client, static.POSTGRES_VOLUME)
+                await delete_volume(self.docker_client, static.REGISTRY_VOLUME)
+                await delete_volume(self.docker_client, static.MINIO_VOLUME)
                 await delete_volume(self.docker_client, static.MONGO_VOLUME)
+                await delete_volume(self.docker_client, static.PORTAINER_VOLUME)
 
         logger.info("Walkoff stack removed, it may take a few seconds to stop all containers.")
 

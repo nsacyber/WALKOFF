@@ -17,7 +17,7 @@ services:
 #      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
 #      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
     volumes:
-      - ./data/registry/reg_data:/var/lib/registry
+      - walkoff_resource_registry_volume:/var/lib/registry
 #      - ./data/config.yml:/etc/docker/registry/config.yml
 #      - /var/lib/boot2docker:/certs
 #      - /var/lib/boot2docker/auth:/auth
@@ -61,9 +61,9 @@ services:
 #    ports:
 #      - "9001:9000"
     volumes:
-      - ./data/minio/min_data:/data
-      - /var/run/docker.sock:/var/run/docker.sock
+      - walkoff_resource_minio_volume:/data
       - ./apps:/app/apps
+      - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       placement:
         constraints: [node.role==manager]
@@ -75,22 +75,22 @@ services:
       - walkoff_minio_access_key
       - walkoff_minio_secret_key
 
-  resource_postgres:
-    image: "postgres"
-    networks:
-      - walkoff_network
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=walkoff
-      - POSTGRES_PASSWORD_FILE=/run/secrets/walkoff_postgres_key
-    deploy:
-      placement:
-        constraints: [node.role==manager]
-    volumes:
-      - walkoff_resource_postgres_volume:/var/lib/postgresql/data
-    secrets:
-      - walkoff_postgres_key
+#  resource_postgres:
+#    image: "postgres"
+#    networks:
+#      - walkoff_network
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      - POSTGRES_USER=walkoff
+#      - POSTGRES_PASSWORD_FILE=/run/secrets/walkoff_postgres_key
+#    deploy:
+#      placement:
+#        constraints: [node.role==manager]
+#    volumes:
+#      - walkoff_resource_postgres_volume:/var/lib/postgresql/data
+#    secrets:
+#      - walkoff_postgres_key
 
   resource_mongo:
     image: mongo
@@ -128,16 +128,14 @@ services:
       placement:
         constraints: [node.role==manager]
     volumes:
+      - walkoff_resource_portainer_volume:/data
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/portainer/prt_data:/data
 
 configs:
   common_env.yml:
     file: ./data/config.yml
 
 secrets:
-  walkoff_postgres_key:
-    external: true
   walkoff_mongo_key:
     external: true
   walkoff_minio_access_key:
@@ -152,9 +150,13 @@ networks:
     external: true
 
 volumes:
-  walkoff_resource_postgres_volume:
+  walkoff_resource_registry_volume:
+    external: true
+  walkoff_resource_minio_volume:
     external: true
   walkoff_resource_mongo_volume:
+    external: true
+  walkoff_resource_portainer_volume:
     external: true
 #  walkoff_resource_redis_volume:
 #    external: true

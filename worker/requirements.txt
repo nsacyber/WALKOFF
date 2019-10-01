@@ -5,7 +5,6 @@ aiohttp
 docker
 docker-compose
 pyyaml
-sqlalchemy
 asteval
 six
 tenacity

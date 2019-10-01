@@ -5,14 +5,15 @@ from typing import Union, List
 
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+# from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers import SchedulerAlreadyRunningError, SchedulerNotRunningError
 
 from api.server.utils.problems import InvalidInputException
-from api.server.scheduler import get_scheduler
+from api.server.scheduler import Scheduler, get_scheduler, construct_trigger
 from api.server.db import get_mongo_c, get_mongo_d
 from api.server.db.workflow import WorkflowModel
 from api.server.db.scheduledtasks import ScheduledTask, SchedulerStatus, SchedulerStatusResp
+from api.server.endpoints.workflowqueue import execute_workflow_helper
 from common import mongo_helpers
 
 logger = logging.getLogger(__name__)
@@ -26,38 +27,21 @@ async def check_workflows_exist(workflow_col: AsyncIOMotorCollection, task: Sche
             raise InvalidInputException("create", "ScheduledTask", task.name,
                                         errors={"error": f"{workflow.id_} does not exist"})
 
-def construct_trigger(trigger_args):
-    trigger_type = trigger_args['type']
-    trigger_args = trigger_args['args']
-    try:
-        if trigger_type == 'date':
-            return DateTrigger(**trigger_args)
-        elif trigger_type == 'interval':
-            return IntervalTrigger(**trigger_args)
-        elif trigger_type == 'cron':
-            return CronTrigger(**trigger_args)
-        else:
-            raise InvalidTriggerArgs(
-                'Invalid scheduler type {0} with args {1}.'.format(trigger_type, trigger_args))
-    except (KeyError, ValueError, TypeError):
-        raise InvalidTriggerArgs('Invalid scheduler arguments')
-
-
 @router.get("/",
             response_model=SchedulerStatusResp, response_description="Current scheduler status in WALKOFF.")
-async def get_scheduler_status(*, scheduler: AsyncIOScheduler = Depends(get_scheduler)):
+async def get_scheduler_status(*, scheduler: Scheduler = Depends(get_scheduler)):
     return SchedulerStatusResp(status=scheduler.state)
 
 
 @router.put("/",
             response_model=SchedulerStatus, response_description="The updated scheduler status in WALKOFF.")
-async def update_scheduler_status(*, scheduler: AsyncIOScheduler = Depends(get_scheduler),
+async def update_scheduler_status(*, scheduler: Scheduler = Depends(get_scheduler),
                                   new_state: SchedulerStatus):
     try:
         if new_state == "start":
             scheduler.start()
         elif new_state == "stop":
-            scheduler.shutdown()
+            scheduler.stop()
         elif new_state == "pause":
             scheduler.pause()
         elif new_state == "resume":
@@ -66,10 +50,10 @@ async def update_scheduler_status(*, scheduler: AsyncIOScheduler = Depends(get_s
         raise InvalidInputException(new_state, "Scheduler", "", errors={"error": "Scheduler already running."})
     except SchedulerNotRunningError:
         raise InvalidInputException(new_state, "Scheduler", "", errors={"error": "Scheduler is not running."})
-    return SchedulerStatusResp(status=scheduler.state)
+    return SchedulerStatusResp(status=scheduler.scheduler.state)
 
 
-@router.get("/tasks")
+@router.get("/tasks/")
 async def read_all_scheduled_tasks(*, task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                                    page: int = 1,
                                    num_per_page: int = 20):
@@ -79,7 +63,7 @@ async def read_all_scheduled_tasks(*, task_col: AsyncIOMotorCollection = Depends
     #         ScheduledTask.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], HTTPStatus.OK
 
 
-@router.post("/tasks")
+@router.post("/tasks/")
 async def create_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                                 new_task: ScheduledTask):
     task_col = walkoff_db.tasks
@@ -112,16 +96,15 @@ async def read_scheduled_task(*, task_col: AsyncIOMotorCollection = Depends(get_
 
 
 @router.post("/tasks/{task_id}")
-async def control_scheduled_task(*, task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+async def control_scheduled_task(*, scheduler: Scheduler = Depends(get_scheduler),
+                                 task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                                  task_id: Union[UUID, str],
                                  new_status: SchedulerStatus):
-
+    task: ScheduledTask = await mongo_helpers.get_item(task_col, ScheduledTask, task_id)
     if new_status == 'start':
-        scheduled_task_id.start()
-    elif action == 'stop':
-        scheduled_task_id.stop()
-    db.session.commit()
-    return {}, HTTPStatus.OK
+        scheduler.schedule_workflows(task_id, execute_workflow_helper, task.workflows, task.trigger_args.args)
+    elif new_status == 'stop':
+        scheduler.unschedule_workflows(task_id, task.workflows)
 
 
 @router.put("/tasks/{task_id}")
@@ -133,7 +116,7 @@ async def update_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(ge
 
     await check_workflows_exist(workflow_col, new_task)
     return await mongo_helpers.update_item(task_col, ScheduledTask, task_id, new_task)
-    #
+
     # data = request.get_json()
     # invalid_uuids = validate_uuids(data.get('workflows', []))
     # if invalid_uuids:

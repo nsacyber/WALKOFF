@@ -7,8 +7,6 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from starlette.websockets import WebSocket
 
-from common.message_types import message_dumps
-from api_gateway.server.problem import invalid_id_problem
 from common.config import config
 from common.redis_helpers import connect_to_redis_pool
 

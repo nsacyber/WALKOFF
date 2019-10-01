@@ -65,6 +65,7 @@ async def login(*, walkoff_db: AsyncIOMotorCollection = Depends(get_mongo_d),
 async def refresh(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                   request: Request):
     user_col = walkoff_db.users
+    settings_col = walkoff_db.settings
 
     await verify_jwt_refresh_token_in_request(walkoff_db=walkoff_db, request=request)
     current_user_id = await get_jwt_identity(request)
@@ -78,7 +79,7 @@ async def refresh(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
             "Could not grant access token.",
             f"User {current_user_id} from refresh JWT identity could not be found.")
     if user.active:
-        return {'access_token': await create_access_token(user=user)}
+        return {'access_token': await create_access_token(settings_col, user=user)}
     else:
         raise user_deactivated_problem
 

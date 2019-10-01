@@ -5,19 +5,16 @@ import asyncio
 import logging
 
 from motor.motor_asyncio import AsyncIOMotorCollection
-from sqlalchemy.exc import IntegrityError
 from pydantic import BaseModel
 from api.server.utils.problems import UniquenessException
 import jsonpatch
 from starlette.websockets import WebSocket
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.server.utils.helpers import sse_format
 from api.server.db.workflowresults import WorkflowStatus
 from api.server.db import get_mongo_c
 from common.redis_helpers import connect_to_redis_pool
 from common.config import config
-from api_gateway.server.problem import invalid_id_problem
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
