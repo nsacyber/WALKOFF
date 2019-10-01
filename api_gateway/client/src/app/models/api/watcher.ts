@@ -6,7 +6,8 @@ export class Watcher {
   id_: string;
   name: string;
 
-  arguments: WatcherSchema;
+  @Type(()=> WatcherSchema)
+  arguments: WatcherSchema = new WatcherSchema();
 }
 
 
