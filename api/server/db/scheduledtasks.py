@@ -10,23 +10,22 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 
-class TaskStatus(str, Enum):
-    RUNNING = "running"
-    STOPPED = "stopped"
-
-
 class TaskType(str, Enum):
     DATE = "date"
     INTERVAL = "interval"
     CRON = "cron"
 
 
+class SchedulerStatus(int, Enum):
+    STOPPED = 0
+    RUNNING = 1
+    PAUSED = 2
+
+
 class DateTrigger(BaseModel):
     run_date: datetime
-    timezone: str
+    timezone: str = None
 
-8667297740
-27080445
 
 class CronTrigger(BaseModel):
     year: Union[int, str] = "*"
@@ -39,7 +38,7 @@ class CronTrigger(BaseModel):
     second: Union[int, str] = "*"
     start_date: datetime
     end_date: datetime
-    timezone: str
+    timezone: str = None
     jitter: int = None
 
 
@@ -51,30 +50,18 @@ class IntervalTrigger(BaseModel):
     seconds: int
     start_date: datetime
     end_date: datetime
-    timezone: str
+    timezone: str = None
     jitter: int = None
-
-
-class SchedulerTrigger(BaseModel):
-    type: TaskType
-    args: Union[DateTrigger, CronTrigger, IntervalTrigger]
 
 
 class ScheduledTask(BaseModel):
     id_: UUID = None
     name: str
-    description: str = None
-    status: TaskStatus
+    description: str = ""
+    status: SchedulerStatus = None
     workflows: List[UUID] = []
     trigger_type: TaskType
-    trigger_args: SchedulerTrigger
-
-
-class SchedulerStatus(str, Enum):
-    STARTED = "started"
-    STOPPED = "stopped"
-    PAUSED = "paused"
-    RESUMED = "resumed"
+    trigger_args: Union[DateTrigger, CronTrigger, IntervalTrigger]
 
 
 class SchedulerStatusResp(BaseModel):
