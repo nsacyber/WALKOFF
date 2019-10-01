@@ -35,24 +35,24 @@
                     <div class="card-body">
                         <div class="form-group">
                             <h6>Who can access variable?</h6>
-                            <select class="form-control" name="access_level" [(ngModel)]="variable.access_level">
+                            <select class="form-control" name="access_level" [(ngModel)]="variable.permissions.access_level">
                                 <option [ngValue]="1" label="Everyone">Everyone</option>
                                 <option [ngValue]="2" label="Role Based">Role Based</option>
                                 <option [ngValue]="0" label="Only Me">Only Me</option>
                             </select>
                             <small class="form-text text-muted pl-1">
-                                <span *ngIf="variable.access_level == 0">
+                                <span *ngIf="variable.permissions.access_level == 0">
                                     Only you have access to this global variable.
                                 </span>
-                                <span *ngIf="variable.access_level == 1">
+                                <span *ngIf="variable.permissions.access_level == 1">
                                     By default everyone will have access to this global variable.
                                 </span>
-                                <span *ngIf="variable.access_level == 2">
+                                <span *ngIf="variable.permissions.access_level == 2">
                                     Only users of the roles specified below will have access to this global variable.
                                 </span>
                             </small>
                         </div>
-                        <div *ngIf="variable.access_level == 2" class="form-group">
+                        <div *ngIf="variable.permissions.access_level == 2" class="form-group">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
@@ -62,14 +62,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr *ngFor="let p of variable.permissions">
+                                    <tr *ngFor="let p of variable.permissions.permissions">
                                         <td>{{ getRoleName(p)  }}</td>
                                         <td>{{ getPermissionDescription(p) }}</td>
                                         <td><button type="button" (click)="deletePermission(p)"
                                                 class="btn btn-sm btn-danger mx-1" ngbTooltip="Remove"><i
                                                     class="fa fa-times"></i></button></td>
                                     </tr>
-                                    <tr *ngIf="variable.permissions.length == 0">
+                                    <tr *ngIf="variable.permissions.permissions.length == 0">
                                         <td class="text-center text-muted" colspan="3">No Role Based Permissions
                                         </td>
                                     </tr>

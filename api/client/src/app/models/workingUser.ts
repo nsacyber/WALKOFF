@@ -5,7 +5,7 @@ export class WorkingUser {
 
 	username: string;
 	
-	role_ids: number[] = [];
+	role_ids: string[] = [];
 
 	active: boolean;
 
@@ -20,7 +20,7 @@ export class WorkingUser {
 
 		returnUser.id = workingUser.id;
 		returnUser.username = workingUser.username;
-		returnUser.roles = workingUser.role_ids.map(id => ({ id }));
+		returnUser.roles = workingUser.role_ids;
 		returnUser.active = workingUser.active;
 
 		returnUser.old_password = workingUser.currentPassword;
@@ -36,7 +36,7 @@ export class WorkingUser {
 		// returnUser.roles = user.roles;
 
 		Array.isArray(user.roles) ?
-			returnUser.role_ids = user.roles.map(r => r.id) :
+			returnUser.role_ids = user.roles :
 			returnUser.role_ids = [];
 
 		returnUser.active = user.active;

@@ -38,7 +38,7 @@ export class SettingsComponent {
 		private toastrService: ToastrService, private utils: UtilitiesService,
 	) {
 
-		this.getConfiguration();
+		//this.getConfiguration();
 		this.getUsers();
 		this.getRoles();
 
@@ -142,8 +142,8 @@ export class SettingsComponent {
 			.catch(e => this.toastrService.error(e.message));
 	}
 
-	getFriendlyRoles(roles: Role[]): string {
-		return roles.map(r => r.name).join(', ');
+	getFriendlyRoles(roles: string[]): string {
+		return roles.map(r => this.roles.find(role => role.id == r).name).join(', ');
 	}
 
 	getFriendlyBool(val: boolean): string {

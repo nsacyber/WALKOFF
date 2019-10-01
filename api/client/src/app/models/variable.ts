@@ -33,9 +33,7 @@ export class Variable {
     @Exclude()
     isHidden: boolean = true;
 
-    access_level: number = 1;
-    
-    permissions: any[] = [];
+    permissions: { access_level: number, creator: string, permissions: any[]} = { access_level: 1, creator: null, permissions: []};
     
     constructor() {
         this.id = UUID.UUID();
