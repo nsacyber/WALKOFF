@@ -8,7 +8,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
-from api.server.endpoints import appapi, dashboards, workflows, users, console, results, umpire, auth, roles, global_variables
+from api.server.endpoints import appapi, dashboards, workflows, workflowqueue, users, console, results, umpire, auth, roles, global_variables
 from api.server.db import MongoManager, get_mongo_c
 from api.server.scheduler import Scheduler, get_scheduler
 from api.server.db.user_init import default_roles, default_users
@@ -219,11 +219,11 @@ _walkoff.include_router(dashboards.router,
                         tags=["dashboards"],
                         dependencies=[Depends(get_mongo_c)])
 
-# _walkoff.include_router(workflowqueue.router,
-#                         prefix="/workflowqueue",
-#                         tags=["workflowqueue"],
-#                         dependencies=[Depends(get_mongo_c)])
-#
+_walkoff.include_router(workflowqueue.router,
+                        prefix="/workflowqueue",
+                        tags=["workflowqueue"],
+                        dependencies=[Depends(get_mongo_c)])
+
 _walkoff.include_router(workflows.router,
                         prefix="/workflows",
                         tags=["workflows"],
