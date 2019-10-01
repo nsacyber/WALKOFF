@@ -90,7 +90,7 @@ export class PermissionService {
             return [...acc, cur];
         }
 
-        return this.http.get(`api/users/permissions`)
+        return this.http.get(`api/users/permissions/`)
             .toPromise()
             .then((data: any) => plainToClass(Role, data.roles as any[]))
             .then((roles) => roles.map(r => r.resources).reduce(flatten).reduce(combine, []))

@@ -60,6 +60,19 @@ async def create_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c)
     return await mongo_helpers.create_item(user_col, UserModel, new_user, projection=ignore_password)
 
 
+@router.get("/permissions/",
+            response_model=List[RoleModel], response_description="List of roles for current user.")
+async def list_permissions(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
+                           with_users: bool = False,
+                           request: Request):
+    role_col = walkoff_db.roles
+    user_col = walkoff_db.users
+
+    current_user = await mongo_helpers.get_item(user_col, UserModel, await get_jwt_identity(request))
+
+    roles = [await mongo_helpers.get_item(role_col, RoleModel, role_id) for role_id in current_user.roles]
+    return roles
+
 @router.put("/{user_id}",
             response_model=UserModel, response_description="The newly updated User.")
 async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
