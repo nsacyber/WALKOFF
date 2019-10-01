@@ -33,11 +33,16 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.post("/login")
+@router.post("/login",
+             response_model=dict,
+             response_description="Login and get access and refresh tokens",
+             status_code=201)
 async def login(*, walkoff_db: AsyncIOMotorCollection = Depends(get_mongo_d),
                 creds: AuthModel,
                 request: Request):
-
+    """
+    Login to WALKOFF using your username and password. Get access and refresh tokens
+    """
     user_col = walkoff_db.users
     settings_col = walkoff_db.settings
 
@@ -61,9 +66,15 @@ async def login(*, walkoff_db: AsyncIOMotorCollection = Depends(get_mongo_d),
         raise invalid_credentials_problem
 
 
-@router.post("/refresh")
+@router.post("/refresh",
+             response_model = dict,
+             response_description = "Get a fresh access token.",
+             status_code = 200)
 async def refresh(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                   request: Request):
+    """
+    Receive a fresh access token.
+    """
     user_col = walkoff_db.users
 
     await verify_jwt_refresh_token_in_request(walkoff_db=walkoff_db, request=request)
@@ -83,8 +94,14 @@ async def refresh(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
         raise user_deactivated_problem
 
 
-@router.post("/logout")
+@router.post("/logout",
+             response_model=None,
+             response_description="Logout of WALKOFF",
+             status_code=204)
 async def logout(json_in: TokenModel, request: Request, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)):
+    """
+    Using a refresh token, logout of WALKOFF
+    """
     user_col = walkoff_db.users
     data = dict(json_in)
     refresh_token = data.get('refresh_token', None) if data else None

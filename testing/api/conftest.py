@@ -5,10 +5,10 @@ import aioredis
 # from async_asgi_testclient import TestClient
 from testing.api import StarletteTestClient
 
-from common.config import config
+# from common.config import config
 
 import api.server.app as app
-from common.redis_helpers import connect_to_redis_pool
+# from common.redis_helpers import connect_to_redis_pool
 
 
 @pytest.fixture

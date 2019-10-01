@@ -4,6 +4,7 @@ import yaml
 import pytest
 from starlette.testclient import TestClient
 
+from testing.api import StarletteTestClient
 from testing.api.helpers import assert_crud_resource
 
 pytestmark = pytest.mark.asyncio
@@ -14,7 +15,7 @@ apps_api_url = "/api/apps/apis"
 
 # TOP LEVEL APP API TESTS
 
-async def test_sanity_check(api: TestClient, auth_header: dict):
+async def test_sanity_check(api: StarletteTestClient, auth_header: dict):
     """Assert that no apps exist"""
 
     p = await api.get(apps_url, headers=auth_header)

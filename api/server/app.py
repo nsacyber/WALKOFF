@@ -256,12 +256,12 @@ def custom_openapi():
         openapi_schema = get_openapi(
             title="WALKOFF",
             version="1.0.0-rc.2",
-            description="A flexible, easy to use, automation framework allowing users to integrate their "
+            description="A flexible, easy-to-use, automation framework allowing users to integrate their "
                         "capabilities and devices to cut through the repetitive, tedious tasks slowing them down.",
             routes=_walkoff.routes
         )
         openapi_schema["info"]["x-logo"] = {
-            "url": "/walkoff/client/dist/walkoff/assets/img/walkoffLogo.png"
+            "url": "/walkoff/api/client/dist/walkoff/assets/img/walkoffLogo.png"
         }
         openapi_schema["tags"] = [
             {"name": "apps", "description": "App API Operations"}
