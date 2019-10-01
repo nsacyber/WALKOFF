@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowModel(BaseModel):
+    execution_id: UUID = None
     id_: UUID
     errors: List[str] = []
     is_valid: bool = False  # self.error_check()

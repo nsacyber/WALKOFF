@@ -5,18 +5,16 @@ import asyncio
 import logging
 
 from motor.motor_asyncio import AsyncIOMotorCollection
-from sqlalchemy.exc import IntegrityError
 from pydantic import BaseModel
 from api.server.utils.problems import UniquenessException
 import jsonpatch
 from starlette.websockets import WebSocket
 from fastapi import APIRouter, Depends, HTTPException
 
-from api.server.utils.helpers import sse_format
+from api.server.db.workflowresults import WorkflowStatus
 from api.server.db import get_mongo_c
 from common.redis_helpers import connect_to_redis_pool
 from common.config import config
-from api_gateway.server.problem import invalid_id_problem
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -45,24 +43,28 @@ workflow_stream_subs = set()
 action_stream_subs = set()
 
 
-async def push_to_workflow_stream_queue(workflow_status, event):
-    workflow_status.pop("node_statuses", None)
-    workflow_status["execution_id"] = str(workflow_status["execution_id"])
+async def push_to_workflow_stream_queue(workflow_status: WorkflowStatus, event):
+    if workflow_status.node_status is not None:
+        workflow_status.node_status = []
+    # workflow_status.pop("node_statuses", None)
+    workflow_status.execution_id = str(workflow_status.execution_id)
     # sse_event_text = sse_format(data=workflow_status, event=event, event_id=workflow_status["execution_id"])
-    if workflow_status["execution_id"] in workflow_stream_subs:
-        redis_stream = WORKFLOW_STREAM_GLOB + "." + workflow_status["execution_id"]
+    if workflow_status.execution_id in workflow_stream_subs:
+        redis_stream = WORKFLOW_STREAM_GLOB + "." + workflow_status.execution_id
         # workflow_stream_subs[workflow_status["execution_id"]].put(sse_event_text)
     elif 'all' in workflow_stream_subs:
         redis_stream = WORKFLOW_STREAM_GLOB + ".all"
         # workflow_stream_subs['all'].put(sse_event_text)
     else:
-        redis_stream = WORKFLOW_STREAM_GLOB + "." + workflow_status["execution_id"]
-        workflow_stream_subs.add(workflow_status["execution_id"])
+        # return something to exit here rather than creating new redis stream.
+        redis_stream = WORKFLOW_STREAM_GLOB + "." + workflow_status.execution_id
+        workflow_stream_subs.add(workflow_status.execution_id)
 
     async with connect_to_redis_pool(config.REDIS_URI) as conn:
         key = f"{redis_stream}"
-        value = workflow_status
-        conn.lpush(key, value)
+        value = workflow_status.json()
+        # print(type(value))
+        await conn.lpush(key, value)
 
 
 async def push_to_action_stream_queue(node_statuses, event):
@@ -87,7 +89,7 @@ async def push_to_action_stream_queue(node_statuses, event):
         async with connect_to_redis_pool(config.REDIS_URI) as conn:
             key = f"{redis_stream}"
             value = node_status_json
-            conn.lpush(key, value)
+            await conn.lpush(key, value)
 
 
 # @jwt_required

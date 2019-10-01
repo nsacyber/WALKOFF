@@ -7,6 +7,7 @@ from api.server.db.parameter import ParameterModel
 from api.server.db.workflow_variable import WorkflowVariableModel
 from api.server.utils.helpers import JSON
 
+
 from common.message_types import StatusEnum
 
 
@@ -25,6 +26,7 @@ class NodeStatus(BaseModel):
 
 
 class WorkflowStatus(BaseModel):
+    id_: UUID = uuid4()
     name: str
     status: StatusEnum
     started_at: str = ""

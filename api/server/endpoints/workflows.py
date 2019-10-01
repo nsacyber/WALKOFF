@@ -40,6 +40,7 @@ async def upload_workflow(request: Request, file: UploadFile = File(...),
     new_workflow = WorkflowModel(**json.loads((await file.read()).decode('utf-8')))
 
     try:
+        # Add projections here to get rid of execution_id
         workflow_exists_already = await mongo_helpers.get_item(workflow_col, WorkflowModel, new_workflow.id_)
     except DoesNotExistException:
         workflow_exists_already = None

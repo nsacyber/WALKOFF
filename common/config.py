@@ -54,7 +54,9 @@ class Static:
     MONGO_SERVICE = f"{RESOURCE_PREFIX}_mongo"
 
     # Volume names
-    POSTGRES_VOLUME = f"{POSTGRES_SERVICE}_volume"
+    REGISTRY_VOLUME = f"{REGISTRY_SERVICE}_volume"
+    MINIO_VOLUME = f"{MINIO_SERVICE}_volume"
+    PORTAINER_VOLUME = f"{PORTAINER_SERVICE}_volume"
     MONGO_VOLUME = f"{MONGO_SERVICE}_volume"
 
     # Secret names

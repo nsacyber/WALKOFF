@@ -18,11 +18,13 @@ services:
       - resource_redis
       - resource_registry
       - resource_minio
+      - core_api
     secrets:
       - walkoff_encryption_key
       - walkoff_internal_key
       - walkoff_minio_access_key
       - walkoff_minio_secret_key
+      - walkoff_redis_key
     configs:
       - common_env.yml
 
@@ -40,13 +42,13 @@ services:
     secrets:
       - walkoff_encryption_key
       - walkoff_internal_key
-      - walkoff_postgres_key
       - walkoff_mongo_key
+      - walkoff_redis_key
     configs:
       - common_env.yml
     depends_on:
       - resource_redis
-      - resource_postgres
+      - resource_mongo
     volumes:
       - ./api/client/dist:/app/api/client/dist
 
@@ -106,9 +108,9 @@ secrets:
     external: true
   walkoff_internal_key:
     external: true
-  walkoff_postgres_key:
-    external: true
   walkoff_mongo_key:
+    external: true
+  walkoff_redis_key:
     external: true
   walkoff_minio_access_key:
     external: true
