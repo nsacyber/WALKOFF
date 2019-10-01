@@ -72,5 +72,6 @@ class Basics(AppBase):
         await self.console_logger.info(message)
         return message
 
+
 if __name__ == "__main__":
-    asyncio.run(Basics.run(), debug=True)
+    asyncio.run(Basics.run())
