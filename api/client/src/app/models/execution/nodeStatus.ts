@@ -17,6 +17,8 @@ export class NodeStatus {
 
 	execution_id: string;
 
+	combined_id: string;
+
 	node_id: string;
 
 	label: string;
@@ -38,9 +40,12 @@ export class NodeStatus {
 
 	parameters?: any;
 
-	@Exclude({ toPlainOnly: true })
-	localized_started_at?: string;
-
-	@Exclude({ toPlainOnly: true })
-	localized_completed_at?: string;
+	public format(input: any, expanded = false) {
+		if (!input) return 'N/A';
+		const output = (expanded) ? 
+			JSON.stringify(input, null, 2) : 
+			JSON.stringify(input);
+		
+		return (output) ? output : 'N/A'
+	}
 }

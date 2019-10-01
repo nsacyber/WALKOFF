@@ -27,6 +27,8 @@ import { createTree } from 'jquery.fancytree';
 import 'jquery.fancytree/dist/modules/jquery.fancytree.edit';
 import 'jquery.fancytree/dist/modules/jquery.fancytree.filter';
 import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
+import { StatusModalComponent } from './status.modal.component';
+import { FileModalComponent } from './file.modal.component';
 
 @Component({
 	selector: 'manage-app-component',
@@ -74,7 +76,7 @@ export class ManageAppComponent implements OnInit, OnDestroy {
 	 * Also initialize cytoscape event bindings.
 	 */
 	ngOnInit(): void {
-		this.appService.getApis().then(apps => this.apps = apps);
+        this.appService.getApis().then(apps => this.apps = apps);
             
         this.activeRoute.params.subscribe(params => {
             if (params.appId) {
@@ -93,13 +95,19 @@ export class ManageAppComponent implements OnInit, OnDestroy {
                                 // check if span of node already rendered
                                 if (node.folder && !$nodeSpan.data('rendered')) {
                             
-                                    var newFileLink = $('<a href="#" class="fancytree-title small">+New File</a>');
+                                    var newFileLink = $('<a href="#" title="New File" class="fancytree-title small mr-1"><i class="fa fa-plus-square" aria-hidden="true"></i></a>');
                                     newFileLink.click(() => {
                                         this.createFile(node.data.path);
                                         return false;
                                     })
+
+                                    var uploadFileLink = $('<a href="#" title="Upload File" class="fancytree-title small"><i class="fa fa-upload" aria-hidden="true"></i></a>');
+                                    uploadFileLink.click(() => {
+                                        this.uploadFile(node.data.path);
+                                        return false;
+                                    })
                             
-                                    $nodeSpan.append(newFileLink);
+                                    $nodeSpan.append(newFileLink, uploadFileLink);
                                     $nodeSpan.data('rendered', true);
                                 }
                             }
@@ -128,8 +136,28 @@ export class ManageAppComponent implements OnInit, OnDestroy {
     async createFile(root: string) {
         if (!await this.checkUnsavedChanges()) return;
 
-        const path = root + await this.utils.prompt('Enter name for new file');
+        const path = root + await this.utils.prompt('Add New File', { 
+            required: true,
+            message: '<h6>Enter name for new file:</h6>',
+            buttons: {
+                confirm: { label: 'Add'}
+            },
+        });
         await this.appService.putFile(this.currentApp, path, '')
+        await this.fileTree.reload(await this.appService.listFiles(this.currentApp))
+
+        this.selectTreeNode(path);
+        this.loadFile(path, false)
+        this.toastrService.success(`Created <b>${ path }</b>`);
+    }
+
+    async uploadFile(root: string) {
+        if (!await this.checkUnsavedChanges()) return;
+
+        const modalRef = this.modalService.open(FileModalComponent);
+        const fileInfo = await modalRef.result;
+        const path = root + fileInfo.path;
+        await this.appService.putFile(this.currentApp, path, fileInfo.body)
         await this.fileTree.reload(await this.appService.listFiles(this.currentApp))
 
         this.selectTreeNode(path);
@@ -171,8 +199,11 @@ export class ManageAppComponent implements OnInit, OnDestroy {
 
     async buildImage() {
         if (!await this.checkUnsavedChanges()) return;
-        this.toastrService.success(`Building App <b>${this.currentApp.name}</b>`);
-        this.appService.buildImage(this.currentApp).then(() => { })
+
+        const buildId = await this.appService.buildImage(this.currentApp);
+        const modalRef = this.modalService.open(StatusModalComponent, { size: 'xl', centered: true });
+        modalRef.componentInstance.buildId = buildId;
+        modalRef.componentInstance.appApi = this.currentApp;
     }
 
     undo() {

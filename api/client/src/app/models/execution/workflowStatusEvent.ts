@@ -10,9 +10,13 @@ export class WorkflowStatusEvent {
 
 	name: string;
 
-	user: string;
+	app_name: string;
 
-	timestamp: string;
+	action_name: string;
+
+	label: string;
+
+	user: string;
 
 	started_at: string;
 
@@ -28,10 +32,15 @@ export class WorkflowStatusEvent {
 
 		out.execution_id = this.execution_id;
 		out.workflow_id = this.workflow_id;
+		out.action_name = this.action_name;
+		out.app_name = this.app_name;
+		out.user = this.user;
 		out.name = this.name;
+		out.label = this.label
 		out.status = this.status;
 		out.node_status = this.node_status;
-
+		out.started_at = this.started_at;
+		out.completed_at = this.completed_at;
 		return out;
 	}
 }

@@ -279,6 +279,25 @@
 	}
 }
 
+.code-block {
+	max-height: 8.5rem;
+	white-space: pre-wrap;
+	overflow-y: hidden;
+
+	&.code-block-sm {
+		max-height: 3.5rem;
+	}
+
+	&.code-block-xl {
+		max-height: 12rem;
+	}
+}
+
+.cursor-pointer {
+	cursor: pointer;
+}
+
+
 
 body ngb-popover-window.popover {
 	max-width: 400px

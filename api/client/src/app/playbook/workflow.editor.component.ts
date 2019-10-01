@@ -52,6 +52,8 @@ import { Trigger } from '../models/playbook/trigger';
 import { WorkflowNode } from '../models/playbook/WorkflowNode';
 import { Transform } from '../models/playbook/transform';
 import { VariableModalComponent } from '../globals/variable.modal.component';
+import { ResultsModalComponent } from '../execution/results.modal.component';
+import { JsonModalComponent } from '../execution/json.modal.component';
 
 @Component({
 	selector: 'workflow-editor-component',
@@ -101,8 +103,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	consoleLog: ConsoleLog[] = [];
 	executionResultsComponentWidth: number;
 	waitingOnData: boolean = false;
-	nodeStatusStartedRelativeTimes: { [key: string]: string } = {};
-	nodeStatusCompletedRelativeTimes: { [key: string]: string } = {};
 	eventSource: any;
 	consoleEventSource: any;
 	playbookToImport: File;
@@ -112,6 +112,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	actionTypes = ActionType;
 	sseErrorTimeout: any;
 	showConsole: boolean = false;
+	NodeStatuses = NodeStatuses;
 
 	conditionalOptions = {
 		tabSize: 4,
@@ -152,10 +153,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	ngOnInit(): void {
 		this.initializeCytoscape();
 		this.initialLoad();
-
-		Observable.interval(30000).subscribe(() => {
-			this.recalculateRelativeTimes();
-		});
 
 		/**
 		 * Filter app list by application and action names
@@ -325,14 +322,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		// Induce change detection by slicing array
 		this.consoleLog.push(newConsoleLog);
 		this.consoleLog = this.consoleLog.slice();
+		this.updateConsole();
 	}
 
 	get consoleContent() {
-		let content = `******************************* Console Output *******************************\n`;
-		this.consoleLog.forEach(log => {
-			content += log.message;
-		})
-		return content;
+		return this.consoleLog.map(log => log.message).join('');
 	}
 
 	///------------------------------------------------------------------------------------------------------
@@ -421,8 +415,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 			switch (message.type) {
 				case NodeStatuses.EXECUTING:
-					// shouldn't happen
-					matchingNodeStatus.started_at = nodeStatusEvent.started_at;
+					if (!matchingNodeStatus.started_at)
+						matchingNodeStatus.started_at = nodeStatusEvent.started_at;
 					break;
 				case NodeStatuses.SUCCESS:
 				case NodeStatuses.FAILURE:
@@ -436,12 +430,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					this.toastrService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
 					break;
 			}
-
-			this.recalculateRelativeTimes(matchingNodeStatus);
-			this.calculateLocalizedTimes(matchingNodeStatus);
 		} else {
 			const newNodeStatus = nodeStatusEvent.toNewNodeStatus();
-			this.calculateLocalizedTimes(newNodeStatus);
 			this.nodeStatuses.push(newNodeStatus);
 		}
 		// Induce change detection by slicing array
@@ -472,8 +462,18 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	get selectedActionResults(): any {
 		if (this.selectedAction) {
 			const nodeStatus = this.nodeStatuses.find(n => n.node_id == this.selectedAction.id);
-			if (nodeStatus && nodeStatus.status == NodeStatuses.SUCCESS) return nodeStatus.result;
+			if (nodeStatus && nodeStatus.status == NodeStatuses.SUCCESS) return nodeStatus;
 		}
+	}
+
+	updateConsole() {
+		if (!this.consoleArea || !this.consoleArea.codeMirror) return;
+		const cm = this.consoleArea.codeMirror;
+		const $scroller = $(cm.getScrollerElement());
+		const atBottom = $scroller[0].scrollHeight - $scroller.scrollTop() - $scroller.outerHeight() <= 0;
+		cm.getDoc().setValue(this.consoleContent);
+		cm.refresh();
+		if (atBottom) cm.execCommand('goDocEnd');
 	}
 
 	/**
@@ -491,6 +491,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
 				.then((workflowStatus: WorkflowStatus) => {
 					this.toastrService.success(`Starting <b>${this.loadedWorkflow.name}</b>`)
+					this.consoleLog.push(plainToClass(ConsoleLog, { message: `Starting workflow execution....\n`}));
+					this.updateConsole();
 				})
 				.catch(e => this.toastrService.error(`Error starting execution of ${this.loadedWorkflow.name}: ${e.message}`));
 		})
@@ -1335,6 +1337,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.clearExecutionHighlighting();
 		this.consoleLog = [];
 		this.nodeStatuses = [];
+		if (this.consoleArea && this.consoleArea.codeMirror) 
+			this.consoleArea.codeMirror.getDoc().setValue('');
 	}
 
 	/**
@@ -1485,77 +1489,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	}
 
 	/**
-	 * Converts an input object/value to a friendly string for display in the workflow status table.
-	 * @param input Input object / value to convert
-	 */
-	getFriendlyJSON(input: any): string {
-		if (!input) { return 'N/A'; }
-		let out = JSON.stringify(input, null, 1);
-		out = out.replace(/[\{\[\}\]"]/g, '').trim();
-		if (!out) { return 'N/A'; }
-		return out;
-	}
-
-	/**
-	 * Converts an input argument array to a friendly string for display in the workflow status table.
-	 * @param args Array of arguments to convert
-	 */
-	getFriendlyArguments(args: Argument[]): string {
-		if (!args || !args.length) { return 'N/A'; }
-
-		const obj: { [key: string]: string } = {};
-		args.forEach(element => {
-			if (element.value) { obj[element.name] = element.value; }
-		});
-
-		let out = JSON.stringify(obj, null, 1);
-		out = out.replace(/[\{\}"]/g, '');
-		return out;
-	}
-
-	/**
 	 * Removes the white space in a given string.
 	 * @param input Input string to remove the whitespace of
 	 */
 	removeWhitespace(input: string): string {
 		return input.replace(/\s/g, '');
-	}
-
-	/**
-	 * Recalculates the relative times shown for start/end date timestamps (e.g. '5 hours ago').
-	 */
-	recalculateRelativeTimes(specificStatus?: NodeStatus): void {
-		let targetStatuses: NodeStatus[];
-		if (specificStatus) {
-			targetStatuses = [specificStatus];
-		} else {
-			targetStatuses = this.nodeStatuses;
-		}
-		if (!targetStatuses || !targetStatuses.length ) { return; }
-
-		targetStatuses.forEach(nodeStatus => {
-			if (nodeStatus.started_at) {
-				this.nodeStatusStartedRelativeTimes[nodeStatus.execution_id] =
-					this.utils.getRelativeLocalTime(nodeStatus.started_at);
-			}
-			if (nodeStatus.completed_at) {
-				this.nodeStatusCompletedRelativeTimes[nodeStatus.execution_id] =
-					this.utils.getRelativeLocalTime(nodeStatus.completed_at);
-			}
-		});
-	}
-
-	/**
-	 * Adds/updates localized time strings to a status object.
-	 * @param status Action Status to mutate
-	 */
-	calculateLocalizedTimes(status: NodeStatus): void {
-		if (status.started_at) {
-			status.localized_started_at = this.utils.getLocalTime(status.started_at);
-		}
-		if (status.completed_at) {
-			status.localized_completed_at = this.utils.getLocalTime(status.completed_at);
-		}
 	}
 
 	get workflowChanged(): boolean {
@@ -1657,6 +1595,12 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			this.loadedWorkflow.environment_variables.push(variable);
 			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
 		}).catch(() => null)
+	}
+
+	resultsModal(results) {
+		const modalRef = this.modalService.open(JsonModalComponent, { size: 'lg', centered: true });
+		modalRef.componentInstance.results = results;
+		return false;
 	}
 
 	/**

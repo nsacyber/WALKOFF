@@ -6,6 +6,8 @@ import { NodeStatus } from './nodeStatus';
 export class NodeStatusEvent {
 	execution_id: string;
 
+	combined_id: string;
+
 	@Expose({name: 'node_id'})
 	node_id: string;
 
@@ -32,6 +34,7 @@ export class NodeStatusEvent {
 		const out = new NodeStatus();
 
 		out.execution_id = this.execution_id;
+		out.combined_id = this.combined_id;
 		out.node_id = this.node_id;
 		out.name = this.name;
 		out.app_name = this.app_name;

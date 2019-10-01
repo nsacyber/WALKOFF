@@ -54,6 +54,12 @@ export class AppService {
 			.then((data: any) => data.build_id)
 	}
 
+	buildStatus() {
+		return this.http.get(`api/umpire/build`)
+			.toPromise()
+			.then(console.log)
+	}
+
 	listFiles(appApi: AppApi) : Promise<any> {
 		return this.http.get(`api/umpire/files/${ appApi.name }/${ appApi.app_version }`)
 			.toPromise()
