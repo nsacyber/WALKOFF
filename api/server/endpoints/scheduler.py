@@ -21,16 +21,16 @@ router = APIRouter()
 
 
 async def check_workflows_exist(workflow_col: AsyncIOMotorCollection, task: ScheduledTask):
-    workflow: WorkflowModel
-    for workflow in task.workflows:
-        if not await mongo_helpers.count_items(workflow_col, query={"id_": workflow.id_}):
+    workflow_id: UUID
+    for workflow_id in task.workflows:
+        if not await mongo_helpers.count_items(workflow_col, query={"id_": workflow_id}):
             raise InvalidInputException("create", "ScheduledTask", task.name,
-                                        errors={"error": f"{workflow.id_} does not exist"})
+                                        errors={"error": f"{workflow_id} does not exist"})
 
 @router.get("/",
             response_model=SchedulerStatusResp, response_description="Current scheduler status in WALKOFF.")
 async def get_scheduler_status(*, scheduler: Scheduler = Depends(get_scheduler)):
-    return SchedulerStatusResp(status=scheduler.state)
+    return SchedulerStatusResp(status=scheduler.scheduler.state)
 
 
 @router.put("/",
@@ -54,9 +54,11 @@ async def update_scheduler_status(*, scheduler: Scheduler = Depends(get_schedule
 
 
 @router.get("/tasks/")
-async def read_all_scheduled_tasks(*, task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+async def read_all_scheduled_tasks(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                                    page: int = 1,
                                    num_per_page: int = 20):
+    task_col = walkoff_db.tasks
+
     return await mongo_helpers.get_all_items(task_col, ScheduledTask, page=page, num_per_page=num_per_page)
     # page = request.args.get('page', 1, type=int)
     # return [task.as_json() for task in
@@ -70,7 +72,7 @@ async def create_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(ge
     workflow_col = walkoff_db.workflows
 
     await check_workflows_exist(workflow_col, new_task)
-    await mongo_helpers.create_item(task_col, ScheduledTask, new_task)
+    return await mongo_helpers.create_item(task_col, ScheduledTask, new_task)
     # data = request.get_json()
     # invalid_uuids = validate_uuids(data['workflows'])
     # if invalid_uuids:
@@ -90,16 +92,20 @@ async def create_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(ge
 
 
 @router.get("/tasks/{task_id}")
-async def read_scheduled_task(*, task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+async def read_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                               task_id: Union[UUID, str]):
+    task_col = walkoff_db.tasks
+
     return await mongo_helpers.get_item(task_col, ScheduledTask, task_id)
 
 
 @router.post("/tasks/{task_id}")
 async def control_scheduled_task(*, scheduler: Scheduler = Depends(get_scheduler),
-                                 task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                                 walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                                  task_id: Union[UUID, str],
                                  new_status: SchedulerStatus):
+    task_col = walkoff_db.tasks
+
     task: ScheduledTask = await mongo_helpers.get_item(task_col, ScheduledTask, task_id)
     if new_status == 'start':
         scheduler.schedule_workflows(task_id, execute_workflow_helper, task.workflows, task.trigger_args.args)
@@ -135,6 +141,8 @@ async def update_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(ge
 
 
 @router.delete("/tasks/{task_id}")
-async def delete_scheduled_task(*, task_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+async def delete_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                                 task_id: Union[UUID, str]):
+    task_col = walkoff_db.tasks
+
     return await mongo_helpers.delete_item(task_col, ScheduledTask, task_id)
