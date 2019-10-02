@@ -6,12 +6,13 @@ import logging
 
 from motor.motor_asyncio import AsyncIOMotorCollection
 from pydantic import BaseModel
-from api.server.utils.problems import UniquenessException
 import jsonpatch
 from starlette.websockets import WebSocket
 from fastapi import APIRouter, Depends, HTTPException
+from typing import Union
 
-from api.server.db.workflowresults import WorkflowStatus
+from api.server.utils.problems import UniquenessException
+from api.server.db.workflowresults import WorkflowStatus, NodeStatus
 from api.server.db import get_mongo_c
 from common.redis_helpers import connect_to_redis_pool
 from common.config import config
@@ -48,26 +49,23 @@ async def push_to_workflow_stream_queue(workflow_status: WorkflowStatus, event):
         workflow_status.node_status = []
     # workflow_status.pop("node_statuses", None)
     workflow_status.execution_id = str(workflow_status.execution_id)
+    redis_stream = None
     # sse_event_text = sse_format(data=workflow_status, event=event, event_id=workflow_status["execution_id"])
     if workflow_status.execution_id in workflow_stream_subs:
         redis_stream = WORKFLOW_STREAM_GLOB + "." + workflow_status.execution_id
         # workflow_stream_subs[workflow_status["execution_id"]].put(sse_event_text)
-    elif 'all' in workflow_stream_subs:
+    if 'all' in workflow_stream_subs:
         redis_stream = WORKFLOW_STREAM_GLOB + ".all"
-        # workflow_stream_subs['all'].put(sse_event_text)
-    else:
-        # return something to exit here rather than creating new redis stream.
-        redis_stream = WORKFLOW_STREAM_GLOB + "." + workflow_status.execution_id
-        workflow_stream_subs.add(workflow_status.execution_id)
 
-    async with connect_to_redis_pool(config.REDIS_URI) as conn:
-        key = f"{redis_stream}"
-        value = workflow_status.json()
-        # print(type(value))
-        await conn.lpush(key, value)
+    if redis_stream is not None:
+        async with connect_to_redis_pool(config.REDIS_URI) as conn:
+            key = f"{redis_stream}"
+            value = workflow_status.json()
+            # print(type(value))
+            await conn.lpush(key, value)
 
 
-async def push_to_action_stream_queue(node_statuses, event):
+async def push_to_action_stream_queue(node_statuses: NodeStatus, event):
 
     for node_status in node_statuses:
         node_status_json = node_status
@@ -170,12 +168,12 @@ async def update_workflow_status(body: JSONPatch, event: str, execution_id: str,
 
         logger.info(f"Updated workflow status {old_workflow.execution_id} ({old_workflow.name})")
         return new_workflow_status
-    except IntegrityError:
+    except Exception as e:
         return UniquenessException('workflow status', 'update', old_workflow.id_)
 
 
-@router.websocket_route('/workflow_status')
-async def workflow_stream(websocket: WebSocket, exec_id: UUID = None):
+@router.websocket_route('/workflow_status/')
+async def workflow_stream(websocket: WebSocket, exec_id: Union[UUID, str] = "all"):
     await websocket.accept()
     redis_stream = WORKFLOW_STREAM_GLOB + "." + str(exec_id)
     if exec_id not in workflow_stream_subs:
@@ -212,8 +210,8 @@ async def workflow_stream(websocket: WebSocket, exec_id: UUID = None):
         # Response(workflow_results_generator(), mimetype="test/event-stream")
 
 
-@router.websocket_route('/actions')
-async def action_stream(websocket: WebSocket, exec_id: UUID = None):
+@router.websocket_route('/actions/')
+async def action_stream(websocket: WebSocket, exec_id: Union[UUID, str] = "all"):
     await websocket.accept()
     redis_stream = ACTION_STREAM_GLOB + "." + str(exec_id)
     if exec_id not in action_stream_subs:

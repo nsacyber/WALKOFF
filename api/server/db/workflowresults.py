@@ -1,4 +1,4 @@
-from uuid import uuid4, UUID
+from uuid import UUID
 
 from pydantic import BaseModel
 from typing import List
@@ -26,13 +26,13 @@ class NodeStatus(BaseModel):
 
 
 class WorkflowStatus(BaseModel):
-    id_: UUID = uuid4()
+    id_: UUID = None
     name: str
     status: StatusEnum
     started_at: str = ""
     completed_at: str = ""
-    execution_id: UUID = uuid4()
-    workflow_id: UUID = uuid4()
+    execution_id: UUID = None
+    workflow_id: UUID = None
     user: str = ""
     node_status: List[NodeStatus] = []
     app_name: str = ""
@@ -42,16 +42,16 @@ class WorkflowStatus(BaseModel):
 
 
 class ExecuteWorkflow(BaseModel):
-    workflow_id: UUID = uuid4()
-    execution_id: UUID = uuid4()
-    start: UUID = uuid4()
-    parameters: List[ParameterModel]
-    workflow_variables: List[WorkflowVariableModel]
+    workflow_id: UUID
+    execution_id: UUID = None
+    start: UUID = None
+    parameters: List[ParameterModel] = []
+    workflow_variables: List[WorkflowVariableModel] = []
 
 
 class ControlWorkflow(BaseModel):
     status: str  # ToDo: enum this
-    trigger_id: UUID = uuid4()
+    trigger_id: UUID = None
     trigger_data: dict
 
 # class WorkflowStatus(Base):

@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/",
-            response_model=List[WorkflowModel],
+            response_model=List[WorkflowStatus],
             response_description="List of status information of all workflows currently executing.",
             status_code=200)
 async def get_all_workflow_status(request: Request, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
@@ -65,12 +65,13 @@ async def get_all_workflow_status(request: Request, workflow_status_col: AsyncIO
         temp.append(WorkflowStatus(**wf_status))
 
     for wf_status in temp:
-        wf = await get_item(workflow_col, WorkflowModel, wf_status.id_)
+        id = wf_status.workflow_id
+        wf = await get_item(workflow_col, WorkflowModel, id)
         to_read = await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db)
         if to_read:
             ret.append(wf_status)
 
-    return ret, HTTPStatus.OK
+    return ret
 
 
 @router.get("/{execution}",
@@ -87,7 +88,7 @@ async def get_workflow_status(request: Request, execution,
     curr_user_id = await get_jwt_identity(request)
     workflow_status = await get_item(workflow_status_col, WorkflowStatus, execution)
     # workflow_status = workflow_status_getter(execution, workflow_status_col)
-    wf = await get_item(workflow_col, WorkflowModel, workflow_status.id_)
+    wf = await get_item(workflow_col, WorkflowModel, workflow_status.workflow_id)
 
     to_read = await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db)
     if to_read:
@@ -112,7 +113,7 @@ async def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Reques
     execution_id = workflow_to_execute.execution_id
     workflow: WorkflowModel = await get_item(workflow_col, WorkflowModel, workflow_id)
     # workflow = workflow_getter(workflow_id, workflow_status_col)
-    data = dict(workflow_to_execute)
+    # data = dict(workflow_to_execute)
 
     curr_user_id = await get_jwt_identity(request)
 
@@ -130,30 +131,34 @@ async def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Reques
         triggers_by_id = {t.id_: t for t in workflow.triggers}
 
         # TODO: Add validation to all overrides
-        if "start" in data:
-            if data["start"] in actions_by_id or data["start"] in triggers_by_id:
-                workflow.start = data["start"]
+        if "start" in workflow_to_execute:
+            if workflow_to_execute.start in actions_by_id or workflow_to_execute.start in triggers_by_id:
+                workflow.start = workflow_to_execute.start
             else:
                 raise InvalidInputException("execute", "workflow", workflow.id_,
                                             errors=["Start override must be an action or a trigger in this workflow."])
 
-        if "workflow_variables" in workflow and "workflow_variables" in data:
+        if "workflow_variables" in workflow and "workflow_variables" in workflow_to_execute:
             # TODO: change these on the db model to be keyed by ID
             # Get workflow variables keyed by ID
 
             current_wvs = {wv.id_: wv for wv in workflow.workflow_variables}
-            new_wvs = {wv['id_']: wv for wv in data["workflow_variables"]}
+            new_wvs = {wv['id_']: wv for wv in workflow_to_execute.workflow_variables}
 
             # Update workflow variables with new values, ignore ids that didn't already exist
             override_wvs = {id_: new_wvs[id_] if id_ in new_wvs else current_wvs[id_] for id_ in current_wvs}
             workflow.workflow_variables = list(override_wvs.values())
 
-        if "parameters" in data:
-            start_id = data.get("start", workflow.start)
+        if "parameters" in workflow_to_execute:
+            if workflow_to_execute.start is not None:
+                start_id = workflow_to_execute.start
+            else:
+                start_id = workflow.start
+            # start_id = data.get("start", workflow.start)
             if start_id in actions_by_id:
                 parameters_by_name = {p.name: p for p in actions_by_id[start_id].parameters}
-                for parameter in data["parameters"]:
-                    parameters_by_name[parameter["name"]] = parameter
+                for parameter in workflow_to_execute.parameters:
+                    parameters_by_name[parameter.name] = parameter
                 actions_by_id[start_id].parameters = list(parameters_by_name.values())
                 workflow.actions = list(actions_by_id.values())
             else:
@@ -202,7 +207,7 @@ async def execute_workflow_helper(request: Request, workflow_id, workflow_status
     async with connect_to_redis_pool(config.REDIS_URI) as conn:
         await conn.sadd(static.REDIS_PENDING_WORKFLOWS, str(execution_id))
         await conn.xadd(static.REDIS_WORKFLOW_QUEUE, {str(execution_id): workflow.json()})
-    workflow_status.status = "PENDING"
+    workflow_status.status = StatusEnum.PENDING
     await push_to_workflow_stream_queue(workflow_status, "PENDING")
     logger.info(f"Created Workflow Status {workflow.name} ({execution_id})")
 
@@ -219,12 +224,14 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
     Pause, resume, or abort a workflow currently executing in WALKOFF.
     """
     walkoff_db = get_mongo_d(request)
+    workflow_col = walkoff_db.workflows
     curr_user_id = await get_jwt_identity(request)
 
+    workflow_id = execution.workflow_id
     data = dict(workflow_to_control)
     status = data['status']
 
-    workflow = await get_item(workflow_status_col, WorkflowModel, execution.workflow_id)
+    workflow: WorkflowModel = await get_item(workflow_col, WorkflowModel, workflow_id)
     # workflow = workflow_getter(execution.workflow_id, workflow_status_col)
     # The resource factory returns the WorkflowStatus model but we want the string of the execution ID
     execution_id = str(execution.execution_id)
