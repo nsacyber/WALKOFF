@@ -18,7 +18,7 @@ from api.server.db.workflow import WorkflowModel
 from api.server.db.permissions import AccessLevel, auth_check, creator_only_permissions, \
     default_permissions, append_super_and_internal
 from api.server.utils.helpers import regenerate_workflow_ids
-from api.server.utils.problems import UniquenessException, DoesNotExistException
+from api.server.utils.problems import UniquenessException, DoesNotExistException, UnauthorizedException
 from common import mongo_helpers
 
 router = APIRouter()
@@ -106,7 +106,7 @@ async def create_workflow(request: Request, new_workflow: WorkflowModel,
 async def import_existing(curr_user_id: UUID, old_workflow, new_workflow: WorkflowModel, walkoff_db):
     to_update = await auth_check(old_workflow, curr_user_id, "update", walkoff_db=walkoff_db)
     if (not to_update):
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("import", "Workflow", old_workflow['name'])
 
     to_regenerate = dict(new_workflow)
     regenerate_workflow_ids(to_regenerate)
@@ -120,7 +120,7 @@ async def import_existing(curr_user_id: UUID, old_workflow, new_workflow: Workfl
 async def copy_workflow(curr_user_id: UUID, old_workflow, new_workflow: WorkflowModel, walkoff_db):
     to_update = await auth_check(old_workflow, curr_user_id, "update", walkoff_db=walkoff_db)
     if (not to_update):
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("copy", "Workflow", old_workflow["name"])
 
     copied_workflow = deepcopy(old_workflow)
     workflow_dict = dict(copied_workflow)
@@ -185,7 +185,7 @@ async def read_workflow(request: Request, workflow_name_id, mode: str = None,
         else:
             return workflow
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("read data for", "Workflow", workflow.name)
 
 
 @router.put("/{workflow_name_id}",
@@ -220,7 +220,7 @@ async def update_workflow(request: Request, updated_workflow: WorkflowModel, wor
             raise UniquenessException("workflow", "update", updated_workflow.name)
 
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("update data for", "Workflow", old_workflow.name)
 
 
 @router.delete("/{workflow_name_id}",
@@ -240,4 +240,5 @@ async def delete_workflow(request: Request, workflow_name_id,
     if to_delete:
         return await workflow_col.delete_one(dict(workflow))
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("delete data for", "Workflow", workflow.name)
+

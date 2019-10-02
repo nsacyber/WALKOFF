@@ -71,7 +71,7 @@ class ProblemException(HTTPException):
 class UnauthorizedException(ProblemException):
     def __init__(self, operation, resource, id_):
         detail = f"Could not {operation} {resource} {id_}, user is unauthorized to perform this action."
-        super().__init__(HTTPStatus.BAD_REQUEST, "Unauthorized", detail=detail)
+        super().__init__(HTTPStatus.FORBIDDEN, "Unauthorized", detail=detail)
 
 
 class UniquenessException(ProblemException):

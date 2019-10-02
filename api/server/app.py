@@ -81,10 +81,15 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
 
     if len(request_path) >= 4:
         resource_name = request_path[3]
+        if len(request_path) == 6:
+            if request_path[4] == "personal_data":
+                response = await call_next(request)
+                return response
         request_method = request.method
         accepted_roles = set()
         resource_permission = ""
-        move_on = ["globals", "workflows", "console", "auth", "workflowqueue", "appapi", "streams", "docs", "redoc", "openapi.json"]
+        move_on = ["personal_user", "globals", "workflows", "console", "auth", "workflowqueue", "appapi",
+                   "streams", "docs", "redoc", "openapi.json", ""]
         if resource_name not in move_on:
             if request_method == "POST":
                 resource_permission = "create"

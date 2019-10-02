@@ -17,7 +17,7 @@ from api.server.security import get_jwt_identity
 
 from api.server.db.permissions import auth_check, default_permissions, creator_only_permissions, AccessLevel, \
     append_super_and_internal
-from api.server.utils.problems import UniquenessException
+from api.server.utils.problems import UniquenessException, UnauthorizedException
 from common import mongo_helpers
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
@@ -81,7 +81,7 @@ async def read_global(request: Request, global_var: UUID, to_decrypt: str = "fal
             key = base64.b64encode(key)
             return fernet_decrypt(key, global_variable.value)
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("read data for", "Global Variable", global_variable.name)
 
 
 @router.delete("/{global_var}",
@@ -103,7 +103,7 @@ async def delete_global(request: Request, global_var: UUID,
     if to_delete:
         return await mongo_helpers.delete_item(global_col, GlobalVariable, global_id)
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("delete data for", "Global Variable", global_variable.name)
 
 
 @router.post("/",
@@ -173,7 +173,7 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
         except:
             raise UniquenessException("global_variable", "update", updated_global.name)
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("update data for", "Global Variable", old_global.name)
 
 # Templates
 #
