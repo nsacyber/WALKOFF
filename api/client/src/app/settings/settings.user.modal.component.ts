@@ -55,7 +55,7 @@ export class SettingsUserModalComponent {
 	 */
 	roleSelectChange($event: any): void {
 		// Convert strings to numbers here
-		this.workingUser.role_ids = $event.value.map((id: string) => +id);
+		this.workingUser.role_ids = $event.value;//.map((id: string) => +id);
 	}
 
 	submit(): void {

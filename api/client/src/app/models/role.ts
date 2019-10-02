@@ -1,9 +1,11 @@
-import { Type } from 'class-transformer';
+import { Type, Expose } from 'class-transformer';
 
 import { Resource } from './resource';
 
 export class Role {
-	id: number;
+
+	@Expose({ name: "id_" })
+	id: string;
 
 	name?: string;
 

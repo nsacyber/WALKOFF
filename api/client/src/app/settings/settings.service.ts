@@ -61,7 +61,7 @@ export class SettingsService {
 	}
 
 	getRoles(): Promise<Role[]> {
-		return this.http.get('api/')
+		return this.http.get('api/roles/')
 			.toPromise()
 			.then((data: object[]) => plainToClass(Role, data))
 			.catch(this.utils.handleResponseError);
@@ -81,7 +81,7 @@ export class SettingsService {
 			.catch(this.utils.handleResponseError);
 	}
 
-	deleteRole(id: number): Promise<void> {
+	deleteRole(id: string): Promise<void> {
 		return this.http.delete(`api/roles/${id}`)
 			.toPromise()
 			.then(() => null)

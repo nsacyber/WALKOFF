@@ -16,6 +16,7 @@ import { SettingsService } from '../settings/settings.service';
 import { Workflow } from '../models/playbook/workflow';
 import { AppService } from './app.service';
 import { AppApi } from '../models/api/appApi';
+import { StatusModalComponent } from './status.modal.component';
 
 @Component({
 	selector: 'apps-list-component',
@@ -60,9 +61,10 @@ export class AppsListComponent implements OnInit, OnDestroy {
 		this.router.navigateByUrl(`/apps/${ app.id }`);
 	}
 
-	buildImage(appApi: AppApi) {
-        this.appService.buildImage(appApi).then(() => {
-            this.toastrService.success(`Building App <b>${appApi.name}</b>`);
-        })
+	async buildImage(appApi: AppApi) {
+		const buildId = await this.appService.buildImage(appApi);
+        const modalRef = this.modalService.open(StatusModalComponent, { size: 'xl', centered: true });
+        modalRef.componentInstance.buildId = buildId;
+        modalRef.componentInstance.appApi = appApi;
     }
 }

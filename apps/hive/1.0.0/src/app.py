@@ -239,4 +239,4 @@ class Hive(AppBase):
 
 
 if __name__ == "__main__":
-    asyncio.run(Hive.run(), debug=True)
+    asyncio.run(Hive.run())

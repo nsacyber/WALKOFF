@@ -82,9 +82,9 @@ div.jsoneditor-menu {
     border-bottom: 1px solid #3c8dbc;
 }
 
-div.jsoneditor-contextmenu ul li button.jsoneditor-selected,
-div.jsoneditor-contextmenu ul li button.jsoneditor-selected:focus, 
-div.jsoneditor-contextmenu ul li button.jsoneditor-selected:hover {
+div.jsoneditor-contextmenu .jsoneditor-menu li button.jsoneditor-selected,
+div.jsoneditor-contextmenu .jsoneditor-menu li button.jsoneditor-selected:focus, 
+div.jsoneditor-contextmenu .jsoneditor-menu li button.jsoneditor-selected:hover {
     background-color: #aecbdc;
 }
 

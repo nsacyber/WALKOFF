@@ -61,7 +61,7 @@ export class MetadataModalComponent {
         }
 
         if (this.myForm.valid) {
-            if (this.workflow.access_level != 2) this.workflow.permissions = [];
+            if (this.workflow.permissions.access_level != 2) this.workflow.permissions.permissions = [];
             
             this.activeModal.close(this.workflow);
         }
@@ -73,17 +73,17 @@ export class MetadataModalComponent {
             return this.toastrService.error('Select a role and permission');
         }
 
-        const existingPermission = this.workflow.permissions.find(p => p.role == this.newPermission.role);
+        const existingPermission = this.workflow.permissions.permissions.find(p => p.role == this.newPermission.role);
         (existingPermission) ? 
             existingPermission.permissions = this.newPermission.permissions : 
-            this.workflow.permissions.push(this.newPermission);
+            this.workflow.permissions.permissions.push(this.newPermission);
         
-        this.workflow.permissions.sort((a, b) => this.getRoleName(a).localeCompare(this.getRoleName(b)));
+        this.workflow.permissions.permissions.sort((a, b) => this.getRoleName(a).localeCompare(this.getRoleName(b)));
         this.newPermission = { role: '', permissions: '' };
     }
 
     deletePermission(p: any) {
-        this.workflow.permissions = this.workflow.permissions.filter(permission => permission.role != p.role);
+        this.workflow.permissions.permissions = this.workflow.permissions.permissions.filter(permission => permission.role != p.role);
     }
 
     getRoleName(p: any): string {

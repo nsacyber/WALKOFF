@@ -368,9 +368,11 @@ class Worker:
                                      tmsg)
             await send_status_update(self.session, self.workflow.execution_id,
                                      WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
-                                                                             self.workflow.id_,
-                                                                             self.workflow.name, action_name=trigger.name,
-                                                                             app_name=trigger.app_name, label=trigger.label))
+                                                                               self.workflow.id_,
+                                                                               self.workflow.name,
+                                                                               action_name=trigger.name,
+                                                                               app_name=trigger.app_name,
+                                                                               label=trigger.label))
             self.accumulator[trigger.id_] = result
             self.in_process.pop(trigger.id_)
 
@@ -383,11 +385,11 @@ class Worker:
                                                                          result=repr(e), parameters={}))
             await send_status_update(self.session, self.workflow.execution_id,
                                      WorkflowStatusMessage.execution_completed(self.workflow.execution_id,
-                                                                             self.workflow.id_,
-                                                                             self.workflow.name,
-                                                                             action_name=trigger.name,
-                                                                             app_name=trigger.app_name,
-                                                                             label=trigger.label))
+                                                                               self.workflow.id_,
+                                                                               self.workflow.name,
+                                                                               action_name=trigger.name,
+                                                                               app_name=trigger.app_name,
+                                                                               label=trigger.label))
 
     async def get_globals(self):
         url = config.API_URI.rstrip('/') + '/walkoff/api'
@@ -460,11 +462,11 @@ class Worker:
 
                 await send_status_update(self.session, self.workflow.execution_id,
                                          WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
-                                                                                 self.workflow.id_,
-                                                                                 self.workflow.name,
-                                                                                 action_name=node.name,
-                                                                                 app_name=node.app_name,
-                                                                                 label=node.label))
+                                                                                   self.workflow.id_,
+                                                                                   self.workflow.name,
+                                                                                   action_name=node.name,
+                                                                                   app_name=node.app_name,
+                                                                                   label=node.label))
                 asyncio.create_task(self.execute_parallel_action(node, params))
 
             else:
@@ -495,11 +497,11 @@ class Worker:
 
                 await send_status_update(self.session, self.workflow.execution_id,
                                          WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
-                                                                                 self.workflow.id_,
-                                                                                 self.workflow.name,
-                                                                                 action_name=node.name,
-                                                                                 app_name=node.app_name,
-                                                                                 label=node.label))
+                                                                                   self.workflow.id_,
+                                                                                   self.workflow.name,
+                                                                                   action_name=node.name,
+                                                                                   app_name=node.app_name,
+                                                                                   label=node.label))
 
                 await self.redis.xadd(stream, {node.execution_id: workflow_dumps(node)})
 
@@ -512,9 +514,11 @@ class Worker:
 
             await send_status_update(self.session, self.workflow.execution_id,
                                      WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
-                                                                             self.workflow.id_,
-                                                                             self.workflow.name, action_name=node.name,
-                                                                             app_name=node.app_name, label=node.label))
+                                                                               self.workflow.id_,
+                                                                               self.workflow.name,
+                                                                               action_name=node.name,
+                                                                               app_name=node.app_name,
+                                                                               label=node.label))
 
             await self.evaluate_condition(node, parents, children)
 
@@ -527,9 +531,11 @@ class Worker:
 
             await send_status_update(self.session, self.workflow.execution_id,
                                      WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
-                                                                             self.workflow.id_,
-                                                                             self.workflow.name, action_name=node.name,
-                                                                             app_name=node.app_name, label=node.label))
+                                                                               self.workflow.id_,
+                                                                               self.workflow.name,
+                                                                               action_name=node.name,
+                                                                               app_name=node.app_name,
+                                                                               label=node.label))
 
             await self.execute_transform(node, parents)
 
@@ -553,11 +559,11 @@ class Worker:
 
                     await send_status_update(self.session, self.workflow.execution_id,
                                              WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
-                                                                                     self.workflow.id_,
-                                                                                     self.workflow.name,
-                                                                                     action_name=node.name,
-                                                                                     app_name=node.app_name,
-                                                                                     label=node.label))
+                                                                                       self.workflow.id_,
+                                                                                       self.workflow.name,
+                                                                                       action_name=node.name,
+                                                                                       app_name=node.app_name,
+                                                                                       label=node.label))
                     execution_id_trigger_message, stream, id_ = deref_stream_message(msg)
                     execution_id, trigger_message = execution_id_trigger_message
                     trigger_message = message_loads(trigger_message)

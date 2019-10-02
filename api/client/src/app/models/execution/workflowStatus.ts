@@ -24,11 +24,17 @@ export class WorkflowStatus {
 
 	workflow_id: string;
 
-	name: string;
-
 	started_at?: string;
 
 	user: string;
+
+	app_name: string;
+
+	action_name: string;
+
+	label: string;
+
+	name: string;
 
 	/**
 	 * Date when workflow ended.
@@ -48,29 +54,12 @@ export class WorkflowStatus {
 	@Type(() => NodeStatus)
 	node_statuses?: NodeStatus[] = [];
 
-	@Exclude({ toPlainOnly: true })
-	localized_started_at?: string;
-
-	@Exclude({ toPlainOnly: true })
-	localized_completed_at?: string;
-
-	get completed_at_local() : string {
-		if (this.completed_at)
-			return moment(this.completed_at).format('LL LTS');
+	get displayAppAction() : string {
+		return (this.app_name && this.action_name) ? `${ this.app_name } / ${this.action_name}` : 'N/A'
 	}
 
-	get completed_at_relative() : string {
-		if (this.completed_at)
-			return moment(this.completed_at).toNow()
+	get displayLabel() : string {
+		return (this.label) ? this.label : 'N/A'
 	}
 
-	get started_at_local() : string {
-		if (this.started_at)
-			return moment(this.started_at).format('LL LTS');
-	}
-
-	get started_at_relative() : string {
-		if (this.started_at)
-			return moment(this.started_at).toNow();
-	}
 }

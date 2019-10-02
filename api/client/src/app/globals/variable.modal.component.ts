@@ -63,21 +63,21 @@ export class VariableModalComponent implements OnInit {
       return this.toastrService.error("Select a role and permission");
     }
 
-    const existingPermission = this.variable.permissions.find(
+    const existingPermission = this.variable.permissions.permissions.find(
       p => p.role == this.newPermission.role
     );
     existingPermission
       ? (existingPermission.permissions = this.newPermission.permissions)
-      : this.variable.permissions.push(this.newPermission);
+      : this.variable.permissions.permissions.push(this.newPermission);
 
-    this.variable.permissions.sort((a, b) =>
+    this.variable.permissions.permissions.sort((a, b) =>
       this.getRoleName(a).localeCompare(this.getRoleName(b))
     );
     this.newPermission = { role: "", permissions: "" };
   }
 
   deletePermission(p: any) {
-    this.variable.permissions = this.variable.permissions.filter(
+    this.variable.permissions.permissions = this.variable.permissions.permissions.filter(
       permission => permission.role != p.role
     );
   }
@@ -95,7 +95,7 @@ export class VariableModalComponent implements OnInit {
   }
 
     submit() {
-        if (this.variable.access_level != 2) this.variable.permissions = [];
+        if (this.variable.permissions.access_level != 2) this.variable.permissions.permissions = [];
         this.activeModal.close(this.variable)
     }
 }

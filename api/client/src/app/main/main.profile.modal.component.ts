@@ -33,6 +33,8 @@ export class MainProfileModalComponent {
 
 	passwordConfirm :string = '';
 
+	changeType: string;
+
 	constructor(
 		private mainService: MainService, public activeModal: NgbActiveModal,
 		private toastrService: ToastrService, private authService: AuthService) {
@@ -56,8 +58,11 @@ export class MainProfileModalComponent {
 
 		// Copy formData before sending to prevent modifying the form
 		const profileData = Object.assign({}, this.editPersonalUser);
-		if (!profileData.password) {
+		if (this.changeType == 'username' && !profileData.password) {
 			profileData.password = profileData.old_password;
+		}
+		if (this.changeType == 'password') {
+			profileData.new_username = profileData.old_username;
 		}
 
 		try {

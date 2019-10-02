@@ -1,7 +1,7 @@
 docker
 docker-compose
 minio
-aiodocker
+aiodocker == 0.14.0
 pyyaml
 aiohttp
 async_timeout

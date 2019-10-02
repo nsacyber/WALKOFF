@@ -115,6 +115,8 @@
                 success: function (data) {
                     sessionStorage.setItem("access_token", data["access_token"]);
                     sessionStorage.setItem("refresh_token", data["refresh_token"]);
+                    setCookie("access_token", data["access_token"]);
+                    setCookie("refresh_token", data["refresh_token"]);
                     location.href = "/walkoff";
                 },
                 error: function (e) {
@@ -122,6 +124,11 @@
                 }
             });
         });
+
+        function setCookie(cname, cvalue) {
+            document.cookie = cname + "=" + cvalue + ";path=/";
+        }
+
     </script>
 </body>
 

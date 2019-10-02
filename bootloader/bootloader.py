@@ -36,7 +36,6 @@ COMPOSE_BASE = {
 
 APP_NAME_PREFIX = "walkoff_"
 
-DOCKER_HOST_IP = os.getenv("DOCKER_HOST_IP")
 p = Path('./apps').glob('**/*')
 
 
@@ -344,7 +343,7 @@ class Bootloader:
     @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
     async def wait_for_registry(self):
         try:
-            async with self.session.get(f"http://{DOCKER_HOST_IP}:5000") as resp:
+            async with self.session.get(f"http://{static.REGISTRY_SERVICE}:5000") as resp:
                 if resp.status == 200:
                     return True
                 else:
@@ -498,6 +497,10 @@ class Bootloader:
             docker_logger.setLevel("DEBUG")
 
         proc = await rm_stack("walkoff")
+
+        # if not args.skipnetwork:
+        #     logger.info("Waiting for containers to exit and network to be removed...")
+        #     await exponential_wait(check_for_network, [self.docker_client], "Network walkoff_default still exists")
 
         if args.clean:
             if args.yes or await are_you_sure("Are you sure you want to remove all WALKOFF data? This will remove "

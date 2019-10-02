@@ -5,9 +5,10 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { Select2Module } from 'ng2-select2';
 import { ClipboardModule } from 'ngx-clipboard';
+import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from './auth/auth.service';
-import { JwtInterceptor, JwtModule } from '@auth0/angular-jwt';
-import { RefreshTokenInterceptor, jwtTokenGetter } from './refresh-token-interceptor';
+import { JwtInterceptor, JwtModule, JWT_OPTIONS } from '@auth0/angular-jwt';
+import { RefreshTokenInterceptor, jwtTokenGetter, jwtOptionsFactory } from './refresh-token-interceptor';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { DateTimePickerModule } from 'ng-pick-datetime';
 import { DndModule } from 'ng2-dnd';
@@ -15,8 +16,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastrModule } from 'ngx-toastr';
 import { GridsterModule } from 'angular-gridster2';
 import { ChartsModule } from 'ng2-charts';
-
 import { NgJsonEditorModule } from 'ang-jsoneditor'
+import { MomentModule } from 'ngx-moment';
 
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import 'codemirror/mode/meta';
@@ -50,6 +51,9 @@ import { SettingsTimeoutModalComponent } from './settings/settings.timeout.modal
 import { ExecutionVariableModalComponent } from './execution/execution.variable.modal.component';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook/playbook.environment.variable.modal.component';
 import { MainProfileModalComponent } from './main/main.profile.modal.component';
+import { StatusModalComponent } from './apps/status.modal.component';
+import { ResultsModalComponent } from './execution/results.modal.component';
+import { JsonModalComponent } from './execution/json.modal.component';
 
 import { PlaybookArgumentComponent } from './playbook/playbook.argument.component';
 import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
@@ -66,7 +70,9 @@ import { SafeEmbedPipe } from './pipes/safeEmbed.pipe';
 import { WorkflowEditorComponent } from './playbook/workflow.editor.component';
 import { MetadataModalComponent } from './playbook/metadata.modal.component';
 import { ImportModalComponent } from './playbook/import.modal.component';
+import { FileModalComponent } from './apps/file.modal.component';
 import { ManageAppComponent } from './apps/manage.app.component';
+import { HasPermissionDirective } from './permission.directive';
 
 @NgModule({
 	imports: [
@@ -75,9 +81,14 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		HttpClientModule,
 		ReactiveFormsModule,
 		JwtModule.forRoot({
-			config: {
-				tokenGetter: jwtTokenGetter,
-				blacklistedRoutes: ['login', 'api/auth', 'api/auth/logout', 'api/auth/refresh']
+			// config: {
+			// 	tokenGetter: jwtTokenGetter,
+			// 	blacklistedRoutes: ['login', 'api/auth', 'api/auth/logout', 'api/auth/refresh']
+			// },
+			jwtOptionsProvider: {
+				provide: JWT_OPTIONS,
+				useFactory: jwtOptionsFactory,
+				deps: [AuthService]
 			}
 		}),
 		NgbModule,
@@ -92,7 +103,8 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		GridsterModule,
 		ChartsModule,
 		CodemirrorModule,
-		NgJsonEditorModule
+		NgJsonEditorModule,
+		MomentModule
 	],
 	declarations: [
 		//Main component
@@ -122,6 +134,10 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		MetadataModalComponent,
 		ImportModalComponent,
 		ExecutionVariableModalComponent,
+		StatusModalComponent,
+		FileModalComponent,
+		ResultsModalComponent,
+		JsonModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
 		PlaybookConditionsComponent,
@@ -133,9 +149,12 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		ManageReportsComponent,
 		SafeEmbedPipe,
 		WidgetModalComponent,
+		// Directives
+		HasPermissionDirective
 	],
 	providers: [
 		UtilitiesService,
+		CookieService,
 		AuthService,
 		JwtInterceptor, // Providing JwtInterceptor allow to inject JwtInterceptor manually into RefreshTokenInterceptor
 		{
@@ -162,7 +181,11 @@ import { ManageAppComponent } from './apps/manage.app.component';
 		PlaybookEnvironmentVariableModalComponent,
 		ImportModalComponent,
 		MetadataModalComponent,
-		WidgetModalComponent
+		StatusModalComponent,
+		WidgetModalComponent,
+		FileModalComponent,
+		ResultsModalComponent,
+		JsonModalComponent
 	],
 	bootstrap: [MainComponent],
 })

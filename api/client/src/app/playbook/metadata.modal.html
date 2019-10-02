@@ -38,25 +38,25 @@
             <div class="card-body">
                 <div class="form-group">
                     <h6>Who can access workflow?</h6>
-                    <select class="form-control" name="access_level" [(ngModel)]="workflow.access_level">
+                    <select class="form-control" name="access_level" [(ngModel)]="workflow.permissions.access_level">
                         <option [ngValue]="1" label="Everyone">Everyone</option>
                         <option [ngValue]="2" label="Role Based">Role Based</option>
                         <option [ngValue]="0" label="Only Me">Only Me</option>
                     </select>
                     <small class="form-text text-muted pl-1">
-                        <span *ngIf="workflow.access_level == 0">
+                        <span *ngIf="workflow.permissions.access_level == 0">
                             Only you have access to this workflow.
                         </span>
-                        <span *ngIf="workflow.access_level == 1">
+                        <span *ngIf="workflow.permissions.access_level == 1">
                             By default everyone whose role has valid workflow permissions will have access to this
                             workflow.
                         </span>
-                        <span *ngIf="workflow.access_level == 2">
+                        <span *ngIf="workflow.permissions.access_level == 2">
                             Only users of the roles specified below will have access to this workflow.
                         </span>
                     </small>
                 </div>
-                <div *ngIf="workflow.access_level == 2" class="form-group">
+                <div *ngIf="workflow.permissions.access_level == 2" class="form-group">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -66,14 +66,14 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let p of workflow.permissions">
+                            <tr *ngFor="let p of workflow.permissions.permissions">
                                 <td>{{ getRoleName(p)  }}</td>
                                 <td>{{ getPermissionDescription(p) }}</td>
                                 <td><button type="button" (click)="deletePermission(p)"
                                         class="btn btn-sm btn-danger mx-1" ngbTooltip="Remove"><i
                                             class="fa fa-times"></i></button></td>
                             </tr>
-                            <tr *ngIf="workflow.permissions.length == 0">
+                            <tr *ngIf="workflow.permissions.permissions.length == 0">
                                 <td class="text-center text-muted" colspan="3">No Role Based Permissions
                                 </td>
                             </tr>

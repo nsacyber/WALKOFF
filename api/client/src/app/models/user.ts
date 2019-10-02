@@ -18,8 +18,8 @@ export class User {
 	 */
 	password: string;
 
-	@Type(() => Role)
-	roles: Role[] = [];
+	//@Type(() => Role)
+	roles: string[] = [];
 
 	active: boolean;
 }
