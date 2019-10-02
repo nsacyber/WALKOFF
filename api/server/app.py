@@ -8,8 +8,8 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
-from api.server.endpoints import (appapi, dashboards, workflows, users, console, results, umpire, auth, roles,
-                                  global_variables, scheduler)
+from api.server.endpoints import (appapi, auth, console, dashboards, global_variables, results, roles, scheduler,
+                                  settings, umpire, users, workflowqueue, workflows)
 from api.server.db import MongoManager, get_mongo_c
 from api.server.scheduler import Scheduler, get_scheduler
 from api.server.db.user_init import default_roles, default_users
@@ -84,7 +84,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         request_method = request.method
         accepted_roles = set()
         resource_permission = ""
-        move_on = ["globals", "workflows", "console", "auth", "workflowqueue", "appapi", "docs", "redoc", "openapi.json"]
+        move_on = ["globals", "workflows", "console", "auth", "workflowqueue", "api", "docs", "redoc", "openapi.json", ""]
         if resource_name not in move_on:
             if request_method == "POST":
                 resource_permission = "create"
@@ -228,6 +228,11 @@ _walkoff.include_router(dashboards.router,
 _walkoff.include_router(scheduler.router,
                         prefix="/scheduler",
                         tags=["scheduler"],
+                        dependencies=[Depends(get_mongo_c)])
+
+_walkoff.include_router(settings.router,
+                        prefix="/settings",
+                        tags=["settings"],
                         dependencies=[Depends(get_mongo_c)])
 
 # _walkoff.include_router(workflowqueue.router,
