@@ -113,7 +113,7 @@ async def get_raw_jwt(request: Request):
 
 async def get_jwt_identity(request: Request):
     rjwt = await get_raw_jwt(request) or {}
-    return rjwt.get("identity", "")
+    return uuid.UUID(rjwt.get("identity", ""))
 
 
 async def get_jwt_claims(request: Request):

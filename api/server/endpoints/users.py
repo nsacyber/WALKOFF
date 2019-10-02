@@ -68,7 +68,8 @@ async def list_permissions(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mon
     role_col = walkoff_db.roles
     user_col = walkoff_db.users
 
-    current_user = await mongo_helpers.get_item(user_col, UserModel, await get_jwt_identity(request))
+    current_id = await get_jwt_identity(request)
+    current_user = await mongo_helpers.get_item(user_col, UserModel, current_id, raise_exc=False)
 
     roles = [await mongo_helpers.get_item(role_col, RoleModel, role_id) for role_id in current_user.roles]
     return roles

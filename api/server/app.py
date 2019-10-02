@@ -38,7 +38,7 @@ async def initialize_mongodb():
 
 @_app.on_event("startup")
 async def initialize_users():
-    walkoff_db = _mongo_manager.client.walkoff_db
+    walkoff_db = _mongo_manager.async_client.walkoff_db
     roles_col = walkoff_db.roles
     users_col = walkoff_db.users
 
@@ -63,7 +63,7 @@ async def start_banner():
 async def db_session_middleware(request: Request, call_next):
     try:
         request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
-        request.state.mongo_d = _mongo_manager.client.walkoff_db
+        request.state.mongo_d = _mongo_manager.async_client.walkoff_db
         request.state.scheduler = _scheduler
         response = await call_next(request)
     except pymongo.errors.InvalidName:
@@ -76,7 +76,7 @@ async def db_session_middleware(request: Request, call_next):
 
 @_walkoff.middleware("http")
 async def permissions_accepted_for_resource_middleware(request: Request, call_next):
-    walkoff_db = _mongo_manager.client.walkoff_db
+    walkoff_db = _mongo_manager.async_client.walkoff_db
     request_path = request.url.path.split("/")
 
     if len(request_path) >= 4:
@@ -118,7 +118,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
 
 @_walkoff.middleware("http")
 async def permissions_accepted_for_roles_resource_middleware(request: Request, call_next):
-    walkoff_db = _mongo_manager.client.walkoff_db
+    walkoff_db = _mongo_manager.async_client.walkoff_db
     request_path = request.url.path.split("/")
 
     if len(request_path) >= 4:
@@ -152,7 +152,7 @@ async def permissions_accepted_for_roles_resource_middleware(request: Request, c
 
 @_walkoff.middleware("http")
 async def jwt_required_middleware(request: Request, call_next):
-    walkoff_db = _mongo_manager.client.walkoff_db
+    walkoff_db = _mongo_manager.async_client.walkoff_db
 
     request_path = request.url.path.split("/")
     if len(request_path) >= 4:
