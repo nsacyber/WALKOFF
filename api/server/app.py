@@ -84,7 +84,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         request_method = request.method
         accepted_roles = set()
         resource_permission = ""
-        move_on = ["globals", "workflows", "console", "auth", "workflowqueue", "api", "docs", "redoc", "openapi.json", ""]
+        move_on = ["globals", "workflows", "console", "auth", "workflowqueue", "appapi", "streams", "docs", "redoc", "openapi.json"]
         if resource_name not in move_on:
             if request_method == "POST":
                 resource_permission = "create"
@@ -126,6 +126,8 @@ async def permissions_accepted_for_roles_resource_middleware(request: Request, c
         if resource_name in current_role_based:
             if resource_name == "globals":
                 resource_name = "global_variables"
+            elif resource_name == "workflowqueue":
+                resource_name = "workflowstatus"
 
             if request_method == "POST":
                 resource_permission = "create"
@@ -201,12 +203,12 @@ _walkoff.include_router(appapi.router,
                         dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(results.router,
-                        prefix="/internal",
-                        tags=["internal"],
+                        prefix="/streams/workflowqueue",
+                        tags=["results"],
                         dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(console.router,
-                        prefix="/console",
+                        prefix="/streams/console",
                         tags=["console"],
                         dependencies=[Depends(get_mongo_c)])
 
@@ -235,10 +237,10 @@ _walkoff.include_router(settings.router,
                         tags=["settings"],
                         dependencies=[Depends(get_mongo_c)])
 
-# _walkoff.include_router(workflowqueue.router,
-#                         prefix="/workflowqueue",
-#                         tags=["workflowqueue"],
-#                         dependencies=[Depends(get_mongo_c)])
+_walkoff.include_router(workflowqueue.router,
+                        prefix="/workflowqueue",
+                        tags=["workflowqueue"],
+                        dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(workflows.router,
                         prefix="/workflows",
