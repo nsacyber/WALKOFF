@@ -14,7 +14,7 @@ from typing import Union
 from api.server.utils.problems import UniquenessException
 from api.server.db.workflowresults import WorkflowStatus, NodeStatus
 from api.server.db import get_mongo_c
-from common.redis_helpers import connect_to_redis_pool
+from common.redis_helpers import connect_to_aioredis_pool
 from common.config import config
 
 logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ async def push_to_workflow_stream_queue(workflow_status: WorkflowStatus, event):
         redis_stream = WORKFLOW_STREAM_GLOB + ".all"
 
     if redis_stream is not None:
-        async with connect_to_redis_pool(config.REDIS_URI) as conn:
+        async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
             key = f"{redis_stream}"
             value = workflow_status.json()
             # print(type(value))
@@ -84,7 +84,7 @@ async def push_to_action_stream_queue(node_statuses: NodeStatus, event):
             action_stream_subs.add(node_status_json["execution_id"])
             redis_stream = ACTION_STREAM_GLOB + "." + node_status_json["execution_id"]
 
-        async with connect_to_redis_pool(config.REDIS_URI) as conn:
+        async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
             key = f"{redis_stream}"
             value = node_status_json
             await conn.lpush(key, value)
@@ -186,7 +186,7 @@ async def workflow_stream(websocket: WebSocket, exec_id: Union[UUID, str] = "all
     #         return invalid_id_problem('workflow status', 'read', exec_id)
 
     async def workflow_results_generator():
-        async with connect_to_redis_pool(config.REDIS_URI) as conn:
+        async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
             try:
                 while True:
                     await asyncio.sleep(1)
@@ -224,7 +224,7 @@ async def action_stream(websocket: WebSocket, exec_id: Union[UUID, str] = "all")
     #         return invalid_id_problem('action status', 'read', execution_id)
 
     async def action_results_generator():
-        async with connect_to_redis_pool(config.REDIS_URI) as conn:
+        async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
             try:
                 while True:
                     await asyncio.sleep(1)

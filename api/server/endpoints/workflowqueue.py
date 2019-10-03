@@ -22,7 +22,7 @@ from api.server.db.workflowresults import WorkflowStatus, ExecuteWorkflow, Contr
 from api.server.security import get_jwt_claims, get_jwt_identity
 from api.server.endpoints.results import push_to_workflow_stream_queue
 from api.server.utils.problems import InvalidInputException, ImproperJSONException, DoesNotExistException
-from common.redis_helpers import connect_to_redis_pool
+from common.redis_helpers import connect_to_aioredis_pool
 from common.config import config
 from common.mongo_helpers import get_item, create_item
 
@@ -204,7 +204,7 @@ async def execute_workflow_helper(request: Request, workflow_id, workflow_status
     # Assign the execution id to the workflow so the worker knows it
     workflow.execution_id = execution_id
     # ToDo: self.__box.encrypt(message))
-    async with connect_to_redis_pool(config.REDIS_URI) as conn:
+    async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
         await conn.sadd(static.REDIS_PENDING_WORKFLOWS, str(execution_id))
         await conn.xadd(static.REDIS_WORKFLOW_QUEUE, {str(execution_id): workflow.json()})
     workflow_status.status = StatusEnum.PENDING
@@ -243,7 +243,7 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
             logger.info(
                 f"User '{(await get_jwt_claims(request)).get('username', None)}' aborting workflow: {execution_id}")
             message = {"execution_id": execution_id, "status": status, "workflow": dict(workflow)}
-            async with connect_to_redis_pool(config.REDIS_URI) as conn:
+            async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
                 await conn.smove(static.REDIS_PENDING_WORKFLOWS,
                                  static.REDIS_ABORTING_WORKFLOWS, execution_id)
                 await conn.xadd(static.REDIS_WORKFLOW_CONTROL, message)
@@ -270,7 +270,7 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
             trigger_stream = f"{execution_id}-{trigger_id}:triggers"
 
             try:
-                async with connect_to_redis_pool(config.REDIS_URI) as conn:
+                async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
                     info = await conn.xinfo_stream(trigger_stream)
                 stream_length = info["length"]
             except Exception:
@@ -284,7 +284,7 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
             logger.info(
                 f"User '{(await get_jwt_claims(request)).get('username', None)}' triggering workflow: {execution_id} at trigger "
                 f"{trigger_id} with data {trigger_data}")
-            async with connect_to_redis_pool(config.REDIS_URI) as conn:
+            async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
                 await conn.xadd(trigger_stream, {execution_id: message_dumps({"trigger_data": trigger_data})})
 
             return ({"trigger_stream": trigger_stream})

@@ -1,27 +1,9 @@
-from enum import Enum
-from uuid import uuid4, UUID
+from uuid import UUID
 
 from pydantic import BaseModel, validator
 from typing import List
-from motor.motor_asyncio import AsyncIOMotorCollection
 
 from api.server.db.resource import ResourceModel
-
-# from api.server.db import TrackModificationsMixIn
-
-from common.helpers import preset_uuid
-
-
-class DefaultRoleUUID(Enum):
-    INTERNAL_USER = preset_uuid("internal_role")
-    SUPER_ADMIN = preset_uuid("sadmin_role")
-    ADMIN = preset_uuid("admin_role")
-    APP_DEV = preset_uuid("app_dev_role")
-    WF_DEV = preset_uuid("wf_dev_role")
-    WF_OP = preset_uuid("wf_op_role")
-
-
-DefaultRoleUUIDS = [v.value for v in DefaultRoleUUID.__members__.values()]
 
 
 class RoleModel(BaseModel):

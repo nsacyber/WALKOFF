@@ -14,7 +14,7 @@ import aioredis
 from common.message_types import message_dumps, message_loads, NodeStatusMessage, WorkflowStatusMessage, StatusEnum
 from common.config import config, static
 from common.helpers import get_walkoff_auth_header, send_status_update
-from common.redis_helpers import connect_to_redis_pool, xdel, deref_stream_message
+from common.redis_helpers import connect_to_aioredis_pool, xdel, deref_stream_message
 from common.workflow_types import (Node, Action, Condition, Transform, Parameter, Trigger,
                                    ParameterVariant, Workflow, workflow_dumps, workflow_loads, ConditionException,
                                    TransformException)
@@ -83,7 +83,7 @@ class Worker:
 
     @staticmethod
     async def run():
-        async with connect_to_redis_pool(config.REDIS_URI) as redis, \
+        async with connect_to_aioredis_pool(config.REDIS_URI) as redis, \
                 aiohttp.ClientSession(json_serialize=message_dumps) as session:
 
             # Attach our signal handlers to cleanly close services we've created

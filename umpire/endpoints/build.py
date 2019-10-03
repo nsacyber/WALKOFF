@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import aiohttp
 
 from common.config import config
-from common.redis_helpers import connect_to_redis_pool
+from common.redis_helpers import connect_to_aioredis_pool
 from common.minio_helper import MinioApi
 
 from umpire.app_repo import AppRepo
@@ -22,7 +22,7 @@ logger = logging.getLogger("Umpire")
 # Returns list of current builds
 @router.get("/")
 async def get_build_statuses():
-    async with connect_to_redis_pool(config.REDIS_URI) as conn:
+    async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
         ret = []
         build_keys = set(await conn.keys(pattern=BUILD_STATUS_GLOB + "*", encoding="utf-8"))
         for key in build_keys:
@@ -55,7 +55,7 @@ async def build_image(request: BuildImage):
 # Returns build status of build specified by build id
 @router.post("/{build_id}")
 async def build_status_from_id(build_id):
-    async with connect_to_redis_pool(config.REDIS_URI) as conn:
+    async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
         get = BUILD_STATUS_GLOB + "." + build_id
         build_status = await conn.execute('get', get)
         build_status = build_status.decode('utf-8')

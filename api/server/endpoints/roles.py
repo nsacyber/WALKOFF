@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 from api.server.db import get_mongo_c
-from api.server.db.user_init import clear_resources_for_role, get_all_available_resource_actions
-from api.server.db.role import RoleModel, DefaultRoleUUID, DefaultRoleUUIDS
+from api.server.db.user_init import default_resource_permissions_admin, DefaultRoleUUID, DefaultRoleUUIDS
+from api.server.db.role import RoleModel
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
                                        DoesNotExistException)
 from common import mongo_helpers
@@ -147,4 +147,8 @@ async def delete_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c)
 
 @router.get('/availableresourceactions/')
 async def read_available_resource_actions():
-    return await get_all_available_resource_actions()
+    resource_actions = []
+    for resource_perm in default_resource_permissions_admin:
+        resource_actions.append(
+            {"name": resource_perm['name'], "actions": resource_perm['permissions']})
+    return resource_actions

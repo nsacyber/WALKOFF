@@ -1,62 +1,60 @@
 import logging
 
 import yaml
-import pytest
 from starlette.testclient import TestClient
 
-from testing.api import StarletteTestClient
 from testing.api.helpers import assert_crud_resource
 
-pytestmark = pytest.mark.asyncio
 logger = logging.getLogger(__name__)
-apps_url = "/api/apps"
-apps_api_url = "/api/apps/apis"
+
+apps_url = "/walkoff/api/apps/"
+apps_api_url = "/walkoff/api/apps/apis/"
 
 
 # TOP LEVEL APP API TESTS
 
-async def test_sanity_check(api: StarletteTestClient, auth_header: dict):
+def test_sanity_check(api: TestClient, auth_header: dict):
     """Assert that no apps exist"""
 
-    p = await api.get(apps_url, headers=auth_header)
+    p = api.get(apps_url, headers=auth_header)
     assert p.json() == []
 
 
-# async def test_create_api_empty(api: TestClient, auth_header: dict):
-#     """Assert that an API without actions is rejected"""
+def test_create_api_empty(api: TestClient, auth_header: dict):
+    """Assert that an API without actions is rejected"""
+
+    inputs = [
+        {
+            "create": """
+            walkoff_version: 1.0.0
+            app_version: 1.0.0
+            name: test_app:1.0.0
+            description: An invalid App API with missing actions
+            """
+        }
+    ]
+    assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
+
+
+def test_create_api_minimum(api: TestClient, auth_header: dict):
+    """Assert that a minimum valid API is accepted"""
+
+    inputs = [
+        {
+            "create": """
+            walkoff_version: 1.0.0
+            app_version: 1.0.0
+            name: test_app:1.0.0
+            description: A minimum valid App API
+            actions:
+              - name: test_action
+            """
+        }
+    ]
+    assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load)
 #
-#     inputs = [
-#         {
-#             "create": """
-#             walkoff_version: 1.0.0
-#             app_version: 1.0.0
-#             name: test_app:1.0.0
-#             description: An invalid App API with missing actions
-#             """
-#         }
-#     ]
-#     await assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
 #
-#
-# async def test_create_api_minimum(api: TestClient, auth_header: dict):
-#     """Assert that a minimum valid API is accepted"""
-#
-#     inputs = [
-#         {
-#             "create": """
-#             walkoff_version: 1.0.0
-#             app_version: 1.0.0
-#             name: test_app:1.0.0
-#             description: A minimum valid App API
-#             actions:
-#               - name: test_action
-#             """
-#         }
-#     ]
-#     await assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load)
-#
-#
-# async def test_create_api_invalid_semver(api: TestClient, auth_header: dict):
+# def test_create_api_invalid_semver(api: TestClient, auth_header: dict):
 #     """Assert that walkoff_version, app_version, name all have correct sematic versioning"""
 #
 #     inputs = [
@@ -101,10 +99,10 @@ async def test_sanity_check(api: StarletteTestClient, auth_header: dict):
 #             """
 #         }
 #     ]
-#     await assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
+#     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
 #
 #
-# async def test_create_api_valid_contact(api: TestClient, auth_header: dict):
+# def test_create_api_valid_contact(api: TestClient, auth_header: dict):
 #     """Assert that valid contact info is accepted"""
 #
 #     inputs = [
@@ -123,10 +121,10 @@ async def test_sanity_check(api: StarletteTestClient, auth_header: dict):
 #             """,
 #         },
 #     ]
-#     await assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load)
+#     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load)
 #
 #
-# async def test_create_api_invalid_contact(api: TestClient, auth_header: dict):
+# def test_create_api_invalid_contact(api: TestClient, auth_header: dict):
 #     """Assert that various invalid contact info are rejected"""
 #
 #     inputs = [
@@ -180,10 +178,10 @@ async def test_sanity_check(api: StarletteTestClient, auth_header: dict):
 #         #       - name: test_action
 #         # """
 #     ]
-#     await assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
+#     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
 #
 #
-# async def test_create_api_invalid_license(api: TestClient, auth_header: dict):
+# def test_create_api_invalid_license(api: TestClient, auth_header: dict):
 #     """Assert that various invalid license info are rejected"""
 #
 #     inputs = [
@@ -224,13 +222,13 @@ async def test_sanity_check(api: StarletteTestClient, auth_header: dict):
 #         #       - name: test_action
 #         # """
 #     ]
-#     await assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
+#     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
 #
 #
 # # TOP LEVEL ACTION TESTS
 #
 #
-# async def test_create_api_valid_parameters(api: TestClient, auth_header: dict):
+# def test_create_api_valid_parameters(api: TestClient, auth_header: dict):
 #     """Assert that valid parameters are accepted"""
 #     inputs = [
 #         {
@@ -342,10 +340,10 @@ async def test_sanity_check(api: StarletteTestClient, auth_header: dict):
 #         """,
 #         },
 #     ]
-#     await assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load)
+#     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load)
 #
 #
-# async def test_create_api_invalid_parameters(api: TestClient, auth_header: dict):
+# def test_create_api_invalid_parameters(api: TestClient, auth_header: dict):
 #     """Assert that invalid parameters are rejected"""
 #     inputs = [
 #         {
@@ -413,4 +411,4 @@ async def test_sanity_check(api: StarletteTestClient, auth_header: dict):
 #             """,
 #         },
 #     ]
-#     await assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
+#     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)

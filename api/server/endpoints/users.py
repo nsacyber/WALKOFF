@@ -8,8 +8,9 @@ from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from api.server.db import get_mongo_c, get_mongo_d
-from api.server.db.user import DefaultUserUUID as DUsers, UserModel, EditUser, EditPersonalUser
-from api.server.db.role import DefaultRoleUUID as DRoles, RoleModel
+from api.server.db.user_init import DefaultUserUUID as DUsers, DefaultRoleUUID as DRoles
+from api.server.db.user import UserModel, EditUser, EditPersonalUser
+from api.server.db.role import RoleModel
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
                                        DoesNotExistException)
 from api.server.security import get_jwt_identity
@@ -68,7 +69,8 @@ async def list_permissions(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mon
     role_col = walkoff_db.roles
     user_col = walkoff_db.users
 
-    current_user = await mongo_helpers.get_item(user_col, UserModel, await get_jwt_identity(request))
+    current_id = await get_jwt_identity(request)
+    current_user = await mongo_helpers.get_item(user_col, UserModel, current_id, raise_exc=False)
 
     roles = [await mongo_helpers.get_item(role_col, RoleModel, role_id) for role_id in current_user.roles]
     return roles

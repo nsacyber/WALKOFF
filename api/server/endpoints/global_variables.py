@@ -37,7 +37,7 @@ async def read_all_globals(request: Request, to_decrypt: str = False,
     Returns a list of all Global Variables currently loaded in WALKOFF.
     """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = UUID(await get_jwt_identity(request))
+    curr_user_id = await get_jwt_identity(request)
 
     key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
     # key = base64.b64encode(key)
@@ -67,7 +67,7 @@ async def read_global(request: Request, global_var: UUID, to_decrypt: str = "fal
     Returns the Global Variable for the specified id.
     """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = UUID(await get_jwt_identity(request))
+    curr_user_id = await get_jwt_identity(request)
 
     global_variable = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
     global_id = global_variable.id_
@@ -94,7 +94,7 @@ async def delete_global(request: Request, global_var: UUID,
     Deletes a specific Global Variable (fetched by id).
     """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = UUID(await get_jwt_identity(request))
+    curr_user_id = await get_jwt_identity(request)
 
     global_variable = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
     global_id = global_variable.id_
@@ -116,7 +116,7 @@ async def create_global(request: Request, new_global: GlobalVariable,
     Creates a new Global Variable in WALKOFF and returns it.
     """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = UUID(await get_jwt_identity(request))
+    curr_user_id = await get_jwt_identity(request)
 
     permissions = new_global.permissions
     access_level = permissions.access_level
@@ -146,7 +146,7 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
     Updates a specific Global Variable (fetched by id) and returns it.
     """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = UUID(await get_jwt_identity(request))
+    curr_user_id = await get_jwt_identity(request)
 
     old_global = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
     global_id = old_global.id_

@@ -20,55 +20,60 @@ class WorkflowModel(BaseModel):
     execution_id: UUID = None
     id_: UUID
     errors: List[str] = []
-    is_valid: bool = False  # self.error_check()
+    is_valid: bool = True  # self.error_check()
     name: str
-    start: UUID
     description: str = ""
     tags: List[str] = []
     _walkoff_type: str = "workflow"
     permissions: PermissionsModel
     actions: List[ActionModel]
-    branches: List[BranchModel] = []
     conditions: List[ConditionModel] = []
     transforms: List[TransformModel] = []
     workflow_variables: List[WorkflowVariableModel] = []
     triggers: List[TriggerModel] = []
+    branches: List[BranchModel] = []
+    start: UUID
     _secondary_id = "name"
 
-    @classmethod
-    @validator('start')
-    def start_must_be_action(cls, start, workflow, **kwargs):
-        if not any(start == action["id_"] for action in workflow["actions"]):
-            raise ValidationError
+    @validator('is_valid')
+    def clear_invalid_state(cls, value, values):
+        if not values.get("errors"):
+            return True
         else:
-            return start
+            return False
 
-    @classmethod
-    @validator('branches')
-    def remove_invalid_branches(cls, branches, workflow, **kwargs):
-        nodes = {node["id_"] for node
-                 in workflow["actions"]
-                 + workflow["conditions"]
-                 + workflow["transforms"]
-                 + workflow["triggers"]}
+    @validator('actions', whole=True)
+    def actions_must_exist(cls, value, values):
+        app_api_col = mongo.reg_client.walkoff_db.apps
+        ret = []
+        for action in value:
+            action_api = app_api_col.find({"name": action.app_name, "actions.name": action.name})
+            if not action_api:
+                values["errors"].append(f"Action {action.app_name}.{action.name} does not exist")
+                values["is_valid"] = False
+            else:
+                ret.append(action)
+        return ret
 
-        return [branch for branch in branches
+    @validator('branches', whole=True)
+    def remove_invalid_branches(cls, value, values):
+        nodes = {node.id_ for node
+                 in values.get("actions", [])
+                 + values.get("conditions", [])
+                 + values.get("transforms", [])
+                 + values.get("triggers", [])}
+
+        return [branch for branch in value
                 if branch.source_id in nodes
                 and branch.destination_id in nodes]
 
-    @classmethod
-    @validator('actions')
-    async def actions_must_exist(cls, actions, workflow, **kwargs):
-        app_api_col = mongo.client.walkoff_db.apps
-        ret = []
-        for action in actions:
-            action_api = await app_api_col.find({"name": action["app_name"], "actions.name": action["name"]})
-            if not action_api:
-                workflow.errors.append(f"Action {action.app_name}.{action.name} does not exist")
-                continue
-            else:
-                ret += action
-        return ret
+    @validator('start')
+    def start_must_be_action(cls, value, values):
+        if not any(value == action.id_ for action in values.get("actions", [])):
+            values["is_valid"] = False
+            raise ValidationError
+        else:
+            return value
 
     class Config:
         schema_extra = {
@@ -184,7 +189,6 @@ class WorkflowModel(BaseModel):
             ]
         }
 
-    # @classmethod
     # @validator('actions')
     # def action_result_parameter_check(cls, actions, workflow, **kwargs):
     #     nodes = {node for node in workflow.actions + workflow.conditions
@@ -198,7 +202,6 @@ class WorkflowModel(BaseModel):
     #                 ret += action
     #     return ret
     #
-    # @classmethod
     # @validator('actions')
     # def parallelized_actions_parameters_check(cls, actions, workflow, **kwargs):
     #     app_api_col = mongo.client.walkoff_db.apps
@@ -223,7 +226,6 @@ class WorkflowModel(BaseModel):
     #         elif count > 1:
     #             action.errors.append("Too many parallelized parameters")
     #
-    # @classmethod
     # @validator('actions')
     # def parameter_checking(cls, actions, workflow, **kwargs):
     #     app_api_col = mongo.client.walkoff_db.apps
@@ -260,11 +262,11 @@ class WorkflowModel(BaseModel):
     #             if message is not "":
     #                 workflow.errors.append(message)
 
-    def error_check(self):
-        if self.errors:
-            return False
-        else:
-            return True
+    # def error_check(self):
+    #     if self.errors:
+    #         return False
+    #     else:
+    #         return True
 
 # class Workflow(Base):
 #     __tablename__ = "workflow"
