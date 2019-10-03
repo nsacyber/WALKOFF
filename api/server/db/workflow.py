@@ -16,6 +16,10 @@ from api.server.db import mongo
 logger = logging.getLogger(__name__)
 
 
+class CopyWorkflowModel(BaseModel):
+    name: str
+
+
 class WorkflowModel(BaseModel):
     execution_id: UUID = None
     id_: UUID

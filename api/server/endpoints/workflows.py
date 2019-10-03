@@ -14,7 +14,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from api.server.security import get_jwt_identity
 from api.server.db import get_mongo_c, get_mongo_d
-from api.server.db.workflow import WorkflowModel
+from api.server.db.workflow import WorkflowModel, CopyWorkflowModel
 from api.server.db.permissions import AccessLevel, auth_check, creator_only_permissions, \
     default_permissions, append_super_and_internal
 from api.server.utils.helpers import regenerate_workflow_ids
@@ -25,14 +25,14 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-async def set_permissions(new_workflow, curr_user_id, walkoff_db):
+async def set_permissions(new_workflow: WorkflowModel, curr_user_id: UUID, walkoff_db: AsyncIOMotorDatabase):
     permissions = new_workflow.permissions
     access_level = permissions.access_level
     if access_level == AccessLevel.CREATOR_ONLY:
         permissions_model = await creator_only_permissions(curr_user_id)
         new_workflow.permissions = permissions_model
     elif access_level == AccessLevel.EVERYONE:
-        permissions_model = await default_permissions(curr_user_id, walkoff_db, "global_variables")
+        permissions_model = await default_permissions(curr_user_id, walkoff_db, "workflows")
         new_workflow.permissions = permissions_model
     elif access_level == AccessLevel.ROLE_BASED:
         new_workflow.permissions = await append_super_and_internal(new_workflow.permissions)
@@ -41,12 +41,12 @@ async def set_permissions(new_workflow, curr_user_id, walkoff_db):
 
 @router.post("/upload",
              response_model=WorkflowModel,
-             response_description="The newly created Workflow.",
+             response_description="The newly improted Workflow.",
              status_code=201)
 async def upload_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                           request: Request, file: UploadFile = File(...)):
     """
-    Creates a new Workflow in WALKOFF and returns it.
+    Imports a new Workflow in WALKOFF and returns it.
     """
     workflow_col = walkoff_db.workflows
     curr_user_id = await get_jwt_identity(request)
@@ -61,7 +61,7 @@ async def upload_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mong
 
     if workflow_exists_already:
         old_workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, new_workflow.id_)
-        new_workflow = await import_existing(curr_user_id=curr_user_id, old_workflow=old_workflow,
+        new_workflow = await upload_workflow_helper(curr_user_id=curr_user_id, old_workflow=old_workflow,
                                              new_workflow=new_workflow, walkoff_db=walkoff_db)
 
     await set_permissions(new_workflow, curr_user_id, walkoff_db)
@@ -72,39 +72,9 @@ async def upload_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mong
         raise UniquenessException("workflow", "create", new_workflow.name)
 
 
-@router.post("/",
-             response_model=WorkflowModel,
-             response_description="The newly created Workflow.",
-             status_code=201)
-async def create_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
-                          source: str = None,
-                          request: Request, new_workflow: WorkflowModel):
-    """
-    Creates a new Workflow in WALKOFF and returns it.
-    """
-    workflow_col = walkoff_db.workflows
-    curr_user_id = await get_jwt_identity(request)
-
-    permissions = new_workflow.permissions
-    access_level = permissions.access_level
-
-    await set_permissions(new_workflow, curr_user_id, walkoff_db)
-
-
-    # copying workflows
-    if source:
-        old_workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, UUID(source))
-        new_workflow = await copy_workflow(curr_user_id=curr_user_id, old_workflow=old_workflow,
-                                           new_workflow=new_workflow, walkoff_db=walkoff_db)
-    try:
-        return await mongo_helpers.create_item(workflow_col, WorkflowModel, new_workflow)
-    except:
-        raise UniquenessException("workflow", "create", new_workflow.name)
-
-
-async def import_existing(curr_user_id: UUID, old_workflow, new_workflow: WorkflowModel, walkoff_db):
+async def upload_workflow_helper(curr_user_id: UUID, old_workflow, new_workflow: WorkflowModel, walkoff_db):
     to_update = await auth_check(old_workflow, curr_user_id, "update", walkoff_db=walkoff_db)
-    if (not to_update):
+    if not to_update:
         raise UnauthorizedException("import", "Workflow", old_workflow['name'])
 
     to_regenerate = dict(new_workflow)
@@ -116,9 +86,36 @@ async def import_existing(curr_user_id: UUID, old_workflow, new_workflow: Workfl
     return new_workflow
 
 
-async def copy_workflow(curr_user_id: UUID, old_workflow, new_workflow: WorkflowModel, walkoff_db):
+@router.post("/copy",
+             response_model=WorkflowModel,
+             response_description="The newly copied Workflow.",
+             status_code=201)
+async def copy_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
+                        source: str, name_body: CopyWorkflowModel, request: Request):
+    """
+    Copied a Workflow in WALKOFF and returns it.
+    """
+    workflow_col = walkoff_db.workflows
+    curr_user_id = await get_jwt_identity(request)
+    try:
+        existing_workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, UUID(source))
+    except:
+        raise DoesNotExistException("copy", "Workflow", source)
+
+    new_workflow = await copy_workflow_helper(curr_user_id=curr_user_id, old_workflow=existing_workflow,
+                                              new_name=name_body.name, walkoff_db=walkoff_db)
+
+    await set_permissions(new_workflow, curr_user_id, walkoff_db)
+
+    try:
+        return await mongo_helpers.create_item(workflow_col, WorkflowModel, new_workflow)
+    except:
+        raise UniquenessException("workflow", "create", new_workflow.name)
+
+
+async def copy_workflow_helper(curr_user_id: UUID, old_workflow, new_name: str, walkoff_db: AsyncIOMotorDatabase):
     to_update = await auth_check(old_workflow, curr_user_id, "update", walkoff_db=walkoff_db)
-    if (not to_update):
+    if not to_update:
         raise UnauthorizedException("copy", "Workflow", old_workflow["name"])
 
     copied_workflow = deepcopy(old_workflow)
@@ -126,14 +123,34 @@ async def copy_workflow(curr_user_id: UUID, old_workflow, new_workflow: Workflow
     regenerate_workflow_ids(workflow_dict)
     copied_workflow = WorkflowModel(**workflow_dict)
 
-    if new_workflow.name:
-        copied_workflow.name = new_workflow.name
+    if new_name:
+        copied_workflow.name = new_name
     else:
         copied_workflow.name += " (Copy)"
 
-    copied_workflow.permissions = new_workflow.permissions
+    # TODO: UI element for new permissions for copied workflows
+    # copied_workflow.permissions = new_workflow.permissions
 
     return copied_workflow
+
+
+@router.post("/",
+             response_model=WorkflowModel,
+             response_description="The newly created Workflow.",
+             status_code=201)
+async def create_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
+                          request: Request, new_workflow: WorkflowModel):
+    """
+    Creates a new Workflow in WALKOFF and returns it.
+    """
+    workflow_col = walkoff_db.workflows
+    curr_user_id = await get_jwt_identity(request)
+
+    await set_permissions(new_workflow, curr_user_id, walkoff_db)
+    try:
+        return await mongo_helpers.create_item(workflow_col, WorkflowModel, new_workflow)
+    except:
+        raise UniquenessException("workflow", "create", new_workflow.name)
 
 
 @router.get("/",
@@ -203,19 +220,9 @@ async def update_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mong
     curr_user_id = await get_jwt_identity(request)
     old_workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, workflow_name_id)
 
-    new_permissions = updated_workflow.permissions
-    access_level = new_permissions.access_level
-
     to_update = await auth_check(old_workflow, curr_user_id, "update", walkoff_db=walkoff_db)
     if to_update:
-        if access_level == AccessLevel.CREATOR_ONLY:
-            updated_workflow.permissions = await creator_only_permissions(curr_user_id)
-        elif access_level == AccessLevel.EVERYONE:
-            updated_workflow.permissions = await default_permissions(curr_user_id, walkoff_db, "global_variables")
-        elif access_level == AccessLevel.ROLE_BASED:
-            await append_super_and_internal(updated_workflow.permissions)
-            updated_workflow.permissions.creator = curr_user_id
-
+        await set_permissions(updated_workflow, curr_user_id, walkoff_db)
         try:
             return await mongo_helpers.update_item(workflow_col, WorkflowModel, old_workflow.id_, updated_workflow)
         except:
