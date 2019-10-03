@@ -1,9 +1,9 @@
 import logging
 from uuid import uuid4, UUID
-from typing import List
+from typing import List, Any
 
 import semver
-from pydantic import BaseModel, ValidationError, validator
+from pydantic import BaseModel, ValidationError, validator, UrlStr, EmailStr
 
 # from api.server.db import Base, BaseSchema
 from api.server.db.action import ActionApiModel #ActionApiSchema,
@@ -13,18 +13,18 @@ logger = logging.getLogger(__name__)
 
 class AppApiContactModel(BaseModel):
     name: str = ""
-    url: str = ""
-    email: str = ""
+    url: UrlStr = None
+    email: EmailStr = None
 
 
 class AppApiLicenseModel(BaseModel):
     name: str = ""
-    url: str = ""
+    url: UrlStr = None
 
 
 class AppExternalDocModel(BaseModel):
     description: str = ""
-    url: str = ""
+    url: UrlStr = None
 
 
 class AppApiModel(BaseModel):
@@ -33,9 +33,9 @@ class AppApiModel(BaseModel):
     app_version: str = "1.0.0"
     walkoff_version: str = "1.0.0"
     description: str = ""
-    contact_info: AppApiContactModel = {}
-    license_info: AppApiLicenseModel = {}
-    external_docs: AppExternalDocModel = {}
+    contact_info: AppApiContactModel = None
+    license_info: AppApiLicenseModel = None
+    external_docs: AppExternalDocModel = None
     actions: List[ActionApiModel]
     _secondary_id = "name"
 

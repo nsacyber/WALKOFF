@@ -28,7 +28,7 @@ def test_create_api_empty(api: TestClient, auth_header: dict):
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app:1.0.0
+            name: test_app
             description: An invalid App API with missing actions
             """
         }
@@ -44,7 +44,7 @@ def test_create_api_minimum(api: TestClient, auth_header: dict):
             "create": """
             walkoff_version: 1.0.0
             app_version: 1.0.0
-            name: test_app:1.0.0
+            name: test_app
             description: A minimum valid App API
             actions:
               - name: test_action
@@ -52,133 +52,114 @@ def test_create_api_minimum(api: TestClient, auth_header: dict):
         }
     ]
     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load)
-#
-#
-# def test_create_api_invalid_semver(api: TestClient, auth_header: dict):
-#     """Assert that walkoff_version, app_version, name all have correct sematic versioning"""
-#
-#     inputs = [
-#         {
-#             "create": """
-#             walkoff_version: "1.0"
-#             app_version: 1.0.0
-#             name: test_app:1.0.0
-#             description: An invalid App API with bad semantic versioning in walkoff_version
-#             actions:
-#               - name: test_action
-#             """,
-#         },
-#         {
-#             "create": """
-#             walkoff_version: 1.0.0
-#             app_version: "1.0"
-#             name: test_app2:1.0.0
-#             description: An invalid App API with bad semantic versioning in app_version
-#             actions:
-#               - name: test_action
-#             """,
-#         },
-#         {
-#             "create": """
-#             walkoff_version: 1.0.0
-#             app_version: 1.0.0
-#             name: test_app3:1.0
-#             description: An invalid App API with bad semantic versioning in name
-#             actions:
-#               - name: test_action
-#             """,
-#         },
-#         {
-#             "create": """
-#             walkoff_version: 1.0.0
-#             app_version: 1.0.0
-#             name: test_app4:1.0.1
-#             description: An invalid App API with mismatched semantic versioning in name and app_version
-#             actions:
-#               - name: test_action
-#             """
-#         }
-#     ]
-#     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
-#
-#
-# def test_create_api_valid_contact(api: TestClient, auth_header: dict):
-#     """Assert that valid contact info is accepted"""
-#
-#     inputs = [
-#         {
-#             "create": """
-#             walkoff_version: 1.0.0
-#             app_version: 1.0.0
-#             name: test_app:1.0.0
-#             contact_info:
-#               name: name
-#               url: example.com
-#               email: example@example.com
-#             description: An invalid App API with non-object contact info
-#             actions:
-#               - name: test_action
-#             """,
-#         },
-#     ]
-#     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load)
-#
-#
-# def test_create_api_invalid_contact(api: TestClient, auth_header: dict):
-#     """Assert that various invalid contact info are rejected"""
-#
-#     inputs = [
-#         {
-#             "create": """
-#             walkoff_version: 1.0.0
-#             app_version: 1.0.0
-#             name: test_app:1.0.0
-#             contact_info: not an object
-#             description: An invalid App API with non-object contact info
-#             actions:
-#               - name: test_action
-#             """,
-#         },
-#         {
-#             "create": """
-#             walkoff_version: 1.0.0
-#             app_version: 1.0.0
-#             name: test_app2:1.0.0
-#             contact_info:
-#               name: good
-#               bad: not good
-#             description: An invalid App API with extra field in contact
-#             actions:
-#               - name: test_action
-#             """,
-#         },
-#         {
-#             "create": """
-#             walkoff_version: 1.0.0
-#             app_version: 1.0.0
-#             name: test_app3:1.0.0
-#             contact_info:
-#               name: name
-#               email: not a valid email
-#             description: An invalid App API with invalid email in contact
-#             actions:
-#               - name: test_action
-#             """,
-#         },
-#         # URL format from connexion/jsonschema does not seem to actually validate anything
-#         # """
-#         #     walkoff_version: 1.0.0
-#         #     app_version: 1.0.0
-#         #     name: test_app:1.0.0
-#         #     contact_info:
-#         #       name: name
-#         #       url: http://not a valid url
-#         #     description: An invalid App API with invalid URL in contact
-#         #     actions:
-#         #       - name: test_action
-#         # """
-#     ]
-#     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
+
+
+def test_create_api_invalid_semver(api: TestClient, auth_header: dict):
+    """Assert that walkoff_version, app_version, name all have correct sematic versioning"""
+
+    inputs = [
+        {
+            "create": """
+            walkoff_version: "1.0"
+            app_version: 1.0.0
+            name: test_app
+            description: An invalid App API with bad semantic versioning in walkoff_version
+            actions:
+              - name: test_action
+            """,
+        },
+        {
+            "create": """
+            walkoff_version: 1.0.0
+            app_version: "1.0"
+            name: test_app2
+            description: An invalid App API with bad semantic versioning in app_version
+            actions:
+              - name: test_action
+            """,
+        },
+    ]
+    assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
+
+
+def test_create_api_valid_contact(api: TestClient, auth_header: dict):
+    """Assert that valid contact info is accepted"""
+
+    inputs = [
+        {
+            "create": """
+            walkoff_version: 1.0.0
+            app_version: 1.0.0
+            name: test_app
+            contact_info:
+              name: name
+              url: http://example.com
+              email: example@example.com
+            description: A valid App API with contact info
+            actions:
+              - name: test_action
+            """,
+        },
+    ]
+    assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load)
+
+
+def test_create_api_invalid_contact(api: TestClient, auth_header: dict):
+    """Assert that various invalid contact info are rejected"""
+
+    inputs = [
+        {
+            "create": """
+            walkoff_version: 1.0.0
+            app_version: 1.0.0
+            name: test_app
+            contact_info: not an object
+            description: An invalid App API with non-object contact info
+            actions:
+              - name: test_action
+            """,
+        },
+        {
+            "create": """
+            walkoff_version: 1.0.0
+            app_version: 1.0.0
+            name: test_app2
+            contact_info:
+              name: good
+              bad: not good
+            description: An invalid App API with extra field in contact
+            actions:
+              - name: test_action
+            """,
+        },
+        {
+            "create": """
+            walkoff_version: 1.0.0
+            app_version: 1.0.0
+            name: test_app3
+            contact_info:
+              name: name
+              email: not a valid email
+            description: An invalid App API with invalid email in contact
+            actions:
+              - name: test_action
+            """,
+        },
+        {
+            "create": """
+            walkoff_version: 1.0.0
+            app_version: 1.0.0
+            name: test_app4
+            contact_info:
+              name: name
+              url: http://not a valid url
+            description: An invalid App API with invalid URL in contact
+            actions:
+              - name: test_action
+            """,
+        }
+    ]
+    assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load, valid=False)
 #
 #
 # def test_create_api_invalid_license(api: TestClient, auth_header: dict):

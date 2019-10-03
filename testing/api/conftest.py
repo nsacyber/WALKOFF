@@ -9,6 +9,8 @@ from common.redis_helpers import connect_to_redis_pool
 
 @pytest.fixture
 def api():
+    app.mongo.erase_db()
+    app.mongo.init_db()
     yield TestClient(app.app)
     app.mongo.erase_db()
     app.mongo.init_db()
