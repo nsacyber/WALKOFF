@@ -11,7 +11,7 @@ from common.message_types import NodeStatusMessage, message_dumps
 from common.workflow_types import workflow_loads, Action, ParameterVariant
 from common.async_logger import AsyncLogger, AsyncHandler
 from common.helpers import UUID_GLOB, fernet_encrypt, fernet_decrypt
-from common.redis_helpers import connect_to_redis_pool, xlen, xdel, deref_stream_message
+from common.redis_helpers import connect_to_aioredis_pool, xlen, xdel, deref_stream_message
 from common.config import config, static
 
 
@@ -161,7 +161,7 @@ class AppBase:
     @classmethod
     async def run(cls):
         """ Connect to Redis and HTTP session, await actions """
-        async with connect_to_redis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session:
+        async with connect_to_aioredis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session:
             # TODO: Migrate to the common log config
             logging.basicConfig(format="{asctime} - {name} - {levelname}:{message}", style='{')
             logger = logging.getLogger(f"{cls.__name__}")

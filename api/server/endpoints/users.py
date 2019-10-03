@@ -8,8 +8,9 @@ from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from api.server.db import get_mongo_c, get_mongo_d
-from api.server.db.user import DefaultUserUUID as DUsers, UserModel, EditUser, EditPersonalUser
-from api.server.db.role import DefaultRoleUUID as DRoles, RoleModel
+from api.server.db.user_init import DefaultUserUUID as DUsers, DefaultRoleUUID as DRoles
+from api.server.db.user import UserModel, EditUser, EditPersonalUser
+from api.server.db.role import RoleModel
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
                                        DoesNotExistException)
 from api.server.security import get_jwt_identity

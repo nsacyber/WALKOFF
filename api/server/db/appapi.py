@@ -36,20 +36,18 @@ class AppApiModel(BaseModel):
     contact_info: AppApiContactModel = {}
     license_info: AppApiLicenseModel = {}
     external_docs: AppExternalDocModel = {}
-    actions: List[ActionApiModel] = []
+    actions: List[ActionApiModel]
     _secondary_id = "name"
 
-    @classmethod
     @validator('app_version')
-    def app_version_is_semver(cls, app_version):
-        semver.parse(app_version)
-        return app_version
+    def app_version_is_semver(cls, value, values):
+        semver.parse(value)
+        return value
 
-    @classmethod
     @validator('walkoff_version')
-    def walkoff_version_is_semver(cls, walkoff_version):
-        semver.parse(walkoff_version)
-        return walkoff_version
+    def walkoff_version_is_semver(cls, value, values):
+        semver.parse(value)
+        return value
 
     # class Config:
     #     orm_mode = True

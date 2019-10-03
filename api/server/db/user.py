@@ -10,19 +10,8 @@ from pydantic import BaseModel, validator
 
 from api.server.db import mongo
 
-from common.helpers import preset_uuid
-
 
 logger = logging.getLogger(__name__)
-
-
-class DefaultUserUUID(Enum):
-    INTERNAL_USER = preset_uuid("internal_user")
-    SUPER_ADMIN = preset_uuid("sadmin_user")
-    ADMIN = preset_uuid("admin_user")
-
-
-DefaultUserUUIDS = [v.value for v in DefaultUserUUID.__members__.values()]
 
 
 class EditUser(BaseModel):

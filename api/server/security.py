@@ -68,7 +68,7 @@ async def create_access_token(settings_col: AsyncIOMotorCollection,
                  "fresh": fresh,
                  "type": "access",
                  "user_claims": user_claims}
-    encoded_jwt = jwt.encode(to_encode, await load_secret_key(), algorithm=FastApiConfig.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, await load_secret_key())
     return encoded_jwt
 
 
@@ -83,14 +83,14 @@ async def create_refresh_token(settings_col: AsyncIOMotorCollection,
                  "exp": expire,
                  "identity": str(user.id_),
                  "type": "refresh"}
-    encoded_jwt = jwt.encode(to_encode, await load_secret_key(), algorithm=FastApiConfig.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, await load_secret_key())
     return encoded_jwt
 
 
 async def decode_token(to_decode):
     try:
         decoded_jtw = jwt.decode(to_decode, await load_secret_key(),
-                                 algorithm=FastApiConfig.ALGORITHM)
+                                 algorithms=FastApiConfig.ALGORITHM)
     except jwt.exceptions.DecodeError:
         return None
     except jwt.exceptions.ExpiredSignatureError:

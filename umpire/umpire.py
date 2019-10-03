@@ -13,7 +13,7 @@ from aiodocker.exceptions import DockerError
 
 from common.config import config, static
 from common.helpers import send_status_update, UUID_GLOB
-from common.redis_helpers import connect_to_redis_pool, xlen, xdel
+from common.redis_helpers import connect_to_aioredis_pool, xlen, xdel
 from common.message_types import WorkflowStatusMessage
 from common.workflow_types import workflow_loads
 from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, get_containers,
@@ -68,7 +68,7 @@ class Umpire:
 
     @staticmethod
     async def run(autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps):
-        async with connect_to_redis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session, \
+        async with connect_to_aioredis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session, \
                 connect_to_aiodocker() as docker_client:
             ump = await Umpire.init(docker_client=docker_client, redis=redis, session=session,
                                     autoscale_worker=autoscale_worker, autoscale_app=autoscale_app,

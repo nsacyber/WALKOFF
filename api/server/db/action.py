@@ -35,7 +35,6 @@ class ActionModel(BaseModel):
     _walkoff_type: str = "action"
     parameters: List[ParameterModel] = []
 
-    # @classmethod
     # @validator('parameters')
     # def parameters_must_match_api(cls, parameters, action, **kwargs):
     #     for param in parameters:

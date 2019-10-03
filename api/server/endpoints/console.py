@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from starlette.websockets import WebSocket
 
 from common.config import config
-from common.redis_helpers import connect_to_redis_pool
+from common.redis_helpers import connect_to_aioredis_pool
 
 # console_stream = Blueprint('console_stream', __name__)
 console_stream_subs = set()
@@ -42,7 +42,7 @@ async def create_console_message(body: ConsoleBody, wf_exec_id: UUID = None):
     else:
         # return body.message
         redis_stream = CONSOLE_STREAM_GLOB + "." + str(wf_exec_id)
-    async with connect_to_redis_pool(config.REDIS_URI) as conn:
+    async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
         key = f"{redis_stream}"
         value = body.json()
         await conn.lpush(key, value)
@@ -64,7 +64,7 @@ async def read_console_message(websocket: WebSocket, exec_id: UUID = None):
     #         return invalid_id_problem('console log', 'read', execution_id)
 
     async def console_log_generator():
-        async with connect_to_redis_pool(config.REDIS_URI) as conn:
+        async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
             try:
                 while True:
                     await asyncio.sleep(1)

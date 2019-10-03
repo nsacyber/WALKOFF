@@ -189,7 +189,6 @@ class WorkflowModel(BaseModel):
             ]
         }
 
-    # @classmethod
     # @validator('actions')
     # def action_result_parameter_check(cls, actions, workflow, **kwargs):
     #     nodes = {node for node in workflow.actions + workflow.conditions
@@ -203,7 +202,6 @@ class WorkflowModel(BaseModel):
     #                 ret += action
     #     return ret
     #
-    # @classmethod
     # @validator('actions')
     # def parallelized_actions_parameters_check(cls, actions, workflow, **kwargs):
     #     app_api_col = mongo.client.walkoff_db.apps
@@ -228,7 +226,6 @@ class WorkflowModel(BaseModel):
     #         elif count > 1:
     #             action.errors.append("Too many parallelized parameters")
     #
-    # @classmethod
     # @validator('actions')
     # def parameter_checking(cls, actions, workflow, **kwargs):
     #     app_api_col = mongo.client.walkoff_db.apps
