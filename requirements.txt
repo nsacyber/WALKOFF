@@ -2,6 +2,7 @@
 aiodocker
 aiohttp
 aioredis
+redis
 #cchardet
 docker
 docker-compose
