@@ -40,7 +40,7 @@ async def read_all_globals(request: Request, to_decrypt: str = False,
     curr_user_id = UUID(await get_jwt_identity(request))
 
     key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
-    key = base64.b64encode(key)
+    # key = base64.b64encode(key)
     query = await mongo_helpers.get_all_items(global_col, GlobalVariable)
 
     ret = []
@@ -78,7 +78,7 @@ async def read_global(request: Request, global_var: UUID, to_decrypt: str = "fal
             return global_variable.value
         else:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
-            key = base64.b64encode(key)
+            # key = base64.b64encode(key)
             return fernet_decrypt(key, global_variable.value)
     else:
         raise UnauthorizedException("read data for", "Global Variable", global_variable.name)
@@ -127,10 +127,9 @@ async def create_global(request: Request, new_global: GlobalVariable,
     elif access_level == AccessLevel.ROLE_BASED:
         await append_super_and_internal(new_global.permissions)
         new_global.permissions.creator = curr_user_id
-
     try:
         key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
-        key = base64.b64encode(key)
+        # key = base64.b64encode(key)
         new_global.value = fernet_encrypt(key, new_global.value)
         return await mongo_helpers.create_item(global_col, GlobalVariable, new_global)
     except:
@@ -167,7 +166,7 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
 
         try:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
-            key = base64.b64encode(key)
+            # key = base64.b64encode(key)
             updated_global.value = fernet_encrypt(key, updated_global.value)
             return await mongo_helpers.update_item(global_col, GlobalVariable, global_id, updated_global)
         except:

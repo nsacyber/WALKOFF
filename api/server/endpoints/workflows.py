@@ -174,10 +174,11 @@ async def read_workflow(request: Request, workflow_name_id, mode: str = None,
     workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, workflow_name_id)
 
     to_read = await auth_check(workflow, curr_user_id, "read", walkoff_db=walkoff_db)
-
     if to_read:
         if mode == "export":
-            workflow_str = json.dumps(dict(workflow), sort_keys=True, indent=4, separators=(',', ': ')).encode('utf-8')
+            # workflow_str = json.dumps(dict(workflow), sort_keys=True, indent=4, separators=(',', ': ')).encode('utf-8')
+            workflow_str = workflow.json().encode('utf-8')
+
             workflow_file = BytesIO()
             workflow_file.write(workflow_str)
             workflow_file.seek(0)
