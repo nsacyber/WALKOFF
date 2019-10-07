@@ -3,6 +3,7 @@ pyyaml >= 3.0
 passlib >= 1.7.0
 semver
 jsonschema == 2.6.0
+redis
 aioredis
 requests
 jsonpatch

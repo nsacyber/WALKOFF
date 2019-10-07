@@ -8,8 +8,9 @@ from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from api.server.db import get_mongo_c, get_mongo_d
-from api.server.db.user import DefaultUserUUID as DUsers, UserModel, EditUser, EditPersonalUser
-from api.server.db.role import DefaultRoleUUID as DRoles, RoleModel
+from api.server.db.user_init import DefaultUserUUID as DUsers, DefaultRoleUUID as DRoles
+from api.server.db.user import UserModel, EditUser, EditPersonalUser
+from api.server.db.role import RoleModel
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
                                        DoesNotExistException)
 from api.server.security import get_jwt_identity
@@ -68,7 +69,8 @@ async def list_permissions(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mon
     role_col = walkoff_db.roles
     user_col = walkoff_db.users
 
-    current_user = await mongo_helpers.get_item(user_col, UserModel, await get_jwt_identity(request))
+    current_id = await get_jwt_identity(request)
+    current_user = await mongo_helpers.get_item(user_col, UserModel, current_id, raise_exc=False)
 
     roles = [await mongo_helpers.get_item(role_col, RoleModel, role_id) for role_id in current_user.roles]
     return roles
@@ -141,23 +143,35 @@ async def delete_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c)
         return await mongo_helpers.delete_item(user_col, UserModel, user_id)
 
 
-@router.get("/personal_data/")
-async def read_personal_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+@router.get("/personal_data/{username}")
+async def read_personal_user(*, username: str, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                              request: Request):
-    return await mongo_helpers.get_item(user_col, UserModel, await get_jwt_identity(request),
-                                        projection=ignore_password)
+    curr_id = await get_jwt_identity(request)
+    user_obj = await mongo_helpers.get_item(user_col, UserModel, username, projection=ignore_password)
+
+    if str(curr_id) == str(user_obj.id_):
+        return user_obj
+    else:
+        raise UnauthorizedException("view personal data for", "User", user_obj.username)
 
 
-@router.put("/personal_data/")
-async def update_personal_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
+@router.put("/personal_data/{username}")
+async def update_personal_user(*, username: str, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                                request: Request,
                                new_user: EditPersonalUser):
-    d = dict(new_user)
-    d.update({"id_": await get_jwt_identity(request),
-              "roles": [], "hashed": False})
+    user_col = walkoff_db.users
+    curr_id = await get_jwt_identity(request)
+    user_obj = await mongo_helpers.get_item(user_col, UserModel, username, projection=ignore_password)
 
-    return await update_user(walkoff_db=walkoff_db, user_id=await get_jwt_identity(request),
-                             new_user=EditUser(**d), request=request)
+    if str(curr_id) == str(user_obj.id):
+        d = dict(new_user)
+        d.update({"id_": await get_jwt_identity(request),
+                  "roles": [], "hashed": False})
+
+        return await update_user(walkoff_db=walkoff_db, user_id=curr_id,
+                                 new_user=EditUser(**d), request=request)
+    else:
+        raise UnauthorizedException("edit personal data for", "User", user_obj.username)
 
 #
 #

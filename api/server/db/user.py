@@ -1,43 +1,17 @@
 import logging
 from datetime import datetime
 from enum import Enum
-from typing import Union
-from uuid import uuid4, UUID
-
-from motor.motor_asyncio import AsyncIOMotorCollection
-from passlib.hash import pbkdf2_sha512
-
-from api.server.utils.helpers import utc_as_rfc_datetime
-# from api.server.db import TrackModificationsMixIn
-from api.server.db.role import RoleModel
 from typing import List
-from pydantic import BaseModel, Any, validator, Schema
-from api.server.db import mongo
-from fastapi import Depends
+from uuid import UUID
 
-from common.helpers import preset_uuid
+import pymongo
+from passlib.hash import pbkdf2_sha512
+from pydantic import BaseModel, validator
+
+from api.server.db import mongo
 
 
 logger = logging.getLogger(__name__)
-
-# user_roles_association = Table('user_roles_association',
-#                                   Column('role_id', Integer, ForeignKey('role.id')),
-#                                   Column('user_id', Integer, ForeignKey('user.id_')))
-
-# class AddUser(BaseModel):
-#     username: str
-#     password: str
-#     roles: List[RoleModel] = None
-#     active: bool = None
-
-
-class DefaultUserUUID(Enum):
-    INTERNAL_USER = preset_uuid("internal_user")
-    SUPER_ADMIN = preset_uuid("sadmin_user")
-    ADMIN = preset_uuid("admin_user")
-
-
-DefaultUserUUIDS = [v.value for v in DefaultUserUUID.__members__.values()]
 
 
 class EditUser(BaseModel):
@@ -54,13 +28,6 @@ class EditPersonalUser(BaseModel):
     new_username: str = ""
     old_password: str = ""
     new_password: str = ""
-
-
-# class DisplayUser(BaseModel):
-#     id_: int = None
-#     username: str = None
-#     active: str = None
-#     roles: List[int] = None
 
 
 class UserModel(BaseModel):
@@ -97,9 +64,9 @@ class UserModel(BaseModel):
 
     @validator('roles', whole=True)
     def verify_roles_exist(cls, roles):
-        roles_coll: AsyncIOMotorCollection = mongo.client.walkoff_db.roles
+        roles_col: pymongo.collection.Collection = mongo.reg_client.walkoff_db.roles
         for role in roles:
-            if not roles_coll.find_one({"id_": role}):
+            if not roles_col.find_one({"id_": role}):
                 raise ValueError(f"Role {role} does not exist.")
 
         return roles
@@ -127,7 +94,6 @@ class UserModel(BaseModel):
         """
 
         self.password = pbkdf2_sha512.hash(password)
-
 
     # async def set_roles(self, new_roles, role_col):
     #     """Sets the roles for a User.

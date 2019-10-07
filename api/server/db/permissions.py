@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from api.server.db.role import DefaultRoleUUID
+from api.server.db.user_init import DefaultRoleUUID
 from api.server.db.user import UserModel
 from common import mongo_helpers
 

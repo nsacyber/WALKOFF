@@ -42,34 +42,31 @@ class ParameterModel(BaseModel):
     variant: ParameterVariant
     _walkoff_type: str = "parameter"
 
-    @classmethod
     @validator('value')
-    def global_variable_check(cls, value, parameter, **kwargs):
-        global_col = mongo.client.walkoff_db.globals
-        if parameter.variant == ParameterVariant.GLOBAL:
-            global_check = global_col.find_one({"id_": parameter.id_})
+    def global_variable_check(cls, value, values):
+        global_col = mongo.reg_client.walkoff_db.globals
+        if value.get("variant") == ParameterVariant.GLOBAL:
+            global_check = global_col.find_one({"id_": value.get("id_")})
             if not global_check:
                 raise ValidationError
         else:
             return value
 
-    @classmethod
     @validator('value')
-    def workflow_variable_check(cls, value, parameter, **kwargs):
-        global_col = mongo.client.walkoff_db.globals
-        if parameter.variant == ParameterVariant.WORKFLOW_VARIABLE:
-            global_check = global_col.find_one({"id_": parameter.id_})
+    def workflow_variable_check(cls, value, values):
+        global_col = mongo.reg_client.walkoff_db.globals
+        if value.get("variant") == ParameterVariant.WORKFLOW_VARIABLE:
+            global_check = global_col.find_one({"id_": value.get("id_")})
             if not global_check:
                 raise ValidationError
         else:
             return value
 
-    @classmethod
     @validator('value')
-    def action_result_check(cls, value, parameter, **kwargs):
-        global_col = mongo.client.walkoff_db.globals
-        if parameter.variant == ParameterVariant.ACTION_RESULT:
-            global_check = global_col.find_one({"id_": parameter.id_})
+    def action_result_check(cls, value, values):
+        global_col = mongo.reg_client.walkoff_db.globals
+        if value.get("variant") == ParameterVariant.ACTION_RESULT:
+            global_check = global_col.find_one({"id_": value.get("id_")})
             if not global_check:
                 raise ValidationError
         else:

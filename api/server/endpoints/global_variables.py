@@ -17,7 +17,7 @@ from api.server.security import get_jwt_identity
 
 from api.server.db.permissions import auth_check, default_permissions, creator_only_permissions, AccessLevel, \
     append_super_and_internal
-from api.server.utils.problems import UniquenessException
+from api.server.utils.problems import UniquenessException, UnauthorizedException
 from common import mongo_helpers
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
@@ -37,12 +37,10 @@ async def read_all_globals(request: Request, to_decrypt: str = False,
     Returns a list of all Global Variables currently loaded in WALKOFF.
     """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = UUID(await get_jwt_identity(request))
+    curr_user_id = await get_jwt_identity(request)
 
-    key = b'walkoff123456walkoff123456walkof'
-    key = base64.b64encode(key)
-
-    #key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
+    key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
+    # key = base64.b64encode(key)
     query = await mongo_helpers.get_all_items(global_col, GlobalVariable)
 
     ret = []
@@ -69,7 +67,7 @@ async def read_global(request: Request, global_var: UUID, to_decrypt: str = "fal
     Returns the Global Variable for the specified id.
     """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = UUID(await get_jwt_identity(request))
+    curr_user_id = await get_jwt_identity(request)
 
     global_variable = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
     global_id = global_variable.id_
@@ -80,11 +78,10 @@ async def read_global(request: Request, global_var: UUID, to_decrypt: str = "fal
             return global_variable.value
         else:
             key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
-            key = b'walkoff123456walkoff123456walkof'
-            key = base64.b64encode(key)
+            # key = base64.b64encode(key)
             return fernet_decrypt(key, global_variable.value)
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("read data for", "Global Variable", global_variable.name)
 
 
 @router.delete("/{global_var}",
@@ -97,7 +94,7 @@ async def delete_global(request: Request, global_var: UUID,
     Deletes a specific Global Variable (fetched by id).
     """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = UUID(await get_jwt_identity(request))
+    curr_user_id = await get_jwt_identity(request)
 
     global_variable = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
     global_id = global_variable.id_
@@ -106,7 +103,7 @@ async def delete_global(request: Request, global_var: UUID,
     if to_delete:
         return await mongo_helpers.delete_item(global_col, GlobalVariable, global_id)
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("delete data for", "Global Variable", global_variable.name)
 
 
 @router.post("/",
@@ -119,7 +116,7 @@ async def create_global(request: Request, new_global: GlobalVariable,
     Creates a new Global Variable in WALKOFF and returns it.
     """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = UUID(await get_jwt_identity(request))
+    curr_user_id = await get_jwt_identity(request)
 
     permissions = new_global.permissions
     access_level = permissions.access_level
@@ -130,11 +127,9 @@ async def create_global(request: Request, new_global: GlobalVariable,
     elif access_level == AccessLevel.ROLE_BASED:
         await append_super_and_internal(new_global.permissions)
         new_global.permissions.creator = curr_user_id
-
     try:
-        # key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
-        key = b'walkoff123456walkoff123456walkof'
-        key = base64.b64encode(key)
+        key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+        # key = base64.b64encode(key)
         new_global.value = fernet_encrypt(key, new_global.value)
         return await mongo_helpers.create_item(global_col, GlobalVariable, new_global)
     except:
@@ -151,7 +146,7 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
     Updates a specific Global Variable (fetched by id) and returns it.
     """
     walkoff_db = get_mongo_d(request)
-    curr_user_id = UUID(await get_jwt_identity(request))
+    curr_user_id = await get_jwt_identity(request)
 
     old_global = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
     global_id = old_global.id_
@@ -170,15 +165,14 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
             updated_global.permissions.creator = curr_user_id
 
         try:
-           # key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
-            key = b'walkoff123456walkoff123456walkof'
-            key = base64.b64encode(key)
+            key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+            # key = base64.b64encode(key)
             updated_global.value = fernet_encrypt(key, updated_global.value)
             return await mongo_helpers.update_item(global_col, GlobalVariable, global_id, updated_global)
         except:
             raise UniquenessException("global_variable", "update", updated_global.name)
     else:
-        raise HTTPException(status_code=403, detail="Forbidden")
+        raise UnauthorizedException("update data for", "Global Variable", old_global.name)
 
 # Templates
 #

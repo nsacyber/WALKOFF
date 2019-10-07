@@ -125,27 +125,11 @@ export class PlaybookService {
 	 * Imports a playbook from a supplied file.
 	 * @param fileToImport File to be imported
 	 */
-	importPlaybook(fileToImport: File): Observable<Playbook> {
-		const formData: FormData = new FormData();
-		formData.append('file', fileToImport, fileToImport.name);
-
-		const headers = { 'Accept': 'application/json' }
-
-		return this.http.post('api/playbooks', formData, { headers })
-			.map(res => plainToClass(Playbook, res))
-			.catch(error => Observable.throw(error));
-	}
-
-	/**
-	 * Imports a playbook from a supplied file.
-	 * @param fileToImport File to be imported
-	 */
 	async importWorkflow(fileToImport: File): Promise<Workflow> {
-		const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
-		const body = JSON.parse(await this.utils.readUploadedFileAsText(fileToImport));
-		body.name = await this.nextWorkflowName(body.name);
+		const body: FormData = new FormData();
+		body.append('file', fileToImport, fileToImport.name);
 
-		return this.http.post('api/workflows/', body, { headers })
+		return this.http.post('api/workflows/upload', body)
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(Workflow, data))
@@ -177,7 +161,7 @@ export class PlaybookService {
 	duplicateWorkflow(
 		sourceWorkflowId: string, newName: string,
 	): Promise<Workflow> {
-		return this.http.post(`api/workflows/?source=${sourceWorkflowId}`,
+		return this.http.post(`api/workflows/copy?source=${sourceWorkflowId}`,
 			{ name: newName })
 			.toPromise()
 			.then((data) => this.emitChange(data))

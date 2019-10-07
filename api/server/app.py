@@ -8,11 +8,10 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
 import pymongo
 
-from api.server.endpoints import (appapi, dashboards, workflowqueue, workflows, users, console, results, umpire, auth, roles,
-                                  global_variables, scheduler)
-from api.server.db import MongoManager, get_mongo_c
+from api.server.endpoints import (appapi, auth, console, dashboards, global_variables, results, roles, scheduler,
+                                  settings, umpire, users, workflowqueue, workflows)
+from api.server.db import mongo, get_mongo_c
 from api.server.scheduler import Scheduler, get_scheduler
-from api.server.db.user_init import default_roles, default_users
 from api.server.utils.problems import ProblemException
 from api.server.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
     get_roles_by_resource_permission
@@ -23,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _walkoff = FastAPI(openapi_prefix="/walkoff/api")
-_mongo_manager = MongoManager()
 _scheduler = Scheduler()
 
 
@@ -31,26 +29,26 @@ _app.mount("/walkoff/api", _walkoff)
 _app.mount("/walkoff/client", StaticFiles(directory=static.CLIENT_PATH), name="static")
 
 
-@_app.on_event("startup")
-async def initialize_mongodb():
-    await _mongo_manager.init_db()
-
-
-@_app.on_event("startup")
-async def initialize_users():
-    walkoff_db = _mongo_manager.client.walkoff_db
-    roles_col = walkoff_db.roles
-    users_col = walkoff_db.users
-
-    for role_name, role in default_roles.items():
-        role_d = await roles_col.find_one({"id_": role.id_})
-        if not role_d:
-            await roles_col.insert_one(dict(role))
-
-    for user_name, user in default_users.items():
-        user_d = await users_col.find_one({"id_": user.id_})
-        if not user_d:
-            await users_col.insert_one(dict(user))
+# @_app.on_event("startup")
+# async def initialize_mongodb():
+#     await mongo.init_db()
+#
+#
+# @_app.on_event("startup")
+# async def initialize_users():
+#     walkoff_db = mongo.async_client.walkoff_db
+#     roles_col = walkoff_db.roles
+#     users_col = walkoff_db.users
+#
+#     for role_name, role in default_roles.items():
+#         role_d = await roles_col.find_one({"id_": role.id_})
+#         if not role_d:
+#             await roles_col.insert_one(dict(role))
+#
+#     for user_name, user in default_users.items():
+#         user_d = await users_col.find_one({"id_": user.id_})
+#         if not user_d:
+#             await users_col.insert_one(dict(user))
 
 
 @_app.on_event("startup")
@@ -62,8 +60,8 @@ async def start_banner():
 @_walkoff.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     try:
-        request.state.mongo_c = _mongo_manager.collection_from_url(request.url.path)
-        request.state.mongo_d = _mongo_manager.client.walkoff_db
+        request.state.mongo_c = mongo.collection_from_url(request.url.path)
+        request.state.mongo_d = mongo.async_client.walkoff_db
         request.state.scheduler = _scheduler
         response = await call_next(request)
     except pymongo.errors.InvalidName:
@@ -76,15 +74,20 @@ async def db_session_middleware(request: Request, call_next):
 
 @_walkoff.middleware("http")
 async def permissions_accepted_for_resource_middleware(request: Request, call_next):
-    walkoff_db = _mongo_manager.client.walkoff_db
+    walkoff_db = mongo.async_client.walkoff_db
     request_path = request.url.path.split("/")
 
     if len(request_path) >= 4:
         resource_name = request_path[3]
+        if len(request_path) == 6:
+            if request_path[4] == "personal_data":
+                response = await call_next(request)
+                return response
         request_method = request.method
         accepted_roles = set()
         resource_permission = ""
-        move_on = ["globals", "workflows", "console", "auth", "workflowqueue", "appapi", "streams", "docs", "redoc", "openapi.json"]
+        move_on = ["personal_user", "globals", "workflows", "console", "auth", "workflowqueue", "appapi",
+                   "streams", "docs", "redoc", "openapi.json", ""]
         if resource_name not in move_on:
             if request_method == "POST":
                 resource_permission = "create"
@@ -113,7 +116,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
 
 @_walkoff.middleware("http")
 async def permissions_accepted_for_roles_resource_middleware(request: Request, call_next):
-    walkoff_db = _mongo_manager.client.walkoff_db
+    walkoff_db = mongo.async_client.walkoff_db
     request_path = request.url.path.split("/")
 
     if len(request_path) >= 4:
@@ -147,7 +150,7 @@ async def permissions_accepted_for_roles_resource_middleware(request: Request, c
 
 @_walkoff.middleware("http")
 async def jwt_required_middleware(request: Request, call_next):
-    walkoff_db = _mongo_manager.client.walkoff_db
+    walkoff_db = mongo.async_client.walkoff_db
 
     request_path = request.url.path.split("/")
     if len(request_path) >= 4:
@@ -232,6 +235,11 @@ _walkoff.include_router(scheduler.router,
                         tags=["scheduler"],
                         dependencies=[Depends(get_mongo_c)])
 
+_walkoff.include_router(settings.router,
+                        prefix="/settings",
+                        tags=["settings"],
+                        dependencies=[Depends(get_mongo_c)])
+
 _walkoff.include_router(workflowqueue.router,
                         prefix="/workflowqueue",
                         tags=["workflowqueue"],
@@ -269,12 +277,12 @@ def custom_openapi():
         openapi_schema = get_openapi(
             title="WALKOFF",
             version="1.0.0-rc.2",
-            description="A flexible, easy to use, automation framework allowing users to integrate their "
+            description="A flexible, easy-to-use, automation framework allowing users to integrate their "
                         "capabilities and devices to cut through the repetitive, tedious tasks slowing them down.",
             routes=_walkoff.routes
         )
         openapi_schema["info"]["x-logo"] = {
-            "url": "/walkoff/client/dist/walkoff/assets/img/walkoffLogo.png"
+            "url": "/walkoff/api/client/dist/walkoff/assets/img/walkoffLogo.png"
         }
         openapi_schema["tags"] = [
             {"name": "apps", "description": "App API Operations"}

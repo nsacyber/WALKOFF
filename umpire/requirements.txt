@@ -7,6 +7,7 @@ aiohttp
 async_timeout
 fastapi
 six
+redis
 uvicorn
 tenacity
 pydantic

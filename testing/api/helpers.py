@@ -23,18 +23,20 @@ def assert_crud_resource(api: TestClient, auth_header: dict, path: str, inputs: 
     for test_resource in inputs:
         resource_to_create = loader_func(test_resource["create"])
         p = api.post(f"{path}", headers=auth_header, data=json.dumps(resource_to_create))
+        p_response = p.json()
         if valid:
             assert p.status_code == HTTPStatus.CREATED
-            assert_json_subset(resource_to_create, p.json())
+            assert_json_subset(resource_to_create, p_response)
         else:
-            assert p.status_code == HTTPStatus.BAD_REQUEST
+            assert p.status_code in (HTTPStatus.BAD_REQUEST, HTTPStatus.UNPROCESSABLE_ENTITY)
             # ToDo: assert that the response is a problem - move problems to common
 
-        resource_id = p.json().get("id_")
-        g = api.get(f"{path}/{resource_id}", headers=auth_header)
+        resource_id = p_response.get("id_")
+        g = api.get(f"{path}{resource_id}", headers=auth_header)
+        g_response = g.json()
         if valid:
             assert g.status_code == HTTPStatus.OK
-            assert_json_subset(resource_to_create, g.json())
+            assert_json_subset(resource_to_create, g_response)
         else:
             assert g.status_code == HTTPStatus.NOT_FOUND
             # ToDo: assert that the response is a problem - move problems to common
@@ -43,14 +45,16 @@ def assert_crud_resource(api: TestClient, auth_header: dict, path: str, inputs: 
         if update:
             resource_to_update = loader_func(update)
             if update["type"] == "put":
-                u = api.put(f"{path}/{resource_id}", headers=auth_header, data=json.dumps(resource_to_update))
-                assert_json_subset(resource_to_update, u.json())
+                u = api.put(f"{path}{resource_id}", headers=auth_header, data=json.dumps(resource_to_update))
+                u_response = u.json()
+                assert_json_subset(resource_to_update, u_response)
             elif update["type"] == "patch":
-                u = api.patch(f"{path}/{resource_id}", headers=auth_header, data=json.dumps(resource_to_update))
+                u = api.patch(f"{path}{resource_id}", headers=auth_header, data=json.dumps(resource_to_update))
+                u_response = u.json()
                 patch = jsonpatch.JsonPatch.from_string(resource_to_update)
                 baseline = patch.apply(resource_to_create)
-                assert_json_subset(baseline, u.json())
+                assert_json_subset(baseline, u_response)
 
         if delete:
-            d = api.delete(f"{path}/{resource_id}", headers=auth_header)
-            assert d.status_code == HTTPStatus.NO_CONTENT
+            d = api.delete(f"{path}{resource_id}", headers=auth_header)
+            assert d.status_code == HTTPStatus.OK
