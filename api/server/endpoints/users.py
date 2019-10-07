@@ -8,7 +8,8 @@ from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from api.server.db import get_mongo_c, get_mongo_d
-from api.server.db.user_init import DefaultUserUUID as DUsers, DefaultRoleUUID as DRoles, DefaultUserUUID
+from api.server.db.user_init import DefaultUserUUID as DUsers, DefaultRoleUUID as DRoles, DefaultUserUUID, \
+    DefaultRoleUUID
 from api.server.db.user import UserModel, EditUser, EditPersonalUser
 from api.server.db.role import RoleModel
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
@@ -25,7 +26,7 @@ hidden_users = [
 ]
 
 
-@router.get("/",
+@router.get("/", status_code=200,
             response_model=List[UserModel], response_description="List of all users")
 async def read_all_users(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                          page: int = 1,
@@ -39,7 +40,7 @@ async def read_all_users(*, user_col: AsyncIOMotorCollection = Depends(get_mongo
                                              page=page, num_per_page=num_per_page)
 
 
-@router.get("/{user_id}",
+@router.get("/{user_id}", status_code=200,
             response_model=UserModel, response_description="The requested User.")
 async def read_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                     user_id: Union[UUID, str]):
@@ -61,10 +62,14 @@ async def create_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c)
     """
     Creates a new User and returns it.
     """
-    return await mongo_helpers.create_item(user_col, UserModel, new_user, projection=ignore_password)
+    if DefaultRoleUUID.INTERNAL_USER.value in new_user.roles or \
+            DefaultRoleUUID.SUPER_ADMIN.value in new_user.roles:
+        raise UnauthorizedException("create a user with the roles", "User", "internal_user or super_user")
+    else:
+        return await mongo_helpers.create_item(user_col, UserModel, new_user, projection=ignore_password)
 
 
-@router.get("/permissions/",
+@router.get("/permissions/", status_code=200,
             response_model=List[RoleModel], response_description="List of roles for current user.")
 async def list_permissions(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                            with_users: bool = False,
@@ -78,7 +83,7 @@ async def list_permissions(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mon
     roles = [await mongo_helpers.get_item(role_col, RoleModel, role_id) for role_id in current_user.roles]
     return roles
 
-@router.put("/{user_id}",
+@router.put("/{user_id}", status_code=200,
             response_model=UserModel, response_description="The newly updated User.")
 async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                       user_id: Union[UUID, str],
@@ -90,25 +95,31 @@ async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)
     user_col = walkoff_db.users
     role_col = walkoff_db.roles
 
+    if user_id == DefaultUserUUID.INTERNAL_USER or user_id == "internal_user":
+        raise UnauthorizedException("update", "User", "internal_user")
+
     user: UserModel = await mongo_helpers.get_item(user_col, UserModel, user_id, raise_exc=False)
     if not user:
         raise DoesNotExistException("update", "User", user_id)
+
     current_user: UserModel = await mongo_helpers.get_item(user_col, UserModel, await get_jwt_identity(request))
     user_string = f"{user.username} ({user.id_})"
 
-    if user.id_ == DUsers.INTERNAL_USER.value or \
-            user.id_ == DUsers.SUPER_ADMIN and DRoles.SUPER_ADMIN not in current_user.roles:
-        raise UnauthorizedException("update", "User", f"{user.username} ({user.id_})")
-
-    if user.id_ == current_user.id_ \
-            or DRoles.SUPER_ADMIN in current_user.roles \
-            or DRoles.ADMIN in current_user.roles:
-        if DRoles.SUPER_ADMIN not in current_user.roles and DRoles.ADMIN not in current_user.roles:
-            if new_user.roles and set(user.roles) != set(new_user.roles):
-                raise UnauthorizedException("edit roles for", "User", user_string)
-            elif user.active != new_user.active:
-                raise UnauthorizedException("enable/disable", "User", user_string)
+    if await user.verify_password(new_user.old_password):
+        if user.id_ == DefaultUserUUID.SUPER_ADMIN.value \
+                or DefaultRoleUUID.SUPER_ADMIN.value in user.roles:
+            if DRoles.SUPER_ADMIN.value not in current_user.roles:
+                raise UnauthorizedException("edit values for", "User", "super_admin")
         else:
+            # if user.id_ == current_user.id_ \
+            #         or DRoles.SUPER_ADMIN.value in current_user.roles \
+            #         or DRoles.ADMIN.value in current_user.roles:
+            #     if DRoles.SUPER_ADMIN.value not in current_user.roles and DRoles.ADMIN.value not in current_user.roles:
+            #         if new_user.roles and set(user.roles) != set(new_user.roles):
+            #             raise UnauthorizedException("edit roles for", "User", user_string)
+            #         elif user.active != new_user.active:
+            #             raise UnauthorizedException("enable/disable", "User", user_string)
+            #     else:
             if new_user.roles:
                 role_ids = [role.id_ for role in await mongo_helpers.get_all_items(role_col, RoleModel)]
                 if set(new_user.roles) <= set(role_ids):
@@ -127,20 +138,26 @@ async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)
             else:
                 user.username = new_user.new_username
 
-        if new_user.new_password and await user.verify_password(new_user.old_password):
+        if new_user.new_password:
             await user.hash_and_set_password(new_user.new_password)
 
-    return await mongo_helpers.update_item(user_col, UserModel, user_id, user)
+        return await mongo_helpers.update_item(user_col, UserModel, user_id, user)
+    else:
+        raise UnauthorizedException("update the data", "User", f"{new_user.username}")
 
 
-@router.delete("/{user_id}")
+@router.delete("/{user_id}",  status_code=204,
+               response_model=bool,  response_description="Whether or not the user was deleted.")
 async def delete_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                       user_id: Union[UUID, str],
                       request: Request):
     user = await mongo_helpers.get_item(user_col, UserModel, user_id, projection=ignore_password, raise_exc=False)
     user_string = f"{user.username} ({user.id_})"
 
-    if user.id_ in (DUsers.INTERNAL_USER, DUsers.SUPER_ADMIN) or user.id_ == await get_jwt_identity(request):
+    if user.id_ in (DefaultUserUUID.INTERNAL_USER.value, DefaultUserUUID.SUPER_ADMIN.value) \
+            or user.id_ == await get_jwt_identity(request) \
+            or DefaultRoleUUID.INTERNAL_USER.value in user.roles \
+            or DefaultRoleUUID.SUPER_ADMIN.value in user.roles:
         raise UnauthorizedException("delete", "User", user_string)
     else:
         return await mongo_helpers.delete_item(user_col, UserModel, user_id)

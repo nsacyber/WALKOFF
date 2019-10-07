@@ -9,6 +9,8 @@ from starlette.testclient import TestClient
 
 
 def assert_json_subset(subset, superset):
+    subset.pop("password", None)
+    superset.pop("password", None)
     patches = jsonpatch.JsonPatch.from_diff(subset, superset)
     for patch in list(patches):
         assert patch['op'] == 'add'
@@ -28,7 +30,7 @@ def assert_crud_resource(api: TestClient, auth_header: dict, path: str, inputs: 
             assert p.status_code == HTTPStatus.CREATED
             assert_json_subset(resource_to_create, p_response)
         else:
-            assert p.status_code in (HTTPStatus.BAD_REQUEST, HTTPStatus.UNPROCESSABLE_ENTITY)
+            assert p.status_code in (HTTPStatus.BAD_REQUEST, HTTPStatus.UNPROCESSABLE_ENTITY, HTTPStatus.FORBIDDEN, HTTPStatus.NOT_FOUND)
             # ToDo: assert that the response is a problem - move problems to common
 
         resource_id = p_response.get("id_")

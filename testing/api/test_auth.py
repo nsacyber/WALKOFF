@@ -78,6 +78,26 @@ def test_invalid_admin_refresh(api: TestClient):
     assert p.status_code == 400
 
 
+def test_super_admin_refresh(api: TestClient):
+    tokens = test_super_admin_login(api)
+    refresh_token = tokens["refresh_token"]
+    headers = {"Authorization":  "Bearer " + refresh_token}
+
+    p = api.post(f"{base_auth_url + 'refresh'}", headers=headers)
+    assert p.status_code == 200
+    p_response = p.json()
+    assert p_response["access_token"]
+
+
+def test_invalid_super_admin_refresh(api: TestClient):
+    tokens = test_super_admin_login(api)
+    invalid_token = tokens["access_token"]
+    headers = {"Authorization":  "Bearer " + invalid_token}
+
+    p = api.post(f"{base_auth_url + 'refresh'}", headers=headers)
+    assert p.status_code == 400
+
+
 def test_admin_logout(api: TestClient):
     tokens = test_admin_login(api)
     headers = {"Authorization":  "Bearer " + tokens["access_token"]}
@@ -85,5 +105,32 @@ def test_admin_logout(api: TestClient):
 
     p = api.post(f"{base_auth_url + 'logout'}", headers=headers, data=json.dumps(data))
     assert p.status_code == 204
+
+
+def test_invalid_admin_logout(api: TestClient):
+    tokens = test_admin_login(api)
+    headers = {"Authorization":  "Bearer " + tokens["access_token"]}
+    data = {"non_valid": tokens["refresh_token"]}
+
+    p = api.post(f"{base_auth_url + 'logout'}", headers=headers, data=json.dumps(data))
+    assert p.status_code == 422
+
+
+def test_super_admin_logout(api: TestClient):
+    tokens = test_super_admin_login(api)
+    headers = {"Authorization": "Bearer " + tokens["access_token"]}
+    data = {"refresh_token": tokens["refresh_token"]}
+
+    p = api.post(f"{base_auth_url + 'logout'}", headers=headers, data=json.dumps(data))
+    assert p.status_code == 204
+
+
+def test_invalid_super_admin_logout(api: TestClient):
+    tokens = test_super_admin_login(api)
+    headers = {"Authorization": "Bearer " + tokens["access_token"]}
+    data = {"non_valid": tokens["refresh_token"]}
+
+    p = api.post(f"{base_auth_url + 'logout'}", headers=headers, data=json.dumps(data))
+    assert p.status_code == 422
 
 

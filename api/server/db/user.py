@@ -15,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 class EditUser(BaseModel):
-    id_: int
     username: str = ""
     new_username: str = ""
     old_password: str = ""
