@@ -41,5 +41,5 @@ async def push_to_minio():
             file_stat = os.stat(path_to_file)
             minio_client.put_object("apps-bucket", path_to_file, file_data, file_stat.st_size)
 
-
+    logger.info("Umpire_Api Ready")
 app = _app
