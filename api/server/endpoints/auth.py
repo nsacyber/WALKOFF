@@ -114,7 +114,7 @@ async def logout(json_in: TokenModel, request: Request, walkoff_db: AsyncIOMotor
 
     refresh_token_identity = decoded_refresh_token[FastApiConfig.JWT_IDENTITY_CLAIM]
     user_id = await get_jwt_identity(request)
-    if user_id == refresh_token_identity:
+    if str(user_id) == str(refresh_token_identity):
         user = await mongo_helpers.get_item(user_col, UserModel, user_id, raise_exc=False)
         if user is not None:
             await user.logout()

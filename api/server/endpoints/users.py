@@ -8,7 +8,7 @@ from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from api.server.db import get_mongo_c, get_mongo_d
-from api.server.db.user_init import DefaultUserUUID as DUsers, DefaultRoleUUID as DRoles
+from api.server.db.user_init import DefaultUserUUID as DUsers, DefaultRoleUUID as DRoles, DefaultUserUUID
 from api.server.db.user import UserModel, EditUser, EditPersonalUser
 from api.server.db.role import RoleModel
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
@@ -46,9 +46,12 @@ async def read_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
     """
     Returns the User for the specified username.
     """
-    return await mongo_helpers.get_item(user_col, UserModel, user_id,
-                                        query={"id_": {"$nin": hidden_users}},
-                                        projection=ignore_password)
+    if user_id == "internal_user" or user_id == DefaultUserUUID.INTERNAL_USER.value:
+        raise UnauthorizedException("get data for", "User", "internal_user")
+    else:
+        return await mongo_helpers.get_item(user_col, UserModel, user_id,
+                                            query={"id_": {"$nin": hidden_users}},
+                                            projection=ignore_password)
 
 
 @router.post("/", status_code=HTTPStatus.CREATED,
