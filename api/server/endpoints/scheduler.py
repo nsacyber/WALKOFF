@@ -29,13 +29,17 @@ async def check_workflows_exist(workflow_col: AsyncIOMotorCollection, task: Sche
                                         errors={"error": f"{workflow_id} does not exist"})
 
 @router.get("/",
-            response_model=SchedulerStatusResp, response_description="Current scheduler status in WALKOFF.")
+            response_model=SchedulerStatusResp,
+            response_description="Current scheduler status in WALKOFF.",
+            status_code=200)
 async def get_scheduler_status(*, scheduler: Scheduler = Depends(get_scheduler)):
     return SchedulerStatusResp(status=scheduler.scheduler.state)
 
 
 @router.put("/",
-            response_model=SchedulerStatusResp, response_description="The updated scheduler status in WALKOFF.")
+            response_model=SchedulerStatusResp,
+            response_description="The updated scheduler status in WALKOFF.",
+            status_code=200)
 async def update_scheduler_status(*, scheduler: Scheduler = Depends(get_scheduler),
                                   new_state: NewStatusState):
     try:
@@ -55,7 +59,9 @@ async def update_scheduler_status(*, scheduler: Scheduler = Depends(get_schedule
 
 
 @router.get("/tasks/",
-            response_model=List[ScheduledTask], response_description="A list of all currently scheduled tasks.")
+            response_model=List[ScheduledTask],
+            response_description="A list of all currently scheduled tasks.",
+            status_code=200)
 async def read_all_scheduled_tasks(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                                    page: int = 1,
                                    num_per_page: int = 20):
@@ -105,12 +111,12 @@ async def read_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_
 async def control_scheduled_task(*, scheduler: Scheduler = Depends(get_scheduler),
                                  walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                                  task_id: Union[UUID, str],
-                                 new_status: SchedulerStatus):
+                                 new_status: NewStatusState):
     task_col = walkoff_db.tasks
 
     task: ScheduledTask = await mongo_helpers.get_item(task_col, ScheduledTask, task_id)
     if new_status == 'start':
-        scheduler.schedule_workflows(task_id, execute_workflow_helper, task.workflows, task.trigger_args.args)
+        scheduler.schedule_workflows(task_id, execute_workflow_helper, task.workflows, task.trigger_type)
     elif new_status == 'stop':
         scheduler.unschedule_workflows(task_id, task.workflows)
 
@@ -142,7 +148,10 @@ async def update_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(ge
     #     return scheduled_task_id.as_json(), HTTPStatus.OK
 
 
-@router.delete("/tasks/{task_id}")
+@router.delete("/tasks/{task_id}",
+               response_model=bool,
+               response_description="",
+               status_code=204)
 async def delete_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                                 task_id: Union[UUID, str]):
     task_col = walkoff_db.tasks
