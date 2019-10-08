@@ -21,8 +21,8 @@ def workflow_dump(obj, fp):
     return json.dump(obj, fp, cls=WorkflowJSONEncoder)
 
 
-def workflow_load(obj, fp):
-    return json.load(obj, fp, cls=WorkflowJSONDecoder)
+def workflow_load(obj):
+    return json.load(obj, cls=WorkflowJSONDecoder)
 
 
 def attrs_equal(self, other):

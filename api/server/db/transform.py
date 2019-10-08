@@ -12,7 +12,7 @@ class TransformModel(BaseModel):
     errors: List[str] = []
     is_valid: bool = True
     app_name: str
-    app_version: str
+    app_version: str = None
     name: str
     label: str
     position: dict = {"x": 0, "y": 0, "_walkoff_type": "position"}

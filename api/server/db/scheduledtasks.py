@@ -22,6 +22,13 @@ class SchedulerStatus(int, Enum):
     PAUSED = 2
 
 
+class NewStatusState(str, Enum):
+    START = "start"
+    STOP = "stop"
+    RESUME = "resume"
+    PAUSE = "pause"
+
+
 class DateTrigger(BaseModel):
     run_date: datetime
     timezone: str = None

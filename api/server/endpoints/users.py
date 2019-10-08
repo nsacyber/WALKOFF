@@ -111,15 +111,6 @@ async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)
             if DRoles.SUPER_ADMIN.value not in current_user.roles:
                 raise UnauthorizedException("edit values for", "User", "super_admin")
         else:
-            # if user.id_ == current_user.id_ \
-            #         or DRoles.SUPER_ADMIN.value in current_user.roles \
-            #         or DRoles.ADMIN.value in current_user.roles:
-            #     if DRoles.SUPER_ADMIN.value not in current_user.roles and DRoles.ADMIN.value not in current_user.roles:
-            #         if new_user.roles and set(user.roles) != set(new_user.roles):
-            #             raise UnauthorizedException("edit roles for", "User", user_string)
-            #         elif user.active != new_user.active:
-            #             raise UnauthorizedException("enable/disable", "User", user_string)
-            #     else:
             if new_user.roles:
                 role_ids = [role.id_ for role in await mongo_helpers.get_all_items(role_col, RoleModel)]
                 if set(new_user.roles) <= set(role_ids):

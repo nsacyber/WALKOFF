@@ -1,4 +1,5 @@
 import logging
+import time
 from uuid import UUID
 from http import HTTPStatus
 from typing import Union, List
@@ -12,7 +13,7 @@ from api.server.utils.problems import InvalidInputException
 from api.server.scheduler import Scheduler, get_scheduler, construct_trigger
 from api.server.db import get_mongo_c, get_mongo_d
 from api.server.db.workflow import WorkflowModel
-from api.server.db.scheduledtasks import ScheduledTask, SchedulerStatus, SchedulerStatusResp
+from api.server.db.scheduledtasks import ScheduledTask, SchedulerStatus, SchedulerStatusResp, NewStatusState
 from api.server.endpoints.workflowqueue import execute_workflow_helper
 from common import mongo_helpers
 
@@ -34,9 +35,9 @@ async def get_scheduler_status(*, scheduler: Scheduler = Depends(get_scheduler))
 
 
 @router.put("/",
-            response_model=SchedulerStatus, response_description="The updated scheduler status in WALKOFF.")
+            response_model=SchedulerStatusResp, response_description="The updated scheduler status in WALKOFF.")
 async def update_scheduler_status(*, scheduler: Scheduler = Depends(get_scheduler),
-                                  new_state: SchedulerStatus):
+                                  new_state: NewStatusState):
     try:
         if new_state == "start":
             scheduler.start()
@@ -53,7 +54,8 @@ async def update_scheduler_status(*, scheduler: Scheduler = Depends(get_schedule
     return SchedulerStatusResp(status=scheduler.scheduler.state)
 
 
-@router.get("/tasks/")
+@router.get("/tasks/",
+            response_model=List[ScheduledTask], response_description="A list of all currently scheduled tasks.")
 async def read_all_scheduled_tasks(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                                    page: int = 1,
                                    num_per_page: int = 20):

@@ -3,13 +3,44 @@
   "execution_id": "bd8c031a-b87e-4530-bf19-e0a08414f46f",
   "name": "ConditionTest",
   "start": "239d47a9-323e-a920-d1ae-d9bfa75cbeb0",
+  "permissions":
+    {
+      "access_level": 1,
+      "creator": "00000000-0000-6164-6d69-6e5f75736572",
+      "role_permissions": [
+        {
+          "role": "00000069-6e74-6572-6e61-6c5f726f6c65",
+          "permissions": ["create", "read", "update", "delete", "execute"]
+        },
+        {
+          "role": "00000000-0073-6164-6d69-6e5f726f6c65",
+          "permissions": ["create", "read", "update", "delete", "execute"]
+        },
+        {
+          "role": "00000000-0000-6164-6d69-6e5f726f6c65",
+          "permissions": ["create", "read", "update", "delete", "execute"]
+        },
+        {
+          "role": "00000000-6170-705f-6465-765f726f6c65",
+          "permissions": ["create", "read", "update", "delete", "execute"]
+        },
+        {
+          "role": "00000000-0077-665f-6465-765f726f6c65",
+          "permissions": ["create", "read", "update", "delete", "execute"]
+        },
+        {
+          "role": "00000000-0000-7766-5f6f-705f726f6c65",
+          "permissions": ["read", "execute"]
+        }
+      ]
+    },
   "actions": [
     {
       "name": "hello_world",
-      "app_name": "HelloWorld-v1.0",
+      "app_name": "basics",
       "id_": "239d47a9-323e-a920-d1ae-d9bfa75cbeb0",
       "label": "hello_world",
-      "app_version": "v1.0",
+      "app_version": "1.0.0",
       "priority": 1,
       "position": {
         "id_": "be18b23d-e591-46ac-a699-d7614dd151b6",
@@ -19,7 +50,7 @@
     },
     {
       "name": "pause",
-      "app_name": "HelloWorld-v1.0",
+      "app_name": "basics",
       "parameters": [
         {
           "id_": "eef8ece2-23d1-4edf-8455-507dd074a408",
@@ -29,7 +60,7 @@
         }
       ],
       "id_": "55876340-50b1-d9a4-7f22-150a6f4be4c6",
-      "app_version": "v1.0",
+      "app_version": "1.0.0",
       "label": "pause",
       "priority": 1,
       "position": {
@@ -40,7 +71,7 @@
     },
     {
       "name": "pause",
-      "app_name": "HelloWorld-v1.0",
+      "app_name": "basics",
       "parameters": [
         { 
           "id_": "cb91613a-5ff8-473e-943d-626421a05402",
@@ -50,7 +81,7 @@
         }
       ],
       "id_": "adb4da32-5cd9-4470-a027-00e7d7a2d73b",
-      "app_version": "v1.0",
+      "app_version": "1.0.0",
       "label": "pause2",
       "priority": 1,
       "position": {
@@ -61,7 +92,7 @@
     },
     {
       "name": "repeat_back_to_me",
-      "app_name": "HelloWorld-v1.0",
+      "app_name": "basics",
       "parameters": [
         {
           "id_": "65b9ba49-5ae6-4e49-b179-cdd303df504f",
@@ -71,7 +102,7 @@
         }
       ],
       "id_": "4f67c98f-5cd0-7cba-7724-b8441ce0928e",
-      "app_version": "v1.0",
+      "app_version": "1.0.0",
       "label": "repeat_back_to_me",
       "priority": 1,
       "position": {
@@ -82,7 +113,7 @@
     },
     {
       "name": "repeat_back_to_me",
-      "app_name": "HelloWorld-v1.0",
+      "app_name": "basics",
       "parameters": [
         {
           "id_": "b5469941-2656-4ee7-8d53-07833d84e951",
@@ -92,7 +123,7 @@
         }
       ],
       "id_": "5b560c49-3ede-67a0-95b6-62146de93d4f",
-      "app_version": "v1.0",
+      "app_version": "1.0.0",
       "label": "repeat_back_to_me_2",
       "priority": 1,
       "position": {
@@ -103,7 +134,7 @@
     },
     {
       "name": "echo_array",
-      "app_name": "HelloWorld-v1.0",
+      "app_name": "basics",
       "parameters": [
         {
           "id_": "928d1b13-2575-4451-af83-0515eb8082b9",
@@ -113,7 +144,7 @@
         }
       ],
       "id_": "4ae0a2d8-30a6-4638-9fbc-eb0b1d2171a1",
-      "app_version": "v1.0",
+      "app_version": "1.0.0",
       "label": "echo_array",
       "priority": 1,
       "position": {
@@ -124,7 +155,7 @@
     },
     {
       "name": "echo_json",
-      "app_name": "HelloWorld-v1.0",
+      "app_name": "basics",
       "parameters": [
         {
           "id_": "b2fba3e8-ce36-4164-b22c-5dfc00c116c5",
@@ -134,7 +165,7 @@
         }
       ],
       "id_": "5cd36869-2719-4996-88b5-9060ac61bc36",
-      "app_version": "v1.0",
+      "app_version": "1.0.0",
       "label": "echo_json",
       "priority": 1,
       "position": {

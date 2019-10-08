@@ -10,6 +10,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
+from api.server.utils.problems import InvalidInputException
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +166,9 @@ class Scheduler(object):
             self.scheduler.start()
         else:
             logger.warning('Cannot start scheduler. Scheduler is already running or is paused')
-            return "Scheduler already running."
+            # return "Scheduler already running."
+            raise InvalidInputException("start", "Scheduler", "", errors={"error": "Scheduler is already started"})
+
         return self.scheduler.state
 
     def stop(self, wait=True):
@@ -181,9 +184,12 @@ class Scheduler(object):
         if self.scheduler.state != STATE_STOPPED:
             logger.info('Stopping scheduler')
             self.scheduler.shutdown(wait=wait)
+            self.scheduler.state = STATE_STOPPED
         else:
             logger.warning('Cannot stop scheduler. Scheduler is already stopped')
-            return "Scheduler already stopped."
+            # return "Scheduler already stopped."
+            raise InvalidInputException("stopped", "Scheduler", "", errors={"error": "Scheduler is already stopped"})
+
         return self.scheduler.state
 
     def pause(self):
@@ -197,10 +203,12 @@ class Scheduler(object):
             self.scheduler.pause()
         elif self.scheduler.state == STATE_PAUSED:
             logger.warning('Cannot pause scheduler. Scheduler is already paused')
-            return "Scheduler already paused."
+            # return "Scheduler already paused."
+            raise InvalidInputException("pause", "Scheduler", "", errors={"error": "Scheduler is already paused"})
         elif self.scheduler.state == STATE_STOPPED:
             logger.warning('Cannot pause scheduler. Scheduler is stopped')
-            return "Scheduler is in STOPPED state and cannot be paused."
+            # return "Scheduler is in STOPPED state and cannot be paused."
+            raise InvalidInputException("pause", "Scheduler", "", errors={"error": "Scheduler is  stopped"})
         return self.scheduler.state
 
     def resume(self):
@@ -214,7 +222,8 @@ class Scheduler(object):
             self.scheduler.resume()
         else:
             logger.warning("Scheduler is not in PAUSED state and cannot be resumed.")
-            return "Scheduler is not in PAUSED state and cannot be resumed."
+            # return "Scheduler is not in PAUSED state and cannot be resumed."
+            raise InvalidInputException("resume", "Scheduler", "", errors={"error": "Scheduler already running."})
         return self.scheduler.state
 
     def pause_workflows(self, task_id, workflow_execution_ids):
@@ -238,8 +247,8 @@ class Scheduler(object):
         Resumes some workflows associated with a task
 
         Args:
-            task_id (int|str): The id of the task to pause
-            workflow_execution_ids (list[str]): The list of workflow execution IDs to resume
+            task_id: The id of the task to pause
+            workflow_execution_i The list of workflow execution IDs to resume
         """
         for workflow_execution_id in workflow_execution_ids:
             job_id = construct_task_id(task_id, workflow_execution_id)

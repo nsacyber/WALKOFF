@@ -19,6 +19,7 @@ from api.server.db import mongo
 # from api.server.db import Base, BaseSchema
 #
 # from common.workflow_types import ParameterVariant
+from api.server.utils.helpers import JSON
 
 logger = logging.getLogger(__name__)
 
@@ -37,16 +38,16 @@ class ParameterApiModel(BaseModel):
 class ParameterModel(BaseModel):
     id_: UUID = None
     name: str
-    value: dict = {}
-    parallelized: bool = False
     variant: ParameterVariant
+    value: JSON = {}
+    parallelized: bool = False
     _walkoff_type: str = "parameter"
 
     @validator('value')
     def global_variable_check(cls, value, values):
         global_col = mongo.reg_client.walkoff_db.globals
-        if value.get("variant") == ParameterVariant.GLOBAL:
-            global_check = global_col.find_one({"id_": value.get("id_")})
+        if values.get("variant") == ParameterVariant.GLOBAL:
+            global_check = global_col.find_one({"id_": values.get("id_")})
             if not global_check:
                 raise ValidationError
         else:
@@ -55,8 +56,8 @@ class ParameterModel(BaseModel):
     @validator('value')
     def workflow_variable_check(cls, value, values):
         global_col = mongo.reg_client.walkoff_db.globals
-        if value.get("variant") == ParameterVariant.WORKFLOW_VARIABLE:
-            global_check = global_col.find_one({"id_": value.get("id_")})
+        if values.get("variant") == ParameterVariant.WORKFLOW_VARIABLE:
+            global_check = global_col.find_one({"id_": values.get("id_")})
             if not global_check:
                 raise ValidationError
         else:
@@ -65,8 +66,8 @@ class ParameterModel(BaseModel):
     @validator('value')
     def action_result_check(cls, value, values):
         global_col = mongo.reg_client.walkoff_db.globals
-        if value.get("variant") == ParameterVariant.ACTION_RESULT:
-            global_check = global_col.find_one({"id_": value.get("id_")})
+        if values.get("variant") == ParameterVariant.ACTION_RESULT:
+            global_check = global_col.find_one({"id_": values.get("id_")})
             if not global_check:
                 raise ValidationError
         else:

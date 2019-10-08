@@ -1,5 +1,5 @@
 import json
-from typing import Callable
+from typing import Callable, Union
 
 from copy import deepcopy
 from http import HTTPStatus
@@ -27,7 +27,7 @@ def assert_crud_resource(api: TestClient, auth_header: dict, path: str, inputs: 
         p = api.post(f"{path}", headers=auth_header, data=json.dumps(resource_to_create))
         p_response = p.json()
         if valid:
-            assert p.status_code == HTTPStatus.CREATED
+            assert p.status_code in (HTTPStatus.CREATED, HTTPStatus.OK)
             assert_json_subset(resource_to_create, p_response)
         else:
             assert p.status_code in (HTTPStatus.BAD_REQUEST, HTTPStatus.UNPROCESSABLE_ENTITY, HTTPStatus.FORBIDDEN, HTTPStatus.NOT_FOUND)
