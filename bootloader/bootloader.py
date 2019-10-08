@@ -80,7 +80,7 @@ def compose_from_app(path: pathlib.Path, name):
     networks = {"networks": ["walkoff_network"]}
     deploy = {"deploy": {"mode": "replicated", "replicas": 0, "restart_policy": {"condition": "none"}}}
     config_mount = {"configs": ["common_env.yml"]}
-    secret_mount = {"secrets": ["walkoff_encryption_key"]}
+    secret_mount = {"secrets": ["walkoff_encryption_key", "walkoff_redis_key"]}
     shared_path = os.getcwd() + "/data/shared"
     final_mount = shared_path + ":/app/shared"
     volumes_mount = {"volumes": [final_mount]}
@@ -398,7 +398,7 @@ class Bootloader:
         await create_encryption_key(self.docker_client, static.INTERNAL_KEY, debug_pw)
 
         # Create Minio secret key
-        await create_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY, b"walkoff")
+        await create_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY, b"walkoff123456")
         await create_encryption_key(self.docker_client, static.MINIO_SECRET_KEY, debug_pw)
 
         # Create Mongo user password

@@ -119,7 +119,7 @@ async def send_status_update(session, execution_id, message, headers=None):
         close = ""
 
     params = {"event": message.status.value, "close": close}
-    url = f"{config.API_URI}/walkoff/api/internal/workflowstatus/{execution_id}"
+    url = f"{config.API_URI}/walkoff/api/streams/workflowqueue/workflow_status/{execution_id}"
     headers, token = await get_walkoff_auth_header(session)
     headers["content-type"] = "application/json"
 

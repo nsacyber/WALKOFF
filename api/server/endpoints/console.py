@@ -50,8 +50,8 @@ async def create_console_message(body: ConsoleBody, wf_exec_id: UUID = None):
     return str(body.message)
 
 
-@router.websocket("/log/")
-async def read_console_message(websocket: WebSocket, exec_id: UUID = None):
+@router.websocket("/log")
+async def read_console_message(websocket: WebSocket, exec_id: UUID):
     await websocket.accept()
     redis_stream = CONSOLE_STREAM_GLOB + "." + str(exec_id)
     if exec_id not in console_stream_subs:

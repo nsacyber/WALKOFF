@@ -73,6 +73,7 @@ services:
       - walkoff_network
     secrets:
       - walkoff_internal_key
+      - walkoff_redis_key
     build:
       context: ./
       dockerfile: ./worker/Dockerfile
