@@ -4,7 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 
 from api.server.fastapi_config import FastApiConfig
-from common.mongo_helpers import create_item, get_item
+from common.mongo_helpers import create_item, get_item, delete_item
 
 NUMBER_OF_PRUNE_OPERATIONS = 0
 
@@ -43,7 +43,7 @@ async def revoke_token(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
         "user_identity": user_identity,
         "expires": expires
     }
-    await create_item(token_col, TokenModel, TokenModel(**db_token))
+    await create_item(token_col, BlacklistedToken, BlacklistedToken(**db_token))
     await prune_if_necessary(token_col)
 
 
@@ -58,9 +58,8 @@ async def is_token_revoked(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase
     """
     token_col = walkoff_db.tokens
     jti = decoded_token['jti']
-    token_item = await get_item(token_col, TokenModel, jti)
-    token_json = dict(token_item)
-    return token_json is not None
+    token_item = await get_item(token_col, BlacklistedToken, jti)
+    return token_item is not None
 
 
 async def prune_if_necessary(walkoff_db: AsyncIOMotorDatabase):
@@ -80,5 +79,5 @@ async def prune_database(walkoff_db):
     now = datetime.now()
     expired = await token_col.find({"expires": {"$lte": now}}, projection={'_id': False})
     for token in expired:
-        await token_col.delete(dict(token))
+        await delete_item(token_col, BlacklistedToken, token.jti)
     NUMBER_OF_PRUNE_OPERATIONS = 0
