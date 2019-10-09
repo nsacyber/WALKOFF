@@ -9,7 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers import SchedulerAlreadyRunningError, SchedulerNotRunningError
 
-from api.server.utils.problems import InvalidInputException
+from api.server.utils.problems import InvalidInputException, DoesNotExistException
 from api.server.scheduler import Scheduler, get_scheduler, construct_trigger
 from api.server.db import get_mongo_c, get_mongo_d
 from api.server.db.workflow import WorkflowModel
@@ -115,6 +115,9 @@ async def control_scheduled_task(*, scheduler: Scheduler = Depends(get_scheduler
     task_col = walkoff_db.tasks
 
     task: ScheduledTask = await mongo_helpers.get_item(task_col, ScheduledTask, task_id)
+    if not task:
+        raise DoesNotExistException("control", "Scheduled Task", task_id)
+
     if new_status == 'start':
         scheduler.schedule_workflows(task_id, execute_workflow_helper, task.workflows, task.trigger_type)
     elif new_status == 'stop':
