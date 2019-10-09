@@ -1,0 +1,70 @@
+{
+  "id_": "00000000-0000-8766-5f6f-705f726f6c65",
+  "name": "test_role",
+  "description": "test_description",
+  "resources": [
+      {
+          "name": "app_apis",
+          "permissions": [
+              "read"
+          ]
+      },
+      {
+          "name": "apps",
+          "permissions": []
+      },
+      {
+          "name": "settings",
+          "permissions": [
+              "read"
+          ]
+      },
+      {
+          "name": "global_variables",
+          "permissions": [
+          ]
+      },
+      {
+          "name": "workflow_variables",
+          "permissions": [
+              "read",
+              "update"
+          ]
+      },
+      {
+          "name": "workflows",
+          "permissions": [
+          ]
+      },
+      {
+          "name": "dashboards",
+          "permissions": [
+              "read",
+              "update"
+          ]
+      },
+      {
+          "name": "workflowstatus",
+          "permissions": [
+          ]
+      },
+      {
+          "name": "roles",
+          "permissions": [
+              "read"
+          ]
+      },
+      {
+          "name": "scheduler",
+          "permissions": [
+              "read"
+          ]
+      },
+      {
+          "name": "users",
+          "permissions": [
+              "read"
+          ]
+      }
+  ]
+}

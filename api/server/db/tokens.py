@@ -4,7 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 
 from api.server.fastapi_config import FastApiConfig
-from common.mongo_helpers import create_item, get_item, delete_item
+
 
 NUMBER_OF_PRUNE_OPERATIONS = 0
 
@@ -23,11 +23,11 @@ class BlacklistedToken(BaseModel):
     jti: str
     user_identity: str
     expires: datetime
+    _secondary_id = "jti"
 
 
 async def revoke_token(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
     """Adds a new token to the database. It is not revoked when it is added
-
     Args:
         decoded_token (dict): The decoded token
         :param decoded_token:
@@ -43,7 +43,7 @@ async def revoke_token(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):
         "user_identity": user_identity,
         "expires": expires
     }
-    await create_item(token_col, BlacklistedToken, BlacklistedToken(**db_token))
+    await token_col.insert_one(db_token)
     await prune_if_necessary(token_col)
 
 
@@ -52,14 +52,13 @@ async def is_token_revoked(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase
     tokens that we create into this database, if the token is not present
     in the database we are going to consider it revoked, as we don't know where
     it was created.
-
     Returns:
         (bool): True if the token is revoked, False otherwise.
     """
     token_col = walkoff_db.tokens
     jti = decoded_token['jti']
-    token_item = await get_item(token_col, BlacklistedToken, jti)
-    return token_item is not None
+    token_json = await token_col.find_one({"jti": jti}, projection={'_id': False})
+    return token_json is not None
 
 
 async def prune_if_necessary(walkoff_db: AsyncIOMotorDatabase):
@@ -79,5 +78,5 @@ async def prune_database(walkoff_db):
     now = datetime.now()
     expired = await token_col.find({"expires": {"$lte": now}}, projection={'_id': False})
     for token in expired:
-        await delete_item(token_col, BlacklistedToken, token.jti)
+        await token_col.delete(dict(token))
     NUMBER_OF_PRUNE_OPERATIONS = 0

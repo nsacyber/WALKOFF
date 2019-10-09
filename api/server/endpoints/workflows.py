@@ -42,7 +42,7 @@ async def set_permissions(new_workflow: WorkflowModel, curr_user_id: UUID, walko
 
 @router.post("/upload",
              response_model=WorkflowModel,
-             response_description="The newly improted Workflow.",
+             response_description="The newly imported Workflow.",
              status_code=201)
 async def upload_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                           request: Request, file: UploadFile = File(...)):
