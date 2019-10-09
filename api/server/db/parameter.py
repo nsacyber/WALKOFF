@@ -40,7 +40,7 @@ class ParameterModel(BaseModel):
     value: dict = {}
     parallelized: bool = False
     variant: ParameterVariant
-    _walkoff_type: str = "parameter"
+    walkoff_type_: str = "parameter"
 
     @validator('value')
     def global_variable_check(cls, value, values):

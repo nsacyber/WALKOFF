@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import logging
 import sys
-import os
 import signal
 from collections import deque
 from inspect import getcoroutinelocals

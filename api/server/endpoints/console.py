@@ -12,6 +12,7 @@ from common.redis_helpers import connect_to_aioredis_pool
 
 # console_stream = Blueprint('console_stream', __name__)
 console_stream_subs = set()
+USERS = []
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -53,6 +54,7 @@ async def create_console_message(body: ConsoleBody, wf_exec_id: UUID = None):
 @router.websocket("/log")
 async def read_console_message(websocket: WebSocket, exec_id: UUID):
     await websocket.accept()
+    USERS.append(websocket)
     redis_stream = CONSOLE_STREAM_GLOB + "." + str(exec_id)
     if exec_id not in console_stream_subs:
         console_stream_subs.add(exec_id)
@@ -72,15 +74,19 @@ async def read_console_message(websocket: WebSocket, exec_id: UUID):
                     if event is not None:
                         event_object = json.loads(event.decode("ascii"))
                         message = event_object["message"]
-                        await websocket.send_text(message)
+                        for user in USERS:
+                            await user.send_text(message)
                         logger.info(f"Sending console message for {exec_id}: {message}")
                         if event_object["close"] == "Done":
                             await conn.delete(redis_stream)
                             console_stream_subs.remove(exec_id)
-                            await websocket.close(code=1000)
+                            for user in USERS:
+                                await user.close(code=1000)
             except Exception as e:
                 await conn.delete(redis_stream)
                 console_stream_subs.remove(exec_id)
+                USERS.remove(websocket)
+                # Websocket closed so no one else can access.
                 await websocket.close(code=1000)
                 logger.info(f"Error: {e}")
 
