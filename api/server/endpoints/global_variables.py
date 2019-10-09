@@ -17,7 +17,7 @@ from api.server.security import get_jwt_identity
 
 from api.server.db.permissions import auth_check, default_permissions, creator_only_permissions, AccessLevel, \
     append_super_and_internal
-from api.server.utils.problems import UniquenessException, UnauthorizedException
+from api.server.utils.problems import UniquenessException, UnauthorizedException, DoesNotExistException
 from common import mongo_helpers
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
@@ -97,6 +97,8 @@ async def delete_global(request: Request, global_var: UUID,
     curr_user_id = await get_jwt_identity(request)
 
     global_variable = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
+    if not global_variable:
+        raise DoesNotExistException("delete", "Global Variable", global_var)
     global_id = global_variable.id_
 
     to_delete = await auth_check(global_variable, curr_user_id, "delete", walkoff_db)
@@ -149,6 +151,8 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
     curr_user_id = await get_jwt_identity(request)
 
     old_global = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
+    if not old_global:
+        raise DoesNotExistException("update", "Global Variable", global_var)
     global_id = old_global.id_
 
     new_permissions = updated_global.permissions

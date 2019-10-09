@@ -143,6 +143,8 @@ async def delete_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c)
                       user_id: Union[UUID, str],
                       request: Request):
     user = await mongo_helpers.get_item(user_col, UserModel, user_id, projection=ignore_password, raise_exc=False)
+    if not user:
+        raise DoesNotExistException("delete", "User", user_id)
     user_string = f"{user.username} ({user.id_})"
 
     if user.id_ in (DefaultUserUUID.INTERNAL_USER.value, DefaultUserUUID.SUPER_ADMIN.value) \
@@ -159,6 +161,8 @@ async def read_personal_user(*, username: str, user_col: AsyncIOMotorCollection 
                              request: Request):
     curr_id = await get_jwt_identity(request)
     user_obj = await mongo_helpers.get_item(user_col, UserModel, username, projection=ignore_password)
+    if not user_obj:
+        raise DoesNotExistException("read personal data", "User", username)
 
     if str(curr_id) == str(user_obj.id_):
         return user_obj
@@ -173,6 +177,8 @@ async def update_personal_user(*, username: str, walkoff_db: AsyncIOMotorDatabas
     user_col = walkoff_db.users
     curr_id = await get_jwt_identity(request)
     user_obj = await mongo_helpers.get_item(user_col, UserModel, username, projection=ignore_password)
+    if not user_obj:
+        raise DoesNotExistException("update personal data", "User", username)
 
     if str(curr_id) == str(user_obj.id):
         d = dict(new_user)

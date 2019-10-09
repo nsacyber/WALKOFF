@@ -137,6 +137,8 @@ async def delete_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c)
     Deletes a role.
     """
     role = await mongo_helpers.get_item(role_col, RoleModel, role_id, raise_exc=False)
+    if not role:
+        raise DoesNotExistException("delete", "Role", role_id)
     role_string = f"{role.rolename} ({role.id_})"
 
     if role.id_ in DefaultRoleUUIDS:
