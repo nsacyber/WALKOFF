@@ -141,7 +141,7 @@ def test_create_and_update_and_delete_date_scheduler_task(api: TestClient, auth_
 
     x3 = api.delete(base_scheduler_url + "tasks/" + task_id, headers=auth_header)
     assert x3.status_code == 204
-    assert x3.json() == True
+    assert x3.json() is True
 
     x4 = api.get(base_scheduler_url + "tasks/" + task_id, headers=auth_header)
     assert x4.status_code == 404

@@ -20,6 +20,7 @@ from api.server.db.permissions import AccessLevel, auth_check, creator_only_perm
 from api.server.utils.helpers import regenerate_workflow_ids
 from api.server.utils.problems import UniquenessException, DoesNotExistException, UnauthorizedException
 from common import mongo_helpers
+from common.mongo_helpers import delete_item
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -247,7 +248,7 @@ async def delete_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mong
     workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, workflow_name_id)
     to_delete = await auth_check(workflow, curr_user_id, "delete", walkoff_db=walkoff_db)
     if to_delete:
-        return await workflow_col.delete_one(dict(workflow))
+        return await delete_item(workflow_col, WorkflowModel, workflow.id_)
     else:
         raise UnauthorizedException("delete data for", "Workflow", workflow.name)
 
