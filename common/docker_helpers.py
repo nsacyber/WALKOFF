@@ -158,6 +158,7 @@ async def remove_volume(client: aiodocker.Docker, volume: str):
 
 async def get_secret(client: aiodocker.Docker, secret_id):
     resp = await client._query(f"secrets/{secret_id}")
+    logger.info(f"YOOOOOOOOOOO  {await resp.json()}")
     return await resp.json()
 
 

@@ -381,6 +381,7 @@ class Bootloader:
         args = parser.parse_args(sys.argv[2:])
 
         debug_pw = None
+        debug_pw_encryption = None
         if args.debug:
             logger.setLevel("DEBUG")
             docker_logger.setLevel("DEBUG")
@@ -390,9 +391,10 @@ class Bootloader:
                     "resources, This should be used for debug only. "
                     "(Choose 'no' to use randomly generated passwords.)"):
                 debug_pw = b"walkoff123456"
+                debug_pw_encryption = b"walkoff123456789987654321walkoff"
 
         # Create Walkoff encryption key
-        await create_encryption_key(self.docker_client, static.ENCRYPTION_KEY, debug_pw)
+        await create_encryption_key(self.docker_client, static.ENCRYPTION_KEY, debug_pw_encryption)
 
         # Create internal user key
         await create_encryption_key(self.docker_client, static.INTERNAL_KEY, debug_pw)

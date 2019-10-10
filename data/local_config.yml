@@ -12,7 +12,7 @@ MONGO_HOST: "localhost"
 
 # Key locations
 REDIS_KEY_PATH: "data/local_key"
-ENCRYPTION_KEY_PATH: "data/local_key"
+ENCRYPTION_KEY_PATH: "data/local_global_key"
 INTERNAL_KEY_PATH: "data/local_key"
 POSTGRES_KEY_PATH: "data/local_key"
 MINIO_ACCESS_KEY_PATH: "data/local_key"
