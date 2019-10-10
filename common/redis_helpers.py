@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from urllib.parse import urlparse
 
 import aioredis
-import redis
+# import redis
 
 from common.config import config, static
 
@@ -23,11 +23,11 @@ async def connect_to_aioredis_pool(redis_uri) -> aioredis.Redis:
         logger.info("Redis connection pool closed.")
 
 
-def connect_to_redis_pool(redis_uri) -> redis.Redis:
-    url = urlparse(redis_uri).netloc.split(":")
-    host = url[0]
-    port = 6379 if len(url) < 2 else url[1]
-    return redis.Redis(host=host, port=port, password=config.get_from_file(config.REDIS_KEY_PATH))
+# def connect_to_redis_pool(redis_uri) -> redis.Redis:
+#     url = urlparse(redis_uri).netloc.split(":")
+#     host = url[0]
+#     port = 6379 if len(url) < 2 else url[1]
+#     return redis.Redis(host=host, port=port, password=config.get_from_file(config.REDIS_KEY_PATH))
 
 
 def deref_stream_message(message):

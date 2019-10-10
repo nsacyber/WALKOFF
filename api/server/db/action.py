@@ -29,10 +29,10 @@ class ActionModel(BaseModel):
     app_version: str
     name: str
     label: str
-    position: dict = {"x": 0, "y": 0, "_walkoff_type": "position"}
+    position: dict = {"x": 0, "y": 0, "walkoff_type_": "position"}
     priority: int = 3
     parallelized: bool = False
-    _walkoff_type: str = "action"
+    walkoff_type_: str = "action"
     parameters: List[ParameterModel] = []
 
     # @validator('parameters')

@@ -11,7 +11,7 @@ class BranchModel(BaseModel):
     id_: UUID = None
     source_id: UUID
     destination_id: UUID
-    _walkoff_type: str = "branch"
+    walkoff_type_: str = "branch"
 
 
 # class Branch(Base):

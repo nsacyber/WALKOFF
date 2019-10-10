@@ -28,7 +28,7 @@ class WorkflowModel(BaseModel):
     name: str
     description: str = ""
     tags: List[str] = []
-    _walkoff_type: str = "workflow"
+    walkoff_type_: str = "workflow"
     permissions: PermissionsModel
     actions: List[ActionModel]
     conditions: List[ConditionModel] = []

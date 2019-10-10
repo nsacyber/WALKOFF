@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class GlobalVariable(BaseModel):
     id_: UUID = None
-    _walkoff_type: str = "variable"
+    walkoff_type_: str = "variable"
     name: str
     permissions: PermissionsModel
     value: str
@@ -48,7 +48,7 @@ class GlobalVariable(BaseModel):
 
 class GlobalVariableTemplate(BaseModel):
     id_: UUID = None
-    _walkoff_type: str = "variable"
+    walkoff_type_: str = "variable"
     name: str
     json_schema: JSON = {}
     description: str = None

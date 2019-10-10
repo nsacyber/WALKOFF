@@ -15,9 +15,9 @@ class ConditionModel(BaseModel):
     app_version: str = None
     name: str
     label: str
-    position: dict = {"x": 0, "y": 0, "_walkoff_type": "position"}
+    position: dict = {"x": 0, "y": 0, "walkoff_type_": "position"}
     conditional = str
-    _walkoff_type: str = "condition"
+    walkoff_type_: str = "condition"
 
 
 # class Condition(Base):

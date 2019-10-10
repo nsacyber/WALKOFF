@@ -15,8 +15,8 @@ class TransformModel(BaseModel):
     app_version: str = None
     name: str
     label: str
-    position: dict = {"x": 0, "y": 0, "_walkoff_type": "position"}
-    _walkoff_type: str = "transform"
+    position: dict = {"x": 0, "y": 0, "walkoff_type_": "position"}
+    walkoff_type_: str = "transform"
 
 
 # class Transform(Base):

@@ -28,7 +28,7 @@ class PermissionsModel(BaseModel):
     creator: UUID = None
     access_level: int
     role_permissions: List[RolePermissions] = None
-    _walkoff_type: str = "permissions"
+    walkoff_type_: str = "permissions"
 
 
 async def creator_only_permissions(creator):
