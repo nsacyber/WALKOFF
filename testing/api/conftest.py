@@ -3,8 +3,6 @@ import pytest
 from starlette.testclient import TestClient
 
 import api.server.app as app
-from common.config import config, static
-from common.redis_helpers import connect_to_redis_pool
 
 
 @pytest.fixture

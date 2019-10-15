@@ -40,11 +40,6 @@ async def read_all_globals(request: Request, to_decrypt: str = False,
     curr_user_id = await get_jwt_identity(request)
 
     key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
-    # for testing
-    try:
-        key = base64.b64encode(key)
-    except:
-        key = key
     query = await mongo_helpers.get_all_items(global_col, GlobalVariable)
 
     ret = []
@@ -54,7 +49,7 @@ async def read_all_globals(request: Request, to_decrypt: str = False,
         for global_var in query:
             to_read = await auth_check(global_var, curr_user_id, "read", walkoff_db)
             if to_read:
-                temp_var = deepcopy(global_var)
+                temp_var = deepcopy(global_var)hi
                 temp_var.value = fernet_decrypt(key, global_var.value)
                 ret.append(temp_var)
 
