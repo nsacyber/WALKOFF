@@ -1,3 +1,5 @@
+import base64
+
 from flask import current_app, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_claims
 from sqlalchemy.exc import IntegrityError, StatementError
@@ -54,7 +56,7 @@ def read_all_globals():
     username = get_jwt_claims().get('username', None)
     curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
-    key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
+    key = config.get_from_file(config.ENCRYPTION_KEY_PATH) #, 'rb')
     ret = []
     query = current_app.running_context.execution_db.session.query(GlobalVariable).order_by(GlobalVariable.name).all()
 
@@ -86,7 +88,7 @@ def read_global(global_var):
         if request.args.get('to_decrypt') == "false":
             return jsonify(global_json), HTTPStatus.OK
         else:
-            key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+            key = config.get_from_file(config.ENCRYPTION_KEY_PATH)#, 'rb')
             return jsonify(fernet_decrypt(key, global_json['value'])), HTTPStatus.OK
     else:
         return None, HTTPStatus.FORBIDDEN
@@ -141,7 +143,7 @@ def create_global():
     #     default_permissions("global_variables", global_id, data=data, creator=curr_user.id)
 
     try:
-        key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+        key = config.get_from_file(config.ENCRYPTION_KEY_PATH)#, 'rb')
         data['value'] = fernet_encrypt(key, data['value'])
         global_variable = global_variable_schema.load(data)
         current_app.running_context.execution_db.session.add(global_variable)
@@ -178,7 +180,7 @@ def update_global(global_var):
         # else:
         #     default_permissions("global_variables", global_id, data=data)
         try:
-            key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+            key = config.get_from_file(config.ENCRYPTION_KEY_PATH)#, 'rb')
             data['value'] = fernet_encrypt(key, data['value'])
             global_variable_schema.load(data, instance=global_var)
             current_app.running_context.execution_db.session.commit()
