@@ -43,7 +43,7 @@ Deploying WALKOFF
 
     .. code-block:: console
 
-       git clone https://github.com/nsacyber/WALKOFF.git
+       git clone -b development https://github.com/nsacyber/WALKOFF.git
 
 #. Move into the WALKOFF directory:
 
