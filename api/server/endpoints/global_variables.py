@@ -39,7 +39,13 @@ async def read_all_globals(request: Request, to_decrypt: str = False,
     walkoff_db = get_mongo_d(request)
     curr_user_id = await get_jwt_identity(request)
 
-    key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
+    key = config.get_from_file(config.ENCRYPTION_KEY_PATH) #, 'rb')
+    # for testing
+    try:
+        key = key.encode('utf-8')
+        key = base64.b64encode(key)
+    except:
+        key = key
     query = await mongo_helpers.get_all_items(global_col, GlobalVariable)
 
     ret = []
@@ -69,19 +75,19 @@ async def read_global(request: Request, global_var: UUID, to_decrypt: str = "fal
     curr_user_id = await get_jwt_identity(request)
 
     global_variable = await mongo_helpers.get_item(global_col, GlobalVariable, global_var)
-    global_id = global_variable.id_
 
     to_read = await auth_check(global_variable, curr_user_id, "read", walkoff_db)
     if to_read:
         if to_decrypt == "false":
             return global_variable.value
         else:
-            key = config.get_from_file(config.ENCRYPTION_KEY_PATH) #, 'rb')
-            # # for testing
-            # try:
-            #     key = base64.b64encode(key)
-            # except:
-            #     key = key
+            key = config.get_from_file(config.ENCRYPTION_KEY_PATH)#, 'rb')
+            # for testing
+            try:
+                key = key.encode('utf-8')
+                key = base64.b64encode(key)
+            except:
+                key = key
             return fernet_decrypt(key, global_variable.value)
     else:
         raise UnauthorizedException("read data for", "Global Variable", global_variable.name)
@@ -135,10 +141,11 @@ async def create_global(request: Request, new_global: GlobalVariable,
     try:
         key = config.get_from_file(config.ENCRYPTION_KEY_PATH) #, 'rb')
         # for testing
-        # try:
-        #     key = base64.b64encode(key)
-        # except:
-        #     key = key
+        try:
+            key = key.encode('utf-8')
+            key = base64.b64encode(key)
+        except:
+            key = key
         new_global.value = fernet_encrypt(key, new_global.value)
         return await mongo_helpers.create_item(global_col, GlobalVariable, new_global)
     except Exception as e:
@@ -177,12 +184,13 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
             updated_global.permissions.creator = curr_user_id
 
         try:
-            key = config.get_from_file(config.ENCRYPTION_KEY_PATH) #, 'rb')
-            # # for testing
-            # try:
-            #     key = base64.b64encode(key)
-            # except:
-            #     key = key
+            key = config.get_from_file(config.ENCRYPTION_KEY_PATH)#, 'rb')
+            # for testing
+            try:
+                key = key.encode('utf-8')
+                key = base64.b64encode(key)
+            except:
+                key = key
             updated_global.value = fernet_encrypt(key, updated_global.value)
             return await mongo_helpers.update_item(global_col, GlobalVariable, global_id, updated_global)
         except:

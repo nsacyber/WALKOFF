@@ -2,7 +2,6 @@
     "name": "example_global",
     "permissions": {
         "access_level": 2,
-        "creator": "00000000-0073-6164-6d69-6e5f75736572",
         "role_permissions": [
             {
                 "role": "00000069-6e74-6572-6e61-6c5f726f6c65",
