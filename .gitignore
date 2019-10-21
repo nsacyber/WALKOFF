@@ -48,3 +48,4 @@ venv/
 *.unison.*
 tmp-compose.yml
 .pytest_cache
+.python-version

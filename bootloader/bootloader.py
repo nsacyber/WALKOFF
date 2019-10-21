@@ -20,7 +20,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from common.config import config, static
 from common.docker_helpers import (create_secret, get_secret, delete_secret, get_network, connect_to_aiodocker,
                                    docker_context, stream_docker_log, logger as docker_logger, disconnect_from_network,
-                                   update_service, get_replicas, remove_volume)
+                                   update_service, get_replicas)
 
 logging.basicConfig(level=logging.DEBUG, format="{asctime} - {name} - {levelname}:{message}", style='{')
 
@@ -38,12 +38,9 @@ APP_NAME_PREFIX = "walkoff_"
 
 p = Path('./apps').glob('**/*')
 
-
-def bannerize(text, fill='='):
-    columns = shutil.get_terminal_size().columns
-    border = "".center(columns, fill)
-    banner = f" {text} ".center(columns, fill)
-    print(f"\n\n{border}\n{banner}\n{border}\n")
+volume_names = (static.REGISTRY_VOLUME, static.MINIO_VOLUME, static.MONGO_VOLUME, static.PORTAINER_VOLUME)
+key_names = (static.ENCRYPTION_KEY, static.INTERNAL_KEY, static.MONGO_KEY, static.REDIS_KEY,
+             static.MINIO_ACCESS_KEY, static.MINIO_SECRET_KEY)
 
 
 def parse_yaml(path):
@@ -173,8 +170,8 @@ async def create_encryption_key(docker_client, key_name, value=None):
 
 async def delete_encryption_key(docker_client, key_name):
     try:
-        logger.info(f"Deleting secret {key_name}...")
         await delete_secret(docker_client, key_name)
+        logger.info(f"Deleted secret {key_name}...")
     except aiodocker.exceptions.DockerError:
         logger.info(f"Skipping secret {key_name} deletion, it doesn't exist.")
 
@@ -187,26 +184,31 @@ async def check_for_network(docker_client):
         return False
 
 
-async def delete_dir_contents(path):
-    logger.info(f"Deleting directory contents of {path}...")
-    try:
-        for root, dirs, files in os.walk(path):
-            for f in files:
-                os.unlink(os.path.join(root, f))
-            for d in dirs:
-                shutil.rmtree(os.path.join(root, d))
-    except Exception as e:
-        logger.exception(f"Could not remove contents in {path}. Reason: {e}")
+# async def delete_dir_contents(path):
+#     logger.info(f"Deleting directory contents of {path}...")
+#     try:
+#         for root, dirs, files in os.walk(path):
+#             for f in files:
+#                 os.unlink(os.path.join(root, f))
+#             for d in dirs:
+#                 shutil.rmtree(os.path.join(root, d))
+#     except Exception as e:
+#         logger.exception(f"Could not remove contents in {path}. Reason: {e}")
 
 
 @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
 async def delete_volume(docker_client, volume_name):
     try:
-        await remove_volume(docker_client, volume_name)
-    except Exception as e:
-        logger.info(f"Failed to remove volume {volume_name}, a container may still be using it. "
-                    f"Waiting to try again...")
-        raise e
+        vol = aiodocker.docker.DockerVolume(docker_client, volume_name)
+        await vol.delete()
+        logger.info(f"Deleted volume {volume_name}.")
+    except aiodocker.exceptions.DockerError as e:
+        if e.status == 404:
+            logger.info(f"Skipping removal of {volume_name}, it doesn't exist.")
+        else:
+            logger.info(f"Failed to remove volume {volume_name}, a container may still be using it. "
+                        f"Waiting to try again...")
+            raise e
 
 
 @retry(stop=stop_after_attempt(10), wait=wait_exponential(min=1, max=10))
@@ -215,8 +217,6 @@ async def deploy_compose(compose):
         if not isinstance(compose, dict):
             compose = parse_yaml(compose)
 
-        # Dump the compose to a temporary compose file and launch that. This is so we can amend the compose and update the
-        # the stack without launching a new one
         dump_yaml(config.TMP_COMPOSE, compose)
         compose = config.TMP_COMPOSE
 
@@ -264,6 +264,18 @@ async def build_image(docker_client, repo, dockerfile, context_dir, dockerignore
                                                       encoding="application/x-tar")
 
     await stream_docker_log(log_stream)
+
+
+async def pull_image(docker_client, repo):
+    logger.info(f"Pulling image {repo}")
+
+    try:
+        await docker_client.images.pull(repo)
+        logger.info(f"Pulled image {repo}.")
+        return True
+    except aiodocker.exceptions.DockerError as e:
+        logger.exception(f"Failed to pull image: {e}")
+        return False
 
 
 async def push_image(docker_client, repo):
@@ -411,15 +423,16 @@ class Bootloader:
 
         # Create volumes
         logger.info("Creating volumes for persisting (registry, minio, mongo, portainer)...")
-        await self.docker_client.volumes.create({"name": static.REGISTRY_VOLUME})
-        await self.docker_client.volumes.create({"name": static.MINIO_VOLUME})
-        await self.docker_client.volumes.create({"name": static.MONGO_VOLUME})
-        await self.docker_client.volumes.create({"name": static.PORTAINER_VOLUME})
+        for volume in volume_names:
+            await self.docker_client.volumes.create({"name": volume})
 
         # Bring up the base compose with the registry
-        logger.info("Deploying base services (registry, minio, mongo, portainer, redis)...")
         base_compose = parse_yaml(config.BASE_COMPOSE)
 
+        for service_name, service in base_compose["services"].items():
+            await pull_image(self.docker_client, service["image"])
+
+        logger.info("Deploying base services (registry, minio, mongo, portainer, redis)...")
         await deploy_compose(base_compose)
 
         if args.resources:
@@ -508,17 +521,12 @@ class Bootloader:
             if args.yes or await are_you_sure("Are you sure you want to remove all WALKOFF data? This will remove "
                                               "all of WALKOFF's docker secrets, docker volumes, and data for "
                                               "walkoff_resource services,"):
-                await delete_encryption_key(self.docker_client, static.ENCRYPTION_KEY)
-                await delete_encryption_key(self.docker_client, static.INTERNAL_KEY)
-                await delete_encryption_key(self.docker_client, static.MONGO_KEY)
-                await delete_encryption_key(self.docker_client, static.REDIS_KEY)
-                await delete_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY)
-                await delete_encryption_key(self.docker_client, static.MINIO_SECRET_KEY)
 
-                await delete_volume(self.docker_client, static.REGISTRY_VOLUME)
-                await delete_volume(self.docker_client, static.MINIO_VOLUME)
-                await delete_volume(self.docker_client, static.MONGO_VOLUME)
-                await delete_volume(self.docker_client, static.PORTAINER_VOLUME)
+                for key in key_names:
+                    await delete_encryption_key(self.docker_client, key)
+
+                for volume in volume_names:
+                    await delete_volume(self.docker_client, volume)
 
         logger.info("Walkoff stack removed, it may take a few seconds to stop all containers.")
 

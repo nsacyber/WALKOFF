@@ -7,6 +7,7 @@ if [[ $1 == "up" ]]; then
     if [[ $var =~ $BUILDARG ]]; then
       echo "Preparing WALKOFF Bootloader..."
       docker build -t walkoff_bootloader -f bootloader/Dockerfile .
+      break
     fi
   done
 fi
@@ -34,6 +35,7 @@ if [[ $1 == "down" ]]; then
     if [[ $var =~ $CLEANARG ]]; then
       printf "Removing walkoff_network network: "
       docker network rm walkoff_network
+      break
     fi
   done
 fi
