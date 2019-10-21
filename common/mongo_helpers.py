@@ -193,7 +193,7 @@ async def update_item(collection: Union[AsyncIOMotorCollection, pymongo.collecti
             r = collection.replace_one(await mongo_filter(model, old_item_id), dict(new_item_obj))
 
         if r.acknowledged:
-            return await get_item(collection, model, old_item_id, projection=projection, raise_exc=False)
+            return await get_item(collection, model, old_item_obj.id_, projection=projection, raise_exc=False)
     except pymongo.errors.DuplicateKeyError:
         if raise_exc:
             id_name = f"{await id_and_name(model, old_item_obj)} -> " \

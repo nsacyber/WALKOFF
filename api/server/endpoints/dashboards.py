@@ -16,7 +16,9 @@ router = APIRouter()
 
 
 @router.get("/",
-            response_model=List[DashboardModel], response_description="List of all Dashboards.")
+            response_model=List[DashboardModel],
+            response_description="List of all Dashboards.",
+            status_code=200)
 async def read_all_dashboards(*, dashboard_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                               page: int = 1,
                               num_per_page: int = 20):
@@ -37,7 +39,8 @@ async def create_dashboard(*, dashboard_col: AsyncIOMotorCollection = Depends(ge
 
 
 @router.get("/{dashboard_id}",
-            response_model=DashboardModel, response_description="The requested Dashboard.")
+            response_model=DashboardModel, response_description="The requested Dashboard.",
+            status_code=200)
 async def read_dashboard(*, dashboard_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                          dashboard_id: Union[UUID, str]):
     """
@@ -58,7 +61,8 @@ async def update_dashboard(*, dashboard_col: AsyncIOMotorCollection = Depends(ge
 
 
 @router.delete("/{dashboard_id}",
-               response_model=bool, response_description="Whether the specified Dashboard was deleted.")
+               response_model=bool, response_description="Whether the specified Dashboard was deleted.",
+               status_code=200)
 async def delete_dashboard(*, dashboard_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                            dashboard_id: Union[UUID, str]):
     """

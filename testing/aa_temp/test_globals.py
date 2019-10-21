@@ -64,7 +64,7 @@ def test_globals_create_read_delete(api: TestClient, auth_header: dict):
     assert p4.status_code == 200
 
     p5 = api.delete(base_globals_url + gv_id, headers=auth_header)
-    assert p5.status_code == 204
+    assert p5.status_code == 200
     assert p5.json()
 
     p6 = api.get(base_globals_url, headers=auth_header)

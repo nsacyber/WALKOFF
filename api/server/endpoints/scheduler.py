@@ -154,7 +154,7 @@ async def update_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(ge
 @router.delete("/tasks/{task_id}",
                response_model=bool,
                response_description="",
-               status_code=204)
+               status_code=200)
 async def delete_scheduled_task(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                                 task_id: Union[UUID, str]):
     task_col = walkoff_db.tasks

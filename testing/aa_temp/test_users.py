@@ -71,7 +71,7 @@ def test_delete_admin(api: TestClient):
     access_token = tokens["access_token"]
     headers = {"Authorization": "Bearer " + access_token}
     p = api.delete(base_users_url + "admin", headers=headers)
-    assert p.status_code == 204
+    assert p.status_code == 200
     assert p.json() is True
 
 

@@ -236,7 +236,7 @@ async def update_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mong
 @router.delete("/{workflow_name_id}",
                response_model=bool,
                response_description="Whether the specified Workflow was deleted.",
-               status_code=204)
+               status_code=200)
 async def delete_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                           request: Request, workflow_name_id: Union[UUID, str]):
     """

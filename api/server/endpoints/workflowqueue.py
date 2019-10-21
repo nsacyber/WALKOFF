@@ -295,7 +295,7 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
 @router.delete("/cleardb",
                response_model=str,
                response_description="Removes workflow statuses from the execution database. It will delete all of them or ones older than a certain number of days",
-               status_code=204)
+               status_code=200)
 # ToDo: make these clear db endpoints for more resources
 async def clear_workflow_status(all_=False, days=30,
                                 workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):

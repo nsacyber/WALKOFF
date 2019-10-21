@@ -68,7 +68,7 @@ def test_workflow_create_read_delete(api: TestClient, auth_header: dict):
     assert p4.json()["name"] == wf_name
 
     p5 = api.delete(base_workflows_url + wf_name, headers=auth_header)
-    assert p5.status_code == 204
+    assert p5.status_code == 200
     assert p5.json()
 
     p6 = api.get(base_workflows_url, headers=auth_header)

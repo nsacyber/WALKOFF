@@ -49,7 +49,7 @@ async def read_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c),
 
 
 @router.post("/",
-             response_model=RoleModel, response_description="The newly created Role.")
+             response_model=RoleModel, response_description="The newly created Role.", status_code=201)
 async def create_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                       new_role: RoleModel):
     """
@@ -130,7 +130,9 @@ async def update_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c)
     #     return None
 
 
-@router.delete('/{role_id}')
+@router.delete('/{role_id}',
+               response_model=bool,
+               response_description="Whether or not the role has been successfully deleted.")
 async def delete_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                       role_id: Union[int, str]):
     """
@@ -139,7 +141,7 @@ async def delete_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c)
     role = await mongo_helpers.get_item(role_col, RoleModel, role_id, raise_exc=False)
     if not role:
         raise DoesNotExistException("delete", "Role", role_id)
-    role_string = f"{role.rolename} ({role.id_})"
+    role_string = f"{role.name} ({role.id_})"
 
     if role.id_ in DefaultRoleUUIDS:
         raise UnauthorizedException("delete", "role", role_string)
@@ -147,7 +149,9 @@ async def delete_role(*, role_col: AsyncIOMotorCollection = Depends(get_mongo_c)
         return await mongo_helpers.delete_item(role_col, RoleModel, role_id)
 
 
-@router.get('/availableresourceactions/')
+@router.get('/availableresourceactions/',
+            response_model=list,
+            response_description="Returned all available resource actions")
 async def read_available_resource_actions():
     resource_actions = []
     for resource_perm in default_resource_permissions_admin:

@@ -137,7 +137,7 @@ async def update_user(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d)
         raise UnauthorizedException("update the data", "User", f"{new_user.username}")
 
 
-@router.delete("/{user_id}",  status_code=204,
+@router.delete("/{user_id}",  status_code=200,
                response_model=bool,  response_description="Whether or not the user was deleted.")
 async def delete_user(*, user_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                       user_id: Union[UUID, str],

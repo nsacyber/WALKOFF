@@ -24,3 +24,14 @@ def auth_header(api: TestClient):
     header = {"Authorization": f"Bearer {tokens['access_token']}",
               "content-type": "application/json"}
     return header
+
+
+@pytest.fixture
+def super_auth_header(api: TestClient):
+    response = api.post("http://localhost/walkoff/api/auth/login",
+                        data=json.dumps({"username": "super_admin", "password": "super_admin"}),
+                        headers={'content-type': "application/json"})
+    tokens = response.json()
+    header = {"Authorization": f"Bearer {tokens['access_token']}",
+              "content-type": "application/json"}
+    return header

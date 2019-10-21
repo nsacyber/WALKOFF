@@ -96,7 +96,7 @@ async def read_global(request: Request, global_var: UUID, to_decrypt: str = "fal
 @router.delete("/{global_var}",
                response_model=bool,
                response_description="Whether the specified Global Variable was deleted.",
-               status_code=204)
+               status_code=200)
 async def delete_global(request: Request, global_var: UUID,
                         global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     """
