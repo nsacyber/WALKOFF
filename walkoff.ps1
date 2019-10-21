@@ -27,7 +27,6 @@ docker run --rm -it --network walkoff_network --name walkoff_bootloader `
     -w $unixified_wd `
     walkoff_bootloader $args
 
-
 $CLEANARG="^-[a-zA-Z]*c|--clean"
 if ($args[0] -eq "down") {
     foreach ($arg in $args) {
