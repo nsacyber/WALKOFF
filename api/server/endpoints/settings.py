@@ -10,24 +10,27 @@ from common import mongo_helpers
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-@router.get("/settings/",
+@router.get("/",
             response_model=SettingsModel, response_description="Current settings in WALKOFF.")
 async def read_settings(*, settings_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     """
     Returns the current settings in WALKOFF.
     """
-    return await mongo_helpers.get_item(settings_col, SettingsModel, "settings")
+    settings = await mongo_helpers.get_all_items(settings_col, SettingsModel)
+    return settings[0]
 
 
-@router.put("/settings/",
+@router.put("/",
             response_model=SettingsModel, response_description="The newly updated Settings.")
-async def update_app_api(*, settings_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+async def update_settings(*, settings_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                          new_settings: SettingsModel):
     """
-    Updates the App API for the specified app_name and returns it.
-    This is for internal WALKOFF application use only.
+    Updates the Timeout settings for WALKOFF.
+    This includes the JWT Access Token Duration (in minutes) and the JWT Refresh Token Duration (in days).
     """
-    return await mongo_helpers.update_item(settings_col, SettingsModel, "settings", new_settings)
+    settings = await mongo_helpers.get_all_items(settings_col, SettingsModel)
+    settings_id = settings[0].id_
+    return await mongo_helpers.update_item(settings_col, SettingsModel, settings_id, new_settings)
 
 
 # def update_settings():
