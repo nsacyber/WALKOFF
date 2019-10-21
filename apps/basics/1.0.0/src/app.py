@@ -3,6 +3,7 @@ import asyncio
 import time
 import random
 import json
+import requests
 
 from walkoff_app_sdk.app_base import AppBase
 
@@ -29,7 +30,7 @@ class Basics(AppBase):
         Returns Hello World from the hostname the action is run on
         :return: Hello World from your hostname
         """
-        message = f"Hello World from {socket.gethostname()} in workflow {self.current_execution_id}!"
+        message = "This message has been changed by the scavenger!" 
 
         # This logs to the docker logs
         self.logger.info(message)
@@ -71,7 +72,23 @@ class Basics(AppBase):
         self.logger.info(message)
         await self.console_logger.info(message)
         return message
+      
+    @staticmethod
+    def _pretty_print(some_dict):
+        pretty = json.dumps(some_dict, sort_keys=False, indent=4)
+        return pretty
+ 
+    async def ip_lookup(self, ip, apikey):
+        url = 'https://www.virustotal.com/vtapi/v2/ip-address/report'
+        parameters = {'ip': ip, 'apikey': apikey}
+        response = requests.get(url, params=parameters)
+        response_dict = response.json()
+        pretty = self._pretty_print(response_dict)
+        await self.console_logger.info(pretty)
 
+    async def test(self):
+        print("test")
+        return "foo"
 
 if __name__ == "__main__":
     asyncio.run(Basics.run())

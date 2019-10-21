@@ -94,3 +94,23 @@ actions:
     returns:
       schema:
         type: string
+  - name: ip_lookup
+    description: Look up an IP in VT database
+    parameters:
+      - name: apikey
+        schema:
+          type: string
+        required: true
+        description: enter api key
+      - name: ip
+        schema:
+          type: string
+        required: true
+        description: enter ip address
+    returns:
+      schema:
+        type: object
+  - name: test
+    returns: 
+      schema:
+        type: string
