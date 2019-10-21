@@ -70,3 +70,22 @@ def test_globals_create_read_delete(api: TestClient, auth_header: dict):
     p6 = api.get(base_globals_url, headers=auth_header)
     assert p6.status_code == 200
     assert len(p6.json()) == 0
+
+
+def test_global_unauth(api: TestClient, auth_header: dict):
+    headers = unauth_user_creation(api, auth_header)
+
+    with open('testing/util/global.json') as fp:
+        gv_json = json.load(fp)
+    p = api.post(base_globals_url, headers=headers, data=json.dumps(gv_json))
+
+    with open('testing/util/global.json') as fp:
+        gv_json2 = json.load(fp)
+        # authorized post
+        api.post(base_globals_url, headers=auth_header, data=json.dumps(gv_json2))
+
+    p2 = api.get(base_globals_url + gv_json["id_"], headers=headers)
+    p3 = api.delete(base_globals_url + gv_json["id_"], headers=headers)
+    p4 = api.put(base_globals_url + gv_json["id_"], headers=headers, data=json.dumps(gv_json))
+
+    assert p.status_code == p2.status_code == p3.status_code == p4.status_code == 403
