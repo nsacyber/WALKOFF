@@ -16,7 +16,7 @@ class TriggerModel(BaseModel):
     name: str
     label: str
     position: dict = {"x": 0, "y": 0, "walkoff_type_": "position"}
-    walkoff_type_: str = "transform"
+    walkoff_type_: str = "trigger"
 
 
 # class Trigger(Base):

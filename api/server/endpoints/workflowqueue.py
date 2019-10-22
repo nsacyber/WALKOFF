@@ -239,7 +239,7 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
     to_execute = await auth_check(workflow, curr_user_id, "execute", walkoff_db=walkoff_db)
     # TODO: add in pause/resume here. Workers need to store and recover state for this
     if to_execute:
-        if status == 'abort':
+        if status.lower() == 'abort':
             logger.info(
                 f"User '{(await get_jwt_claims(request)).get('username', None)}' aborting workflow: {execution_id}")
             message = {"execution_id": execution_id, "status": status, "workflow": dict(workflow)}
@@ -249,7 +249,7 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
                 await conn.xadd(static.REDIS_WORKFLOW_CONTROL, message)
 
             return None, HTTPStatus.NO_CONTENT
-        elif status == 'trigger':
+        elif status.lower() == 'trigger':
             if execution.status not in (StatusEnum.PENDING, StatusEnum.EXECUTING, StatusEnum.AWAITING_DATA):
                 raise InvalidInputException("workflow", "trigger", execution_id,
                                             errors=["Workflow must be in a running state to accept triggers."])
