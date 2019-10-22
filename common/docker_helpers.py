@@ -144,18 +144,6 @@ async def update_service(client, service_id, *, version=None, image=None, rollba
     return resp
 
 
-async def remove_volume(client: aiodocker.Docker, volume: str):
-    try:
-        vol = aiodocker.docker.DockerVolume(client, volume)
-        await vol.delete()
-        logger.info(f"Deleted volume {volume}.")
-    except aiodocker.exceptions.DockerError as e:
-        if e.status == 404:
-            logger.info(f"Skipping removal of {volume}, it doesn't exist.")
-        else:
-            raise e
-
-
 async def get_secret(client: aiodocker.Docker, secret_id):
     resp = await client._query(f"secrets/{secret_id}")
     return await resp.json()

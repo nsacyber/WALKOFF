@@ -23,7 +23,7 @@ services:
 #      - /var/lib/boot2docker/auth:/auth
 
   resource_redis:
-    image: bitnami/redis:latest
+    image: bitnami/redis:5.0
     networks:
       - walkoff_network
     ports:
@@ -55,7 +55,7 @@ services:
 #      - walkoff_redis_key
 
   resource_minio:
-    image: minio/minio
+    image: minio/minio:latest
     networks:
       - walkoff_network
 #    ports:
@@ -93,7 +93,7 @@ services:
 #      - walkoff_postgres_key
 
   resource_mongo:
-    image: mongo
+    image: mongo:4
     networks:
       - walkoff_network
     ports:
@@ -107,7 +107,7 @@ services:
       - walkoff_mongo_key
 
   debug_mongo_express:
-    image: mongo-express
+    image: mongo-express:latest
     networks:
       - walkoff_network
     ports:
@@ -121,7 +121,7 @@ services:
       - walkoff_mongo_key
 
   resource_portainer:
-    image: "portainer/portainer"
+    image: portainer/portainer:latest
     networks:
       - walkoff_network
     deploy:
