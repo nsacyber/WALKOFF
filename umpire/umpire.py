@@ -81,7 +81,7 @@ class Umpire:
 
             logger.info("Bringing up Umpire API...")
             # Use --reload when you want to run locally
-            os.system("uvicorn umpire.umpire_api:app --host 0.0.0.0 --port 2022 --lifespan on &")
+            os.system("uvicorn umpire.umpire_api:app --host 0.0.0.0 --port 8000 --lifespan on &")
 
             logger.info("Umpire is initialized!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),

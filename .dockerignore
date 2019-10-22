@@ -1,5 +1,6 @@
 .git
 .idea
+venv
 api/client/node_modules
 docs
 testing

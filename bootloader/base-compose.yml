@@ -55,7 +55,7 @@ services:
 #      - walkoff_redis_key
 
   resource_minio:
-    image: minio/minio:latest
+    image: bitnami/minio:2019-debian-9
     networks:
       - walkoff_network
 #    ports:
@@ -68,9 +68,9 @@ services:
       placement:
         constraints: [node.role==manager]
     environment:
-      - MINIO_ACCESS_KEY_FILE=walkoff_minio_access_key
-      - MINIO_SECRET_KEY_FILE=walkoff_minio_secret_key
-    command: server /data
+      - MINIO_ACCESS_KEY_FILE=/run/secrets/walkoff_minio_access_key
+      - MINIO_SECRET_KEY_FILE=/run/secrets/walkoff_minio_secret_key
+#    command: server /data
     secrets:
       - walkoff_minio_access_key
       - walkoff_minio_secret_key
