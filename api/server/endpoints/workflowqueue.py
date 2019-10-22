@@ -86,10 +86,9 @@ async def get_workflow_status(request: Request, execution,
     walkoff_db = get_mongo_d(request)
     workflow_col = walkoff_db.workflows
     curr_user_id = await get_jwt_identity(request)
-    workflow_status = await get_item(workflow_status_col, WorkflowStatus, execution)
+    workflow_status = await get_item(workflow_status_col, WorkflowStatus, execution, wf_status_check=True)
     # workflow_status = workflow_status_getter(execution, workflow_status_col)
     wf = await get_item(workflow_col, WorkflowModel, workflow_status.workflow_id)
-
     to_read = await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db)
     if to_read:
         return workflow_status
@@ -215,14 +214,15 @@ async def execute_workflow_helper(request: Request, workflow_id, workflow_status
 
 
 @router.patch("/{execution}",
-              response_model=str,
-              response_description="Pause, resume, or abort a workflow.",
+              response_description="Abort or trigger a workflow.",
               status_code=204)
 async def control_workflow(request: Request, execution, workflow_to_control: ControlWorkflow,
                            workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
     """
     Pause, resume, or abort a workflow currently executing in WALKOFF.
     """
+    execution = await get_item(workflow_status_col, WorkflowStatus, execution, wf_status_check=True)
+
     walkoff_db = get_mongo_d(request)
     workflow_col = walkoff_db.workflows
     curr_user_id = await get_jwt_identity(request)

@@ -95,12 +95,14 @@ async def get_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.
                    model: Union[Type[BaseModel], Type[dict]],
                    item_id: Union[UUID, str],
                    *,
+                   wf_status_check: bool = False,
                    query: dict = None,
                    projection: dict = None,
                    raise_exc: bool = True):
     """
     Retrieve a single item from a collection
 
+    :param wf_status_check: special check for WF status querying
     :param collection: Collection to query
     :param model: Class which the JSON in the collection represents
     :param item_id: UUID or name of desired item
@@ -113,8 +115,10 @@ async def get_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.
     projection.update(ignore_mongo_id)
 
     query = {} if query is None else query
-    query.update(await mongo_filter(model, item_id))
-
+    if not wf_status_check:
+        query.update(await mongo_filter(model, item_id))
+    else:
+        query.update({"execution_id": UUID(item_id)})
     if type(collection) == AsyncIOMotorCollection:
         item_json = await collection.find_one(query, projection=projection)
     elif type(collection == pymongo.collection.Collection):

@@ -38,7 +38,7 @@ class WorkflowStatus(BaseModel):
     app_name: str = ""
     action_name: str = ""
     label: str = ""
-    _secondary_id = "name"
+    _secondary_id = "execution_id"
 
 
 class ExecuteWorkflow(BaseModel):
@@ -52,7 +52,7 @@ class ExecuteWorkflow(BaseModel):
 class ControlWorkflow(BaseModel):
     status: str  # ToDo: enum this
     trigger_id: UUID = None
-    trigger_data: dict
+    trigger_data: dict = None
 
 # class WorkflowStatus(Base):
 #     """ORM for a Status of a Workflow in the database
