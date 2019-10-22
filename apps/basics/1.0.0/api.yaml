@@ -89,27 +89,6 @@ actions:
     returns:
       schema:
         type: object
-  - name: sample_report_data
-    description: Outputs a string in the correct formatting that reports expects.
-    returns:
-      schema:
-        type: string
-  - name: ip_lookup
-    description: Look up an IP in VT database
-    parameters:
-      - name: apikey
-        schema:
-          type: string
-        required: true
-        description: enter api key
-      - name: ip
-        schema:
-          type: string
-        required: true
-        description: enter ip address
-    returns:
-      schema:
-        type: object
   - name: test
     returns: 
       schema:
