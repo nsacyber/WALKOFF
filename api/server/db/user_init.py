@@ -14,7 +14,8 @@ default_resource_permissions_internal_user = [
     {"name": "workflowstatus", "permissions": ["create", "read", "update", "delete"]},
     {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
     {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
-    {"name": "users", "permissions": ["create", "read", "update", "delete"]}
+    {"name": "users", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "umpire", "permissions": ["create", "read", "update", "delete"]}
 ]
 
 default_resource_permissions_super_admin = [
@@ -28,7 +29,8 @@ default_resource_permissions_super_admin = [
     {"name": "workflowstatus", "permissions": ["create", "read", "update", "delete"]},
     {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
     {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
-    {"name": "users", "permissions": ["create", "read", "update", "delete"]}
+    {"name": "users", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "umpire", "permissions": ["create", "read", "update", "delete"]}
 ]
 
 default_resource_permissions_admin = [
@@ -42,7 +44,8 @@ default_resource_permissions_admin = [
     {"name": "workflowstatus", "permissions": ["create", "read", "update", "delete"]},
     {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
     {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
-    {"name": "users", "permissions": ["create", "read", "update", "delete"]}
+    {"name": "users", "permissions": ["create", "read", "update", "delete"]},
+    {"name": "umpire", "permissions": ["create", "read", "update", "delete"]}
 ]
 
 default_resource_permissions_app_developer = [
@@ -56,7 +59,8 @@ default_resource_permissions_app_developer = [
     {"name": "workflowstatus", "permissions": ["read"]},
     {"name": "roles", "permissions": ["read"]},
     {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
-    {"name": "users", "permissions": ["read"]}
+    {"name": "users", "permissions": ["read"]},
+    {"name": "umpire", "permissions": ["create", "read", "update", "delete"]}
 ]
 
 default_resource_permissions_workflow_developer = [
@@ -70,7 +74,8 @@ default_resource_permissions_workflow_developer = [
     {"name": "workflowstatus", "permissions": ["read"]},
     {"name": "roles", "permissions": ["read"]},
     {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
-    {"name": "users", "permissions": ["read"]}
+    {"name": "users", "permissions": ["read"]},
+    {"name": "umpire", "permissions": ["read"]}
 ]
 
 default_resource_permissions_workflow_operator = [
@@ -84,7 +89,8 @@ default_resource_permissions_workflow_operator = [
     {"name": "workflowstatus", "permissions": ["read"]},
     {"name": "roles", "permissions": ["read"]},
     {"name": "scheduler", "permissions": ["read"]},
-    {"name": "users", "permissions": ["read"]}
+    {"name": "users", "permissions": ["read"]},
+    {"name": "umpire", "permissions": []}
 ]
 
 
