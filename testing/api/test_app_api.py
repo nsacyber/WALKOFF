@@ -1,3 +1,4 @@
+import json
 import logging
 
 import yaml
@@ -52,6 +53,19 @@ def test_create_api_minimum(api: TestClient, auth_header: dict):
         }
     ]
     assert_crud_resource(api, auth_header, apps_api_url, inputs, yaml.full_load)
+
+
+def test_unauth_create_api_minimum(api: TestClient, unauthorized_header: dict):
+    """Assert that a minimum valid API is unable to be created by unauthorized user."""
+    data = {
+        "walkoff_version": "1.0.0",
+        "app_version": "1.0.0",
+        "name": "test_app",
+        "description": "Minimum valid App Api",
+        "actions": [{"name": "test_action"}]
+    }
+    p = api.post(apps_api_url, headers=unauthorized_header, data=json.dumps(data))
+    assert p.status_code == 403
 
 
 def test_create_api_invalid_semver(api: TestClient, auth_header: dict):
