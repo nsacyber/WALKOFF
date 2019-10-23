@@ -115,3 +115,16 @@ def test_control_workflow_abort(api: TestClient, auth_header: dict):
     p = api.get(base_workflowqueue_url + wf_queue_json["execution_id"], headers=auth_header)
     assert p.status_code == 200
     assert p.json()["status"] == "ABORTED"
+
+
+def test_rud_workflow_dne(api: TestClient, auth_header: dict):
+    data = {
+        "status": "trigger"
+    }
+
+    dne_id = "360b4e27-3bc3-4499-abae-2364bd99ade7"
+    p = api.get(base_workflowqueue_url + dne_id, headers=auth_header)
+    assert p.status_code == 404
+
+    p = api.patch(base_workflowqueue_url + dne_id, headers=auth_header, data=json.dumps(data))
+    assert p.status_code == 404

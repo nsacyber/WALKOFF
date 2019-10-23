@@ -3,6 +3,8 @@ import logging
 from http import HTTPStatus
 
 import yaml
+from starlette.datastructures import UploadFile, FormData
+
 from starlette.testclient import TestClient
 
 from common.workflow_types import workflow_load
@@ -106,8 +108,24 @@ def test_workflow_export(api: TestClient, auth_header: dict):
 
 
 def test_workflow_upload_read(api: TestClient, auth_header: dict):
-    with open('testing/util/workflow.json', 'rb') as fp:
-        files = {"file": fp}
-        p = api.post(base_workflows_url + "upload", headers=auth_header, files=files)
-        assert p.status_code == 201
+    auth_header.pop("content-type")
+    x = open('testing/util/workflow.json', 'rb')
+    files = {"file": x}
+    p = api.post(base_workflows_url + "upload", headers=auth_header, files=files)
 
+    assert p.status_code == 201
+    x.close()
+
+
+def test_rud_workflow_dne(api: TestClient, auth_header: dict):
+    with open('testing/util/workflow.json') as fp:
+        workflow_json = json.load(fp)
+
+    p = api.get(base_workflows_url + "404", headers=auth_header, data=json.dumps(workflow_json))
+    assert p.status_code == 404
+
+    p = api.put(base_workflows_url + "404", headers=auth_header, data=json.dumps(workflow_json))
+    assert p.status_code == 404
+
+    p = api.delete(base_workflows_url + "404", headers=auth_header)
+    assert p.status_code == 404

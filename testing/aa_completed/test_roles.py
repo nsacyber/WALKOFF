@@ -95,3 +95,17 @@ def test_cred_role_dne(api: TestClient, auth_header: dict):
 
     p = api.delete(base_roles_url + "404", headers=auth_header)
     assert p.status_code == 404
+
+
+def test_unauth_cred_role_dne(api: TestClient, unauthorized_header: dict):
+    with open('testing/util/role.json') as fp:
+        role_json = json.load(fp)
+
+    p = api.get(base_roles_url + "404", headers=unauthorized_header, data=json.dumps(role_json))
+    assert p.status_code == 403
+
+    p = api.put(base_roles_url + "404", headers=unauthorized_header, data=json.dumps(role_json))
+    assert p.status_code == 403
+
+    p = api.delete(base_roles_url + "404", headers=unauthorized_header)
+    assert p.status_code == 403

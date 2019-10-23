@@ -47,6 +47,21 @@ def test_globals_create_read_delete(api: TestClient, auth_header: dict):
     assert len(p6.json()) == 0
 
 
+def test_globals_nonexistent(api: TestClient, auth_header: dict):
+    with open('testing/util/global.json') as fp:
+        gv_json = json.load(fp)
+
+    nonexistent_global_uuid = "00000000-0073-6164-6d69-6e5f726f6c65"
+    p = api.get(base_globals_url + nonexistent_global_uuid, headers=auth_header)
+    assert p.status_code == 404
+
+    p = api.delete(base_globals_url + nonexistent_global_uuid, headers=auth_header)
+    assert p.status_code == 404
+
+    p = api.put(base_globals_url + nonexistent_global_uuid, headers=auth_header, data=json.dumps(gv_json))
+    assert p.status_code == 404
+
+
 def test_global_unauth(api: TestClient, unauthorized_header: dict, auth_header: dict):
     with open('testing/util/global.json') as fp:
         gv_json = json.load(fp)

@@ -7,7 +7,6 @@ from starlette.testclient import TestClient
 
 from api.server.db.user_init import DefaultUserUUID, DefaultRoleUUID
 from testing.api.helpers import assert_crud_resource
-from testing.aa_temp.test_auth import test_super_admin_login
 
 logger = logging.getLogger(__name__)
 
@@ -65,12 +64,9 @@ def test_delete_self(api: TestClient, auth_header: dict):
     assert p.status_code == 403
 
 
-def test_delete_admin(api: TestClient):
+def test_delete_admin(api: TestClient, super_auth_header: dict):
     """ Assert that super_admin can delete admin """
-    tokens = test_super_admin_login(api)
-    access_token = tokens["access_token"]
-    headers = {"Authorization": "Bearer " + access_token}
-    p = api.delete(base_users_url + "admin", headers=headers)
+    p = api.delete(base_users_url + "admin", headers=super_auth_header)
     assert p.status_code == 200
     assert p.json() is True
 
@@ -81,12 +77,9 @@ def test_delete_super_admin(api: TestClient, auth_header: dict):
     assert p.status_code == 403
 
 
-def test_delete_internal_user(api: TestClient):
+def test_delete_internal_user(api: TestClient, super_auth_header: dict):
     """ Assert that internal_user cannot be deleted """
-    tokens = test_super_admin_login(api)
-    access_token = tokens["access_token"]
-    headers = {"Authorization": "Bearer " + access_token}
-    p = api.delete(base_users_url + "internal_user", headers=headers)
+    p = api.delete(base_users_url + "internal_user", headers=super_auth_header)
     assert p.status_code == 403
 
 
@@ -196,12 +189,8 @@ def test_create_internal_user(api: TestClient, auth_header: dict):
     assert_crud_resource(api, auth_header, base_users_url, inputs, yaml.full_load, valid=False)
 
 
-def test_update_admin(api: TestClient):
+def test_update_admin(api: TestClient, super_auth_header: dict):
     """ Change admin password and login with new password """
-    tokens = test_super_admin_login(api)
-    access_token = tokens["access_token"]
-    headers = {"Authorization": "Bearer " + access_token}
-
     data = {
         # "id_": str(DefaultUserUUID.ADMIN.value),
         "username": "admin",
@@ -211,16 +200,12 @@ def test_update_admin(api: TestClient):
         "active": True,
         "roles": [str(DefaultRoleUUID.ADMIN.value)]
         }
-    p = api.put(base_users_url + "admin", headers=headers, data=json.dumps(data))
+    p = api.put(base_users_url + "admin", headers=super_auth_header, data=json.dumps(data))
     assert p.status_code == 200
 
 
-def test_invalid_update_admin(api: TestClient):
+def test_invalid_update_admin(api: TestClient, super_auth_header: dict):
     """ Change admin password and login with new password """
-    tokens = test_super_admin_login(api)
-    access_token = tokens["access_token"]
-    headers = {"Authorization": "Bearer " + access_token}
-
     data = {
         # "id_": str(DefaultUserUUID.ADMIN.value),
         "username": "invalid_name",
@@ -230,16 +215,12 @@ def test_invalid_update_admin(api: TestClient):
         "active": True,
         "roles": [str(DefaultRoleUUID.ADMIN.value)]
         }
-    p = api.put(base_users_url + "admin", headers=headers, data=json.dumps(data))
+    p = api.put(base_users_url + "admin", headers=super_auth_header, data=json.dumps(data))
     assert p.status_code == 403
 
 
-def test_update_super_admin_password_and_username(api: TestClient):
+def test_update_super_admin_password_and_username(api: TestClient, super_auth_header: dict):
     """ Change admin password and login with new password """
-    tokens = test_super_admin_login(api)
-    access_token = tokens["access_token"]
-    headers = {"Authorization": "Bearer " + access_token}
-
     data = {
         # "id_": str(DefaultUserUUID.ADMIN.value),
         "username": "super_admin",
@@ -249,16 +230,12 @@ def test_update_super_admin_password_and_username(api: TestClient):
         "active": True,
         "roles": [str(DefaultRoleUUID.ADMIN.value)]
         }
-    p = api.put(base_users_url + "super_admin", headers=headers, data=json.dumps(data))
+    p = api.put(base_users_url + "super_admin", headers=super_auth_header, data=json.dumps(data))
     assert p.status_code == 200
 
 
-def test_invalid_update_super_admin_password_and_username(api: TestClient):
+def test_invalid_update_super_admin_password_and_username(api: TestClient, super_auth_header: dict):
     """ Change admin password and login with new password """
-    tokens = test_super_admin_login(api)
-    access_token = tokens["access_token"]
-    headers = {"Authorization": "Bearer " + access_token}
-
     data = {
         # "id_": str(DefaultUserUUID.ADMIN.value),
         "username": "invalid_username",
@@ -268,7 +245,7 @@ def test_invalid_update_super_admin_password_and_username(api: TestClient):
         "active": True,
         "roles": [str(DefaultRoleUUID.ADMIN.value)]
         }
-    p = api.put(base_users_url + "super_admin", headers=headers, data=json.dumps(data))
+    p = api.put(base_users_url + "super_admin", headers=super_auth_header, data=json.dumps(data))
     assert p.status_code == 403
 
 
@@ -284,4 +261,32 @@ def test_invalid_update_super_admin_password_and_username2(api: TestClient, auth
         "roles": [str(DefaultRoleUUID.ADMIN.value)]
         }
     p = api.put(base_users_url + "super_admin", headers=auth_header, data=json.dumps(data))
+    assert p.status_code == 403
+
+
+def test_rud_user_dne(api: TestClient, auth_header: dict):
+    with open('testing/util/user.json') as fp:
+        user_json = json.load(fp)
+
+    p = api.get(base_users_url + "404", headers=auth_header, data=json.dumps(user_json))
+    assert p.status_code == 404
+
+    p = api.put(base_users_url + "404", headers=auth_header, data=json.dumps(user_json))
+    assert p.status_code == 404
+
+    p = api.delete(base_users_url + "404", headers=auth_header)
+    assert p.status_code == 404
+
+
+def test_unauth_rud_user_dne(api: TestClient, unauthorized_header: dict):
+    with open('testing/util/user.json') as fp:
+        user_json = json.load(fp)
+
+    p = api.get(base_users_url + "404", headers=unauthorized_header, data=json.dumps(user_json))
+    assert p.status_code == 403
+
+    p = api.put(base_users_url + "404", headers=unauthorized_header, data=json.dumps(user_json))
+    assert p.status_code == 403
+
+    p = api.delete(base_users_url + "404", headers=unauthorized_header)
     assert p.status_code == 403
