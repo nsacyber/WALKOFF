@@ -1,0 +1,61 @@
+{
+  "id_": "8d3e5d36-51d4-0112-a284-ee27269224be",
+  "execution_id": "bd8c031a-b87e-4530-bf19-e0a08414f46f",
+  "name": "ConditionTest",
+  "start": "16a68714-db58-40a2-6cfa-7498b306df0f",
+  "permissions":
+    {
+      "access_level": 1,
+      "creator": "00000000-0000-6164-6d69-6e5f75736572",
+      "role_permissions": [
+        {
+          "role": "00000069-6e74-6572-6e61-6c5f726f6c65",
+          "permissions": ["create", "read", "update", "delete", "execute"]
+        },
+        {
+          "role": "00000000-0073-6164-6d69-6e5f726f6c65",
+          "permissions": ["create", "read", "update", "delete", "execute"]
+        },
+        {
+          "role": "00000000-0000-6164-6d69-6e5f726f6c65",
+          "permissions": ["create", "read", "update", "delete", "execute"]
+        },
+        {
+          "role": "00000000-6170-705f-6465-765f726f6c65",
+          "permissions": ["create", "read", "update", "delete", "execute"]
+        },
+        {
+          "role": "00000000-0077-665f-6465-765f726f6c65",
+          "permissions": ["create", "read", "update", "delete", "execute"]
+        },
+        {
+          "role": "00000000-0000-7766-5f6f-705f726f6c65",
+          "permissions": ["read", "execute"]
+        }
+      ]
+    },
+  "actions": [
+    {
+      "name": "sample_report_data",
+      "app_name": "basics",
+      "app_version": "1.0.0",
+      "errors": [],
+      "id_": "16a68714-db58-40a2-6cfa-7498b306df0f",
+      "is_valid": true,
+      "label": "sample_report_data",
+      "parallelized": false,
+      "parameters": [],
+      "position": {
+          "x": 290,
+          "y": 150
+      },
+      "priority": 1
+    }
+  ],
+  "conditions": [],
+  "transforms": [],
+  "triggers": [],
+  "workflow_variables": [],
+  "is_valid": true,
+  "errors": []
+}

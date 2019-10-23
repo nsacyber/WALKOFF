@@ -28,7 +28,7 @@ async def read_all_dashboards(*, dashboard_col: AsyncIOMotorCollection = Depends
     return await mongo_helpers.get_all_items(dashboard_col, DashboardModel, page=page, num_per_page=num_per_page)
 
 
-@router.post("/", status_code=HTTPStatus.CREATED,
+@router.post("/", status_code=201,
              response_model=DashboardModel, response_description="The newly created Dashboard")
 async def create_dashboard(*, dashboard_col: AsyncIOMotorCollection = Depends(get_mongo_c),
                            new_dashboard: DashboardModel):
