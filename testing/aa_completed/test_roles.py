@@ -5,9 +5,6 @@ from http import HTTPStatus
 import yaml
 from starlette.testclient import TestClient
 
-from api.server.db.user_init import DefaultUserUUID, DefaultRoleUUID
-from testing.api.helpers import assert_crud_resource
-from testing.aa_temp.test_auth import test_super_admin_login
 
 logger = logging.getLogger(__name__)
 

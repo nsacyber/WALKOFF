@@ -8,26 +8,6 @@ logger = logging.getLogger(__name__)
 base_globals_url = "/walkoff/api/globals/"
 
 
-def unauth_user_creation(api: TestClient, auth_header: dict):
-    with open('testing/util/role.json') as fp:
-        role_json = json.load(fp)
-        api.post("/walkoff/api/roles/", headers=auth_header, data=json.dumps(role_json))
-
-    with open('testing/util/user.json') as fp:
-        user_json = json.load(fp)
-        api.post("/walkoff/api/users/", headers=auth_header, data=json.dumps(user_json))
-
-    data = {
-        "username": "test",
-        "password": "123"
-    }
-    p = api.post("/walkoff/api/auth/login", data=json.dumps(data))
-    response = p.json()
-    access_token = response["access_token"]
-    headers = {"Authorization": "Bearer " + access_token}
-    return headers
-
-
 def test_globals_get_all(api: TestClient, auth_header: dict):
     p = api.get(base_globals_url, headers=auth_header)
     assert p.status_code == 200
@@ -67,20 +47,18 @@ def test_globals_create_read_delete(api: TestClient, auth_header: dict):
     assert len(p6.json()) == 0
 
 
-def test_global_unauth(api: TestClient, auth_header: dict):
-    headers = unauth_user_creation(api, auth_header)
-
+def test_global_unauth(api: TestClient, unauthorized_header: dict, auth_header: dict):
     with open('testing/util/global.json') as fp:
         gv_json = json.load(fp)
-    p = api.post(base_globals_url, headers=headers, data=json.dumps(gv_json))
+    p = api.post(base_globals_url, headers=unauthorized_header, data=json.dumps(gv_json))
 
     with open('testing/util/global.json') as fp:
         gv_json2 = json.load(fp)
         # authorized post
         api.post(base_globals_url, headers=auth_header, data=json.dumps(gv_json2))
 
-    p2 = api.get(base_globals_url + gv_json["id_"], headers=headers)
-    p3 = api.delete(base_globals_url + gv_json["id_"], headers=headers)
-    p4 = api.put(base_globals_url + gv_json["id_"], headers=headers, data=json.dumps(gv_json))
+    p2 = api.get(base_globals_url + gv_json["id_"], headers=unauthorized_header)
+    p3 = api.delete(base_globals_url + gv_json["id_"], headers=unauthorized_header)
+    p4 = api.put(base_globals_url + gv_json["id_"], headers=unauthorized_header, data=json.dumps(gv_json))
 
     assert p.status_code == p2.status_code == p3.status_code == p4.status_code == 403

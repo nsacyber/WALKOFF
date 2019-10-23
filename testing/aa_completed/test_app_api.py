@@ -74,7 +74,7 @@ def test_create_api_invalid_semver(api: TestClient, auth_header: dict):
     inputs = [
         {
             "create": """
-            walkoff_version: "1.0"
+            walkoff_version: 1.0
             app_version: 1.0.0
             name: test_app
             description: An invalid App API with bad semantic versioning in walkoff_version
@@ -85,7 +85,7 @@ def test_create_api_invalid_semver(api: TestClient, auth_header: dict):
         {
             "create": """
             walkoff_version: 1.0.0
-            app_version: "1.0"
+            app_version: 1.0
             name: test_app2
             description: An invalid App API with bad semantic versioning in app_version
             actions:
@@ -129,19 +129,6 @@ def test_create_api_invalid_contact(api: TestClient, auth_header: dict):
             name: test_app
             contact_info: not an object
             description: An invalid App API with non-object contact info
-            actions:
-              - name: test_action
-            """,
-        },
-        {
-            "create": """
-            walkoff_version: 1.0.0
-            app_version: 1.0.0
-            name: test_app2
-            contact_info:
-              name: good
-              bad: not good
-            description: An invalid App API with extra field in contact
             actions:
               - name: test_action
             """,

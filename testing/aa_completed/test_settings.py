@@ -22,12 +22,16 @@ def test_update_settings(api: TestClient, auth_header: dict):
 
     data = {
       "id_": settings_id,
-      "access_token_life_mins": 15,
-      "refresh_token_life_days": 15
+      "access_token_life_mins": 20,
+      "refresh_token_life_days": 30
     }
 
     p = api.put(base_settings_url, headers=auth_header, data=json.dumps(data))
     assert p.status_code == 200
+
+    p = api.get(base_settings_url, headers=auth_header)
+    assert p.json()["access_token_life_mins"] == 20
+    assert p.json()["refresh_token_life_days"] == 30
 
 
 def test_update_invalid_settings(api: TestClient, auth_header: dict):
