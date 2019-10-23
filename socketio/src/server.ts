@@ -7,6 +7,7 @@ import { plainToClassFromExist } from 'class-transformer';
 import { EventQueue } from "./models/eventQueue";
 import { ConsoleEvent } from "./models/consoleEvent";
 import { NodeStatusEvent } from "./models/nodeStatusEvent";
+import { BuildStatusEvent } from "./models/buildStatusEvent";
 import { WorkflowStatusEvent } from "./models/workflowStatusEvent";
 import { WalkoffEvent } from "./models/walkoffEvent";
 
@@ -25,6 +26,7 @@ io.on("connection", (socket: any) => console.log("a user connected"));
 createSpace('/console', new ConsoleEvent);
 createSpace('/workflowStatus', new WorkflowStatusEvent)
 createSpace('/nodeStatus', new NodeStatusEvent)
+createSpace('/buildStatus', new BuildStatusEvent)
 
 function createSpace(url: string, eventClass: WalkoffEvent) {
     const queue = new EventQueue();

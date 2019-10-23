@@ -3,7 +3,7 @@ import { WalkoffEvent } from "./walkoffEvent";
 export class EventQueue {
     items: WalkoffEvent[] = [];
 
-    constructor(private maxSize = 100) {}
+    constructor(private maxSize = 500) {}
 
     add(item: WalkoffEvent) {
         this.items.push(item);

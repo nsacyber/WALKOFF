@@ -1,7 +1,8 @@
 {
   "name": "socketio",
   "version": "1.0.0",
-  "description": "",
+  "description": "Socket.io websocket server for WALKOFF",
+  "repository": "github:nsacyber/WALKOFF",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
