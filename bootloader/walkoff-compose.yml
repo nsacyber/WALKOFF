@@ -55,6 +55,31 @@ services:
       - ./apps:/app/apps
       - ./api/client/dist:/app/api/client/dist
 
+  core_socketio:
+    image: "127.0.0.1:5000/walkoff_core_socketio:latest"
+    build:
+      context: ./
+      dockerfile: ./socketio/Dockerfile
+    ports:
+      - '3000:3000'
+#    ports:
+#      - '8080:8080'
+    networks:
+      - walkoff_network
+#    stop_signal: SIGINT
+#    stop_grace_period: 30s
+    secrets:
+      # - walkoff_encryption_key
+      - walkoff_internal_key
+      # - walkoff_mongo_key
+      # - walkoff_redis_key
+    configs:
+      - common_env.yml
+    depends_on:
+      - core_api
+    # volumes:
+    #   - ./api/client/dist:/app/api/client/dist
+
   resource_nginx:
     image: 'bitnami/nginx:latest'
     networks:
@@ -68,6 +93,7 @@ services:
       - ./nginx/key.pem:/opt/bitnami/nginx/conf/key.pem:ro
     depends_on:
       - core_api
+      - core_socketio
 
   core_worker:
 #    command: python -m worker.worker --log-level=debug

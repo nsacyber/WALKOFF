@@ -30,6 +30,7 @@ api/api/client_api.yaml
 api/client/node_modules/
 api/client/build/
 api/client/coverage/
+socketio/node_modules/
 !apps/*.py
 !interfaces/*.py
 !interfaces/*.pytests/tmp/*
