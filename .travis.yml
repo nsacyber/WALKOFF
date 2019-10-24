@@ -10,8 +10,8 @@ python:
 services:
   - docker
 
-env:
-  - CONFIG_PATH=data/local_config.yml
+#env:
+#  - CONFIG_PATH=data/local_config.yml
 
 before_install:
   - sudo apt-get update
