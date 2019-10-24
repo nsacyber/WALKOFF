@@ -18,9 +18,9 @@ before_install:
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
   - docker version
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-compose
+  - pip install -U pip
   - pip install -U pytest
   - pip install -U coverage
-  - pip install -U codecov
 
 # command to install dependencies
 install:
@@ -34,12 +34,10 @@ before_script:
 
 # command to run tests
 script:
-  - coverage pytest testing/api/
+  - pytest testing/api/
+  - coverage run -m pytest
   - coverage combine
   - coverage report
-  - codecov pytest testing/api/
-  - codecov combine
-  - codecov report
 
 after_script:
   - docker stack services ci
