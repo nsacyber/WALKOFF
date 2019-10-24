@@ -12,14 +12,15 @@ from common.workflow_types import workflow_loads, Action, ParameterVariant
 from common.async_logger import AsyncLogger, AsyncHandler
 from common.helpers import UUID_GLOB, fernet_encrypt, fernet_decrypt
 from common.redis_helpers import connect_to_aioredis_pool, xlen, xdel, deref_stream_message
+from common.socketio_helpers import connect_to_socketio
 from common.config import config, static
 
 
-class HTTPStream:
+class SIOStream:
     """ Thin wrapper around an HTTP stream that plugs into the async logger """
-    def __init__(self, session=None):
+    def __init__(self, sio=None):
         super().__init__()
-        self.session = session
+        self.sio = sio
         self.execution_id = None
 
     def set_execution_id(self, channel):
@@ -30,11 +31,12 @@ class HTTPStream:
 
     @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
     async def write(self, message):
-        data = {"message": message}
-        params = {"workflow_execution_id": self.execution_id}
-        url = f"{config.API_URI}/walkoff/api/streams/console/logger"
 
-        await self.session.post(url, json=data, params=params)
+        data = {
+            "execution_id": self.execution_id,
+            "message": message
+        }
+        await self.sio.emit("console update", data, "console")
 
     async def close(self):
         pass
@@ -161,14 +163,15 @@ class AppBase:
     @classmethod
     async def run(cls):
         """ Connect to Redis and HTTP session, await actions """
-        async with connect_to_aioredis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session:
+        async with connect_to_aioredis_pool(config.REDIS_URI) as redis, \
+                connect_to_socketio(config.SOCKETIO_URI, "console") as sio:
             # TODO: Migrate to the common log config
             logging.basicConfig(format="{asctime} - {name} - {levelname}:{message}", style='{')
             logger = logging.getLogger(f"{cls.__name__}")
             logger.setLevel(logging.DEBUG)
 
             console_logger = AsyncLogger(f"{cls.__name__}", level=logging.DEBUG)
-            handler = AsyncHandler(stream=HTTPStream(session))
+            handler = AsyncHandler(stream=SIOStream(sio))
             handler.setFormatter(logging.Formatter(fmt="{asctime} - {name} - {levelname}:{message}", style='{'))
             console_logger.addHandler(handler)
 

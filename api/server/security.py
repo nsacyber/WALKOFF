@@ -92,8 +92,10 @@ async def decode_token(to_decode):
         decoded_jtw = jwt.decode(to_decode, await load_secret_key(),
                                  algorithms=FastApiConfig.ALGORITHM)
     except jwt.exceptions.DecodeError:
+        logger.info("Could not decode token.")
         return None
     except jwt.exceptions.ExpiredSignatureError:
+        logger.info("Signature has expired.")
         return None
 
     if "user_claims" in decoded_jtw and "roles" in decoded_jtw["user_claims"]:

@@ -412,7 +412,7 @@ class Bootloader:
         await create_encryption_key(self.docker_client, static.INTERNAL_KEY, debug_pw)
 
         # Create Minio secret key
-        await create_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY, b"walkoff123456")
+        await create_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY, b"walkoff")
         await create_encryption_key(self.docker_client, static.MINIO_SECRET_KEY, debug_pw)
 
         # Create Mongo user password
@@ -430,7 +430,10 @@ class Bootloader:
         base_compose = parse_yaml(config.BASE_COMPOSE)
 
         for service_name, service in base_compose["services"].items():
-            await pull_image(self.docker_client, service["image"])
+            if not await pull_image(self.docker_client, service["image"]):
+                logger.info("Failed to pull requisite images, aborting deployment. "
+                            "Please use the 'down' command to clean up. ")
+                return
 
         logger.info("Deploying base services (registry, minio, mongo, portainer, redis)...")
         await deploy_compose(base_compose)

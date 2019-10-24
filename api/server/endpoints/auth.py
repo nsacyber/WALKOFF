@@ -6,7 +6,8 @@ import logging
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from api.server.security import (create_access_token, create_refresh_token, get_jwt_identity,
-                                 get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request)
+                                 get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request,
+                                 verify_token_in_decoded, verify_token_not_blacklisted)
 from api.server.fastapi_config import FastApiConfig
 from api.server.db import get_mongo_d
 from api.server.db.user import UserModel
@@ -67,9 +68,9 @@ async def login(*, walkoff_db: AsyncIOMotorCollection = Depends(get_mongo_d),
 
 
 @router.post("/refresh",
-             response_model = dict,
-             response_description = "Get a fresh access token.",
-             status_code = 200)
+             response_model=dict,
+             response_description="Get a fresh access token.",
+             status_code=200)
 async def refresh(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                   request: Request):
     """
@@ -126,3 +127,23 @@ async def logout(json_in: TokenModel, request: Request, walkoff_db: AsyncIOMotor
             'Could not logout.',
             'The identity of the refresh token does not match the identity of the authentication token.')
 
+
+@router.post("/verify",
+             response_model=bool,
+             response_description="Whether the access token is valid.")
+async def refresh(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
+                  request: Request):
+    """
+    Verify the access token's validity
+    """
+    decoded_token = await get_raw_jwt(request)
+
+    if decoded_token is None:
+        e = ProblemException(HTTPStatus.UNAUTHORIZED, "Invalid authorization.",
+                             "Access token is expired or missing.")
+        return e.as_response()
+
+    await verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
+    await verify_token_not_blacklisted(walkoff_db=walkoff_db, decoded_token=decoded_token, request_type='access')
+
+    return True

@@ -43,6 +43,7 @@ class Static:
     API_SERVICE = f"{CORE_PREFIX}_api"
     UMPIRE_SERVICE = f"{CORE_PREFIX}_umpire"
     WORKER_SERVICE = f"{CORE_PREFIX}_worker"
+    SOCKETIO_SERVICE = f"{CORE_PREFIX}_socketio"
 
     # Resource services
     REDIS_SERVICE = f"{RESOURCE_PREFIX}_redis"
@@ -85,13 +86,6 @@ class Static:
     # API_PATH = Path("api") / "api"
     CLIENT_PATH = Path("api") / "client"
     TEMPLATE_PATH = Path("api") / "server" / "templates"
-
-    # REDIS_DATA_PATH = Path("data") / "redis" / "red_data"
-    # POSTGRES_DATA_PATH = Path("data") / "postgres" / "pg_data"
-    PORTAINER_DATA_PATH = Path("data") / "portainer" / "prt_data"
-    REGISTRY_DATA_PATH = Path("data") / "registry" / "reg_data"
-    MINIO_DATA_PATH = Path("data") / "minio" / "min_data"
-
     SECRET_BASE_PATH = Path("/") / "run" / "secrets"
 
     SWAGGER_URL = "/walkoff/api/docs"
@@ -113,6 +107,7 @@ class Config:
     API_URI = os.getenv("API_URI", f"http://{Static.API_SERVICE}:8080")
     REDIS_URI = os.getenv("REDIS_URI", f"redis://{Static.REDIS_SERVICE}:6379")
     MINIO = os.getenv("MINIO", f"{Static.MINIO_SERVICE}:9000")
+    SOCKETIO_URI = os.getenv("SOCKETIO_URI", f"{Static.SOCKETIO_SERVICE}:3000")
 
     # Key locations
     ENCRYPTION_KEY_PATH = os.getenv("ENCRYPTION_KEY_PATH", Static.SECRET_BASE_PATH / Static.ENCRYPTION_KEY)
