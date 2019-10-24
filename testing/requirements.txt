@@ -3,3 +3,5 @@ pytest
 semver
 pytest
 pytest-asyncio
+aiofiles
+email-validator

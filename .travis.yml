@@ -24,6 +24,7 @@ before_install:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
+  - pip install -r api/requirements.txt
   - pip install -r testing/requirements.txt
 
 before_script:
