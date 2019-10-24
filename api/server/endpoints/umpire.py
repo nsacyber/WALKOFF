@@ -1,106 +1,135 @@
 import json
+import uuid
 import requests
+import asyncio
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from common.config import static
 from api.server.db.umpire import UploadFile
+from minio import Minio
+from common.minio_helper import MinioApi
+from common.config import config
+from common.redis_helpers import connect_to_aioredis_pool
+
+BUILD_STATUS_GLOB = "umpire_api_build"
 
 router = APIRouter()
 
 
 @router.get("/files/{app_name}/{app_version}")
-def list_all_files(app_name: str, app_version: str):
+async def list_all_files(app_name: str, app_version: str):
 
-    headers = {'content-type': 'application/json'}
-    payload = {'app_name': app_name, 'app_version': app_version}
-    url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/files"
-    r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
-
-    if r.status_code == 200:
-        return r.json()
-    else:
-        return r.text
+    try:
+        result = await MinioApi.list_files(app_name, app_version)
+        return result
+    except Exception as e:
+        return e
+    # headers = {'content-type': 'application/json'}
+    # payload = {'app_name': app_name, 'app_version': app_version}
+    # url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/files"
+    # r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
+    #
+    # if r.status_code == 200:
+    #     return r.json()
+    # else:
+    #     return r.text
 
 
 @router.get("/file/{app_name}/{app_version}")
-def get_file_contents(app_name: str, app_version: str, file_path: str):
-    # data = request.get_json()
-    # file_path = data.get("file_path")
-    headers = {'content-type': 'application/json'}
-    payload = {'app_name': app_name, 'app_version': app_version, 'file_path': file_path}
-    url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/file"
-    r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
+async def get_file_contents(app_name: str, app_version: str, file_path: str):
 
-    if r.status_code == 200:
-        return r.json()
-    else:
-        return r.text
+    file_data = await MinioApi.get_file(app_name, app_version, file_path)
+    try:
+        return file_data.json()
+    except Exception as e:
+        return file_data
 
 
 @router.post("/file_upload/")
-def update_file(body: UploadFile):
+async def update_file(body: UploadFile):
 
-    app_name = body.app_name
-    app_version = body.app_version
-    file_path = body.file_data
-    file_data = body.file_path
+    file_data_bytes = body.file_data.encode('utf-8')
+    file_size = len(file_data_bytes)
 
-    headers = {'content-type': 'application/json'}
-    payload = {'app_name': app_name, 'app_version': app_version, 'file_path': file_path, 'file_data': file_data}
-    url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/file-upload"
-    r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
-
-    if r.status_code == 200:
-        return r.json()
+    success, message = await MinioApi.update_file(body.app_name, body.app_version, body.file_path,
+                                                  file_data_bytes, file_size)
+    if success:
+        return f"You have updated {body.file_path}: message"
     else:
-        return r.text
+        raise HTTPException(status_code=400, detail="FILE NOT FOUND")
 
 
 @router.get("/build")
-def get_build_status():
-    headers = {'content-type': 'application/json'}
-    url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/build"
-    r = requests.get(url, headers=headers, verify=False)
-
-    if r.status_code == 200:
-        return r.json()
-    else:
-        return r.text
+async def get_build_status():
+    async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
+        ret = []
+        build_keys = set(await conn.keys(pattern=BUILD_STATUS_GLOB + "*", encoding="utf-8"))
+        for key in build_keys:
+            build = await conn.execute('get', key)
+            build = build.decode('utf-8')
+            ret.append((key, build))
+        return f"List of Current Builds: {ret}"
+    # headers = {'content-type': 'application/json'}
+    # url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/build"
+    # r = requests.get(url, headers=headers, verify=False)
+    #
+    # if r.status_code == 200:
+    #     return r.json()
+    # else:
+    #     return r.text
 
 
 @router.post("/build/{app_name}/{app_version}")
-def build_image(app_name: str, app_version: str):
-    headers = {'content-type': 'application/json'}
-    payload = {'app_name': app_name, 'app_version': app_version}
-    url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/build"
-    r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
+async def build_image(app_name: str, app_version: str):
+    build_id = str(uuid.uuid4())
+    asyncio.create_task(MinioApi.build_image(app_name, app_version, build_id))
+    ret = {"build_id": build_id}
+    return ret
 
-    if r.status_code == 200:
-        return r.json()
-    else:
-        return r.text
+    # headers = {'content-type': 'application/json'}
+    # payload = {'app_name': app_name, 'app_version': app_version}
+    # url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/build"
+    # r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
+    #
+    # if r.status_code == 200:
+    #     return r.json()
+    # else:
+    #     return r.text
 
 
 @router.post("/build/{build_id}")
-def build_status_from_id(build_id: str):
-    headers = {'content-type': 'application/json'}
-    url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/build/{build_id}"
-    r = requests.post(url, headers=headers, verify=False)
+async def build_status_from_id(build_id: str):
 
-    if r.status_code == 200:
-        return r.json()
-    else:
-        return r.text
+    async with connect_to_aioredis_pool(config.REDIS_URI) as conn:
+        get = BUILD_STATUS_GLOB + "." + build_id
+        build_status = await conn.execute('get', get)
+        build_status = build_status.decode('utf-8')
+        return build_status
+
+    # headers = {'content-type': 'application/json'}
+    # url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/build/{build_id}"
+    # r = requests.post(url, headers=headers, verify=False)
+    #
+    # if r.status_code == 200:
+    #     return r.json()
+    # else:
+    #     return r.text
 
 
 @router.post("/save/{app_name}/{app_version}")
-def save_umpire_file(app_name: str, app_version: str):
-    headers = {'content-type': 'application/json'}
-    payload = {'app_name': app_name, 'app_version': app_version}
-    url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/save"
-    r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
+async def save_umpire_file(app_name: str, app_version: str):
 
-    if r.status_code == 200:
-        return r.json()
+    result = await MinioApi.save_file(app_name, app_version)
+    if result:
+        return "Successful Update to Local Repo"
     else:
-        return r.json()
+        return "Failed"
+    # headers = {'content-type': 'application/json'}
+    # payload = {'app_name': app_name, 'app_version': app_version}
+    # url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/save"
+    # r = requests.post(url, data=json.dumps(payload), headers=headers, verify=False)
+    #
+    # if r.status_code == 200:
+    #     return r.json()
+    # else:
+    #     return r.json()

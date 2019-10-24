@@ -44,12 +44,15 @@ services:
       - walkoff_internal_key
       - walkoff_mongo_key
       - walkoff_redis_key
+      - walkoff_minio_access_key
+      - walkoff_minio_secret_key
     configs:
       - common_env.yml
     depends_on:
       - resource_redis
       - resource_mongo
     volumes:
+      - ./apps:/app/apps
       - ./api/client/dist:/app/api/client/dist
 
   resource_nginx:

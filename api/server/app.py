@@ -1,11 +1,14 @@
 import logging
 from http import HTTPStatus
+import os
+from pathlib import Path
 
 from fastapi import FastAPI, Depends
 from fastapi.openapi.utils import get_openapi
 from starlette.staticfiles import StaticFiles
 from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
+from minio import Minio
 import pymongo
 
 from api.server.endpoints import (appapi, auth, console, dashboards, global_variables, results, roles, scheduler,
@@ -16,13 +19,14 @@ from api.server.utils.problems import ProblemException
 from api.server.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
     get_roles_by_resource_permission
 
-from common.config import static
+from common.config import static, config
 
 logger = logging.getLogger(__name__)
 
 _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _walkoff = FastAPI(openapi_prefix="/walkoff/api")
 _scheduler = Scheduler()
+p = Path('./apps').glob('**/*')
 
 
 _app.mount("/walkoff/api", _walkoff)
@@ -56,6 +60,31 @@ async def start_banner():
     logger.info("API Server started.")
 
 
+@_app.on_event("startup")
+async def push_to_minio():
+    minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                         secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
+    bucket_exists = False
+    try:
+        buckets = minio_client.list_buckets()
+        for bucket in buckets:
+            if bucket.name == "apps-bucket":
+                bucket_exists = True
+    except Exception as e:
+        logger.info("Bucket doesn't exist.")
+
+    if not bucket_exists:
+        minio_client.make_bucket("apps-bucket", location="us-east-1")
+
+    files_to_upload = [x for x in p if x.is_file()]
+    for file in files_to_upload:
+        path_to_file = str(file)
+        with open(path_to_file, "rb") as file_data:
+            file_stat = os.stat(path_to_file)
+            minio_client.put_object("apps-bucket", path_to_file, file_data, file_stat.st_size)
+
+    logger.info("Apps Pushed to Minio")
+
 # Note: The request goes through middleware here in opposite order of instantiation, last to first.
 @_walkoff.middleware("http")
 async def db_session_middleware(request: Request, call_next):
@@ -86,7 +115,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         request_method = request.method
         accepted_roles = set()
         resource_permission = ""
-        move_on = ["personal_user", "globals", "workflows", "console", "auth", "workflowqueue", "appapi",
+        move_on = ["personal_user", "umpire", "globals", "workflows", "console", "auth", "workflowqueue", "appapi",
                    "streams", "docs", "redoc", "openapi.json", ""]
         if resource_name not in move_on:
             if request_method == "POST":

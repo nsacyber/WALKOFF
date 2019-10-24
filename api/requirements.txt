@@ -16,5 +16,8 @@ email-validator
 motor
 aiofiles
 python-multipart
-pydantic
 pyjwt
+minio
+aiodocker == 0.14.0
+docker
+

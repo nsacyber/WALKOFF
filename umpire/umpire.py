@@ -79,9 +79,9 @@ class Umpire:
             for signame in {'SIGINT', 'SIGTERM'}:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
-            logger.info("Bringing up Umpire API...")
+            # logger.info("Bringing up Umpire API...")
             # Use --reload when you want to run locally
-            os.system("uvicorn umpire.umpire_api:app --host 0.0.0.0 --port 8000 --lifespan on &")
+            # os.system("uvicorn umpire.umpire_api:app --host 0.0.0.0 --port 8000 --lifespan on &")
 
             logger.info("Umpire is initialized!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),
