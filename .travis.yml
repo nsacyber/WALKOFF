@@ -19,6 +19,7 @@ before_install:
   - docker version
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-compose
   - pip install -U pytest
+  - pip install -U coverage
   - pip install -U codecov
 
 # command to install dependencies
@@ -33,10 +34,14 @@ before_script:
 
 # command to run tests
 script:
-  - pytest testing/api/
+  - coverage pytest testing/api/
+  - coverage combine
+  - coverage report
+  - codecov pytest testing/api/
+  - codecov combine
+  - codecov report
 
 after_script:
-  - codecov
   - docker stack services ci
   - docker stack ps ci
   - ./walkoff.sh down -cy
