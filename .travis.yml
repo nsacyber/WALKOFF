@@ -10,8 +10,8 @@ python:
 services:
   - docker
 
-#env:
-#  - CONFIG_PATH=data/local_config.yml
+env:
+  - CONFIG_PATH=data/local_config.yml
 
 before_install:
   - sudo apt-get update
@@ -34,9 +34,8 @@ before_script:
 
 # command to run tests
 script:
-  - pytest testing/api/
   - coverage run -m pytest testing/api/
-  - coverage combine
+  #- coverage combine
   - coverage report
 
 after_script:
