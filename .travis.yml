@@ -28,7 +28,8 @@ before_script:
   - ./walkoff.sh up -bdy
 
 # command to run tests
-script: pytest
+script:
+  - pytest testing/api/
 
 after_script:
   - codecov
