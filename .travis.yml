@@ -35,7 +35,7 @@ before_script:
 # command to run tests
 script:
   - pytest testing/api/
-  - coverage run -m pytest
+  - coverage run -m pytest testing/api/
   - coverage combine
   - coverage report
 
