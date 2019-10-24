@@ -10,6 +10,9 @@ python:
 services:
   - docker
 
+env:
+  - CONFIG_PATH=data/local_config.yml
+
 before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
