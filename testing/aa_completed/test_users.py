@@ -264,6 +264,49 @@ def test_invalid_update_super_admin_password_and_username2(api: TestClient, auth
     assert p.status_code == 403
 
 
+def test_create_new_user_with_new_role(api: TestClient, auth_header: dict):
+    with open('testing/util/role.json') as fp:
+        role_json = json.load(fp)
+        role_id = role_json["id_"]
+
+    api.post("/walkoff/api/roles/", headers=auth_header, data=json.dumps(role_json))
+
+    inputs = [
+        {
+            "create": f"""
+            username: new_test
+            password: 123
+            roles: [
+                {role_id}
+            ]
+            active: {True}
+            """
+        }
+    ]
+    assert_crud_resource(api, auth_header, base_users_url, inputs, yaml.full_load)
+
+
+def test_login_new_user_with_new_role(api: TestClient, auth_header: dict):
+    with open('testing/util/role.json') as fp:
+        role_json = json.load(fp)
+        role_id = role_json["id_"]
+    api.post("/walkoff/api/roles/", headers=auth_header, data=json.dumps(role_json))
+
+    data = {
+        "username": "new_test",
+        "password": 123,
+        "roles": [role_id]
+    }
+    api.post(base_users_url, headers=auth_header, data=json.dumps(data))
+
+    data = {
+        "username": "new_test",
+        "password": 123,
+    }
+    p = api.post(base_auth_url + "login", data=json.dumps(data))
+    assert p.status_code == 201
+
+
 def test_rud_user_dne(api: TestClient, auth_header: dict):
     with open('testing/util/user.json') as fp:
         user_json = json.load(fp)

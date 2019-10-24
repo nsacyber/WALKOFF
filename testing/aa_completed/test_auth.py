@@ -134,3 +134,33 @@ def test_invalid_super_admin_logout(api: TestClient):
     assert p.status_code == 422
 
 
+def test_new_user_auth_complete(api: TestClient, auth_header: dict):
+    with open('testing/util/role.json') as fp:
+        role_json = json.load(fp)
+        role_id = role_json["id_"]
+    api.post("/walkoff/api/roles/", headers=auth_header, data=json.dumps(role_json))
+
+    data = {
+        "username": "new_test",
+        "password": 123,
+        "roles": [role_id]
+    }
+    api.post("/walkoff/api/users/", headers=auth_header, data=json.dumps(data))
+
+    data = {
+        "username": "new_test",
+        "password": 123,
+    }
+
+    p = api.post(base_auth_url + "login", data=json.dumps(data))
+    assert p.status_code == 201
+    tokens = p.json()
+    new_headers = {"Authorization": "Bearer " + tokens["access_token"]}
+    refresh_headers = {"Authorization": "Bearer " + tokens["refresh_token"]}
+    data = {"refresh_token": tokens["refresh_token"]}
+
+    p = api.post(base_auth_url + "refresh", headers=refresh_headers)
+    assert p.status_code == 200
+
+    p = api.post(base_auth_url + "logout", headers=new_headers, data=json.dumps(data))
+    assert p.status_code == 204
