@@ -40,6 +40,4 @@ script:
   - coverage report
 
 after_script:
-  - docker stack services ci
-  - docker stack ps ci
   - ./walkoff.sh down -cy
