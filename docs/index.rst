@@ -59,7 +59,7 @@ Deploying WALKOFF
        .\walkoff.ps1 up --build
 
        # If verbose output is desired:
-       .\walkoff.sh up --build --debug
+       .\walkoff.ps1 up --build --debug
 
 
     .. code-block:: console
