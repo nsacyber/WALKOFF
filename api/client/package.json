@@ -40,6 +40,7 @@
     "@swimlane/ngx-datatable": "^15.0.2",
     "@types/bootbox": "^4.4.36",
     "@types/jquery": "^3.3.30",
+    "@types/socket.io-client": "^1.4.32",
     "ang-jsoneditor": "^1.8.3",
     "angular-gridster2": "^8.0.0",
     "angular2-uuid": "^1.1.1",
@@ -82,6 +83,7 @@
     "rxjs": "~6.5.3",
     "rxjs-compat": "^6.5.3",
     "select2": "^4.0.8",
+    "socket.io-client": "^2.3.0",
     "tslib": "^1.10.0",
     "zone.js": "~0.9.1"
   },

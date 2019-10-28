@@ -1,23 +1,7 @@
 export class ConsoleLog {
+	execution_id: string;
+
+	workflow_id: string;
+
 	message: string;
-
-	// action_name: string;
-  //
-	// app_name: string;
-  //
-	// workflow: string;
-  //
-	// level: string;
-
-	toNewConsoleLog(): ConsoleLog {
-		const out = new ConsoleLog();
-
-		out.message = this.message;
-		// out.action_name = this.action_name;
-		// out.app_name = this.app_name;
-		// out.workflow = this.workflow;
-		// out.level = this.level;
-
-		return out;
-	}
 }

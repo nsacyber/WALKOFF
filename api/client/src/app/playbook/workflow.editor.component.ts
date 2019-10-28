@@ -54,6 +54,8 @@ import { Transform } from '../models/playbook/transform';
 import { VariableModalComponent } from '../globals/variable.modal.component';
 import { ResultsModalComponent } from '../execution/results.modal.component';
 import { JsonModalComponent } from '../execution/json.modal.component';
+import * as io from 'socket.io-client';
+
 
 @Component({
 	selector: 'workflow-editor-component',
@@ -113,6 +115,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	sseErrorTimeout: any;
 	showConsole: boolean = false;
 	NodeStatuses = NodeStatuses;
+	consoleSocket: SocketIOClient.Socket;
 
 	conditionalOptions = {
 		tabSize: 4,
@@ -178,7 +181,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	ngOnDestroy(): void {
 		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
-		if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
+		// if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
+		if (this.consoleSocket && this.consoleSocket.close) { this.consoleSocket.close(); }
 	}
 
 	/**
@@ -291,6 +295,46 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		})
 	}
 
+	createConsoleSocket(workflowExecutionId: string) {
+		if (this.consoleSocket) this.consoleSocket.close();
+
+		this.consoleSocket = io('/console', {
+			path: '/walkoff/sockets/socket.io',
+			query: { channel: workflowExecutionId }
+		});
+
+		this.consoleSocket.on('connected', (data) => {
+			const events = plainToClass(ConsoleLog, [
+				{ message: `Starting workflow execution....\n`}, 
+				...(data as any[])
+			]);
+			this.consoleLog = [...this.consoleLog, ...events];
+			this.updateConsole();
+		});
+
+		this.consoleSocket.on('log', (data) => {
+			console.log('console', data)
+			const consoleEvent = plainToClass(ConsoleLog, data);
+			this.consoleLog.push(consoleEvent);
+			this.updateConsole();
+		});
+	}
+
+	updateConsole() {
+		this.consoleLog = this.consoleLog.slice();
+		if (!this.consoleArea || !this.consoleArea.codeMirror) return;
+		const cm = this.consoleArea.codeMirror;
+		const $scroller = $(cm.getScrollerElement());
+		const atBottom = $scroller[0].scrollHeight - $scroller.scrollTop() - $scroller.outerHeight() <= 0;
+		cm.getDoc().setValue(this.consoleContent);
+		cm.refresh();
+		if (atBottom) cm.execCommand('goDocEnd');
+	}
+
+	get consoleContent() {
+		return this.consoleLog.map(log => log.message).join('');
+	}
+	
     ///------------------------------------------------------------------------------------------------------
 	/// Console functions
 	///------------------------------------------------------------------------------------------------------
@@ -298,36 +342,32 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Sets up the EventStream for receiving console logs from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getConsoleSSE(workflowExecutionId: string) {
-		if (this.consoleEventSource) this.consoleEventSource.close();
+	// getConsoleSSE(workflowExecutionId: string) {
+	// 	if (this.consoleEventSource) this.consoleEventSource.close();
 
-		return this.authService.getEventSource(`api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
-			.then(eventSource => {
-				this.consoleEventSource = eventSource;
-				this.consoleEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
-				this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
-			});
-	}
+	// 	return this.authService.getEventSource(`api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
+	// 		.then(eventSource => {
+	// 			this.consoleEventSource = eventSource;
+	// 			this.consoleEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
+	// 			this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
+	// 		});
+	// }
 
-  consoleEventHandler(message: any): void {
-		if (this.sseErrorTimeout) {
-			clearTimeout(this.sseErrorTimeout);
-			delete this.sseErrorTimeout;
-		}
+    // consoleEventHandler(message: any): void {
+	// 	if (this.sseErrorTimeout) {
+	// 		clearTimeout(this.sseErrorTimeout);
+	// 		delete this.sseErrorTimeout;
+	// 	}
 
-		console.log('c', message)
-		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
-		const newConsoleLog = consoleEvent.toNewConsoleLog();
+	// 	console.log('c', message)
+	// 	const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
+	// 	const newConsoleLog = consoleEvent;
 
-		// Induce change detection by slicing array
-		this.consoleLog.push(newConsoleLog);
-		this.consoleLog = this.consoleLog.slice();
-		this.updateConsole();
-	}
-
-	get consoleContent() {
-		return this.consoleLog.map(log => log.message).join('');
-	}
+	// 	// Induce change detection by slicing array
+	// 	this.consoleLog.push(newConsoleLog);
+	// 	this.consoleLog = this.consoleLog.slice();
+	// 	this.updateConsole();
+	// }
 
 	///------------------------------------------------------------------------------------------------------
 	/// Playbook CRUD etc functions
@@ -466,16 +506,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 	}
 
-	updateConsole() {
-		if (!this.consoleArea || !this.consoleArea.codeMirror) return;
-		const cm = this.consoleArea.codeMirror;
-		const $scroller = $(cm.getScrollerElement());
-		const atBottom = $scroller[0].scrollHeight - $scroller.scrollTop() - $scroller.outerHeight() <= 0;
-		cm.getDoc().setValue(this.consoleContent);
-		cm.refresh();
-		if (atBottom) cm.execCommand('goDocEnd');
-	}
-
 	/**
 	 * Executes the loaded workflow as it exists on the server. Will not currently execute the workflow as it stands.
 	 */
@@ -486,14 +516,10 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const executionId = UUID.UUID();
 		Promise.all([
 			this.getNodeStatusSSE(executionId),
-			this.getConsoleSSE(executionId)
+			Promise.resolve(this.createConsoleSocket(executionId)),
 		]).then(() => {
 			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
-				.then((workflowStatus: WorkflowStatus) => {
-					this.toastrService.success(`Starting <b>${this.loadedWorkflow.name}</b>`)
-					this.consoleLog.push(plainToClass(ConsoleLog, { message: `Starting workflow execution....\n`}));
-					this.updateConsole();
-				})
+				.then((_: WorkflowStatus) => this.toastrService.success(`Starting <b>${this.loadedWorkflow.name}</b>`))
 				.catch(e => this.toastrService.error(`Error starting execution of ${this.loadedWorkflow.name}: ${e.message}`));
 		})
 	}

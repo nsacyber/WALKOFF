@@ -23,12 +23,12 @@ const server = http.listen(3000, () => console.log("listening on *:3000"));
 // whenever a user connects on port 3000 via a websocket, log that a user has connected
 io.on("connection", (socket: any) => console.log("a user connected"));
 
-createSpace('/console', new ConsoleEvent);
-createSpace('/workflowStatus', new WorkflowStatusEvent)
-createSpace('/nodeStatus', new NodeStatusEvent)
-createSpace('/buildStatus', new BuildStatusEvent)
+createSpace('/console', () => new ConsoleEvent);
+createSpace('/workflowStatus', () => new WorkflowStatusEvent)
+createSpace('/nodeStatus', () => new NodeStatusEvent)
+createSpace('/buildStatus', () => new BuildStatusEvent)
 
-function createSpace(url: string, eventClass: WalkoffEvent) {
+function createSpace(url: string, getEventClass: () => WalkoffEvent) {
     const queue = new EventQueue();
     const space = io.of(url);
 
@@ -38,11 +38,11 @@ function createSpace(url: string, eventClass: WalkoffEvent) {
         client.join(channel);
 
         client.emit('connected', queue.filter(channel))
-        client.on('log', (data) => {
-            const item = plainToClassFromExist(eventClass, data);
-            console.log(item)
+        client.on('log', (data: any) => {
+            const item = plainToClassFromExist(getEventClass(), data);
             item.channels.forEach((c: string) => client.broadcast.to(c).emit('log', item))
             queue.add(item);
+            console.log(item)
         });
     })
 }
