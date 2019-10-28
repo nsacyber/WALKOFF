@@ -49,9 +49,6 @@ class AppApiModel(BaseModel):
         semver.parse(value)
         return value
 
-    # class Config:
-    #     orm_mode = True
-
 
 # class AppApi(Base):
 #     __tablename__ = "app_api"

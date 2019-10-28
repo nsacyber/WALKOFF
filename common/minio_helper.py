@@ -6,6 +6,9 @@ import io
 import aiodocker
 import os
 from os import stat
+from urllib3.exceptions import ResponseError
+from minio.error import NoSuchKey
+
 import asyncio
 from pwd import getpwuid
 from grp import getgrgid
@@ -105,8 +108,13 @@ class MinioApi:
         minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
                              secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         abs_path = f"apps/{app_name}/{version}/{path}"
-        data = minio_client.get_object('apps-bucket', abs_path)
-        return data.read()
+        try:
+            data = minio_client.get_object('apps-bucket', abs_path)
+            return data.read()
+        except NoSuchKey as n:
+            return "No Such Key"
+        except ResponseError as e:
+            return "Response Error"
 
     @staticmethod
     async def update_file(app_name, version, path, file_data, file_size):
@@ -135,9 +143,12 @@ class MinioApi:
     @staticmethod
     async def save_file(app_name, version):
         temp = []
+        editing = False
         minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
                              secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
         objects = minio_client.list_objects("apps-bucket", recursive=True)
+        if objects is []:
+            return False
         for obj in objects:
             size = obj.size
             p_src = Path(obj.object_name)
@@ -146,12 +157,21 @@ class MinioApi:
                 p_dst = hold[hold.find(app_name):]
                 p_dst = Path("apps") / p_dst
                 os.makedirs(p_dst.parent, exist_ok=True)
-
-                data = minio_client.get_object('apps-bucket', hold)
+                editing = True
+                try:
+                    data = minio_client.get_object('apps-bucket', hold)
+                except NoSuchKey as n:
+                    return False
+                except ResponseError as r:
+                    return False
                 with open(str(p_dst), 'wb+') as file_data:
                     for d in data.stream(size):
                         file_data.write(d)
+                #TODO: Make this more secure, don't just base it off of requirements.txt
                 owner_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_uid
                 group_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_gid
                 os.chown(p_dst, owner_id, group_id)
-        return True
+        if editing is False:
+            return False
+        else:
+            return True

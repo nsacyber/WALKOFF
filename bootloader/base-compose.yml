@@ -58,8 +58,8 @@ services:
     image: bitnami/minio:2019-debian-9
     networks:
       - walkoff_network
-#    ports:
-#      - "9001:9000"
+    ports:
+      - "9001:9000"
     volumes:
       - walkoff_resource_minio_volume:/data
       - ./apps:/app/apps

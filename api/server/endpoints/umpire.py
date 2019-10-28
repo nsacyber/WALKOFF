@@ -2,6 +2,7 @@ import json
 import uuid
 import requests
 import asyncio
+from typing import List
 
 from fastapi import APIRouter, HTTPException
 from common.config import static
@@ -16,14 +17,13 @@ BUILD_STATUS_GLOB = "umpire_api_build"
 router = APIRouter()
 
 
-@router.get("/files/{app_name}/{app_version}")
+@router.get("/files/{app_name}/{app_version}",
+            response_model=List[str], response_description="List of file names")
 async def list_all_files(app_name: str, app_version: str):
 
-    try:
-        result = await MinioApi.list_files(app_name, app_version)
-        return result
-    except Exception as e:
-        return e
+    result = await MinioApi.list_files(app_name, app_version)
+    return result
+
     # headers = {'content-type': 'application/json'}
     # payload = {'app_name': app_name, 'app_version': app_version}
     # url = f"http://{static.UMPIRE_SERVICE}:8000/umpire/files"
@@ -37,7 +37,6 @@ async def list_all_files(app_name: str, app_version: str):
 
 @router.get("/file/{app_name}/{app_version}")
 async def get_file_contents(app_name: str, app_version: str, file_path: str):
-
     file_data = await MinioApi.get_file(app_name, app_version, file_path)
     try:
         return file_data.json()
@@ -47,7 +46,6 @@ async def get_file_contents(app_name: str, app_version: str, file_path: str):
 
 @router.post("/file_upload/")
 async def update_file(body: UploadFile):
-
     file_data_bytes = body.file_data.encode('utf-8')
     file_size = len(file_data_bytes)
 
