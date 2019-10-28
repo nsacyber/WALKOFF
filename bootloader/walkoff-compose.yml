@@ -60,10 +60,8 @@ services:
     build:
       context: ./
       dockerfile: ./socketio/Dockerfile
-    ports:
-      - '3000:3000'
 #    ports:
-#      - '8080:8080'
+#      - '3000:3000'
     networks:
       - walkoff_network
 #    stop_signal: SIGINT
