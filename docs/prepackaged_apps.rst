@@ -3,15 +3,30 @@
 Prepackaged Applications
 ========================
 
-Hello_World
------------
-	The Hello World app includes simple actions used for testing and as an example/template for app development.
+Adversary_Hunting
+-----------------
+	As the name describes, this app is a group of pre-made actions that run Kansa scripts behind the scenes. 
+
+
+Basics
+------
+	The Basics app includes simple actions used for testing and as an example/template for app development. There are also some useful actions like echo_string/echo_json that can be useful for kicking off workflows by overriding parameters
+
+
+Hive
+----
+	This is a way for you to interact with the Hive ticketing system. It allows you to create, update, and close cases in the hive as well as other actions you can perform on your instance of the Hive. 
 
 
 IP_Addr_Utils
 -------------
 	This is a simple app with an action that converts CIDR notation to a list of IPs. This can be useful for generating lists of IPs to parallelize actions on.
 
+
+Mitre_Attack
+------------
+	Similar to the Adversary Hunting app, this app contains actions that perform one of scripts from the Mitre Attack framework.
+	
 
 Nmap
 ----

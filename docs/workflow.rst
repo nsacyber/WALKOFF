@@ -98,15 +98,15 @@ Selected Nodes or Edges will be highlighted in blue. During execution, Nodes tha
 
 Apps and Actions
 ''''''''''''''''
-Apps and Actions that you have installed in your Walkoff instance will appear in the left pane. Click the name of an App to reveal the Actions that App provides. To use an Action from the pane, double click on the name of the Action or click and drag the Action into the workspace.
+Apps and Actions that you have installed in your Walkoff instance will appear in the left pane. Click the name of an App to reveal the Actions that the App provides (an App is simply a way for us to group associated Actions). To use an Action from the pane, double click on the name of the Action or click and drag the Action into the workspace.
 
 Navigating Workspace
 ''''''''''''''''''''
-The workspace can be navigated using the buttons in the top left of the pane. From top to bottom, these buttons can be used to pan, zoom to fit, or zoom in and out. You can also click and drag on an empty area to pan, and use the scroll wheel to zoom in and out.
+The workspace can be navigated using the buttons in the top left of the pane. From top to bottom, these buttons can be used to pan, zoom to fit, or zoom in and out. You can also click and drag on an empty area to pan, and use the scroll wheel on your mouse to zoom in and out.
 
 Connecting Actions Together
 '''''''''''''''''''''''''''
-When hovering over the top edge of a node, a dot will appear. To create an edge from one node to the next, click and drag from the dot to the next action in the sequence; an arrow will appear, linking the actions together and creating a branch. A node can point to more than one node; they will all execute unless not chosen by a condition.
+When hovering over the top edge of a node, a dot will appear. To create an edge from one node to the next, click and drag from that b dot to the next action in the sequence; an arrow will appear, linking the actions together and creating a branch. A node can point to more than one node; they will all execute unless not chosen by a condition.
 
 Branch Configuration
 ''''''''''''''''''''
@@ -126,7 +126,7 @@ If you navigate to the Applications tab at the top toolbar of Walkoff you will b
 
 .. image:: ../docs/images/appeditor/file_tree.png
 
-If you want to make edits to any file, you can do that in the file editor that is displayed above. If you would like you can make changes to multiple files, just make sure to hit the save icon before navigating away from the page. This will save the current file to minio. At this point minio is prepared to build using the newly saved files once you click the "Rebuild Image" button. This will pull what is in Minio and rebuild the images based off of those files. Once a successful image is built, Walkoff will copy the files from Minio into your working directory such that those files are visible locally. 
+If you want to make edits to any file, you can do that in the file editor that is displayed above. If you would like, you can make changes to multiple files, just make sure to hit the save icon before navigating away from the page. This will save the current file to minio. At this point, minio is prepared to build using the newly saved files. Once you click the "Rebuild Image" button, WALKOFF will pull what is in Minio and rebuild the images based off of those files. Once a successful image is built, Walkoff will copy the files from Minio into your working directory such that those file changes are visible locally. 
 
 *NOTE: You can undo and redo changes made in the app editor using the symbols next to the save button*
 
@@ -136,11 +136,11 @@ If you want to make edits to any file, you can do that in the file editor that i
 
 User and Role Creation
 -----------------------
-WALKOFF allows for role-based user creation. By default, WALKOFF has three pre-built roles: ``super_admin``, ``admin``, ``workflow_developer``, and ``workflow_operator``. 
+WALKOFF allows for role-based user creation. By default, WALKOFF has four pre-built roles: ``super_admin``, ``admin``, ``workflow_developer``, and ``workflow_operator``. 
 	* The ``super_admin`` role is a singular immutable account.  This role has the ability to delete/create new users and is given full access to  all resources created by any user on WALKOFF. Newly created users cannot be given this role; this account cannot be deleted and its role cannot be changed.
 	* The ``admin`` role by default is given the same control over WALKOFF as the ``super_admin`` role. However, newly created users can be given this role, and this role may be edited. Furthermore, other users with differing roles may hide workflows and global variables from this role tier.
 	* The ``workflow_developer`` role is given the ability to create, update, and delete workflows, global_variables, workflow_variables, dashboards, and schedules. This role does not have the ability to change WALKOFF settings, add new users or roles. 
-	* The ``workflow_operator`` role by default is only given the ability to read all WALKOFF resources aside from workflow_variables, which they may update and utilize, and workflows, which they may execute.
+	* The ``workflow_operator`` role by default is only given the ability to read all WALKOFF resources aside from workflow_variables, which they may update and utilize. They also have the ability to execute workflows that they have access to.
 
 Creating a User
 '''''''''''''''''
@@ -149,7 +149,7 @@ In order to create a new user, you must be logged in as a user with user creatio
 	
 .. image:: ../docs/images/user_creation1.PNG
 
-* From this page, click on the ``create user`` button. Fill in the desired username, password, and role tier for this account and click ``Add User`` to oomplete your user creation.
+* From this page, click on the ``create user`` button. Fill in the desired username, password, and role tier for this account and click ``Add User`` to complete your user creation.
 	
 .. image:: ../docs/images/user_creation2.PNG
 
@@ -180,7 +180,7 @@ In order to create a new user, you must be logged in as a user with role creatio
 
 Parameter Passing and Node Types (Builtin)
 ------------------------------------------
-Actions may have parameters, whose properties are defined by the App's API. By default, an parameter's value is a static value that you specify in the workflow editor. To use the output from an Action the parameter value for another Action, select ``Action Output`` for the parameter, then select the action you wish to receive the output from. The source action must be a predecessor at some level to the destination action.
+Actions may have parameters, whose properties are defined by the App's ``api.yaml``. By default, a parameter's value is a static value that you specify in the workflow editor. To use the output from an Action as the parameter value for another Action, select ``Action Output`` for the parameter, then select the action you wish to receive the output from. The source action must be a predecessor at some level to the destination action.
 
 Parameter Passing
 '''''''''''''''''
@@ -196,7 +196,7 @@ Using Action Output allows you to use the output from a previous node as an inpu
 
 Global Variable
 ~~~~~~~~~~~~~~~
-As the name implies, a Global Variable can be used by any workflow in Walkoff. These are set at :ref:`create-global` and are encrypted by default and are decrypted when required by App actions. These can be useful for storing values like credentials or API tokens for use across multiple workflows.
+As the name implies, a Global Variable can be used by any workflow in Walkoff. These are set at :ref:`create-global` and are encrypted by default for storage and are decrypted at action execution time. These can be useful for storing values like credentials or API tokens for use across multiple workflows.
 
 Workflow Variable
 ~~~~~~~~~~~~~~~~~
