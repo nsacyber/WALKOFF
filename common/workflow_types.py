@@ -154,7 +154,7 @@ class WorkflowJSONEncoder(json.JSONEncoder):
             position = {"x": o.position.x, "y": o.position.y, "walkoff_type_": "position"}
             return {"id_": o.id_, "name": o.name, "app_name": o.app_name, "app_version": o.app_version,
                     "label": o.label, "position": position, "parameters": o.parameters, "priority": o.priority,
-                    "execution_id": o.execution_id, "walkoff_type_": "action"}
+                    "execution_id": o.execution_id, "workflow_id": o.workflow_id, "walkoff_type_": "action"}
 
         elif isinstance(o, Condition):
             position = {"x": o.position.x, "y": o.position.y, "walkoff_type_": "position"}
@@ -283,15 +283,16 @@ class Node:
 
 
 class Action(Node):
-    __slots__ = ("parameters", "execution_id", "parallelized", "started_at")
+    __slots__ = ("parameters", "execution_id", "workflow_id", "parallelized", "started_at")
 
     def __init__(self, name, position, app_name, app_version, label, priority, parallelized=False, parameters=None,
-                 id_=None, execution_id=None, errors=None, is_valid=None, started_at=None, **kwargs):
+                 id_=None, execution_id=None, workflow_id=None, errors=None, is_valid=None, started_at=None, **kwargs):
         super().__init__(name, position, label, app_name, app_version, id_, errors, is_valid)
         self.parameters = parameters if parameters is not None else list()
         self.parallelized = parallelized
         self.priority = priority
         self.execution_id = execution_id  # Only used by the app as a key for the redis queue
+        self.workflow_id = workflow_id
         self.started_at = started_at
 
     def __str__(self):

@@ -46,7 +46,7 @@ Watch this space for an update to the App Editor, which will allow you to create
 			response = requests.get(url, params=parameters)
 			response_dict = response.json()
 			pretty = self._pretty_print(response_dict)
-			await self.console_logger.info(pretty)
+			await self.logger.info(pretty)
 			return pretty
 
 **2. Copy the hello_world application folder from the WALKOFF/apps directory**
@@ -268,7 +268,7 @@ There are several key places to look to debug an application:
      .. code-block:: console	
 	
 	message = "This is to be printed to the console logger"
-	await self.console_logger.info(message)       
+	await self.logger.info(message)
        
 #.  **App Containers**
 

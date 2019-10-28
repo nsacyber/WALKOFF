@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 import os
+import socket
 
 import yaml
 
@@ -31,7 +32,7 @@ class Static:
     """Common location for static values"""
 
     # Common statics
-    CONTAINER_ID = os.getenv("HOSTNAME")
+    CONTAINER_ID = os.getenv("HOSTNAME", socket.gethostname())
 
     # Prefixes
     STACK_PREFIX = "walkoff"
@@ -107,7 +108,7 @@ class Config:
     API_URI = os.getenv("API_URI", f"http://{Static.API_SERVICE}:8080")
     REDIS_URI = os.getenv("REDIS_URI", f"redis://{Static.REDIS_SERVICE}:6379")
     MINIO = os.getenv("MINIO", f"{Static.MINIO_SERVICE}:9000")
-    SOCKETIO_URI = os.getenv("SOCKETIO_URI", f"{Static.SOCKETIO_SERVICE}:3000")
+    SOCKETIO_URI = os.getenv("SOCKETIO_URI", f"http://{Static.SOCKETIO_SERVICE}:3000")
 
     # Key locations
     ENCRYPTION_KEY_PATH = os.getenv("ENCRYPTION_KEY_PATH", Static.SECRET_BASE_PATH / Static.ENCRYPTION_KEY)
@@ -161,12 +162,16 @@ class Config:
         return sfloat(getattr(self, key), default)
 
     def load_config(self):
-        with open(CONFIG_PATH) as f:
-            y = yaml.safe_load(f)
+        try:
+            with open(CONFIG_PATH) as f:
+                y = yaml.safe_load(f)
 
-        for key, value in y.items():
-            if hasattr(self, key.upper()) and not os.getenv(key.upper()):
-                setattr(self, key.upper(), value)
+            for key, value in y.items():
+                if hasattr(self, key.upper()) and not os.getenv(key.upper()):
+                    setattr(self, key.upper(), value)
+        except IOError:
+            logger.warning(f"No config file found at {CONFIG_PATH}, using defaults.\n"
+                           f"Set the CONFIG_PATH environment variable to point to a config file to override.")
 
     def dump_config(self, file):
         with open(file, 'w') as f:

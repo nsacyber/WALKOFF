@@ -18,7 +18,7 @@ import json
 def app(redis):
     spec = importlib.util.spec_from_file_location("app.py", Path("apps") / "hello_world" / "1.0.0" / "src")
 
-    app = HelloWorld(redis=redis, logger=None, console_logger=None)
+    app = HelloWorld(redis=redis, logger=None)
     yield app
 
 
@@ -36,7 +36,6 @@ def test_init(app, redis):
     assert app.action_queue_keys == tuple(f"{app.__class__.__name__}-{app.__version__}-{i}" for i in range(5, 0, -1))
     assert app.redis == redis
     assert app.logger == logging.getLogger("AppBaseLogger")
-    assert app.console_logger is not None
     assert app.current_execution_id is None
 
 

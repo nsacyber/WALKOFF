@@ -227,6 +227,7 @@ class Worker:
 
             if isinstance(node, Action):
                 node.execution_id = self.workflow.execution_id  # the app needs this as a key for the redis queue
+                node.workflow_id = self.workflow.id_
 
             self.scheduling_tasks.add(asyncio.create_task(self.schedule_node(node, parents, children)))
 

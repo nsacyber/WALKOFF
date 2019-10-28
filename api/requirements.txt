@@ -17,6 +17,8 @@ motor
 aiofiles
 python-multipart
 pyjwt
+python-socketio
+websocket-client
 minio
 aiodocker == 0.14.0
 docker

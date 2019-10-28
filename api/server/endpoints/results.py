@@ -123,7 +123,6 @@ async def push_to_action_stream_queue(node_statuses: NodeStatus, event):
 # TODO SIO: this will become sio.on('workflow_status_update', namespaces=['/results'])
 # TODO: maybe make an internal user for the worker/umpire?
 # @router.put("/workflow_status/{execution_id}")
-@sio
 async def update_workflow_status(body: JSONPatch, event: str, execution_id: str,
                                  workflow_col: AsyncIOMotorCollection = Depends((get_mongo_c)), close: str = None):
     old_workflow = workflow_status_getter(execution_id, workflow_col)

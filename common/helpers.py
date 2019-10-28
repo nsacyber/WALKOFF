@@ -41,7 +41,7 @@ async def get_walkoff_auth_header(session, token=None, timeout=5 * 60):
     if token is None:
         key = config.get_from_file(config.INTERNAL_KEY_PATH)
         async with session.post(url + "/auth/login", json={"username": config.WALKOFF_USERNAME,
-                                                     "password": key}, timeout=timeout) as resp:
+                                                           "password": key}, timeout=timeout) as resp:
             resp_json = await resp.json()
             token = resp_json["refresh_token"]
             logger.debug("Successfully logged into WALKOFF")

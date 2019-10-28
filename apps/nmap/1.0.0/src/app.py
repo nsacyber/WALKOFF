@@ -14,8 +14,8 @@ class Nmap(AppBase):
     __version__ = "1.0.0"
     app_name = "nmap"
 
-    def __init__(self, redis, logger, console_logger=None):
-        super().__init__(redis, logger, console_logger)
+    def __init__(self, redis, logger):
+        super().__init__(redis, logger)
 
     async def run_scan(self, targets, options):
         results = []

@@ -22,23 +22,22 @@ class SIOStream:
         super().__init__()
         self.sio = sio
         self.execution_id = None
+        self.workflow_id = None
 
-    def set_execution_id(self, channel):
-        self.execution_id = channel
-
-    async def flush(self):
+    def flush(self):
         pass
 
     @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
-    async def write(self, message):
+    def write(self, message):
 
         data = {
+            "workflow_id": self.workflow_id,
             "execution_id": self.execution_id,
             "message": message
         }
-        await self.sio.emit("console update", data, "console")
+        self.sio.emit("log", data, "/console")
 
-    async def close(self):
+    def close(self):
         pass
 
 
@@ -47,7 +46,7 @@ class AppBase:
     __version__ = None
     app_name = None
 
-    def __init__(self, redis=None, logger=None, console_logger=None):#, docker_client=None):
+    def __init__(self, redis=None, logger=None):
         if self.app_name is None or self.__version__ is None:
             logger.error(("App name or version not set. Please ensure self.app_name is set to match the "
                           "docker-compose service name and self.__version__ is set to match the api.yaml."))
@@ -62,8 +61,8 @@ class AppBase:
         # Creates redis keys of format "{AppName}:{Version}:{Priority}"
         self.redis: aioredis.Redis = redis
         self.logger = logger if logger is not None else logging.getLogger("AppBaseLogger")
-        self.console_logger = console_logger if console_logger is not None else logging.getLogger("ConsoleBaseLogger")
         self.current_execution_id = None
+        self.current_workflow_id = None
 
     async def get_actions(self):
         """ Continuously monitors the action queue and asynchronously executes actions """
@@ -108,9 +107,13 @@ class AppBase:
 
     async def execute_action(self, action: Action):
         """ Execute an action, and push its result to Redis. """
+        # TODO: Is there a better way to do this?
+        self.logger.handlers[0].stream.execution_id = action.execution_id
+        self.logger.handlers[0].stream.workflow_id = action.workflow_id
+
         self.logger.debug(f"Attempting execution of: {action.label}-{action.execution_id}")
-        self.console_logger.handlers[0].stream.set_execution_id(action.execution_id)
         self.current_execution_id = action.execution_id
+        self.current_workflow_id = action.workflow_id
 
         results_stream = f"{action.execution_id}:results"
 
@@ -163,18 +166,17 @@ class AppBase:
     @classmethod
     async def run(cls):
         """ Connect to Redis and HTTP session, await actions """
-        async with connect_to_aioredis_pool(config.REDIS_URI) as redis, \
-                connect_to_socketio(config.SOCKETIO_URI, "console") as sio:
-            # TODO: Migrate to the common log config
-            logging.basicConfig(format="{asctime} - {name} - {levelname}:{message}", style='{')
-            logger = logging.getLogger(f"{cls.__name__}")
-            logger.setLevel(logging.DEBUG)
+        async with connect_to_aioredis_pool(config.REDIS_URI) as redis:
+            with connect_to_socketio(config.SOCKETIO_URI, ["/console"]) as sio:
+                # TODO: Migrate to the common log config
+                logging.basicConfig(format="{asctime} - {name} - {levelname}:{message}", style='{')
+                logger = logging.getLogger(f"{cls.__name__}")
+                logger.setLevel(logging.DEBUG)
 
-            console_logger = AsyncLogger(f"{cls.__name__}", level=logging.DEBUG)
-            handler = AsyncHandler(stream=SIOStream(sio))
-            handler.setFormatter(logging.Formatter(fmt="{asctime} - {name} - {levelname}:{message}", style='{'))
-            console_logger.addHandler(handler)
+                handler = logging.StreamHandler(stream=SIOStream(sio))
+                handler.setFormatter(logging.Formatter(fmt="{asctime} - {name} - {levelname}:{message}", style='{'))
+                logger.addHandler(handler)
 
-            app = cls(redis=redis, logger=logger, console_logger=console_logger)
+                app = cls(redis=redis, logger=logger)
 
-            await app.get_actions()
+                await app.get_actions()

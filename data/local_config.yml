@@ -8,6 +8,7 @@ API_GATEWAY_URI: "http://localhost:8081"
 REDIS_URI: "redis://localhost:6379"
 MINIO: "localhost:9001"
 MONGO_HOST: "localhost"
+SOCKETIO_URI: "http://localhost:3000"
 
 
 # Key locations

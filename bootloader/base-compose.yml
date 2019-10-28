@@ -70,27 +70,9 @@ services:
     environment:
       - MINIO_ACCESS_KEY_FILE=/run/secrets/walkoff_minio_access_key
       - MINIO_SECRET_KEY_FILE=/run/secrets/walkoff_minio_secret_key
-#    command: server /data
     secrets:
       - walkoff_minio_access_key
       - walkoff_minio_secret_key
-
-#  resource_postgres:
-#    image: "postgres"
-#    networks:
-#      - walkoff_network
-#    ports:
-#      - "5432:5432"
-#    environment:
-#      - POSTGRES_USER=walkoff
-#      - POSTGRES_PASSWORD_FILE=/run/secrets/walkoff_postgres_key
-#    deploy:
-#      placement:
-#        constraints: [node.role==manager]
-#    volumes:
-#      - walkoff_resource_postgres_volume:/var/lib/postgresql/data
-#    secrets:
-#      - walkoff_postgres_key
 
   resource_mongo:
     image: mongo:4

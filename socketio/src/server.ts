@@ -32,14 +32,15 @@ function createSpace(url: string, eventClass: WalkoffEvent) {
     const queue = new EventQueue();
     const space = io.of(url);
 
-    space.on('connection', function(client: socketio.Socket) {
+    space.on('connect', function(client: socketio.Socket) {
         const channel = (client.handshake.query.channel) ? client.handshake.query.channel : 'all';
         console.log(client.id + ' joining ' + channel)
         client.join(channel);
-    
+
         client.emit('connected', queue.filter(channel))
         client.on('log', (data) => {
             const item = plainToClassFromExist(eventClass, data);
+            console.log(item)
             item.channels.forEach((c: string) => client.broadcast.to(c).emit('log', item))
             queue.add(item);
         });

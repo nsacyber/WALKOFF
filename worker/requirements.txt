@@ -8,3 +8,6 @@ pyyaml
 asteval
 six
 tenacity
+python-socketio
+requests
+websocket-client
