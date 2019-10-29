@@ -2,7 +2,6 @@ version: 1.0.{build}
 image: Visual Studio 2019
 branches:
   only:
-    - master
     - travis
 
 environment:
@@ -27,7 +26,8 @@ install:
   - python -m pip install -r testing/requirements.txt
 
 before_build:
-  - docker swarm init --advertise-addr 127.0.0.1
+  - ipconfig
+  - docker swarm init --advertise-addr 10.0.0.6
   - ./walkoff.sh up -bdy
 
 test_script:
