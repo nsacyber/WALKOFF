@@ -175,7 +175,7 @@ Let's add a new action to the ``hello_world`` app.
 **4. Edit the action as desired and save changes**
 
     Any time you see the ``schema`` key, you can use JSON Schema to specify how the parameter or return value should look like.
-    A full schema for what is permissible here can be found `here <https://github.com/nsacyber/WALKOFF/blob/master/api_gateway/api/objects/appapi.yaml>`_.
+    A full schema for what is permissible can be found `here <https://github.com/nsacyber/WALKOFF/blob/master/api_gateway/api/objects/appapi.yaml>`_.
 
     .. image:: ../docs/images/appeditor/tolowercase.PNG
 
@@ -248,19 +248,19 @@ Naming and String Requirements:
 
 Troubleshooting
 ----------------
-There are several key places to look to debug an application:
+There are several key places to look to debug an application, navigate to Portainer located in the settings tab and go through the setup process if you haven't done so already. This will help you with the following steps for debugging:
 
 #.  **Umpire**
-    |br| Following the umpire’s logs (``docker service logs -f walkoff_umpire``) can give you an indication of whether build issues are happening within the stack. Building an app for the very first time can take a long time for example if it contains C dependencies that need to be compiled.
+    |br| Following the umpire’s logs (``docker service logs -f walkoff_umpire`` or clicking on the containers tab in portainer and then clicking on the logs icon next to walkoff_core_umpire) can give you an indication of whether build issues are happening within the stack. Building an app for the very first time can take a long time for example if it contains C dependencies that need to be compiled.
 
 #.  **Docker Services**
-    |br| Watching docker services (``watch -n 0.5 docker service ls``) can give you an indication of whether your app is running or crashing. At idle with no work, apps and workers will scale to 0/N replicas. If you see something repeatedly scaling up and back down to 0, it may be crashing.
+    |br| Watching docker services (``watch -n 0.5 docker service ls`` or select the services tab on the left panel) can give you an indication of whether your app is running or crashing. At idle with no work, apps and workers will scale to 0/N replicas. If you see something repeatedly scaling up and back down to 0, it may be crashing.
 
 #.  **Worker Service Logs**
-    |br| Checking the worker service log after the service becomes available for the first time (``docker service logs -f worker``) will allow you to view the worker logs. Generally apps will not cause problems here, but there may be edge cases missing in scheduling apps.
+    |br| Checking the worker service log after the service becomes available for the first time (``docker service logs -f worker`` or clicking on the containers tab in portainer and then clicking on the logs icon next to walkoff_core_worker) will allow you to view the worker logs. Generally apps will not cause problems here, but there may be edge cases missing in scheduling apps.
 
 #.  **App Service Logs**
-    |br| Checking the app service log after the service becomes available for the first time (``docker service logs -f walkoff_app_app_name``) will allow you to view the stdout of your app, as well as any exceptions it might be raising.
+    |br| Checking the app service log after the service becomes available for the first time (``docker service logs -f walkoff_app_app_name`` or clicking on the services tab then the assocaited app followed by ``service logs``) will allow you to view the stdout of your app, as well as any exceptions it might be raising.
     
 #.  **Console Logging** 
     |br| If you are more familiar with print debugging, you can add information to the console logger by following the code below. This will display the console output in the workflow editor page under the tab ``Console``. 
