@@ -134,7 +134,7 @@ export class PlaybookConditionsComponent implements OnInit {
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
 		return plainToClass(Argument, {
 			name: parameterApi.name,
-			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
+			value: parameterApi.json_schema.default != null ? parameterApi.json_schema.default : null,
 			reference: '',
 			selection: '',
 		});

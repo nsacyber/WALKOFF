@@ -24,17 +24,17 @@ export class StatusModalComponent implements OnInit, OnDestroy {
     @Input() buildId: string;
     @Input() appApi: AppApi;
     statusEventSource: any;
-    sseErrorTimeout: any;
     consoleLog: any[] = [];
     statusObserver: Observer<any>;
     statusSubscription: Subscription;
     completedStatus: { success: boolean, message: string};
+    buildStatusSocket: SocketIOClient.Socket;
 
     constructor(public activeModal: NgbActiveModal, public appService: AppService, public utils: UtilitiesService,
         public toastrService: ToastrService, public authService: AuthService) { }
 
     ngOnInit(): void {
-        this.getSSE();
+        this.createBuildStatusSocket();
 
         const observable = new Observable<string>((observer) => this.statusObserver = observer);
         this.statusSubscription = zip(observable, interval(100), (a, b) => a)
@@ -58,30 +58,30 @@ export class StatusModalComponent implements OnInit, OnDestroy {
         this.statusObserver.next(this.consoleContent);
     }
 
-    ngOnDestroy(): void {}
+    ngOnDestroy(): void {
+        this.cleanUp();
+    }
 
     cleanUp() {
-        if (this.statusEventSource && this.statusEventSource.close) { this.statusEventSource.close(); }
+        if (this.buildStatusSocket && this.buildStatusSocket.close) { this.buildStatusSocket.close(); }
     }
 
-    getSSE() {
-        if (this.statusEventSource) this.statusEventSource.close();
-        return this.authService.getEventSource(`api/streams/build/build_log?build_id=${this.buildId}`)
-            .then(eventSource => {
-                this.statusEventSource = eventSource;
-                this.statusEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
-                this.statusEventSource.addEventListener('log', (e: any) => this.statusEventHandler(e));
-            });
-    }
+    createBuildStatusSocket() {
+		if (this.buildStatusSocket) this.buildStatusSocket.close();
+		this.buildStatusSocket = this.utils.createSocket('/nodeStatus', this.buildId);
 
-    statusEventHandler(message: any): void {
-        if (this.sseErrorTimeout) {
-            clearTimeout(this.sseErrorTimeout);
-            delete this.sseErrorTimeout;
-        }
+		this.buildStatusSocket.on('connected', (data) => {
+			(data as any[]).forEach(event => this.statusEventHandler(event));
+		});
 
-        console.log('c', message);
-        const consoleEvent = JSON.parse(message.data); //plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
+		this.buildStatusSocket.on('log', (data) => {
+			this.statusEventHandler(data)
+		});
+	}
+
+    statusEventHandler(data: any): void {
+        console.log('build', data);
+        const consoleEvent = JSON.parse(data);
 
         switch (consoleEvent.build_status) {
             case 'building':
@@ -95,23 +95,6 @@ export class StatusModalComponent implements OnInit, OnDestroy {
                 this.completedStatus = { success: true, message: `<b class="text-capitalize">${this.appApi.name}</b> rebuild successful`};
         }
         this.statusObserver.next(this.consoleContent);
-    }
-
-    statusEventErrorHandler(e: any) {
-        console.log(e);
-        if (this.sseErrorTimeout) return;
-        this.sseErrorTimeout = setTimeout(async () => {
-            try {
-                await this.appService.getApis();
-                delete this.sseErrorTimeout;
-            }
-            catch (e) {
-                this.cleanUp();
-                const options = { backdrop: undefined, closeButton: false, buttons: { ok: { label: 'Reload Page' } } }
-                this.utils.alert('The server stopped responding. Reload the page to try again.', options)
-                    .then(() => location.reload(true))
-            }
-        }, 5 * 1000)
     }
 
     get consoleContent() {

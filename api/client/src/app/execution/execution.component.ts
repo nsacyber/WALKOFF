@@ -60,6 +60,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	recalculateTableCallback: any;
 	NodeStatuses = NodeStatuses;
 
+	workflowStatusSocket: SocketIOClient.Socket;
+	nodeStatusSocket: SocketIOClient.Socket;
+
 	constructor(
 		private executionService: ExecutionService, private authService: AuthService, private cdr: ChangeDetectorRef,
 		private toastrService: ToastrService, private utils: UtilitiesService,
@@ -69,7 +72,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	/**
 	 * On component init, set up our workflow select2 config.
 	 * Also get workflows to select, workflow statuses to display in the datatable.
-	 * Set up SSEs for workflow status and action status to add/update data in our datatables.
+	 * Set up sockets for workflow status and action status to add/update data in our datatables.
 	 */
 	ngOnInit(): void {
 
@@ -85,8 +88,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		this.getWorkflows();
 		this.getWorkflowStatuses();
-		this.getWorkflowStatusSSE();
-		this.getNodeStatusSSE();
+		this.createNodeStatusSocket();
+		this.createWorkflowStatusSocket();
 
 		this.filterQuery
 			.valueChanges
@@ -118,14 +121,14 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	}
 
 	/**
-	 * Closes our SSEs on component destroy.
+	 * Closes our sockets on component destroy.
 	 */
 	ngOnDestroy(): void {
-		if (this.workflowStatusEventSource && this.workflowStatusEventSource.close) {
-			this.workflowStatusEventSource.close();
+		if (this.workflowStatusSocket && this.workflowStatusSocket.close) {
+			this.workflowStatusSocket.close();
 		}
-		if (this.nodeStatusEventSource && this.nodeStatusEventSource.close) {
-			this.nodeStatusEventSource.close();
+		if (this.nodeStatusSocket && this.nodeStatusSocket.close) {
+			this.nodeStatusSocket.close();
 		}
 		if (this.recalculateTableCallback) {
 			$(document).off('shown.bs.modal', '.nodeStatusModal', this.recalculateTableCallback)
@@ -165,33 +168,36 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	}
 
 	/**
-	 * Initiates an EventSource for workflow statuses from the server. Binds various events to the event handler.
+	 * Initiates an Socket for workflow statuses from the server. Binds various events to the event handler.
 	 */
-	getWorkflowStatusSSE(): void {
-		this.authService.getEventSource('api/streams/workflowqueue/workflow_status')
-			.then(eventSource => {
-				this.workflowStatusEventSource = eventSource;
-				this.workflowStatusEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
-				Object.values(WorkflowStatuses)
-					  .forEach(status => this.workflowStatusEventSource.addEventListener(status, (e: any) => this.workflowStatusEventHandler(e)));
-			});
+	createWorkflowStatusSocket() {
+		if (this.workflowStatusSocket) this.workflowStatusSocket.close();
+		this.workflowStatusSocket = this.utils.createSocket('/workflowStatus');
+
+		this.workflowStatusSocket.on('connected', (data: any[]) => {
+			const events = plainToClass(WorkflowStatusEvent, data);
+			events.forEach(event => this.workflowStatusEventHandler(event));
+		});
+
+		this.workflowStatusSocket.on('log', (data: any) => {
+			const event = plainToClass(WorkflowStatusEvent, data);
+			console.log(event);
+			this.workflowStatusEventHandler(event)
+		});
 	}
 
 	/**
-	 * Handles an EventSource message for Workflow Status.
+	 * Handles an Socket message for Workflow Status.
 	 * Updates existing workflow statuses for status updates or adds new ones to the list for display.
-	 * @param message EventSource message for workflow status
+	 * @param message Socket message for workflow status
 	 */
-	workflowStatusEventHandler(message: any): void {
-		const workflowStatusEvent = plainToClass(WorkflowStatusEvent, (JSON.parse(message.data) as object));
+	workflowStatusEventHandler(workflowStatusEvent: WorkflowStatusEvent): void {
 		const matchingWorkflowStatus = this.workflowStatuses.find(ws => ws.execution_id === workflowStatusEvent.execution_id);
-
-		console.log(workflowStatusEvent);
 
 		if (matchingWorkflowStatus) {
 			matchingWorkflowStatus.status = workflowStatusEvent.status;
 
-			switch (message.type) {
+			switch (workflowStatusEvent.status) {
 				case WorkflowStatuses.PENDING:
 					delete matchingWorkflowStatus.node_status;
 					break;
@@ -217,7 +223,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 					matchingWorkflowStatus.completed_at = workflowStatusEvent.completed_at;
 					break;
 				default:
-					this.toastrService.warning(`Unknown Workflow Status SSE Type: ${message.type}.`);
+					this.toastrService.warning(`Unknown Workflow Status Type: ${workflowStatusEvent.status}.`);
 					break;
 			}
 		} else {
@@ -229,33 +235,31 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	}
 
 	/**
-	 * Initiates an EventSource for action statuses from the server. Binds various events to the event handler.
+	 * Initiates an Socket for action statuses from the server. Binds various events to the event handler.
 	 */
-	getNodeStatusSSE(workflowExecutionId: string = null): void {
-		if (this.nodeStatusEventSource) this.nodeStatusEventSource.close();
-		let url = `api/streams/workflowqueue/actions?summary=true`;
-		if (workflowExecutionId) url += `&workflow_execution_id=${ workflowExecutionId }`;
+	createNodeStatusSocket() {
+		if (this.nodeStatusSocket) this.nodeStatusSocket.close();
+		this.nodeStatusSocket = this.utils.createSocket('/nodeStatus');
 
-		this.authService.getEventSource(url)
-			.then(eventSource => {
-				this.nodeStatusEventSource = eventSource;
-				this.nodeStatusEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
+		this.nodeStatusSocket.on('connected', (data: any[]) => {
+			const events = plainToClass(NodeStatusEvent, data);
+			events.forEach(event => this.nodeStatusEventHandler(event));
+		});
 
-				Object.values(NodeStatuses)
-					  .forEach(status => this.nodeStatusEventSource.addEventListener(status, (e: any) => this.nodeStatusEventHandler(e)));
-			});
+		this.nodeStatusSocket.on('log', (data: any) => {
+			const event = plainToClass(NodeStatusEvent, data);
+			console.log(event);
+			this.nodeStatusEventHandler(event)
+		});
 	}
 
 	/**
-	 * Handles an EventSource message for Action Status.
+	 * Handles an Socket message for Action Status.
 	 * Updates the parent workflow status' current_node if applicable.
 	 * Will add/update action statuses for display if the parent workflow execution is 'loaded' in the modal.
-	 * @param message EventSource message for action status
+	 * @param message Socket message for action status
 	 */
-	nodeStatusEventHandler(message: any): void {
-		const nodeStatusEvent = plainToClass(NodeStatusEvent, (JSON.parse(message.data) as object));
-		console.log(nodeStatusEvent);
-
+	nodeStatusEventHandler(nodeStatusEvent: NodeStatusEvent): void {
 		// if we have a matching workflow status, update the current app/action info.
 		const matchingWorkflowStatus = this.workflowStatuses
 			.find(ws => ws.execution_id === nodeStatusEvent.execution_id);
@@ -278,7 +282,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 			if (matchingNodeStatus) {
 				matchingNodeStatus.status = nodeStatusEvent.status;
 
-				switch (message.type) {
+				switch (nodeStatusEvent.status) {
 					case NodeStatuses.EXECUTING:
 						matchingNodeStatus.started_at = nodeStatusEvent.started_at;
 						break;
@@ -291,7 +295,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 						// don't think anything needs to happen here
 						break;
 					default:
-						this.toastrService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
+						this.toastrService.warning(`Unknown Action Status Type: ${ nodeStatusEvent.status }.`);
 						break;
 				}
 			} else {
@@ -303,18 +307,6 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		}
 
 		this.filterWorkflowStatuses();
-	}
-
-	statusEventErrorHandler(e: any) {
-		if (this.nodeStatusEventSource && this.nodeStatusEventSource.close)
-			this.nodeStatusEventSource.close();
-		if (this.workflowStatusEventSource && this.workflowStatusEventSource.close)
-			this.workflowStatusEventSource.close();
-
-		const options = {backdrop: undefined, closeButton: false, buttons: { ok: { label: 'Reload Page' }}}
-		this.utils
-			.alert('The server stopped responding. Reload the page to try again.', options)
-			.then(() => location.reload(true))
 	}
 
 	/**

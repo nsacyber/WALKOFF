@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import * as moment from 'moment';
+import * as io from 'socket.io-client';
 
 @Injectable({
 	providedIn: 'root'
 })
 export class UtilitiesService {
+	reconnect_failed: boolean = false;
+
 	/**
 	 * Returns a truncated input sting based on the length inputted.
 	 * Will simply return input if input length is less than or equal the length of the specified length.
@@ -67,7 +70,7 @@ export class UtilitiesService {
 
 	paginateAll<T>(serviceCall: (p: number) => Promise<T[]>, page: number = 1, allResults : T[] = []): Promise<T[]> {
 		return serviceCall(page).then(results => {
-			if (results.length > 0) return this.paginateAll(serviceCall, page + 1, allResults.concat(results));
+			if (results.length > 0 && false) return this.paginateAll(serviceCall, page + 1, allResults.concat(results));
 			else return allResults;
 		})
 	}
@@ -77,9 +80,15 @@ export class UtilitiesService {
 		return body || {};
 	}
 
-	handleResponseError (error: HttpErrorResponse | any): Promise<any> {
+	async handleResponseError (error: HttpErrorResponse | any): Promise<any> {
+		console.log(error);
+
 		let errMsg: string;
 		let err: string;
+		// if (error instanceof HttpErrorResponse && error.status == 401) {
+		// 	location.href = 'login';
+		// }
+		// else 
 		if (error instanceof HttpErrorResponse) {
 			err = error.error || error.message || JSON.stringify(error);
 			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
@@ -140,5 +149,22 @@ export class UtilitiesService {
 		  };
 		  temporaryFileReader.readAsText(inputFile);
 		});
+	}
+
+	createSocket(namespace: string, channel: string = 'all'): SocketIOClient.Socket {
+		const socket =  io(namespace, {
+			query: { channel },
+			reconnectionAttempts: 5,
+			path: '/walkoff/sockets/socket.io'
+		});
+
+		socket.on('reconnect_failed', () => {
+			if (this.reconnect_failed) return;
+			const options = {backdrop: undefined, closeButton: false, buttons: { ok: { label: 'Reload Page' }}}
+			this.alert('The server stopped responding. Reload the page to try again.', options)
+				.then(() => location.reload(true))
+			this.reconnect_failed = true;
+		})
+		return socket;
 	}
 }

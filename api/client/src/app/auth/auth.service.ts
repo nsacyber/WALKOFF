@@ -44,6 +44,13 @@ export class AuthService {
 			.catch(this.utils.handleResponseError);
 	}
 
+	verifyToken(): Promise<boolean> {
+		return this.http.post('api/auth/verify', {})
+			.toPromise()
+			.then(() => true)
+			.catch((e) => false);
+	}
+
 	/**
 	 * Clears our JWTs from session storage. Used when logging out.
 	 */
@@ -165,54 +172,3 @@ export class AuthService {
 		});
 	}
 }
-
-
-// export class AuthEventSource {
-// 	eventSource: any;
-// 	timeout: any;
-// 	listeners: any[] = [];
-// 	errorHandler: any = (err: Error) => console.error(err);
-
-// 	constructor(private url, private authService: AuthService) {
-// 		this._create();
-// 	}
-
-// 	private _getConfig() {
-// 		return this.authService.getAccessTokenRefreshed().then(authToken => ({ headers: { 'Authorization': `Bearer ${ authToken }` }}));
-// 	}
-
-// 	private _create() {
-// 		this._getConfig().then(config => {
-// 			this.eventSource = new EventSourcePolyfill(this.url, config);
-// 			this.eventSource.onopen = (e) => this._restartTimeout();
-// 			this.eventSource.onmessage = (e) => this._restartTimeout();
-// 			this.eventSource.onerror = this.errorHandler;
-// 			this.listeners.forEach(listener => this.eventSource.addEventListener(listener.event, listener.handler));
-// 		})
-// 	}
-
-// 	private _restartTimeout() {
-// 		console.log('restarting timer');
-// 		if (this.timeout) clearTimeout(this.timeout);
-// 		this.timeout = setTimeout(() => {
-// 			console.log(`Restarting EventSource: ${ this.url }`)
-// 			this.close();
-// 			this._create();
-// 		}, 30000)
-// 	}
-
-// 	addEventListener(event, handler) {
-// 		this.listeners.push({ event, handler })
-// 		if (this.eventSource) this.eventSource.addEventListener(event, handler);
-// 	}
-
-// 	onerror(handler) {
-// 		this.errorHandler = handler;
-// 		if (this.eventSource) this.eventSource.onerror = handler;
-// 	}
-
-// 	close() {
-// 		if (this.timeout) clearTimeout(this.timeout);
-// 		if (this.eventSource) this.eventSource.close();
-// 	}
-// }

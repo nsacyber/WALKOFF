@@ -112,10 +112,10 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	actionFilter: string = '';
 	actionFilterControl = new FormControl();
 	actionTypes = ActionType;
-	sseErrorTimeout: any;
 	showConsole: boolean = false;
 	NodeStatuses = NodeStatuses;
 	consoleSocket: SocketIOClient.Socket;
+	nodeStatusSocket: SocketIOClient.Socket;
 
 	conditionalOptions = {
 		tabSize: 4,
@@ -177,12 +177,11 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	ngAfterViewChecked(): void { }
 
 	/**
-	 * Closes our SSEs on component destroy.
+	 * Closes our sockets on component destroy.
 	 */
 	ngOnDestroy(): void {
-		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
-		// if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
 		if (this.consoleSocket && this.consoleSocket.close) { this.consoleSocket.close(); }
+		if (this.nodeStatusSocket && this.nodeStatusSocket.close) { this.nodeStatusSocket.close(); }
 	}
 
 	/**
@@ -294,14 +293,18 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 			})
 		})
 	}
-
+	
+    ///------------------------------------------------------------------------------------------------------
+	/// Console functions
+	///------------------------------------------------------------------------------------------------------
+	/**
+	 * Sets up the Socket for receiving console logs from the server. Binds various events to the event handler.
+	 * Will currently return ALL stream actions and not just the ones manually executed.
+	 */
 	createConsoleSocket(workflowExecutionId: string) {
 		if (this.consoleSocket) this.consoleSocket.close();
 
-		this.consoleSocket = io('/console', {
-			path: '/walkoff/sockets/socket.io',
-			query: { channel: workflowExecutionId }
-		});
+		this.consoleSocket = this.utils.createSocket('/console', workflowExecutionId);
 
 		this.consoleSocket.on('connected', (data) => {
 			const events = plainToClass(ConsoleLog, [
@@ -334,59 +337,29 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	get consoleContent() {
 		return this.consoleLog.map(log => log.message).join('');
 	}
-	
-    ///------------------------------------------------------------------------------------------------------
-	/// Console functions
-	///------------------------------------------------------------------------------------------------------
-	/**
-	 * Sets up the EventStream for receiving console logs from the server. Binds various events to the event handler.
-	 * Will currently return ALL stream actions and not just the ones manually executed.
-	 */
-	// getConsoleSSE(workflowExecutionId: string) {
-	// 	if (this.consoleEventSource) this.consoleEventSource.close();
-
-	// 	return this.authService.getEventSource(`api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
-	// 		.then(eventSource => {
-	// 			this.consoleEventSource = eventSource;
-	// 			this.consoleEventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
-	// 			this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
-	// 		});
-	// }
-
-    // consoleEventHandler(message: any): void {
-	// 	if (this.sseErrorTimeout) {
-	// 		clearTimeout(this.sseErrorTimeout);
-	// 		delete this.sseErrorTimeout;
-	// 	}
-
-	// 	console.log('c', message)
-	// 	const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
-	// 	const newConsoleLog = consoleEvent;
-
-	// 	// Induce change detection by slicing array
-	// 	this.consoleLog.push(newConsoleLog);
-	// 	this.consoleLog = this.consoleLog.slice();
-	// 	this.updateConsole();
-	// }
 
 	///------------------------------------------------------------------------------------------------------
-	/// Playbook CRUD etc functions
+	/// Node Status functions
 	///------------------------------------------------------------------------------------------------------
 	/**
 	 * Sets up the EventStream for receiving stream actions from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getNodeStatusSSE(workflowExecutionId: string) {
-		if (this.eventSource) this.eventSource.close();
 
-		return this.authService.getEventSource(`api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
-			.then(eventSource => {
-				this.eventSource = eventSource
-				this.eventSource.onerror = (e: any) => this.statusEventErrorHandler(e);
+	createNodeStatusSocket(workflowExecutionId: string) {
+		if (this.nodeStatusSocket) this.nodeStatusSocket.close();
+		this.nodeStatusSocket = this.utils.createSocket('/nodeStatus', workflowExecutionId);
 
-				Object.values(NodeStatuses)
-					  .forEach(status => this.eventSource.addEventListener(status, (e: any) => this.nodeStatusEventHandler(e)));
-			});
+		this.nodeStatusSocket.on('connected', (data) => {
+			const events = plainToClass(NodeStatusEvent, (data as any[]));
+			events.forEach(event => this.nodeStatusEventHandler(event));
+		});
+
+		this.nodeStatusSocket.on('log', (data) => {
+			const event = plainToClass(NodeStatusEvent, data);
+			console.log('action', event);
+			this.nodeStatusEventHandler(event)
+		});
 	}
 
 	/**
@@ -394,15 +367,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Will style nodes based on the action status (executing/success/failure).
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
-	nodeStatusEventHandler(message: any): void {
-		if (this.sseErrorTimeout) {
-			clearTimeout(this.sseErrorTimeout);
-			delete this.sseErrorTimeout;
-		}
-
-		const nodeStatusEvent = plainToClass(NodeStatusEvent, (JSON.parse(message.data) as object));
-		console.log('action', nodeStatusEvent);
-
+	nodeStatusEventHandler(nodeStatusEvent: NodeStatusEvent): void {
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
 			const matchingNode = this.cy.elements(`node[_id="${ nodeStatusEvent.node_id }"]`);
@@ -453,7 +418,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		if (matchingNodeStatus) {
 			matchingNodeStatus.status = nodeStatusEvent.status;
 
-			switch (message.type) {
+			switch (nodeStatusEvent.status) {
 				case NodeStatuses.EXECUTING:
 					if (!matchingNodeStatus.started_at)
 						matchingNodeStatus.started_at = nodeStatusEvent.started_at;
@@ -467,7 +432,7 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 					// don't think anything needs to happen here
 					break;
 				default:
-					this.toastrService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
+					this.toastrService.warning(`Unknown Action Status Type: ${ nodeStatusEvent.status }.`);
 					break;
 			}
 		} else {
@@ -476,27 +441,6 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		}
 		// Induce change detection by slicing array
 		this.nodeStatuses = this.nodeStatuses.slice();
-	}
-
-	statusEventErrorHandler(e: any) {
-		if (this.sseErrorTimeout) return;
-		this.sseErrorTimeout = setTimeout(async () => {
-			try {
-				await this.playbookService.getApis();
-				delete this.sseErrorTimeout;
-			}
-			catch(e) {
-				if (this.eventSource && this.eventSource.close)
-					this.eventSource.close();
-				if (this.consoleEventSource && this.consoleEventSource.close)
-					this.consoleEventSource.close();
-
-				const options = {backdrop: undefined, closeButton: false, buttons: { ok: { label: 'Reload Page' }}}
-				this.utils
-					.alert('The server stopped responding. Reload the page to try again.', options)
-					.then(() => location.reload(true))
-			}
-		}, 5 * 1000)
 	}
 
 	get selectedActionResults(): any {
@@ -515,8 +459,8 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		const executionId = UUID.UUID();
 		Promise.all([
-			this.getNodeStatusSSE(executionId),
 			Promise.resolve(this.createConsoleSocket(executionId)),
+			Promise.resolve(this.createNodeStatusSocket(executionId))
 		]).then(() => {
 			this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id, executionId)
 				.then((_: WorkflowStatus) => this.toastrService.success(`Starting <b>${this.loadedWorkflow.name}</b>`))
@@ -1056,14 +1000,14 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		const queryPromises: Array<Promise<any>> = [];
 
 		if (!this.users &&
-			(actionApi.parameters.findIndex(p => p.schema.type === 'user') > -1 ||
-			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'user') > -1)) {
+			(actionApi.parameters.findIndex(p => p.json_schema.type === 'user') > -1 ||
+			actionApi.parameters.findIndex(p => p.json_schema.items && p.json_schema.items.type === 'user') > -1)) {
 			this.waitingOnData = true;
 			queryPromises.push(this.playbookService.getUsers().then(users => this.users = users));
 		}
 		if (!this.roles &&
-			(actionApi.parameters.findIndex(p => p.schema.type === 'role') > -1 ||
-			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'role') > -1)) {
+			(actionApi.parameters.findIndex(p => p.json_schema.type === 'role') > -1 ||
+			actionApi.parameters.findIndex(p => p.json_schema.items && p.json_schema.items.type === 'role') > -1)) {
 			this.waitingOnData = true;
 			queryPromises.push(this.playbookService.getRoles().then(roles => this.roles = roles));
 		}
@@ -1458,18 +1402,18 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
 		let initialValue = null;
-		if (parameterApi.schema.type === 'array') {
+		if (parameterApi.json_schema.type === 'array') {
 			initialValue = [];
-		} else if (parameterApi.schema.type === 'object') {
+		} else if (parameterApi.json_schema.type === 'object') {
 			initialValue = {};
-		} else if (parameterApi.schema.type === 'boolean') {
+		} else if (parameterApi.json_schema.type === 'boolean') {
 			initialValue = false;
 		}
 
 		return plainToClass(Argument, {
 			name: parameterApi.name,
 			variant: Variant.STATIC_VALUE,
-			value: (parameterApi.schema.default) ? parameterApi.schema.default : initialValue,
+			value: (parameterApi.json_schema.default) ? parameterApi.json_schema.default : initialValue,
 		});
 	}
 

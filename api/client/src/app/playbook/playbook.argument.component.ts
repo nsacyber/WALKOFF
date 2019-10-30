@@ -85,7 +85,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 	}
 
 	initParameterSchema(): void {
-		this.parameterSchema = this.parameterApi.schema;
+		this.parameterSchema = this.parameterApi.json_schema;
 		if (this.argument.value == null) {
 			if (this.parameterSchema.type === 'array') { 
 				this.argument.value = [];
@@ -390,11 +390,13 @@ export class PlaybookArgumentComponent implements OnChanges {
 	}
 
 	get isStringSelect(): boolean {
-		return this.isStatic && this.parameterSchema && this.parameterSchema.type === 'string' && !this.parameterSchema.enum;
+		return this.isStatic && this.parameterSchema && !this.parameterSchema.enum &&
+			(this.parameterSchema.type === 'string' || !this.parameterSchema.type);
 	}
 
 	get isNumberSelect(): boolean {
-		return this.isStatic && this.parameterSchema && (this.parameterSchema.type === 'number' || this.parameterSchema.type === 'integer')
+		return this.isStatic && this.parameterSchema && (this.parameterSchema.type === 'number' || 
+			this.parameterSchema.type === 'integer')
 	}
 
 	get isEnumSelect(): boolean {
