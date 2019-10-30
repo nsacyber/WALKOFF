@@ -4,10 +4,12 @@ from typing import List
 
 from pydantic import BaseModel, ValidationError, validator
 
+from api.server.db import IDBaseModel
+
 logger = logging.getLogger(__name__)
 
 
-class TriggerModel(BaseModel):
+class TriggerModel(IDBaseModel):
     id_: UUID = None
     errors: List[str] = []
     is_valid: bool = True

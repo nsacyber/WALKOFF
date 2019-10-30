@@ -6,7 +6,7 @@ from typing import Union
 from pydantic import BaseModel, ValidationError, validator
 from common.workflow_types import ParameterVariant
 
-from api.server.db import mongo
+from api.server.db import mongo, IDBaseModel
 # from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 #
 # from sqlalchemy import Column, ForeignKey, String, JSON, Enum, Boolean
@@ -24,7 +24,7 @@ from api.server.utils.helpers import JSON
 logger = logging.getLogger(__name__)
 
 
-class ParameterApiModel(BaseModel):
+class ParameterApiModel(IDBaseModel):
     id_: UUID = None
     name: str
     location: str = ""
@@ -35,7 +35,7 @@ class ParameterApiModel(BaseModel):
     json_schema: dict = {}
 
 
-class ParameterModel(BaseModel):
+class ParameterModel(IDBaseModel):
     id_: UUID = None
     name: str
     variant: ParameterVariant

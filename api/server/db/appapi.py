@@ -5,7 +5,7 @@ from typing import List, Any
 import semver
 from pydantic import BaseModel, ValidationError, validator, UrlStr, EmailStr
 
-# from api.server.db import Base, BaseSchema
+from api.server.db import IDBaseModel
 from api.server.db.action import ActionApiModel #ActionApiSchema,
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class AppExternalDocModel(BaseModel):
     url: UrlStr = None
 
 
-class AppApiModel(BaseModel):
+class AppApiModel(IDBaseModel):
     id_: UUID = None
     name: str
     app_version: str = "1.0.0"
@@ -37,7 +37,6 @@ class AppApiModel(BaseModel):
     license_info: AppApiLicenseModel = None
     external_docs: AppExternalDocModel = None
     actions: List[ActionApiModel]
-    _secondary_id = "name"
 
     @validator('app_version')
     def app_version_is_semver(cls, value, values):

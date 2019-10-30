@@ -35,7 +35,7 @@ class SIOStream:
             "execution_id": self.execution_id,
             "message": message
         }
-        self.sio.emit("log", data, "/console")
+        self.sio.emit(static.SIO_EVENT_LOG, data, static.SIO_NS_CONSOLE)
 
     def close(self):
         pass

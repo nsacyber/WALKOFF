@@ -1,5 +1,7 @@
-from starlette.requests import Request
+from uuid import uuid4
 
+from starlette.requests import Request
+from pydantic import BaseModel
 import motor.motor_asyncio
 import pymongo
 
@@ -7,6 +9,17 @@ from api.server.db.user_init import default_users, default_roles
 
 from common.config import config, static
 from common.helpers import preset_uuid
+
+
+class IDBaseModel(BaseModel):
+
+    _id_field: str = "id_"
+    _name_field: str = "name"
+
+    def __init__(self, **kwargs):
+        super(IDBaseModel, self).__init__(**kwargs)
+        if not getattr(self, self._id_field):
+            setattr(self, self._id_field, uuid4())
 
 
 class MongoManager(object):
@@ -26,6 +39,7 @@ class MongoManager(object):
         id_index = pymongo.IndexModel([("id_", pymongo.ASCENDING)], unique=True)
         name_index = pymongo.IndexModel([("name", pymongo.ASCENDING)], unique=True)
         username_index = pymongo.IndexModel([("username", pymongo.ASCENDING)], unique=True)
+        execution_index = pymongo.IndexModel([("execution_id", pymongo.ASCENDING)], unique=True)
 
         self.reg_client.walkoff_db.apps.create_indexes([id_index, name_index])
 
@@ -40,6 +54,8 @@ class MongoManager(object):
         self.reg_client.walkoff_db.dashboards.create_indexes([id_index, name_index])
 
         self.reg_client.walkoff_db.scheduler.create_indexes([id_index, name_index])
+
+        self.reg_client.walkoff_db.workflowqueue.create_indexes([execution_index])
 
         if "settings" not in self.reg_client.walkoff_db.list_collection_names():
             self.reg_client.walkoff_db.settings.insert_one({

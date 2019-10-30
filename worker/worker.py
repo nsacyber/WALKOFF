@@ -9,10 +9,12 @@ from asteval import Interpreter
 
 import aiohttp
 import aioredis
+import socketio
 
 from common.message_types import message_dumps, message_loads, NodeStatusMessage, WorkflowStatusMessage, StatusEnum
 from common.config import config, static
 from common.helpers import get_walkoff_auth_header, send_status_update
+from common.socketio_helpers import connect_to_socketio
 from common.redis_helpers import connect_to_aioredis_pool, xdel, deref_stream_message
 from common.workflow_types import (Node, Action, Condition, Transform, Parameter, Trigger,
                                    ParameterVariant, Workflow, workflow_dumps, workflow_loads, ConditionException,
@@ -105,7 +107,7 @@ class Worker:
                 status = WorkflowStatusMessage.execution_started(worker.workflow.execution_id, worker.workflow.id_,
                                                                  worker.workflow.name)
 
-                await send_status_update(session, workflow.execution_id, status)
+                await send_status_update(redis, workflow.execution_id, workflow.id_, status)
 
                 try:
                     worker.execution_task = asyncio.create_task(worker.execute_workflow())
@@ -127,9 +129,7 @@ class Worker:
                                                                        worker.workflow.id_,
                                                                        worker.workflow.name)
                 finally:
-                    status.websocket_finished = True
-                    await send_status_update(session, workflow.execution_id, status)
-
+                    await send_status_update(redis, workflow.execution_id, workflow.id_, status)
 
             await Worker.shutdown()
 
@@ -155,7 +155,8 @@ class Worker:
         msgs = [NodeStatusMessage.aborted_from_node(action, action.execution_id, started_at=action.started_at,
                                                     parameters=(await self.dereference_params(action)))
                 for action in self.in_process.values()]
-        message_tasks = [send_status_update(self.session, self.workflow.execution_id, msg) for msg in msgs]
+        message_tasks = [send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_, msg) for msg in
+                         msgs]
         await asyncio.gather(*message_tasks, return_exceptions=True)
 
         logger.info("Canceling outstanding tasks...")
@@ -364,9 +365,9 @@ class Worker:
             result = trigger(trigger_data)
             tmsg = NodeStatusMessage.success_from_node(trigger, self.workflow.execution_id, result, parameters={},
                                                        started_at=trigger.started_at)
-            await send_status_update(self.session, self.workflow.execution_id,
+            await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                      tmsg)
-            await send_status_update(self.session, self.workflow.execution_id,
+            await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                      WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
                                                                                self.workflow.id_,
                                                                                self.workflow.name,
@@ -379,11 +380,11 @@ class Worker:
         # TODO: can/should a trigger actually raise any exceptions?
         except Exception as e:
             logger.exception(f"Worker received error for {trigger.name}-{self.workflow.execution_id}")
-            await send_status_update(self.session, self.workflow.execution_id,
+            await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                      NodeStatusMessage.failure_from_node(trigger, self.workflow.execution_id,
                                                                          started_at=trigger.started_at,
                                                                          result=repr(e), parameters={}))
-            await send_status_update(self.session, self.workflow.execution_id,
+            await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                      WorkflowStatusMessage.execution_completed(self.workflow.execution_id,
                                                                                self.workflow.id_,
                                                                                self.workflow.name,
@@ -455,12 +456,12 @@ class Worker:
             if node.parallelized:
                 node.started_at = datetime.datetime.now()
                 params = await self.dereference_params(node)
-                await send_status_update(self.session, self.workflow.execution_id,
+                await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                          NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
                                                                                started_at=node.started_at,
                                                                                parameters=params))
 
-                await send_status_update(self.session, self.workflow.execution_id,
+                await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                          WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
                                                                                    self.workflow.id_,
                                                                                    self.workflow.name,
@@ -490,12 +491,12 @@ class Worker:
                 params = await self.dereference_params(node)
 
                 node.started_at = datetime.datetime.now()
-                await send_status_update(self.session, self.workflow.execution_id,
+                await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                          NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
                                                                                started_at=node.started_at,
                                                                                parameters=params))
 
-                await send_status_update(self.session, self.workflow.execution_id,
+                await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                          WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
                                                                                    self.workflow.id_,
                                                                                    self.workflow.name,
@@ -507,12 +508,12 @@ class Worker:
 
         elif isinstance(node, Condition):
             node.started_at = datetime.datetime.now()
-            await send_status_update(self.session, self.workflow.execution_id,
+            await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                      NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
                                                                            started_at=node.started_at,
                                                                            parameters={}))
 
-            await send_status_update(self.session, self.workflow.execution_id,
+            await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                      WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
                                                                                self.workflow.id_,
                                                                                self.workflow.name,
@@ -524,12 +525,12 @@ class Worker:
 
         elif isinstance(node, Transform):
             node.started_at = datetime.datetime.now()
-            await send_status_update(self.session, self.workflow.execution_id,
+            await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                      NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
                                                                            started_at=node.started_at,
                                                                            parameters={}))
 
-            await send_status_update(self.session, self.workflow.execution_id,
+            await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                      WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
                                                                                self.workflow.id_,
                                                                                self.workflow.name,
@@ -553,11 +554,11 @@ class Worker:
                                 f"with {msg}")
 
                     node.started_at = datetime.datetime.now()
-                    await send_status_update(self.session, self.workflow.execution_id,
+                    await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                              NodeStatusMessage.executing_from_node(node, self.workflow.execution_id,
                                                                                    started_at=node.started_at))
 
-                    await send_status_update(self.session, self.workflow.execution_id,
+                    await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_,
                                              WorkflowStatusMessage.execution_continued(self.workflow.execution_id,
                                                                                        self.workflow.id_,
                                                                                        self.workflow.name,
@@ -577,7 +578,7 @@ class Worker:
                                                    mkstream=True, latest_id='0')
 
         # TODO: decide if we want pending action messages and uncomment this line
-        # await send_status_update(self.session, self.workflow.execution_id,
+        # await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_)
         # NodeStatus.pending_from_node(node, workflow.execution_id))
         logger.info(f"Scheduled {node}")
 
@@ -627,7 +628,7 @@ class Worker:
                     logger.error(f"Unknown message status received: {node_message}")
                     node_message = None
 
-                await send_status_update(self.session, self.workflow.execution_id, node_message)
+                await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_, node_message)
 
             elif node_message.execution_id == self.workflow.execution_id and node_message.node_id in self.parallel_in_process:
                 if node_message.status == StatusEnum.EXECUTING:
@@ -649,7 +650,7 @@ class Worker:
                     node_message = None
 
                 node_message.name = node_message.label
-                await send_status_update(self.session, self.workflow.execution_id, node_message)
+                await send_status_update(self.redis, self.workflow.execution_id, self.workflow.id_, node_message)
             else:
                 logger.error(f"Message received for unknown execution: {node_message}")
 

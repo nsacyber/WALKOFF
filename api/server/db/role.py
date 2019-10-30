@@ -3,15 +3,15 @@ from uuid import UUID
 from pydantic import BaseModel, validator
 from typing import List
 
+from api.server.db import IDBaseModel
 from api.server.db.resource import ResourceModel
 
 
-class RoleModel(BaseModel):
+class RoleModel(IDBaseModel):
     id_: UUID = None
     name: str = None
     description: str = None
     resources: List[ResourceModel] = None
-    _secondary_id = "name"
 
     # def set_resources(self, new_resources, role_col: AsyncIOMotorCollection):
     #     """Adds the given list of resources to the Role object.

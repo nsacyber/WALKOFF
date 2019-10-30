@@ -82,12 +82,20 @@ class Static:
     REDIS_WORKFLOW_TRIGGERS_GROUP = "workflow-triggers-group"
     REDIS_WORKFLOW_CONTROL = "workflow-control"
     REDIS_WORKFLOW_CONTROL_GROUP = "workflow-control-group"
+    REDIS_RESULTS_QUEUE = "results-queue"
 
     # File paths
     # API_PATH = Path("api") / "api"
     CLIENT_PATH = Path("api") / "client"
     TEMPLATE_PATH = Path("api") / "server" / "templates"
     SECRET_BASE_PATH = Path("/") / "run" / "secrets"
+
+    SOCKETIO_PATH = "/walkoff/sockets/socket.io"
+    SIO_NS_CONSOLE = "/console"
+    SIO_NS_NODE = "/nodeStatus"
+    SIO_NS_WORKFLOW = "/workflowStatus"
+    SIO_NS_BUILD = "/buildStatus"
+    SIO_EVENT_LOG = "log"
 
     SWAGGER_URL = "/walkoff/api/docs"
 

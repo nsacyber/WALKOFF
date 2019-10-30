@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from http import HTTPStatus
 import os
@@ -16,7 +17,9 @@ from api.server.endpoints import (appapi, auth, console, dashboards, global_vari
 from api.server.db import mongo, get_mongo_c
 from api.server.scheduler import Scheduler, get_scheduler
 from api.server.utils.problems import ProblemException
-from api.server.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, user_has_correct_roles, \
+from api.server.utils.socketio import sio
+from api.server.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, \
+    user_has_correct_roles, \
     get_roles_by_resource_permission
 
 from common.config import static, config
@@ -27,7 +30,6 @@ _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _walkoff = FastAPI(openapi_prefix="/walkoff/api")
 _scheduler = Scheduler()
 p = Path('./apps').glob('**/*')
-
 
 _app.mount("/walkoff/api", _walkoff)
 _app.mount("/walkoff/client", StaticFiles(directory=static.CLIENT_PATH), name="static")
@@ -61,6 +63,14 @@ async def start_banner():
 
 
 @_app.on_event("startup")
+async def connect_to_socketio():
+    logger.info("Connecting to Socket.IO server.")
+    await sio.connect(config.SOCKETIO_URI, socketio_path=static.SOCKETIO_PATH, namespaces=[static.SIO_NS_NODE,
+                                                                                           static.SIO_NS_WORKFLOW,
+                                                                                           static.SIO_NS_BUILD])
+
+
+@_app.on_event("startup")
 async def push_to_minio():
     minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
                          secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
@@ -78,12 +88,25 @@ async def push_to_minio():
 
     files_to_upload = [x for x in p if x.is_file()]
     for file in files_to_upload:
-        path_to_file = str(file)
+        path_to_file = str(file).replace("\\", "/")
         with open(path_to_file, "rb") as file_data:
             file_stat = os.stat(path_to_file)
             minio_client.put_object("apps-bucket", path_to_file, file_data, file_stat.st_size)
 
     logger.info("Apps Pushed to Minio")
+
+
+@_app.on_event("startup")
+async def workflow_results_listener():
+    asyncio.create_task(results.update_workflow_status())
+
+
+@_app.on_event("shutdown")
+async def close_connections():
+    await sio.disconnect()
+    mongo.reg_client.disconnect()
+    await mongo.async_client.disconnect()
+
 
 # Note: The request goes through middleware here in opposite order of instantiation, last to first.
 @_walkoff.middleware("http")
@@ -193,7 +216,8 @@ async def jwt_required_middleware(request: Request, call_next):
                 return e.as_response()
 
             await verify_token_in_decoded(decoded_token=decoded_token, request_type='access')
-            await verify_token_not_blacklisted(walkoff_db=walkoff_db, decoded_token=decoded_token, request_type='access')
+            await verify_token_not_blacklisted(walkoff_db=walkoff_db, decoded_token=decoded_token,
+                                               request_type='access')
 
     response = await call_next(request)
     return response
@@ -207,6 +231,7 @@ async def problem_exception_handler(request: Request, exc: ProblemException):
         status_code=exc.status_code
     )
     return r
+
 
 # Include routers here
 _walkoff.include_router(auth.router,
@@ -323,7 +348,6 @@ def custom_openapi():
 _walkoff.openapi = custom_openapi
 
 app = _app
-
 
 # @_app.after_request
 # def after_request(response):

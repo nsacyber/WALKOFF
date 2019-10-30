@@ -1,14 +1,20 @@
 from uuid import UUID
 
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict
 
 from api.server.db.parameter import ParameterModel
 from api.server.db.workflow_variable import WorkflowVariableModel
 from api.server.utils.helpers import JSON
 
-
 from common.message_types import StatusEnum
+
+
+class UpdateMessage(BaseModel):
+    execution_id: UUID
+    workflow_id: UUID
+    message: str
+    type: str
 
 
 class NodeStatus(BaseModel):
@@ -21,12 +27,11 @@ class NodeStatus(BaseModel):
     app_name: str
     label: str
     result: JSON = None
-    parameters: JSON = None
-    workflow_execution_id: UUID
+    parameters: JSON = {}
+    execution_id: UUID
 
 
 class WorkflowStatus(BaseModel):
-    id_: UUID = None
     name: str
     status: StatusEnum
     started_at: str = ""
@@ -34,11 +39,10 @@ class WorkflowStatus(BaseModel):
     execution_id: UUID = None
     workflow_id: UUID = None
     user: str = ""
-    node_status: List[NodeStatus] = []
+    node_status: Dict[str, NodeStatus] = {}
     app_name: str = ""
     action_name: str = ""
     label: str = ""
-    _secondary_id = "execution_id"
 
 
 class ExecuteWorkflow(BaseModel):
@@ -65,7 +69,7 @@ class ControlWorkflow(BaseModel):
 #         started_at (datetime): Time the Workflow started
 #         completed_at (datetime): Time the Workflow ended
 #         user (str): The user who initially executed this workflow
-#         node_statuses (list[NodeStatus]): A list of NodeStatusMessage objects for this WorkflowStatusMessage
+#         node_status (list[NodeStatus]): A list of NodeStatusMessage objects for this WorkflowStatusMessage
 #         current_app
 #     """
 #     __tablename__ = 'workflow_status'
@@ -81,7 +85,7 @@ class ControlWorkflow(BaseModel):
 #     workflow_id = Column(UUID(as_uuid=True))
 #     user = Column(String, default="")
 #     # TODO: change these on the db model to be keyed by ID (use an association proxy)
-#     node_statuses = relationship('NodeStatus', backref=backref("execution_id"), passive_deletes=True,
+#     node_status = relationship('NodeStatus', backref=backref("execution_id"), passive_deletes=True,
 #                                  cascade='all, delete-orphan')
 #     app_name = Column(String, default="")
 #     action_name = Column(String, default="")
@@ -140,7 +144,7 @@ class ControlWorkflow(BaseModel):
 #     """
 #
 #     status = EnumField(StatusEnum)
-#     node_statuses = fields.Nested(NodeStatusSchema, many=True)
+#     node_status = fields.Nested(NodeStatusSchema, many=True)
 #
 #     class Meta:
 #         model = WorkflowStatus

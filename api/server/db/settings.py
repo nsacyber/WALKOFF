@@ -6,4 +6,4 @@ class SettingsModel(BaseModel):
     id_: UUID
     access_token_life_mins: int = Schema(15, gt=1)
     refresh_token_life_days: int = Schema(90, gt=1)
-    _secondary_id = "id_"
+    _name_field = "id_"

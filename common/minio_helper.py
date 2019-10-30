@@ -10,8 +10,6 @@ from urllib3.exceptions import ResponseError
 from minio.error import NoSuchKey
 
 import asyncio
-from pwd import getpwuid
-from grp import getgrgid
 
 from common.docker_helpers import connect_to_aiodocker, docker_context, stream_umpire_build_log, logger as docker_logger
 import pathlib

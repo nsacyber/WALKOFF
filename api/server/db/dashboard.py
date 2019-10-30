@@ -6,12 +6,13 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from pydantic import BaseModel
 
 from common.helpers import validate_uuid
+from api.server.db import IDBaseModel
 
 
 logger = logging.getLogger(__name__)
 
 
-class WidgetModel(BaseModel):
+class WidgetModel(IDBaseModel):
     id_: UUID = None
     name: str
     type_: str
@@ -22,11 +23,10 @@ class WidgetModel(BaseModel):
     options: dict = {}
 
 
-class DashboardModel(BaseModel):
+class DashboardModel(IDBaseModel):
     id_: UUID = None
     name: str
     widgets: List[WidgetModel]
-    _secondary_id = "name"
 
 # class Dashboard(Base):
 #     __tablename__ = 'dashboard'

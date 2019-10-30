@@ -1,30 +1,29 @@
 import datetime
 import json
 import uuid
-from http import HTTPStatus
 import logging
+from http import HTTPStatus
 from datetime import datetime
-
 from typing import List
 
-from starlette.requests import Request
-from pydantic import ValidationError
-from fastapi import APIRouter, Depends
-from motor.motor_asyncio import AsyncIOMotorCollection
-from fastapi import HTTPException
 
+from fastapi import APIRouter, Depends, HTTPException
+from starlette.requests import Request
+from motor.motor_asyncio import AsyncIOMotorCollection
+from pydantic import ValidationError
+
+from api.server.db import get_mongo_d, get_mongo_c
 from api.server.db.permissions import auth_check
 from api.server.db.workflow import WorkflowModel
-from common.config import static
-from common.message_types import StatusEnum, message_dumps
-from api.server.db import get_mongo_d, get_mongo_c
 from api.server.db.workflowresults import WorkflowStatus, ExecuteWorkflow, ControlWorkflow
 from api.server.security import get_jwt_claims, get_jwt_identity
-from api.server.endpoints.results import push_to_workflow_stream_queue
+from api.server.utils.socketio import sio, SIOMessage
 from api.server.utils.problems import InvalidInputException, ImproperJSONException, DoesNotExistException
+
+from common.config import config, static
 from common.redis_helpers import connect_to_aioredis_pool
-from common.config import config
 from common.mongo_helpers import get_item, create_item
+from common.message_types import StatusEnum, message_dumps
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -86,7 +85,7 @@ async def get_workflow_status(request: Request, execution,
     walkoff_db = get_mongo_d(request)
     workflow_col = walkoff_db.workflows
     curr_user_id = await get_jwt_identity(request)
-    workflow_status = await get_item(workflow_status_col, WorkflowStatus, execution, wf_status_check=True)
+    workflow_status = await get_item(workflow_status_col, WorkflowStatus, execution, id_key="execution_id")
     # workflow_status = workflow_status_getter(execution, workflow_status_col)
     wf = await get_item(workflow_col, WorkflowModel, workflow_status.workflow_id)
     to_read = await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db)
@@ -185,21 +184,30 @@ async def execute_workflow_helper(request: Request, workflow_id, workflow_status
     if not workflow:
         workflow = await get_item(workflow_col, WorkflowModel, workflow_id)
 
-    workflow_status_json = {  # ToDo: Probably load this directly into db model?
-        "execution_id": execution_id,
-        "workflow_id": workflow_id,
-        "name": workflow.name,
-        "status": StatusEnum.PENDING.name,
-        "started_at": str(datetime.now().isoformat()),
-        # "completed_at": None,
-        "user": (await get_jwt_claims(request)).get('username', None),
-        "node_status": [],
-        # "app_name": None,
-        # "action_name": None,
-        # "label": None
-    }
-    workflow_status = WorkflowStatus(**workflow_status_json)
-    await create_item(workflow_status_col, WorkflowStatus, workflow_status)
+    # workflow_status_json = {
+    #     "name": workflow.name,
+    #     "status": StatusEnum.PENDING.name,
+    #     "started_at": str(datetime.now().isoformat()),
+    #     "workflow_id": workflow_id,
+    #     "execution_id": execution_id,
+    #     # "completed_at": None,
+    #     "user": (await get_jwt_claims(request)).get('username', None),
+    #     "node_status": [],
+    #     # "app_name": None,
+    #     # "action_name": None,
+    #     # "label": None
+    # }
+    workflow_status = WorkflowStatus(
+        name=workflow.name,
+        status=StatusEnum.PENDING.name,
+        started_at=str(datetime.now().isoformat()),
+        execution_id=execution_id,
+        workflow_id=workflow_id,
+        user=(await get_jwt_claims(request)).get('username', None),
+        node_status=[]
+    )
+
+    await create_item(workflow_status_col, WorkflowStatus, workflow_status, id_key="execution_id")
     # Assign the execution id to the workflow so the worker knows it
     workflow.execution_id = execution_id
     # ToDo: self.__box.encrypt(message))
@@ -207,7 +215,8 @@ async def execute_workflow_helper(request: Request, workflow_id, workflow_status
         await conn.sadd(static.REDIS_PENDING_WORKFLOWS, str(execution_id))
         await conn.xadd(static.REDIS_WORKFLOW_QUEUE, {str(execution_id): workflow.json()})
     workflow_status.status = StatusEnum.PENDING
-    await push_to_workflow_stream_queue(workflow_status, "PENDING")
+    await sio.emit(static.SIO_EVENT_LOG, json.loads(workflow_status.json()), namespace=static.SIO_NS_WORKFLOW)
+    # await push_to_workflow_stream_queue(workflow_status, "PENDING")
     logger.info(f"Created Workflow Status {workflow.name} ({execution_id})")
 
     return execution_id
@@ -221,7 +230,7 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
     """
     Pause, resume, or abort a workflow currently executing in WALKOFF.
     """
-    execution = await get_item(workflow_status_col, WorkflowStatus, execution, wf_status_check=True)
+    execution = await get_item(workflow_status_col, WorkflowStatus, execution, id_key="execution_id")
 
     walkoff_db = get_mongo_d(request)
     workflow_col = walkoff_db.workflows
