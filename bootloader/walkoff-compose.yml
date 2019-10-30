@@ -54,6 +54,7 @@ services:
     volumes:
       - ./apps:/app/apps
       - ./api/client/dist:/app/api/client/dist
+      - /var/run/docker.sock:/var/run/docker.sock
 
   core_socketio:
     image: "127.0.0.1:5000/walkoff_core_socketio:latest"
