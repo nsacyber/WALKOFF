@@ -302,7 +302,7 @@ class Umpire:
 
             if executing_workflows[0] < 1:
                 status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
-                await send_status_update(self.session, execution_id, status)
+                await send_status_update(self.session, execution_id, workflow.id_, status)
             else:
                 # Kill worker
                 try:
@@ -325,7 +325,7 @@ class Umpire:
                     await self.redis.delete(stream)
 
                     status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
-                    await send_status_update(self.session, execution_id, status)
+                    await send_status_update(self.session, execution_id, workflow.id_, status)
 
                     if executing_apps is None:
                         break

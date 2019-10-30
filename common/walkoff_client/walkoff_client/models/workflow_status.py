@@ -35,7 +35,7 @@ class WorkflowStatus(object):
         'completed_at': 'datetime',
         'execution_id': 'str',
         'name': 'str',
-        'node_statuses': 'list[NodeStatus]',
+        'node_status': 'list[NodeStatus]',
         'started_at': 'datetime',
         'status': 'str',
         'user': 'str',
@@ -46,20 +46,20 @@ class WorkflowStatus(object):
         'completed_at': 'completed_at',
         'execution_id': 'execution_id',
         'name': 'name',
-        'node_statuses': 'node_statuses',
+        'node_status': 'node_status',
         'started_at': 'started_at',
         'status': 'status',
         'user': 'user',
         'workflow_id': 'workflow_id'
     }
 
-    def __init__(self, completed_at=None, execution_id=None, name=None, node_statuses=None, started_at=None, status=None, user=None, workflow_id=None):  # noqa: E501
+    def __init__(self, completed_at=None, execution_id=None, name=None, node_status=None, started_at=None, status=None, user=None, workflow_id=None):  # noqa: E501
         """WorkflowStatus - a model defined in OpenAPI"""  # noqa: E501
 
         self._completed_at = None
         self._execution_id = None
         self._name = None
-        self._node_statuses = None
+        self._node_status = None
         self._started_at = None
         self._status = None
         self._user = None
@@ -70,7 +70,7 @@ class WorkflowStatus(object):
             self.completed_at = completed_at
         self.execution_id = execution_id
         self.name = name
-        self.node_statuses = node_statuses
+        self.node_status = node_status
         if started_at is not None:
             self.started_at = started_at
         self.status = status
@@ -152,29 +152,29 @@ class WorkflowStatus(object):
         self._name = name
 
     @property
-    def node_statuses(self):
-        """Gets the node_statuses of this WorkflowStatus.  # noqa: E501
+    def node_status(self):
+        """Gets the node_status of this WorkflowStatus.  # noqa: E501
 
         The statuses of the workflow nodes  # noqa: E501
 
-        :return: The node_statuses of this WorkflowStatus.  # noqa: E501
+        :return: The node_status of this WorkflowStatus.  # noqa: E501
         :rtype: list[NodeStatus]
         """
-        return self._node_statuses
+        return self._node_status
 
-    @node_statuses.setter
-    def node_statuses(self, node_statuses):
-        """Sets the node_statuses of this WorkflowStatus.
+    @node_status.setter
+    def node_status(self, node_status):
+        """Sets the node_status of this WorkflowStatus.
 
         The statuses of the workflow nodes  # noqa: E501
 
-        :param node_statuses: The node_statuses of this WorkflowStatus.  # noqa: E501
+        :param node_status: The node_status of this WorkflowStatus.  # noqa: E501
         :type: list[NodeStatus]
         """
-        if node_statuses is None:
-            raise ValueError("Invalid value for `node_statuses`, must not be `None`")  # noqa: E501
+        if node_status is None:
+            raise ValueError("Invalid value for `node_status`, must not be `None`")  # noqa: E501
 
-        self._node_statuses = node_statuses
+        self._node_status = node_status
 
     @property
     def started_at(self):

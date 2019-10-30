@@ -23,7 +23,7 @@ class BlacklistedToken(BaseModel):
     jti: str
     user_identity: str
     expires: datetime
-    _secondary_id = "jti"
+    _name_field = "jti"
 
 
 async def revoke_token(decoded_token: dict, walkoff_db: AsyncIOMotorDatabase):

@@ -3,11 +3,13 @@ from uuid import uuid4, UUID
 
 from pydantic import BaseModel
 
+from api.server.db import IDBaseModel
+
 
 logger = logging.getLogger(__name__)
 
 
-class BranchModel(BaseModel):
+class BranchModel(IDBaseModel):
     id_: UUID = None
     source_id: UUID
     destination_id: UUID

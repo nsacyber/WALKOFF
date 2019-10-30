@@ -3,6 +3,7 @@ from uuid import uuid4, UUID
 
 from pydantic import BaseModel, Schema
 
+from api.server.db import IDBaseModel
 from api.server.db.permissions import PermissionsModel
 from api.server.utils.helpers import JSON
 
@@ -10,14 +11,13 @@ from api.server.utils.helpers import JSON
 logger = logging.getLogger(__name__)
 
 
-class GlobalVariable(BaseModel):
+class GlobalVariable(IDBaseModel):
     id_: UUID = None
     walkoff_type_: str = "variable"
     name: str
     permissions: PermissionsModel
     value: str
     description: str = None
-    _secondary_id = "name"
 
     class Config:
         schema_extra = {
@@ -46,11 +46,10 @@ class GlobalVariable(BaseModel):
         }
 
 
-class GlobalVariableTemplate(BaseModel):
+class GlobalVariableTemplate(IDBaseModel):
     id_: UUID = None
     walkoff_type_: str = "variable"
     name: str
     json_schema: JSON = {}
     description: str = None
-    _secondary_id = "name"
 

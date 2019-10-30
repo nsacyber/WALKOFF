@@ -6,6 +6,7 @@ from uuid import UUID
 from typing import List, Union
 
 from pydantic import BaseModel
+from api.server.db import IDBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ class IntervalTrigger(BaseModel):
     jitter: int = None
 
 
-class ScheduledTask(BaseModel):
+class ScheduledTask(IDBaseModel):
     id_: UUID = None
     name: str
     description: str = ""

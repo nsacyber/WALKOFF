@@ -1,11 +1,10 @@
 import logging
 import json
 from uuid import UUID
-import asyncio
 
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from common.config import config
+from common.config import config, static
 from common.message_types import (message_dumps, NodeStatusMessage, WorkflowStatusMessage,
                                   StatusEnum, JSONPatch, JSONPatchOps)
 
@@ -80,7 +79,7 @@ def make_patch(message, root, op, value_only=False, white_list=None, black_list=
 def get_patches(message):
     patches = []
     if isinstance(message, NodeStatusMessage):
-        root = f"/node_statuses/{message.node_id}"
+        root = f"/node_status/{message.node_id}"
         if message.status == StatusEnum.EXECUTING:
             patches.append(make_patch(message, root, JSONPatchOps.ADD, black_list={"result", "completed_at"}))
 
@@ -102,37 +101,24 @@ def get_patches(message):
     return patches
 
 
-async def send_status_update(session, execution_id, message, headers=None):
-    import aiohttp
+async def send_status_update(redis, execution_id, workflow_id, message):
     """ Forms and sends a JSONPatch message to the api_gateway to update the status of an action or workflow """
 
     if message is None:
         return None
-
-    patches = get_patches(message)
-
-    if len(patches) < 1:
-        raise ValueError(f"Attempting to send improper message type: {type(message)}")
-    if message.websocket_finished:
-        close = "Done"
-    else:
-        close = ""
-
-    params = {"event": message.status.value, "close": close}
-    url = f"{config.API_URI}/walkoff/api/streams/workflowqueue/workflow_status/{execution_id}"
-    headers, token = await get_walkoff_auth_header(session)
-    headers["content-type"] = "application/json"
-
-    try:
-        async with session.patch(url, data=message_dumps(patches), params=params, headers=headers, timeout=5) as resp:
-            if resp.content_type == "application/json":
-                results = await resp.json()
-                logger.debug(f"API-Gateway status update response: {results}")
-                return results
-    except aiohttp.ClientConnectionError as e:
-        logger.error(f"Could not send status message to {url}: {e!r}")
-    except Exception as e:
-        logger.error(f"Unknown error while sending message to {url}: {e!r}")
+    patches = {
+        "execution_id": execution_id,
+        "workflow_id": workflow_id,
+        "message": message_dumps(get_patches(message)),
+        "type": "workflow" if type(message) is WorkflowStatusMessage else "node"
+    }
+    # try:
+    logger.info(f"Sending {patches}")
+    await redis.lpush(static.REDIS_RESULTS_QUEUE, json.dumps(patches))
+    # except ConnectionError as e:
+    #     logger.error(f"Could not send event to {config.SOCKETIO_URI}: {e!r}")
+    # except TimeoutError as e:
+    #     logger.error(f"Timed out sending event to {config.SOCKETIO_URI}: {e!r}")
 
 
 def fernet_encrypt(key, string):

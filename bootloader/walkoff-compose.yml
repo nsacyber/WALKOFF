@@ -2,7 +2,7 @@ version: '3.5'
 services:
   core_umpire:
     image: "127.0.0.1:5000/walkoff_core_umpire:latest"
-#    command: python -m umpire.umpire --log-level=debug
+#    command: python -m umpire.umpire --log-level=debug --disable-worker-autoheal --disable-worker-autoscale
     build:
       context: ./
       dockerfile: umpire/Dockerfile
@@ -61,8 +61,8 @@ services:
     build:
       context: ./
       dockerfile: ./socketio/Dockerfile
-#    ports:
-#      - '3000:3000'
+    ports:
+      - '3000:3000'
     networks:
       - walkoff_network
 #    stop_signal: SIGINT
@@ -95,7 +95,7 @@ services:
       - core_socketio
 
   core_worker:
-#    command: python -m worker.worker --log-level=debug
+    command: python -m worker.worker --log-level=debug
     image: "127.0.0.1:5000/walkoff_core_worker:latest"
     networks:
       - walkoff_network

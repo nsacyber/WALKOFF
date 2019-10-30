@@ -9,7 +9,7 @@ from passlib.hash import pbkdf2_sha512
 from pydantic import BaseModel, validator
 
 from api.server.db import mongo
-
+from api.server.db import IDBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class EditPersonalUser(BaseModel):
     new_password: str = ""
 
 
-class UserModel(BaseModel):
+class UserModel(IDBaseModel):
     id_: UUID = None
     hashed: bool = False
     username: str
@@ -41,7 +41,7 @@ class UserModel(BaseModel):
     last_login_ip: str = None
     current_login_ip: str = None
     login_count: int = 0
-    _secondary_id = "username"
+    _name_field = "username"
 
     @validator('password')
     def hash_pass(cls, password, values):

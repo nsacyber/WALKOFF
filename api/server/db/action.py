@@ -4,14 +4,14 @@ from typing import List
 
 from pydantic import BaseModel, ValidationError, validator
 
-# from api.server.db import Base, BaseSchema
+from api.server.db import IDBaseModel
 from api.server.db.parameter import ParameterApiModel, ParameterModel  # ParameterApiSchema, Parameter, ParameterSchema,
 from api.server.db.returns import ReturnApiModel  # ReturnApiSchema,
 
 logger = logging.getLogger(__name__)
 
 
-class ActionApiModel(BaseModel):
+class ActionApiModel(IDBaseModel):
     id_: UUID = None
     name: str
     node_type: str = ""
@@ -21,7 +21,7 @@ class ActionApiModel(BaseModel):
     deprecated: bool = False
 
 
-class ActionModel(BaseModel):
+class ActionModel(IDBaseModel):
     id_: UUID = None
     errors: List[str] = []
     is_valid: bool = True

@@ -11,11 +11,12 @@ from pydantic import BaseModel
 # from marshmallow_sqlalchemy import field_for, ModelSchema
 #
 # from api.server.db import Base, BaseSchema
+from api.server.db import IDBaseModel
 
 logger = logging.getLogger(__name__)
 
 
-class ReturnApiModel(BaseModel):
+class ReturnApiModel(IDBaseModel):
     id_: UUID = None
     location: str = ""
     description: str = ""

@@ -412,7 +412,7 @@ class Bootloader:
         await create_encryption_key(self.docker_client, static.INTERNAL_KEY, debug_pw)
 
         # Create Minio secret key
-        await create_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY, b"walkoff")
+        await create_encryption_key(self.docker_client, static.MINIO_ACCESS_KEY, b"walkoff123456")
         await create_encryption_key(self.docker_client, static.MINIO_SECRET_KEY, debug_pw)
 
         # Create Mongo user password

@@ -4,8 +4,7 @@ os: linux
 language: python
 python:
   - "3.7"
-  #- "3.5-dev" # 3.5 development branch
-  #- "nightly" # points to the latest development branch e.g. 3.6-dev
+  - "3.8"
 
 services:
   - docker
@@ -16,7 +15,6 @@ env:
 before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
-  - docker version
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-compose
   - pip install -U pip
   - pip install -U pytest
@@ -30,13 +28,13 @@ install:
 
 before_script:
   - docker swarm init
-  - ./walkoff.sh up -bdy
+  - ./walkoff.sh up -bdyr
 
 # command to run tests
 script:
-  - coverage run -m pytest testing/api/
+  - coverage run -m pytest testing/api/ --omit ~/virtualenv/*
   #- coverage combine
   - coverage report
 
 after_script:
-  - ./walkoff.sh down -cy
+  - ./walkoff.sh down -cdy

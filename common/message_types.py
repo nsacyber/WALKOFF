@@ -100,12 +100,12 @@ class JSONPatch:
 
 
 class JSONPatchOps(str, enum.Enum):
-    TEST = "TEST"
-    REMOVE = "REMOVE"
-    ADD = "ADD"
-    REPLACE = "REPLACE"
-    MOVE = "MOVE"
-    COPY = "COPY"
+    TEST = "test"
+    REMOVE = "remove"
+    ADD = "add"
+    REPLACE = "replace"
+    MOVE = "move"
+    COPY = "copy"
 
 
 class StatusEnum(str, enum.Enum):
@@ -123,10 +123,10 @@ class StatusEnum(str, enum.Enum):
 class WorkflowStatusMessage(object):
     """ Class that formats a WorkflowStatusMessage message """
     __slots__ = ("execution_id", "workflow_id", "name", "status", "started_at", "completed_at",
-                 "user", "app_name", "action_name", "label", "websocket_finished")
+                 "user", "app_name", "action_name", "label")
 
     def __init__(self, execution_id, workflow_id, name, started_at=None, completed_at=None, status=None,
-                 user=None, app_name=None, action_name=None, label=None, websocket_finished=False):
+                 user=None, app_name=None, action_name=None, label=None):
         self.execution_id = execution_id
         self.workflow_id = workflow_id
         self.name = name
@@ -135,7 +135,6 @@ class WorkflowStatusMessage(object):
         self.completed_at = completed_at
         self.user = user
         self.app_name = app_name
-        self.websocket_finished = websocket_finished
         self.action_name = action_name
         self.label = label
 
@@ -171,10 +170,10 @@ class WorkflowStatusMessage(object):
 class NodeStatusMessage(object):
     """ Class that formats a NodeStatusMessage message. """
     __slots__ = ("name", "node_id", "label", "app_name", "execution_id", "parameters", "combined_id", "result",
-                 "status", "started_at", "completed_at", "websocket_finished")
+                 "status", "started_at", "completed_at")
 
     def __init__(self, name, node_id, label, app_name, execution_id, combined_id=None, parameters=None, result=None,
-                 status=None, started_at=None, completed_at=None, websocket_finished=False):
+                 status=None, started_at=None, completed_at=None):
         self.name = name
         self.node_id = node_id
         self.label = label
@@ -184,7 +183,6 @@ class NodeStatusMessage(object):
         self.result = result
         self.parameters = parameters
         self.status = status
-        self.websocket_finished = websocket_finished
         self.started_at = started_at
         self.completed_at = completed_at
 

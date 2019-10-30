@@ -13,6 +13,8 @@ from api.server.db.trigger import TriggerModel
 from api.server.db.permissions import PermissionsModel
 from api.server.db import mongo
 
+from api.server.db import IDBaseModel
+
 logger = logging.getLogger(__name__)
 
 
@@ -20,7 +22,7 @@ class CopyWorkflowModel(BaseModel):
     name: str
 
 
-class WorkflowModel(BaseModel):
+class WorkflowModel(IDBaseModel):
     execution_id: UUID = None
     id_: UUID
     errors: List[str] = []
@@ -37,7 +39,6 @@ class WorkflowModel(BaseModel):
     triggers: List[TriggerModel] = []
     branches: List[BranchModel] = []
     start: UUID
-    _secondary_id = "name"
 
     @validator('is_valid')
     def clear_invalid_state(cls, value, values):
