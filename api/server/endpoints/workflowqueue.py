@@ -1,7 +1,7 @@
 import datetime
 import json
-import uuid
 import logging
+from uuid import UUID, uuid4
 from http import HTTPStatus
 from datetime import datetime
 from typing import List
@@ -9,7 +9,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.requests import Request
-from motor.motor_asyncio import AsyncIOMotorCollection
+from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 from pydantic import ValidationError
 
 from api.server.db import get_mongo_d, get_mongo_c
@@ -18,11 +18,11 @@ from api.server.db.workflow import WorkflowModel
 from api.server.db.workflowresults import WorkflowStatus, ExecuteWorkflow, ControlWorkflow
 from api.server.security import get_jwt_claims, get_jwt_identity
 from api.server.utils.socketio import sio, SIOMessage
-from api.server.utils.problems import InvalidInputException, ImproperJSONException, DoesNotExistException
+from api.server.utils.problems import InvalidInputException, ImproperJSONException, DoesNotExistException, UnauthorizedException
 
+from common import mongo_helpers
 from common.config import config, static
 from common.redis_helpers import connect_to_aioredis_pool
-from common.mongo_helpers import get_item, create_item
 from common.message_types import StatusEnum, message_dumps
 
 router = APIRouter()
@@ -48,26 +48,24 @@ logger = logging.getLogger(__name__)
 
 @router.get("/",
             response_model=List[WorkflowStatus],
-            response_description="List of status information of all workflows currently executing.",
-            status_code=200)
-async def get_all_workflow_status(request: Request, workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+            response_description="List of status information of all workflows currently executing.")
+async def get_all_workflow_status(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
+                                  page: int = 1,
+                                  num_per_page: int = 20,
+                                  request: Request):
     """
     Returns a list of status information of workflows currently executing WALKOFF.
     """
-    walkoff_db = get_mongo_d(request)
     workflow_col = walkoff_db.workflows
+    wfq_col = walkoff_db.workflowqueue
     curr_user_id = await get_jwt_identity(request)
 
-    temp = []
-    ret = []
-    for wf_status in (await workflow_status_col.find().to_list(None)):
-        temp.append(WorkflowStatus(**wf_status))
+    wf_statuses = await mongo_helpers.get_all_items(wfq_col, WorkflowStatus, page=page, num_per_page=num_per_page)
 
-    for wf_status in temp:
-        id = wf_status.workflow_id
-        wf = await get_item(workflow_col, WorkflowModel, id)
-        to_read = await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db)
-        if to_read:
+    ret = []
+    for wf_status in wf_statuses:
+        wf = await mongo_helpers.get_item(workflow_col, WorkflowModel, wf_status.workflow_id)
+        if await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db):
             ret.append(wf_status)
 
     return ret
@@ -75,24 +73,22 @@ async def get_all_workflow_status(request: Request, workflow_status_col: AsyncIO
 
 @router.get("/{execution}",
             response_model=WorkflowStatus,
-            response_description="Returns status information of a workflow specified by execution ID.",
-            status_code=200)
-async def get_workflow_status(request: Request, execution,
-                              workflow_status_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+            response_description="Returns status information of a workflow specified by execution ID.")
+async def get_workflow_status(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
+                              execution: UUID,
+                              request: Request):
     """
     Returns status information of a workflow currently executing WALKOFF.
     """
-    walkoff_db = get_mongo_d(request)
     workflow_col = walkoff_db.workflows
+    wfq_col = walkoff_db.workflowqueue
     curr_user_id = await get_jwt_identity(request)
-    workflow_status = await get_item(workflow_status_col, WorkflowStatus, execution, id_key="execution_id")
-    # workflow_status = workflow_status_getter(execution, workflow_status_col)
-    wf = await get_item(workflow_col, WorkflowModel, workflow_status.workflow_id)
-    to_read = await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db)
-    if to_read:
-        return workflow_status
+    wf_status = await mongo_helpers.get_item(wfq_col, WorkflowStatus, execution, id_key="execution_id")
+    wf = await mongo_helpers.get_item(workflow_col, WorkflowModel, wf_status.workflow_id)
+    if await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db):
+        return wf_status
     else:
-        return None
+        raise UnauthorizedException("read", "Workflow Status", wf_status.workflow_id)
 
 
 @router.post("/",
@@ -109,7 +105,7 @@ async def execute_workflow(workflow_to_execute: ExecuteWorkflow, request: Reques
 
     workflow_id = workflow_to_execute.workflow_id
     execution_id = workflow_to_execute.execution_id
-    workflow: WorkflowModel = await get_item(workflow_col, WorkflowModel, workflow_id)
+    workflow: WorkflowModel = await mongo_helpers.get_item(workflow_col, WorkflowModel, workflow_id)
     # workflow = workflow_getter(workflow_id, workflow_status_col)
     # data = dict(workflow_to_execute)
 
@@ -180,9 +176,9 @@ async def execute_workflow_helper(request: Request, workflow_id, workflow_status
                                   workflow_col: AsyncIOMotorCollection = None, execution_id=None,
                                   workflow: WorkflowModel = None):
     if not execution_id:
-        execution_id = str(uuid.uuid4())
+        execution_id = str(uuid4())
     if not workflow:
-        workflow = await get_item(workflow_col, WorkflowModel, workflow_id)
+        workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, workflow_id)
 
     # workflow_status_json = {
     #     "name": workflow.name,
@@ -207,7 +203,7 @@ async def execute_workflow_helper(request: Request, workflow_id, workflow_status
         node_status=[]
     )
 
-    await create_item(workflow_status_col, WorkflowStatus, workflow_status, id_key="execution_id")
+    await mongo_helpers.create_item(workflow_status_col, WorkflowStatus, workflow_status, id_key="execution_id")
     # Assign the execution id to the workflow so the worker knows it
     workflow.execution_id = execution_id
     # ToDo: self.__box.encrypt(message))
@@ -230,7 +226,7 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
     """
     Pause, resume, or abort a workflow currently executing in WALKOFF.
     """
-    execution = await get_item(workflow_status_col, WorkflowStatus, execution, id_key="execution_id")
+    execution = await mongo_helpers.get_item(workflow_status_col, WorkflowStatus, execution, id_key="execution_id")
 
     walkoff_db = get_mongo_d(request)
     workflow_col = walkoff_db.workflows
@@ -240,7 +236,7 @@ async def control_workflow(request: Request, execution, workflow_to_control: Con
     data = dict(workflow_to_control)
     status = data['status']
 
-    workflow: WorkflowModel = await get_item(workflow_col, WorkflowModel, workflow_id)
+    workflow: WorkflowModel = await mongo_helpers.get_item(workflow_col, WorkflowModel, workflow_id)
     # workflow = workflow_getter(execution.workflow_id, workflow_status_col)
     # The resource factory returns the WorkflowStatus model but we want the string of the execution ID
     execution_id = str(execution.execution_id)

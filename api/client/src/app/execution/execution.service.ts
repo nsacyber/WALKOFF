@@ -25,7 +25,7 @@ export class ExecutionService {
 		if (execution_id) data.execution_id = execution_id;
 		if (variables.length > 0) data.workflow_variables = classToPlain(variables);
 
-		return this.http.post('api/workflowqueue', data)
+		return this.http.post('api/workflowqueue/', data)
 			.toPromise()
 			.then((data: object) => plainToClass(WorkflowStatus, data))
 			.catch(this.utils.handleResponseError);
@@ -68,7 +68,7 @@ export class ExecutionService {
 	 * Asyncronously gets an array of workflow statuses from the server.
 	 */
 	getWorkflowStatuses(page: number = 1): Promise<WorkflowStatus[]> {
-		return this.http.get(`api/workflowqueue?page=${ page }`)
+		return this.http.get(`api/workflowqueue/?page=${ page }`)
 			.toPromise()
 			.then((data: object[]) => plainToClass(WorkflowStatus, data))
 			.catch(this.utils.handleResponseError);

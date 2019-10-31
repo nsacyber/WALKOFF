@@ -43,35 +43,35 @@ class ParameterModel(IDBaseModel):
     parallelized: bool = False
     walkoff_type_: str = "parameter"
 
-    @validator('value')
-    def global_variable_check(cls, value, values):
-        global_col = mongo.reg_client.walkoff_db.globals
-        if values.get("variant") == ParameterVariant.GLOBAL:
-            global_check = global_col.find_one({"id_": values.get("id_")})
-            if not global_check:
-                raise ValidationError
-        else:
-            return value
-
-    @validator('value')
-    def workflow_variable_check(cls, value, values):
-        global_col = mongo.reg_client.walkoff_db.globals
-        if values.get("variant") == ParameterVariant.WORKFLOW_VARIABLE:
-            global_check = global_col.find_one({"id_": values.get("id_")})
-            if not global_check:
-                raise ValidationError
-        else:
-            return value
-
-    @validator('value')
-    def action_result_check(cls, value, values):
-        global_col = mongo.reg_client.walkoff_db.globals
-        if values.get("variant") == ParameterVariant.ACTION_RESULT:
-            global_check = global_col.find_one({"id_": values.get("id_")})
-            if not global_check:
-                raise ValidationError
-        else:
-            return value
+    # @validator('value')
+    # def global_variable_check(cls, value, values):
+    #     global_col = mongo.reg_client.walkoff_db.globals
+    #     if values.get("variant") == ParameterVariant.GLOBAL:
+    #         global_check = global_col.find_one({"id_": values.get("id_")})
+    #         if not global_check:
+    #             raise ValidationError
+    #     else:
+    #         return value
+    #
+    # @validator('value')
+    # def workflow_variable_check(cls, value, values):
+    #     global_col = mongo.reg_client.walkoff_db.globals
+    #     if values.get("variant") == ParameterVariant.WORKFLOW_VARIABLE:
+    #         global_check = global_col.find_one({"id_": values.get("id_")})
+    #         if not global_check:
+    #             raise ValidationError
+    #     else:
+    #         return value
+    #
+    # @validator('value')
+    # def action_result_check(cls, value, values):
+    #     global_col = mongo.reg_client.walkoff_db.globals
+    #     if values.get("variant") == ParameterVariant.ACTION_RESULT:
+    #         global_check = global_col.find_one({"id_": values.get("id_")})
+    #         if not global_check:
+    #             raise ValidationError
+    #     else:
+    #         return value
 
 # class ParameterApi(Base):
 #     __tablename__ = 'parameter_api'
