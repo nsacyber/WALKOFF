@@ -41,7 +41,7 @@ class ParameterModel(IDBaseModel):
     variant: ParameterVariant
     value: JSON = {}
     parallelized: bool = False
-    _walkoff_type: str = "parameter"
+    walkoff_type_: str = "parameter"
 
     @validator('value')
     def global_variable_check(cls, value, values):

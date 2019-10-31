@@ -9,7 +9,7 @@ from inspect import signature as getsignature
 logger = logging.getLogger(__name__)
 
 
-JSON = Union[str, int, bool, dict, list, None]
+JSON = Union[str, int, bool, dict, list, UUID, None]
 
 
 def __list_valid_directories(path):

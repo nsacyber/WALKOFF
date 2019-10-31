@@ -1,11 +1,14 @@
 import logging
 from uuid import uuid4, UUID
 from typing import List
+import jsonschema
 
 from pydantic import BaseModel, ValidationError, validator
 
-from api.server.db import IDBaseModel
-from api.server.db.parameter import ParameterApiModel, ParameterModel  # ParameterApiSchema, Parameter, ParameterSchema,
+from common.helpers import validate_uuid
+
+from api.server.db import mongo, IDBaseModel
+from api.server.db.parameter import ParameterApiModel, ParameterModel, ParameterVariant  # ParameterApiSchema, Parameter, ParameterSchema,
 from api.server.db.returns import ReturnApiModel  # ReturnApiSchema,
 
 logger = logging.getLogger(__name__)
@@ -35,10 +38,6 @@ class ActionModel(IDBaseModel):
     walkoff_type_: str = "action"
     parameters: List[ParameterModel] = []
 
-    # @validator('parameters')
-    # def parameters_must_match_api(cls, parameters, action, **kwargs):
-    #     for param in parameters:
-    #
 
 # class ActionApi(Base):
 #     __tablename__ = 'action_api'

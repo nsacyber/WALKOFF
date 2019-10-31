@@ -13,7 +13,7 @@ actions:
   - name: set_timestamp
     description: Outputs the timestamp at the time of this action's execution
     returns:
-      schema:
+      json_schema:
         type: string
   - name: get_dll_info
     description: Gathers every path  that has a space in the directory name, where a .dll exists, and a list of the “Known DLLs” from the Windows registry
@@ -21,32 +21,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -56,32 +56,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -91,32 +91,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -126,32 +126,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -161,32 +161,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -196,32 +196,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -231,32 +231,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -266,32 +266,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -301,32 +301,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -336,32 +336,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -371,32 +371,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -406,32 +406,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -441,32 +441,32 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
@@ -476,35 +476,35 @@ actions:
       - name: hosts
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
       - name: username
         description: Username for remote host
         required: true
-        schema:
+        json_schema:
           type: string
       - name: password
         description: Password for remote host user
         required: true
-        schema:
+        json_schema:
           type: string
       - name: transport
         description: transport type
-        schema:
+        json_schema:
           type: string
           enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
         required: true
       - name: server_cert_validation
         description: whether server certificate should be validated
-        schema:
+        json_schema:
           type: boolean
         required: true
       - name: message_encryption
         description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
-        schema:
+        json_schema:
           type: string
           enum: ["auto", "always", "never"]
         required: true
     returns:
-      schema:
+      json_schema:
         type: string

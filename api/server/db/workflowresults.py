@@ -3,6 +3,7 @@ from uuid import UUID
 from pydantic import BaseModel
 from typing import List, Dict
 
+from api.server.db import IDBaseModel
 from api.server.db.parameter import ParameterModel
 from api.server.db.workflow_variable import WorkflowVariableModel
 from api.server.utils.helpers import JSON
@@ -31,7 +32,7 @@ class NodeStatus(BaseModel):
     execution_id: UUID
 
 
-class WorkflowStatus(BaseModel):
+class WorkflowStatus(IDBaseModel):
     name: str
     status: StatusEnum
     started_at: str = ""
@@ -43,6 +44,7 @@ class WorkflowStatus(BaseModel):
     app_name: str = ""
     action_name: str = ""
     label: str = ""
+    _id_field: str = "execution_id"
 
 
 class ExecuteWorkflow(BaseModel):
