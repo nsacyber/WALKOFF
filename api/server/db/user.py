@@ -8,7 +8,7 @@ import pymongo
 from passlib.hash import pbkdf2_sha512
 from pydantic import BaseModel, validator
 
-from api.server.db import mongo
+from api.server.db.mongo import mongo
 from api.server.db import IDBaseModel
 
 logger = logging.getLogger(__name__)

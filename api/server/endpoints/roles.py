@@ -5,7 +5,7 @@ from typing import List, Union
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from api.server.db import get_mongo_c
+from api.server.db.mongo import get_mongo_c
 from api.server.db.user_init import default_resource_permissions_admin, DefaultRoleUUID, DefaultRoleUUIDS
 from api.server.db.role import RoleModel
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,

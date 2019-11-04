@@ -13,7 +13,7 @@ from starlette.responses import StreamingResponse
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 from api.server.security import get_jwt_identity
-from api.server.db import get_mongo_c, get_mongo_d
+from api.server.db.mongo import get_mongo_c, get_mongo_d
 from api.server.db.workflow import WorkflowModel, CopyWorkflowModel
 from api.server.db.permissions import AccessLevel, auth_check, creator_only_permissions, \
     default_permissions, append_super_and_internal

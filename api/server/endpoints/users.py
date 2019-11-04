@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
-from api.server.db import get_mongo_c, get_mongo_d
+from api.server.db.mongo import get_mongo_c, get_mongo_d
 from api.server.db.user_init import DefaultUserUUID as DUsers, DefaultRoleUUID as DRoles, DefaultUserUUID, \
     DefaultRoleUUID
 from api.server.db.user import UserModel, EditUser, EditPersonalUser

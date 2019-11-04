@@ -11,7 +11,7 @@ from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 from pydantic import ValidationError
 
-from api.server.db import get_mongo_d, get_mongo_c
+from api.server.db.mongo import get_mongo_d, get_mongo_c
 from api.server.db.permissions import auth_check
 from api.server.db.workflow import WorkflowModel
 from api.server.db.workflowresults import WorkflowStatus, ExecuteWorkflow, ControlWorkflow

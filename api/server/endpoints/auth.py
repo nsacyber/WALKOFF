@@ -9,7 +9,7 @@ from api.server.security import (create_access_token, create_refresh_token, get_
                                  get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request,
                                  verify_token_in_decoded, verify_token_not_blacklisted)
 from api.server.fastapi_config import FastApiConfig
-from api.server.db import get_mongo_d
+from api.server.db.mongo import get_mongo_d
 from api.server.db.user import UserModel
 from api.server.db.tokens import revoke_token, AuthModel, TokenModel
 from api.server.utils.problems import ProblemException

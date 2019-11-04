@@ -11,7 +11,7 @@ from starlette.requests import Request
 
 from api.server.db.global_variable import GlobalVariable
 
-from api.server.db import get_mongo_c, get_mongo_d
+from api.server.db.mongo import get_mongo_c, get_mongo_d
 
 from api.server.security import get_jwt_identity
 

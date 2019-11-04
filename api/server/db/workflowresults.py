@@ -28,7 +28,7 @@ class NodeStatus(BaseModel):
     app_name: str
     label: str
     result: JSON = None
-    parameters: JSON = {}
+    parameters: dict = {}
     execution_id: UUID
 
 

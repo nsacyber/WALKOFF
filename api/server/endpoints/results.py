@@ -14,10 +14,10 @@ from starlette.websockets import WebSocket
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Union
 
-from api.server.db import mongo
+from api.server.db.mongo import mongo
 from api.server.utils.socketio import sio
 from api.server.db.workflowresults import WorkflowStatus, NodeStatus, UpdateMessage
-from api.server.db import get_mongo_c
+from api.server.db.mongo import get_mongo_c
 from common.redis_helpers import connect_to_aioredis_pool
 from common.config import config, static
 from common.mongo_helpers import get_item, update_item
@@ -44,7 +44,6 @@ async def update_workflow_status():
                                                      id_key="execution_id")
                 patch = jsonpatch.JsonPatch.from_string(message.message)
                 new_workflow_status = WorkflowStatus(**patch.apply(old_workflow_status.dict()))
-
                 update_wfs = await update_item(wfq_col, WorkflowStatus, message.execution_id, new_workflow_status,
                                                id_key="execution_id")
 

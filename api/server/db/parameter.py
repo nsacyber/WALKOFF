@@ -6,7 +6,7 @@ from typing import Union
 from pydantic import BaseModel, ValidationError, validator
 from common.workflow_types import ParameterVariant
 
-from api.server.db import mongo, IDBaseModel
+from api.server.db import IDBaseModel
 # from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 #
 # from sqlalchemy import Column, ForeignKey, String, JSON, Enum, Boolean

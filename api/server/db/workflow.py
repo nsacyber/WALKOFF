@@ -11,7 +11,7 @@ from api.server.db.workflow_variable import WorkflowVariableModel
 from api.server.db.action import ActionModel
 from api.server.db.trigger import TriggerModel
 from api.server.db.permissions import PermissionsModel
-from api.server.db import mongo
+from api.server.db.mongo import mongo
 
 from api.server.db import IDBaseModel
 

@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from api.server.db import get_mongo_c
+from api.server.db.mongo import get_mongo_c
 from api.server.db.appapi import AppApiModel
 from common import mongo_helpers
 

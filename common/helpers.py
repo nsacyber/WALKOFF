@@ -113,7 +113,7 @@ async def send_status_update(redis, execution_id, workflow_id, message):
         "type": "workflow" if type(message) is WorkflowStatusMessage else "node"
     }
     # try:
-    logger.info(f"Sending {patches}")
+    logger.info(f"Sending result {patches}")
     await redis.lpush(static.REDIS_RESULTS_QUEUE, json.dumps(patches))
     # except ConnectionError as e:
     #     logger.error(f"Could not send event to {config.SOCKETIO_URI}: {e!r}")

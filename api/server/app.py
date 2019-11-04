@@ -14,7 +14,7 @@ import pymongo
 
 from api.server.endpoints import (appapi, auth, console, dashboards, global_variables, results, roles, scheduler,
                                   settings, umpire, users, workflowqueue, workflows)
-from api.server.db import mongo, get_mongo_c
+from api.server.db.mongo import mongo, get_mongo_c
 from api.server.scheduler import Scheduler, get_scheduler
 from api.server.utils.problems import ProblemException
 from api.server.utils.socketio import sio

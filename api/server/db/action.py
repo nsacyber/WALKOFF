@@ -7,7 +7,7 @@ from pydantic import BaseModel, ValidationError, validator
 
 from common.helpers import validate_uuid
 
-from api.server.db import mongo, IDBaseModel
+from api.server.db import IDBaseModel
 from api.server.db.parameter import ParameterApiModel, ParameterModel, ParameterVariant  # ParameterApiSchema, Parameter, ParameterSchema,
 from api.server.db.returns import ReturnApiModel  # ReturnApiSchema,
 
