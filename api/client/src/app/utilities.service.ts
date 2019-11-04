@@ -70,7 +70,7 @@ export class UtilitiesService {
 
 	paginateAll<T>(serviceCall: (p: number) => Promise<T[]>, page: number = 1, allResults : T[] = []): Promise<T[]> {
 		return serviceCall(page).then(results => {
-			if (results.length > 0 && false) return this.paginateAll(serviceCall, page + 1, allResults.concat(results));
+			if (results.length > 0) return this.paginateAll(serviceCall, page + 1, allResults.concat(results));
 			else return allResults;
 		})
 	}

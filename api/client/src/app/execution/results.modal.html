@@ -1,5 +1,5 @@
 <div class="modal-header">
-    <h5 class="modal-title" id="nodeStatusModalTitle">Action Statuses for {{loadedWorkflowStatus.name}}</h5>
+    <h5 class="modal-title" id="nodeStatusModalTitle">Action Results</h5>
     <button type="button" class="close" (click)="activeModal.dismiss()" aria-label="Close">
         <span aria-hidden="true">&times;</span>
     </button>
@@ -12,7 +12,7 @@
         <ngx-datatable-column name="Name" prop="label" [flexGrow]="2">
             <ng-template let-row="row" ngx-datatable-cell-template>
                 {{ row.label }}
-                <i class="fa fa-clipboard cursor-pointer" ngxClipboard [cbContent]="row.node_id" container="body"
+                <i class="fa fa-clipboard cursor-pointer" ngxClipboard [cbContent]="row.node_id" [container]="nodeStatusContainer.nativeElement"
                     ngbTooltip="Copy ID ({{ row.node_id }})"></i><br>
                 <span class="text-muted">{{row.app_name}} / {{row.name}}</span>
             </ng-template>

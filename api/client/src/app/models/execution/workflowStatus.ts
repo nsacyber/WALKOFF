@@ -1,20 +1,5 @@
-import { Type, Exclude } from 'class-transformer';
-
+import { Type } from 'class-transformer';
 import { NodeStatus } from './nodeStatus';
-
-import * as moment from 'moment';
-import { NodeStatusSummary } from './nodeStatusSummary';
-
-export enum WorkflowStatuses {
-	PAUSED = "PAUSED",
-    AWAITING_DATA = "AWAITING_DATA",
-    PENDING = "PENDING",
-    COMPLETED = "COMPLETED",
-    ABORTED = "ABORTED",
-    EXECUTING = "EXECUTING",
-    //SUCCESS = "SUCCESS",
-    //FAILURE = "FAILURE",
-}
 
 export class WorkflowStatus {
 
@@ -36,20 +21,9 @@ export class WorkflowStatus {
 
 	name: string;
 
-	/**
-	 * Date when workflow ended.
-	 * TODO: figure out if we want to use this for various stopping points: awaiting data, paused, completed, aborted
-	 */
 	completed_at?: string;
 
-	/**
-	 * Status of the workflow.
-	 * Possible values: queued, running, awaiting_data, paused, completed, aborted
-	 */
-	status: string;
-
-	@Type(() => NodeStatusSummary)
-	node_status?: NodeStatusSummary;
+	status: WorkflowStatuses;
 
 	@Type(() => NodeStatus)
 	node_statuses?: NodeStatus[] = [];
@@ -62,4 +36,13 @@ export class WorkflowStatus {
 		return (this.label) ? this.label : 'N/A'
 	}
 
+}
+
+export enum WorkflowStatuses {
+	PAUSED = "PAUSED",
+    AWAITING_DATA = "AWAITING_DATA",
+    PENDING = "PENDING",
+    COMPLETED = "COMPLETED",
+    ABORTED = "ABORTED",
+    EXECUTING = "EXECUTING",
 }

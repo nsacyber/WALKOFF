@@ -58,7 +58,6 @@
     "cytoscape-undo-redo": "^1.2.14",
     "d3": "~4.10.0",
     "datatables": "~1.10.13",
-    "eventsource": "^1.0.7",
     "file-saver": "~1.3.3",
     "font-awesome": "~4.7.0",
     "fuse.js": "^3.4.5",

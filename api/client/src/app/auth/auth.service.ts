@@ -12,8 +12,6 @@ import { environment } from '../../environments/environment';
 const REFRESH_TOKEN_NAME = 'refresh_token';
 const ACCESS_TOKEN_NAME = 'access_token';
 
-declare var EventSourcePolyfill: any;
-
 @Injectable()
 export class AuthService {
 
@@ -162,13 +160,5 @@ export class AuthService {
 	 */
 	isAccessTokenFresh(): boolean {
 		return !!this.getAndDecodeAccessToken().fresh;
-	}
-
-	getEventSource(url): Promise<any> {
-		return this.getAccessTokenRefreshed().then(authToken => {
-			let eventSource = new EventSourcePolyfill(url, { headers: { 'Authorization': `Bearer ${ authToken }` }})
-			eventSource.onerror = (err: Error) => console.error(err);
-			return eventSource;
-		});
 	}
 }

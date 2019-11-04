@@ -38,7 +38,6 @@ import { Argument, Variant } from '../models/playbook/argument';
 import { User } from '../models/user';
 import { Role } from '../models/role';
 import { NodeStatus, NodeStatuses } from '../models/execution/nodeStatus';
-import { NodeStatusEvent } from '../models/execution/nodeStatusEvent';
 import { ConsoleLog } from '../models/execution/consoleLog';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook.environment.variable.modal.component';
@@ -351,12 +350,12 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 		this.nodeStatusSocket = this.utils.createSocket('/nodeStatus', workflowExecutionId);
 
 		this.nodeStatusSocket.on('connected', (data) => {
-			const events = plainToClass(NodeStatusEvent, (data as any[]));
+			const events = plainToClass(NodeStatus, (data as any[]));
 			events.forEach(event => this.nodeStatusEventHandler(event));
 		});
 
 		this.nodeStatusSocket.on('log', (data) => {
-			const event = plainToClass(NodeStatusEvent, data);
+			const event = plainToClass(NodeStatus, data);
 			console.log('action', event);
 			this.nodeStatusEventHandler(event)
 		});
@@ -367,16 +366,16 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 	 * Will style nodes based on the action status (executing/success/failure).
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
-	nodeStatusEventHandler(nodeStatusEvent: NodeStatusEvent): void {
+	nodeStatusEventHandler(nodeStatus: NodeStatus): void {
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
-			const matchingNode = this.cy.elements(`node[_id="${ nodeStatusEvent.node_id }"]`);
+			const matchingNode = this.cy.elements(`node[_id="${ nodeStatus.node_id }"]`);
 			const nodeType = matchingNode.data('type');
 			const incomingEdges = matchingNode.incomers('edge');
 			const outgoingEdges = matchingNode.outgoers('edge');
 
 			if (matchingNode) {
-				switch (nodeStatusEvent.status) {
+				switch (nodeStatus.status) {
 					case NodeStatuses.EXECUTING:
 						matchingNode.removeClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
@@ -414,30 +413,29 @@ export class WorkflowEditorComponent implements OnInit, AfterViewChecked, OnDest
 
 		// Additionally, add or update the actionstatus in our datatable.
 		const matchingNodeStatus = this.nodeStatuses
-									   .find(as => as.execution_id === nodeStatusEvent.execution_id && as.node_id == nodeStatusEvent.node_id);
+									   .find(as => as.execution_id === nodeStatus.execution_id && as.node_id == nodeStatus.node_id);
 		if (matchingNodeStatus) {
-			matchingNodeStatus.status = nodeStatusEvent.status;
+			matchingNodeStatus.status = nodeStatus.status;
 
-			switch (nodeStatusEvent.status) {
+			switch (nodeStatus.status) {
 				case NodeStatuses.EXECUTING:
 					if (!matchingNodeStatus.started_at)
-						matchingNodeStatus.started_at = nodeStatusEvent.started_at;
+						matchingNodeStatus.started_at = nodeStatus.started_at;
 					break;
 				case NodeStatuses.SUCCESS:
 				case NodeStatuses.FAILURE:
-					matchingNodeStatus.completed_at = nodeStatusEvent.completed_at;
-					matchingNodeStatus.result = nodeStatusEvent.result;
+					matchingNodeStatus.completed_at = nodeStatus.completed_at;
+					matchingNodeStatus.result = nodeStatus.result;
 					break;
 				case NodeStatuses.AWAITING_DATA:
 					// don't think anything needs to happen here
 					break;
 				default:
-					this.toastrService.warning(`Unknown Action Status Type: ${ nodeStatusEvent.status }.`);
+					this.toastrService.warning(`Unknown Action Status Type: ${ nodeStatus.status }.`);
 					break;
 			}
 		} else {
-			const newNodeStatus = nodeStatusEvent.toNewNodeStatus();
-			this.nodeStatuses.push(newNodeStatus);
+			this.nodeStatuses.push(nodeStatus);
 		}
 		// Induce change detection by slicing array
 		this.nodeStatuses = this.nodeStatuses.slice();

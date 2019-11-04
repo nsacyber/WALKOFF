@@ -3,10 +3,7 @@ import { Component, Input, ViewChild, ViewEncapsulation, OnInit, OnDestroy, Elem
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../auth/auth.service';
-
-import { AppApi } from '../models/api/appApi';
 import { UtilitiesService } from '../utilities.service';
-import { JsonEditorComponent } from 'ang-jsoneditor';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { NodeStatuses } from '../models/execution/nodeStatus';
@@ -21,9 +18,7 @@ import { JsonModalComponent } from './json.modal.component';
     encapsulation: ViewEncapsulation.None,
 })
 export class ResultsModalComponent implements OnInit, OnDestroy {
-    @Input() results: string;
     @Input() loadedWorkflowStatus: WorkflowStatus;
-    @ViewChild('jsonEditor', { static: false }) jsonEditor: JsonEditorComponent;
     @ViewChild('nodeStatusContainer', { static: false }) nodeStatusContainer: ElementRef;
     @ViewChild('nodeStatusTable', { static: false }) nodeStatusTable: DatatableComponent;
     NodeStatuses = NodeStatuses;
@@ -48,10 +43,6 @@ export class ResultsModalComponent implements OnInit, OnDestroy {
     ngOnInit(): void {}
 
     ngOnDestroy(): void {}
-
-    getClipboard() {
-        return  $.isPlainObject(this.results) ? JSON.stringify(this.results, null, 2) : this.results;
-    }
 
     resultsModal(results) {
 		const modalRef = this.modalService.open(JsonModalComponent, { size: 'lg', centered: true });
