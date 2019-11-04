@@ -1,15 +1,38 @@
 import json
 import pytest
+import pathlib
+import shutil
 from starlette.testclient import TestClient
+from distutils.dir_util import copy_tree
 
 import api.server.app as app
+
+path = pathlib.Path("./apps")
+temp_path = pathlib.Path("./temp_apps")
+
+
+def write_temp_to_apps():
+    shutil.rmtree(path)
+    for directory in temp_path.iterdir():
+        if directory.is_dir():
+            hold = directory.parts[1]
+            shutil.copytree(str(directory), f"./apps/{hold}")
+
+
+def write_app_to_temp():
+    for directory in path.iterdir():
+        if directory.is_dir():
+            hold = directory.parts[1]
+            copy_tree(directory, f"./temp_apps/{hold}")
 
 
 @pytest.fixture
 def api():
     app.mongo.erase_db()
     app.mongo.init_db()
+    write_app_to_temp()
     yield TestClient(app.app)
+    write_temp_to_apps()
     app.mongo.erase_db()
     app.mongo.init_db()
     # connect_to_redis_pool(config.REDIS_URI).flushall()

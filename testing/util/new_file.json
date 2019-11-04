@@ -1,0 +1,6 @@
+{
+  "app_name": "basics",
+  "app_version": "1.0.0",
+  "file_path": "src/new_app.py",
+  "file_data": "print('play ball!')"
+}

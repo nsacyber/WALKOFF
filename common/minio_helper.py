@@ -35,7 +35,7 @@ class MinioApi:
         tag_name = f"{static.APP_PREFIX}_{app_name}"
         repo = f"{config.DOCKER_REGISTRY}/{tag_name}:{version}"
         try:
-            pathlib.Path(f"./temp_apps/{app_name}/{version}/src").mkdir(parents=True, exist_ok=True)
+            pathlib.Path(f"./rebuilt_apps/{app_name}/{version}/src").mkdir(parents=True, exist_ok=True)
         except Exception as e:
             print(e)
 
@@ -48,7 +48,7 @@ class MinioApi:
             if p_src.parts[1] == app_name:
                 hold = str(p_src)
                 p_dst = hold[hold.find(app_name):]
-                p_dst = Path("temp_apps") / p_dst
+                p_dst = Path("rebuilt_apps") / p_dst
                 os.makedirs(p_dst.parent, exist_ok=True)
 
                 data = minio_client.get_object('apps-bucket', hold)
@@ -59,7 +59,7 @@ class MinioApi:
         logger.setLevel("DEBUG")
         docker_logger.setLevel("DEBUG")
         async with connect_to_aiodocker() as docker_client:
-            context_dir = f"./temp_apps/{app_name}/{version}/"
+            context_dir = f"./rebuilt_apps/{app_name}/{version}/"
             with docker_context(Path(context_dir)) as context:
                 logger.info("Sending image to be built")
                 dockerfile = "./Dockerfile"
