@@ -79,7 +79,7 @@ def make_patch(message, root, op, value_only=False, white_list=None, black_list=
 def get_patches(message):
     patches = []
     if isinstance(message, NodeStatusMessage):
-        root = f"/node_status/{message.node_id}"
+        root = f"/node_statuses/{message.node_id}"
         if message.status == StatusEnum.EXECUTING:
             patches.append(make_patch(message, root, JSONPatchOps.ADD, black_list={"result", "completed_at"}))
 

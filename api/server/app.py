@@ -138,9 +138,11 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
         request_method = request.method
         accepted_roles = set()
         resource_permission = ""
-        move_on = ["personal_user", "umpire", "globals", "workflows", "console", "auth", "workflowqueue", "appapi",
-                   "streams", "docs", "redoc", "openapi.json", ""]
-        if resource_name not in move_on:
+        gated_endpoints = ["users", "roles", "apps", "scheduler", "umpire", "dashboards", "settings"]
+
+        # move_on = ["personal_user", "umpire", "globals", "workflows", "console", "auth", "workflowqueue", "appapi",
+        #            "streams", "docs", "redoc", "openapi.json", ""]
+        if resource_name in gated_endpoints:
             if request_method == "POST":
                 resource_permission = "create"
 
@@ -159,7 +161,7 @@ async def permissions_accepted_for_resource_middleware(request: Request, call_ne
             accepted_roles |= await get_roles_by_resource_permission(resource_name, resource_permission, walkoff_db)
             if not await user_has_correct_roles(accepted_roles, request):
                 return JSONResponse({"Error": "FORBIDDEN",
-                                     "message": "User does not have correct permissions for this resource"},
+                                     "message": "User does not have correct permissions for this endpoint"},
                                     status_code=403)
 
     response = await call_next(request)
@@ -175,7 +177,6 @@ async def permissions_accepted_for_roles_resource_middleware(request: Request, c
         resource_name = request_path[3]
         request_method = request.method
         accepted_roles = set()
-        resource_permission = ""
 
         current_role_based = ["globals", "workflows", "workflowqueue"]
         if resource_name in current_role_based:
@@ -282,11 +283,6 @@ _walkoff.include_router(umpire.router,
 _walkoff.include_router(dashboards.router,
                         prefix="/dashboards",
                         tags=["dashboards"],
-                        dependencies=[Depends(get_mongo_c)])
-
-_walkoff.include_router(scheduler.router,
-                        prefix="/scheduler",
-                        tags=["scheduler"],
                         dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(settings.router,

@@ -6,7 +6,6 @@ from http import HTTPStatus
 from datetime import datetime
 from typing import List
 
-
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
@@ -18,7 +17,8 @@ from api.server.db.workflow import WorkflowModel
 from api.server.db.workflowresults import WorkflowStatus, ExecuteWorkflow, ControlWorkflow
 from api.server.security import get_jwt_claims, get_jwt_identity
 from api.server.utils.socketio import sio, SIOMessage
-from api.server.utils.problems import InvalidInputException, ImproperJSONException, DoesNotExistException, UnauthorizedException
+from api.server.utils.problems import InvalidInputException, ImproperJSONException, DoesNotExistException, \
+    UnauthorizedException
 
 from common import mongo_helpers
 from common.config import config, static
@@ -60,7 +60,8 @@ async def get_all_workflow_status(*, walkoff_db: AsyncIOMotorDatabase = Depends(
     wfq_col = walkoff_db.workflowqueue
     curr_user_id = await get_jwt_identity(request)
 
-    wf_statuses = await mongo_helpers.get_all_items(wfq_col, WorkflowStatus, page=page, num_per_page=num_per_page)
+    wf_statuses = await mongo_helpers.get_all_items(wfq_col, WorkflowStatus, page=page, num_per_page=num_per_page,
+                                                    projection={"node_statuses": False})
 
     ret = []
     for wf_status in wf_statuses:
@@ -83,9 +84,10 @@ async def get_workflow_status(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_
     workflow_col = walkoff_db.workflows
     wfq_col = walkoff_db.workflowqueue
     curr_user_id = await get_jwt_identity(request)
-    wf_status = await mongo_helpers.get_item(wfq_col, WorkflowStatus, execution, id_key="execution_id")
+    wf_status: WorkflowStatus = await mongo_helpers.get_item(wfq_col, WorkflowStatus, execution, id_key="execution_id")
     wf = await mongo_helpers.get_item(workflow_col, WorkflowModel, wf_status.workflow_id)
     if await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db):
+        wf_status.to_response()
         return wf_status
     else:
         raise UnauthorizedException("read", "Workflow Status", wf_status.workflow_id)
@@ -200,7 +202,7 @@ async def execute_workflow_helper(request: Request, workflow_id, workflow_status
         execution_id=execution_id,
         workflow_id=workflow_id,
         user=(await get_jwt_claims(request)).get('username', None),
-        node_status=[]
+        node_statuses={}
     )
 
     await mongo_helpers.create_item(workflow_status_col, WorkflowStatus, workflow_status, id_key="execution_id")

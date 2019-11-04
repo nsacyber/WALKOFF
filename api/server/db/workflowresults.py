@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from api.server.db import IDBaseModel
 from api.server.db.parameter import ParameterModel
@@ -40,11 +40,14 @@ class WorkflowStatus(IDBaseModel):
     execution_id: UUID = None
     workflow_id: UUID = None
     user: str = ""
-    node_status: Dict[str, NodeStatus] = {}
+    node_statuses: Union[Dict[str, NodeStatus], List[NodeStatus]] = {}
     app_name: str = ""
     action_name: str = ""
     label: str = ""
     _id_field: str = "execution_id"
+
+    def to_response(self):
+        self.node_statuses = [node_status for node_status in list(self.node_statuses.values())]
 
 
 class ExecuteWorkflow(BaseModel):

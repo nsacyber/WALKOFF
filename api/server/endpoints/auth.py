@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 @router.post("/login",
              response_model=dict,
              response_description="Login and get access and refresh tokens",
-             status_code=201)
+             status_code=HTTPStatus.CREATED)
 async def login(*, walkoff_db: AsyncIOMotorCollection = Depends(get_mongo_d),
                 creds: AuthModel,
                 request: Request):
@@ -69,8 +69,7 @@ async def login(*, walkoff_db: AsyncIOMotorCollection = Depends(get_mongo_d),
 
 @router.post("/refresh",
              response_model=dict,
-             response_description="Get a fresh access token.",
-             status_code=200)
+             response_description="Get a fresh access token.")
 async def refresh(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mongo_d),
                   request: Request):
     """

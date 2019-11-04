@@ -32,13 +32,13 @@ ACTION_STREAM_GLOB = "action_stream"
 async def update_workflow_status():
     async with connect_to_aioredis_pool(config.REDIS_URI) as redis:
         wfq_col = mongo.async_client.walkoff_db.workflowqueue
-        node_id_regex = r"/node_status/([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})"
+        node_id_regex = r"/node_statuses/([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})"
         while True:
             try:
-                logger.info("Waiting for results...")
+                logger.debug("Waiting for results...")
                 message = (await redis.brpop(static.REDIS_RESULTS_QUEUE))[1]
                 message = UpdateMessage(**json.loads(message.decode()))
-                logger.info(f"Got patches: {message.message}")
+                logger.debug(f"Got patches: {message.message}")
 
                 old_workflow_status = await get_item(wfq_col, WorkflowStatus, message.execution_id,
                                                      id_key="execution_id")
@@ -49,14 +49,12 @@ async def update_workflow_status():
                                                id_key="execution_id")
 
                 if message.type == "workflow":
-                    print(f"Emitting WF: {update_wfs.json()}")
                     await sio.emit(static.SIO_EVENT_LOG, json.loads(update_wfs.json()),
                                    namespace=static.SIO_NS_WORKFLOW)
                 else:
                     for patch in json.loads(message.message):
                         node_id = re.search(node_id_regex, patch["path"], re.IGNORECASE).group(1)
-                        print(f"Emitting N: {update_wfs.node_status[node_id].json()}")
-                        await sio.emit(static.SIO_EVENT_LOG, json.loads(update_wfs.node_status[node_id].json()),
+                        await sio.emit(static.SIO_EVENT_LOG, json.loads(update_wfs.node_statuses[node_id].json()),
                                        namespace=static.SIO_NS_NODE)
             except Exception as e:
                 traceback.print_exc()
