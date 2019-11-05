@@ -2,6 +2,6 @@ starlette
 pytest
 semver
 pytest
-pytest-asyncio
+pytest-cov
 aiofiles
 email-validator
