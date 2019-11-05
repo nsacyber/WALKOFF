@@ -9,7 +9,7 @@ from api.server.db.mongo import get_mongo_c
 from api.server.db.dashboard import DashboardModel
 from api.server.utils.problems import DoesNotExistException
 
-from common import mongo_helpers
+from common import async_mongo_helpers as mongo_helpers
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

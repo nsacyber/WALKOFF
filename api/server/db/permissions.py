@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from api.server.db.user_init import DefaultRoleUUID
 from api.server.db.user import UserModel
-from common import mongo_helpers
+from common import async_mongo_helpers as mongo_helpers
 
 logger = logging.getLogger(__name__)
 

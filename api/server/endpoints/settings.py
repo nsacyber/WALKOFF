@@ -5,7 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 
 from api.server.db.mongo import get_mongo_c
 from api.server.db.settings import SettingsModel
-from common import mongo_helpers
+from common import async_mongo_helpers as mongo_helpers
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

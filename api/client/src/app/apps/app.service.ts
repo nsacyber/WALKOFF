@@ -18,7 +18,7 @@ export class AppService {
 	 * Gets all app apis from the server.
 	 */
 	getApis(): Promise<AppApi[]> {
-		return this.http.get('api/apps/apis')
+		return this.http.get('api/apps/apis/')
 			.toPromise()
 			.then((data: any[]) => plainToClass(AppApi, data))
 			.then((appApis: AppApi[]) => appApis.filter(a => a.name !== 'Builtin'))
@@ -80,7 +80,7 @@ export class AppService {
 			var parent = tree;
 			for (let i = 0; i < arr.length; i++) {
 				let node: any = { title: arr[i] };
-				
+
 
 				if ( i != arr.length - 1 ) {
 					node.children = [];
@@ -98,7 +98,7 @@ export class AppService {
 				if (parent[curIndex].folder) parent = parent[curIndex].children;
 
 				parent.sort(sortTree)
-			}   
+			}
 		});
 
 		tree.sort(sortTree);

@@ -6,7 +6,7 @@ from typing import List, Dict, Union
 from api.server.db import IDBaseModel
 from api.server.db.parameter import ParameterModel
 from api.server.db.workflow_variable import WorkflowVariableModel
-from api.server.utils.helpers import JSON
+from api.server.utils.helpers import JSONOrString
 
 from common.message_types import StatusEnum
 
@@ -27,7 +27,7 @@ class NodeStatus(BaseModel):
     node_id: UUID
     app_name: str
     label: str
-    result: JSON = None
+    result: JSONOrString = None
     parameters: dict = {}
     execution_id: UUID
 

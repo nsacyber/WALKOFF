@@ -15,7 +15,7 @@ from api.server.db.mongo import get_mongo_c, get_mongo_d
 from api.server.db.workflow import WorkflowModel
 from api.server.db.scheduledtasks import ScheduledTask, SchedulerStatus, SchedulerStatusResp, NewStatusState
 from api.server.endpoints.workflowqueue import execute_workflow_helper
-from common import mongo_helpers
+from common import async_mongo_helpers as mongo_helpers
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

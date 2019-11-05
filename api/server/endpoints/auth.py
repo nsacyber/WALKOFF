@@ -14,7 +14,7 @@ from api.server.db.user import UserModel
 from api.server.db.tokens import revoke_token, AuthModel, TokenModel
 from api.server.utils.problems import ProblemException
 
-from common import mongo_helpers
+from common import async_mongo_helpers as mongo_helpers
 
 token_problem_title = 'Could not grant access token.'
 

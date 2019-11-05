@@ -16,7 +16,7 @@ from api.server.db.role import RoleModel
 from api.server.db.settings import SettingsModel
 from api.server.utils.problems import ProblemException
 from common.config import config
-from common import mongo_helpers
+from common import async_mongo_helpers as mongo_helpers
 from common.helpers import preset_uuid
 
 

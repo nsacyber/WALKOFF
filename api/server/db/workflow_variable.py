@@ -1,12 +1,8 @@
 import logging
 from uuid import uuid4, UUID
-from typing import List
-
-from pydantic import BaseModel, ValidationError, validator
 
 from api.server.db import IDBaseModel
-from api.server.utils.helpers import JSON
-
+from api.server.utils.helpers import JSONOrString
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +10,7 @@ logger = logging.getLogger(__name__)
 class WorkflowVariableModel(IDBaseModel):
     id_: UUID = None
     name: str
-    value: JSON = None
+    value: JSONOrString = None
     walkoff_type_: str = "workflow_variable"
     description: str = ""
 

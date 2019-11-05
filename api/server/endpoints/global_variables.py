@@ -18,7 +18,7 @@ from api.server.security import get_jwt_identity
 from api.server.db.permissions import auth_check, default_permissions, creator_only_permissions, AccessLevel, \
     append_super_and_internal
 from api.server.utils.problems import UniquenessException, UnauthorizedException, DoesNotExistException
-from common import mongo_helpers
+from common import async_mongo_helpers as mongo_helpers
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
 

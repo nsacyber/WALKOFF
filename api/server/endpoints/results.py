@@ -12,7 +12,7 @@ from api.server.utils.socketio import sio
 from api.server.db.workflowresults import WorkflowStatus, NodeStatus, UpdateMessage
 from common.redis_helpers import connect_to_aioredis_pool
 from common.config import config, static
-from common.mongo_helpers import get_item, update_item
+from common import async_mongo_helpers as mongo_helpers
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -30,15 +30,15 @@ async def update_workflow_status():
                 logger.debug("Waiting for results...")
                 message = (await redis.brpop(static.REDIS_RESULTS_QUEUE))[1]
                 message = UpdateMessage(**json.loads(message.decode()))
-                logger.debug(f"Got patches: {message.message}")
 
-                old_workflow_status = await get_item(wfq_col, WorkflowStatus, message.execution_id,
-                                                     id_key="execution_id")
+                old_workflow_status = await mongo_helpers.get_item(wfq_col, WorkflowStatus, message.execution_id,
+                                                                   id_key="execution_id")
                 patch = jsonpatch.JsonPatch.from_string(message.message)
                 new_workflow_status = WorkflowStatus(**patch.apply(old_workflow_status.dict()))
-                update_wfs: WorkflowStatus = await update_item(wfq_col, WorkflowStatus, message.execution_id,
-                                                               new_workflow_status,
-                                                               id_key="execution_id")
+                update_wfs: WorkflowStatus = await mongo_helpers.update_item(wfq_col, WorkflowStatus,
+                                                                             message.execution_id,
+                                                                             new_workflow_status,
+                                                                             id_key="execution_id")
 
                 if message.type == "workflow":
                     update_wfs.to_response()

@@ -18,9 +18,8 @@ from api.server.db.workflow import WorkflowModel, CopyWorkflowModel
 from api.server.db.permissions import AccessLevel, auth_check, creator_only_permissions, \
     default_permissions, append_super_and_internal
 from api.server.utils.helpers import regenerate_workflow_ids
-from api.server.utils.problems import UniquenessException, DoesNotExistException, UnauthorizedException
-from common import mongo_helpers
-from common.mongo_helpers import delete_item
+from api.server.utils.problems import UniquenessException, DoesNotExistException, UnauthorizedException, InvalidInputException
+from common import async_mongo_helpers as mongo_helpers
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -79,7 +78,10 @@ async def upload_workflow_helper(curr_user_id: UUID, old_workflow, new_workflow:
         raise UnauthorizedException("import", "Workflow", old_workflow['name'])
 
     to_regenerate = dict(new_workflow)
-    regenerate_workflow_ids(to_regenerate)
+    try:
+        regenerate_workflow_ids(to_regenerate)
+    except (KeyError, ValueError, TypeError) as e:
+        raise InvalidInputException("import", "workflow", new_workflow.id_, errors={"exception": str(e)})
     new_workflow = WorkflowModel(**to_regenerate)
 
     new_workflow.name += "." + str(new_workflow.id_)
@@ -248,7 +250,7 @@ async def delete_workflow(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_mong
     workflow = await mongo_helpers.get_item(workflow_col, WorkflowModel, workflow_name_id)
     to_delete = await auth_check(workflow, curr_user_id, "delete", walkoff_db=walkoff_db)
     if to_delete:
-        return await delete_item(workflow_col, WorkflowModel, workflow.id_)
+        return await mongo_helpers.delete_item(workflow_col, WorkflowModel, workflow.id_)
     else:
         raise UnauthorizedException("delete data for", "Workflow", workflow.name)
 

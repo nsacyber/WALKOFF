@@ -9,9 +9,6 @@ from inspect import signature as getsignature
 logger = logging.getLogger(__name__)
 
 
-JSON = Union[str, int, bool, dict, list, UUID, None]
-
-
 def __list_valid_directories(path):
     try:
         return [f for f in os.listdir(path)
@@ -230,3 +227,21 @@ class ExecutionError(Exception):
         self.exc = original_exception or None
         self.message = message or format_exception_message(original_exception)
         super(ExecutionError, self).__init__()
+
+
+class JSONOrString:
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if type(v) == str:
+            return v
+        else:
+            try:
+                json.dumps(v)
+            except (ValueError, TypeError):
+                raise ValueError(f"JSONOrString: value is not a string or JSON serializable: {v}")
+            else:
+                return v

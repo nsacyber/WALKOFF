@@ -87,7 +87,7 @@ export class GlobalsService {
 	 * AppApi objects are scoped to only contain global apis.
 	 */
 	getGlobalApis(): Promise<AppApi[]> {
-		return this.http.get('api/apps/apis?field_name=device_apis')
+		return this.http.get('api/apps/apis/?field_name=device_apis')
 			.toPromise()
 			.then((data) => plainToClass(AppApi, data as Object[]))
 			// Clear out any apps without global apis

@@ -250,7 +250,7 @@ export class PlaybookService {
 	 * Gets all app apis from the server.
 	 */
 	getApis(): Promise<AppApi[]> {
-		return this.http.get('api/apps/apis')
+		return this.http.get('api/apps/apis/')
 			.toPromise()
 			// .then((data: any[]) => {
 			// 	return [{

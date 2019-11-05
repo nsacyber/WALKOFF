@@ -5,7 +5,6 @@ from pydantic import BaseModel, Schema
 
 from api.server.db import IDBaseModel
 from api.server.db.permissions import PermissionsModel
-from api.server.utils.helpers import JSON
 
 
 logger = logging.getLogger(__name__)
@@ -50,6 +49,6 @@ class GlobalVariableTemplate(IDBaseModel):
     id_: UUID = None
     walkoff_type_: str = "variable"
     name: str
-    json_schema: JSON = {}
+    json_schema: dict = {}
     description: str = None
 

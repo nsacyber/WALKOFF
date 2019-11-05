@@ -20,7 +20,7 @@ from api.server.utils.socketio import sio, SIOMessage
 from api.server.utils.problems import InvalidInputException, ImproperJSONException, DoesNotExistException, \
     UnauthorizedException
 
-from common import mongo_helpers
+from common import async_mongo_helpers as mongo_helpers
 from common.config import config, static
 from common.redis_helpers import connect_to_aioredis_pool
 from common.message_types import StatusEnum, message_dumps

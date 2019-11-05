@@ -3,10 +3,10 @@ from uuid import uuid4, UUID
 from enum import Enum
 from typing import Union
 
-from pydantic import BaseModel, ValidationError, validator
 from common.workflow_types import ParameterVariant
 
 from api.server.db import IDBaseModel
+from api.server.utils.helpers import JSONOrString
 # from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 #
 # from sqlalchemy import Column, ForeignKey, String, JSON, Enum, Boolean
@@ -19,7 +19,6 @@ from api.server.db import IDBaseModel
 # from api.server.db import Base, BaseSchema
 #
 # from common.workflow_types import ParameterVariant
-from api.server.utils.helpers import JSON
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +38,7 @@ class ParameterModel(IDBaseModel):
     id_: UUID = None
     name: str
     variant: ParameterVariant
-    value: JSON = {}
+    value: JSONOrString = None
     parallelized: bool = False
     walkoff_type_: str = "parameter"
 

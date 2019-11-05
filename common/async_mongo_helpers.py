@@ -44,7 +44,7 @@ async def id_and_name(model: Union[Type[BaseModel], Type[dict]],
     return f"{getattr(obj, model._name_field)} ({getattr(obj, id_key)})"
 
 
-async def count_items(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
+async def count_items(collection: AsyncIOMotorCollection,
                       *,
                       query: dict = None) -> int:
     """
@@ -55,13 +55,10 @@ async def count_items(collection: Union[AsyncIOMotorCollection, pymongo.collecti
     :return:
     """
     query = {} if query is None else query
-    if type(collection) == AsyncIOMotorCollection:
-        return await collection.count_documents(query)
-    elif type(collection == pymongo.collection.Collection):
-        return collection.count_documents(query)
+    return await collection.count_documents(query)
 
 
-async def get_all_items(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
+async def get_all_items(collection: AsyncIOMotorCollection,
                         model: Type[BaseModel],
                         *,
                         page: int = 1,
@@ -83,21 +80,15 @@ async def get_all_items(collection: Union[AsyncIOMotorCollection, pymongo.collec
     projection = {} if projection is None else projection
     projection.update(ignore_mongo_id)
 
-    if type(collection) == AsyncIOMotorCollection:
-        collection_json = await collection.find(filter=query, projection=projection) \
-            .skip((page - 1) * num_per_page) \
-            .limit(num_per_page) \
-            .to_list(None)
-    elif type(collection == pymongo.collection.Collection):
-        collection_json = collection.find(filter=query, projection=projection) \
-            .skip((page - 1) * num_per_page) \
-            .limit(num_per_page) \
-            .to_list(None)
+    collection_json = await collection.find(filter=query, projection=projection) \
+        .skip((page - 1) * num_per_page) \
+        .limit(num_per_page) \
+        .to_list(None)
 
     return [model(**item_json) for item_json in collection_json]
 
 
-async def get_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
+async def get_item(collection: AsyncIOMotorCollection,
                    model: Union[Type[BaseModel], Type[dict]],
                    item_id: Union[UUID, str],
                    *,
@@ -123,10 +114,7 @@ async def get_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.
     query = {} if query is None else query
     query.update(await mongo_filter(model, item_id, id_key=id_key))
 
-    if type(collection) == AsyncIOMotorCollection:
-        item_json = await collection.find_one(query, projection=projection)
-    elif type(collection == pymongo.collection.Collection):
-        item_json = collection.find_one(query, projection=projection)
+    item_json = await collection.find_one(query, projection=projection)
 
     if item_json is None and raise_exc:
         raise problems.DoesNotExistException("read", model.__name__, await mongo_filter(model, item_id, id_key=id_key))
@@ -136,7 +124,7 @@ async def get_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.
         return model(**item_json)
 
 
-async def create_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
+async def create_item(collection: AsyncIOMotorCollection,
                       model: Union[Type[BaseModel], Type[dict]],
                       new_item_obj: BaseModel,
                       *,
@@ -158,21 +146,17 @@ async def create_item(collection: Union[AsyncIOMotorCollection, pymongo.collecti
         if not getattr(new_item_obj, id_key, None):
             setattr(new_item_obj, id_key, uuid4())
 
-        if type(collection) == AsyncIOMotorCollection:
-            r = await collection.insert_one(dict(new_item_obj))
-        elif type(collection == pymongo.collection.Collection):
-            r = collection.insert_one(dict(new_item_obj))
+        r = await collection.insert_one(dict(new_item_obj))
 
         if r.acknowledged:
-            if type(collection) == AsyncIOMotorCollection:
-                return await get_item(collection, model, getattr(new_item_obj, id_key), id_key=id_key, projection=projection, raise_exc=False)
+            return await get_item(collection, model, getattr(new_item_obj, id_key), id_key=id_key, projection=projection, raise_exc=False)
 
     except pymongo.errors.DuplicateKeyError:
         if raise_exc:
             raise problems.UniquenessException("create", model.__name__, await id_and_name(model, new_item_obj))
 
 
-async def update_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
+async def update_item(collection: AsyncIOMotorCollection,
                       model: Union[Type[BaseModel], Type[dict]],
                       old_item_id: Union[UUID, str],
                       new_item_obj: BaseModel,
@@ -199,10 +183,7 @@ async def update_item(collection: Union[AsyncIOMotorCollection, pymongo.collecti
     try:
         setattr(new_item_obj, id_key, getattr(old_item_obj, id_key))
 
-        if type(collection) == AsyncIOMotorCollection:
-            r = await collection.replace_one(await mongo_filter(model, old_item_id, id_key=id_key), dict(new_item_obj))
-        elif type(collection == pymongo.collection.Collection):
-            r = collection.replace_one(await mongo_filter(model, old_item_id, id_key=id_key), dict(new_item_obj))
+        r = await collection.replace_one(await mongo_filter(model, old_item_id, id_key=id_key), dict(new_item_obj))
 
         if r.acknowledged:
             return await get_item(collection, model, getattr(old_item_obj, id_key), id_key=id_key, projection=projection, raise_exc=False)
@@ -213,7 +194,7 @@ async def update_item(collection: Union[AsyncIOMotorCollection, pymongo.collecti
             raise problems.UniquenessException("update", model.__name__, id_name)
 
 
-async def delete_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
+async def delete_item(collection: AsyncIOMotorCollection,
                       model: Union[Type[BaseModel], Type[dict]],
                       old_item_id: Union[UUID, str],
                       *,
@@ -235,9 +216,5 @@ async def delete_item(collection: Union[AsyncIOMotorCollection, pymongo.collecti
     if old_item_json is None and raise_exc:
         raise problems.DoesNotExistException("delete", model.__name__, old_item_id)
     else:
-        if type(collection) == AsyncIOMotorCollection:
-            r = await collection.delete_one(await mongo_filter(model, old_item_id, id_key=id_key))
-        elif type(collection == pymongo.collection.Collection):
-            r = collection.delete_one(await mongo_filter(model, old_item_id, id_key=id_key))
-
+        r = await collection.delete_one(await mongo_filter(model, old_item_id, id_key=id_key))
         return r.acknowledged

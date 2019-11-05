@@ -15,7 +15,7 @@ from api.server.db.role import RoleModel
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
                                        DoesNotExistException)
 from api.server.security import get_jwt_identity
-from common import mongo_helpers
+from common import async_mongo_helpers as mongo_helpers
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

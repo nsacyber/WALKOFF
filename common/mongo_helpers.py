@@ -4,7 +4,6 @@ from uuid import uuid4, UUID
 
 import pymongo
 from pydantic import BaseModel
-from motor.motor_asyncio import AsyncIOMotorCollection
 
 from api.server.utils import problems
 
@@ -13,10 +12,10 @@ ignore_mongo_id = {'_id': False}
 BaseModelClass = TypeVar("BaseModelClass", bound='BaseModel')
 
 
-async def mongo_filter(model: Union[Type[BaseModel], Type[dict]],
-                       item_id: Union[UUID, str],
-                       *,
-                       id_key: str = "id_"):
+def mongo_filter(model: Union[Type[BaseModel], Type[dict]],
+                 item_id: Union[UUID, str],
+                 *,
+                 id_key: str = "id_"):
     """
     Generates a mongo filter by the item_id appropriate to the model
 
@@ -29,10 +28,10 @@ async def mongo_filter(model: Union[Type[BaseModel], Type[dict]],
     return {identifier: item_id}
 
 
-async def id_and_name(model: Union[Type[BaseModel], Type[dict]],
-                      obj: BaseModel,
-                      *,
-                      id_key: str = "id_"):
+def id_and_name(model: Union[Type[BaseModel], Type[dict]],
+                obj: BaseModel,
+                *,
+                id_key: str = "id_"):
     """
     Returns a string of the form 'name (UUID)'
 
@@ -44,9 +43,9 @@ async def id_and_name(model: Union[Type[BaseModel], Type[dict]],
     return f"{getattr(obj, model._name_field)} ({getattr(obj, id_key)})"
 
 
-async def count_items(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
-                      *,
-                      query: dict = None) -> int:
+def count_items(collection: pymongo.collection.Collection,
+                *,
+                query: dict = None) -> int:
     """
     Returns the number of items in a collection matching the query
 
@@ -55,19 +54,16 @@ async def count_items(collection: Union[AsyncIOMotorCollection, pymongo.collecti
     :return:
     """
     query = {} if query is None else query
-    if type(collection) == AsyncIOMotorCollection:
-        return await collection.count_documents(query)
-    elif type(collection == pymongo.collection.Collection):
-        return collection.count_documents(query)
+    return collection.count_documents(query)
 
 
-async def get_all_items(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
-                        model: Type[BaseModel],
-                        *,
-                        page: int = 1,
-                        num_per_page: int = 20,
-                        query: dict = None,
-                        projection: dict = None):
+def get_all_items(collection: pymongo.collection.Collection,
+                  model: Type[BaseModel],
+                  *,
+                  page: int = 1,
+                  num_per_page: int = 20,
+                  query: dict = None,
+                  projection: dict = None):
     """
     Retrieve all items from a collection
 
@@ -83,28 +79,21 @@ async def get_all_items(collection: Union[AsyncIOMotorCollection, pymongo.collec
     projection = {} if projection is None else projection
     projection.update(ignore_mongo_id)
 
-    if type(collection) == AsyncIOMotorCollection:
-        collection_json = await collection.find(filter=query, projection=projection) \
-            .skip((page - 1) * num_per_page) \
-            .limit(num_per_page) \
-            .to_list(None)
-    elif type(collection == pymongo.collection.Collection):
-        collection_json = collection.find(filter=query, projection=projection) \
-            .skip((page - 1) * num_per_page) \
-            .limit(num_per_page) \
-            .to_list(None)
+    collection_json = list(collection.find(filter=query, projection=projection)
+                           .skip((page - 1) * num_per_page)
+                           .limit(num_per_page))
 
     return [model(**item_json) for item_json in collection_json]
 
 
-async def get_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
-                   model: Union[Type[BaseModel], Type[dict]],
-                   item_id: Union[UUID, str],
-                   *,
-                   id_key: str = "id_",
-                   query: dict = None,
-                   projection: dict = None,
-                   raise_exc: bool = True):
+def get_item(collection: pymongo.collection.Collection,
+             model: Union[Type[BaseModel], Type[dict]],
+             item_id: Union[UUID, str],
+             *,
+             id_key: str = "id_",
+             query: dict = None,
+             projection: dict = None,
+             raise_exc: bool = True):
     """
     Retrieve a single item from a collection
 
@@ -121,28 +110,25 @@ async def get_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.
     projection.update(ignore_mongo_id)
 
     query = {} if query is None else query
-    query.update(await mongo_filter(model, item_id, id_key=id_key))
+    query.update(mongo_filter(model, item_id, id_key=id_key))
 
-    if type(collection) == AsyncIOMotorCollection:
-        item_json = await collection.find_one(query, projection=projection)
-    elif type(collection == pymongo.collection.Collection):
-        item_json = collection.find_one(query, projection=projection)
+    item_json = collection.find_one(query, projection=projection)
 
     if item_json is None and raise_exc:
-        raise problems.DoesNotExistException("read", model.__name__, await mongo_filter(model, item_id, id_key=id_key))
+        raise problems.DoesNotExistException("read", model.__name__, mongo_filter(model, item_id, id_key=id_key))
     elif model is dict or item_json is None:
         return item_json
     else:
         return model(**item_json)
 
 
-async def create_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
-                      model: Union[Type[BaseModel], Type[dict]],
-                      new_item_obj: BaseModel,
-                      *,
-                      id_key: str = "id_",
-                      projection: dict = None,
-                      raise_exc: bool = True) -> BaseModelClass:
+def create_item(collection: pymongo.collection.Collection,
+                model: Union[Type[BaseModel], Type[dict]],
+                new_item_obj: BaseModel,
+                *,
+                id_key: str = "id_",
+                projection: dict = None,
+                raise_exc: bool = True) -> BaseModelClass:
     """
     Create an item in the collection
 
@@ -158,28 +144,25 @@ async def create_item(collection: Union[AsyncIOMotorCollection, pymongo.collecti
         if not getattr(new_item_obj, id_key, None):
             setattr(new_item_obj, id_key, uuid4())
 
-        if type(collection) == AsyncIOMotorCollection:
-            r = await collection.insert_one(dict(new_item_obj))
-        elif type(collection == pymongo.collection.Collection):
-            r = collection.insert_one(dict(new_item_obj))
+        r = collection.insert_one(dict(new_item_obj))
 
         if r.acknowledged:
-            if type(collection) == AsyncIOMotorCollection:
-                return await get_item(collection, model, getattr(new_item_obj, id_key), id_key=id_key, projection=projection, raise_exc=False)
+            return get_item(collection, model, getattr(new_item_obj, id_key), id_key=id_key, projection=projection,
+                            raise_exc=False)
 
     except pymongo.errors.DuplicateKeyError:
         if raise_exc:
-            raise problems.UniquenessException("create", model.__name__, await id_and_name(model, new_item_obj))
+            raise problems.UniquenessException("create", model.__name__, id_and_name(model, new_item_obj))
 
 
-async def update_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
-                      model: Union[Type[BaseModel], Type[dict]],
-                      old_item_id: Union[UUID, str],
-                      new_item_obj: BaseModel,
-                      *,
-                      id_key: str = "id_",
-                      projection: dict = None,
-                      raise_exc: bool = True) -> BaseModelClass:
+def update_item(collection: pymongo.collection.Collection,
+                model: Union[Type[BaseModel], Type[dict]],
+                old_item_id: Union[UUID, str],
+                new_item_obj: BaseModel,
+                *,
+                id_key: str = "id_",
+                projection: dict = None,
+                raise_exc: bool = True) -> BaseModelClass:
     """
     Update an item in the collection
 
@@ -192,34 +175,32 @@ async def update_item(collection: Union[AsyncIOMotorCollection, pymongo.collecti
     :param raise_exc: Whether to raise exception if item is not found.
     :return: Updated object in collection
     """
-    old_item_obj = await get_item(collection, model, old_item_id, projection=projection, id_key=id_key, raise_exc=False)
+    old_item_obj = get_item(collection, model, old_item_id, projection=projection, id_key=id_key, raise_exc=False)
     if old_item_obj is None and raise_exc:
         raise problems.DoesNotExistException("update", model.__name__, old_item_id)
 
     try:
         setattr(new_item_obj, id_key, getattr(old_item_obj, id_key))
 
-        if type(collection) == AsyncIOMotorCollection:
-            r = await collection.replace_one(await mongo_filter(model, old_item_id, id_key=id_key), dict(new_item_obj))
-        elif type(collection == pymongo.collection.Collection):
-            r = collection.replace_one(await mongo_filter(model, old_item_id, id_key=id_key), dict(new_item_obj))
+        r = collection.replace_one(mongo_filter(model, old_item_id, id_key=id_key), dict(new_item_obj))
 
         if r.acknowledged:
-            return await get_item(collection, model, getattr(old_item_obj, id_key), id_key=id_key, projection=projection, raise_exc=False)
+            return get_item(collection, model, getattr(old_item_obj, id_key), id_key=id_key, projection=projection,
+                            raise_exc=False)
     except pymongo.errors.DuplicateKeyError:
         if raise_exc:
-            id_name = f"{await id_and_name(model, old_item_obj, id_key=id_key)} -> " \
-                      f"{await id_and_name(model, new_item_obj, id_key=id_key)}"
+            id_name = f"{id_and_name(model, old_item_obj, id_key=id_key)} -> " \
+                      f"{id_and_name(model, new_item_obj, id_key=id_key)}"
             raise problems.UniquenessException("update", model.__name__, id_name)
 
 
-async def delete_item(collection: Union[AsyncIOMotorCollection, pymongo.collection.Collection],
-                      model: Union[Type[BaseModel], Type[dict]],
-                      old_item_id: Union[UUID, str],
-                      *,
-                      id_key: str = "id_",
-                      projection: dict = None,
-                      raise_exc: bool = True) -> bool:
+def delete_item(collection: pymongo.collection.Collection,
+                model: Union[Type[BaseModel], Type[dict]],
+                old_item_id: Union[UUID, str],
+                *,
+                id_key: str = "id_",
+                projection: dict = None,
+                raise_exc: bool = True) -> bool:
     """
     Delete an item in the collection
 
@@ -231,13 +212,10 @@ async def delete_item(collection: Union[AsyncIOMotorCollection, pymongo.collecti
     :param raise_exc: Whether to raise exception if item is not found.
     :return: Whether the item was deleted
     """
-    old_item_json = await get_item(collection, model, old_item_id, id_key=id_key, projection=projection, raise_exc=False)
+    old_item_json = get_item(collection, model, old_item_id, id_key=id_key, projection=projection, raise_exc=False)
     if old_item_json is None and raise_exc:
         raise problems.DoesNotExistException("delete", model.__name__, old_item_id)
     else:
-        if type(collection) == AsyncIOMotorCollection:
-            r = await collection.delete_one(await mongo_filter(model, old_item_id, id_key=id_key))
-        elif type(collection == pymongo.collection.Collection):
-            r = collection.delete_one(await mongo_filter(model, old_item_id, id_key=id_key))
+        r = collection.delete_one(mongo_filter(model, old_item_id, id_key=id_key))
 
         return r.acknowledged

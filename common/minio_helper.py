@@ -1,20 +1,48 @@
-from minio import Minio
+import pathlib
 from pathlib import Path
-from common.config import config, static
 import logging
 import io
-import aiodocker
+import asyncio
 import os
 from os import stat
 from urllib3.exceptions import ResponseError
-from minio.error import NoSuchKey
 
-import asyncio
+import aiodocker
+from minio import Minio
+from minio.error import NoSuchKey, InvalidArgumentError
 
-from common.docker_helpers import connect_to_aiodocker, docker_context, stream_umpire_build_log, logger as docker_logger
-import pathlib
+from common.config import config, static
+from common.docker_helpers import connect_to_aiodocker, docker_context, logger as docker_logger
+from common.socketio_helpers import connect_to_socketio_async
 
 logger = logging.getLogger("Umpire")
+
+
+async def stream_umpire_build_log(log_stream, build_id):
+    async with connect_to_socketio_async(config.SOCKETIO_URI, namespaces=["/buildStatus"]) as sio:
+        async for line in log_stream:
+            if "stream" in line and line.get("stream", "").strip():
+                key = "stream"
+                build_status = "building"
+            elif "status" in line:
+                key = "status"
+                build_status = "building"
+            elif "error" in line:
+                key = "error"
+                build_status = "failure"
+            elif "aux" in line:
+                continue
+
+            data = line[key].strip()
+            logger.info(data)
+            body = {"stream": data, "build_status": build_status, "build_id": build_id}
+            await sio.emit(static.SIO_EVENT_LOG, body, namespace=static.SIO_NS_BUILD)
+            if key == "error":
+                raise aiodocker.exceptions.DockerBuildError(line)
+
+        body = {"stream": "\n", "build_status": "success", "build_id": build_id}
+        await sio.emit(static.SIO_EVENT_LOG, body, namespace=static.SIO_NS_BUILD)
+        await asyncio.sleep(1)
 
 
 async def push_image(docker_client, repo):
@@ -61,32 +89,23 @@ class MinioApi:
         async with connect_to_aiodocker() as docker_client:
             context_dir = f"./rebuilt_apps/{app_name}/{version}/"
             with docker_context(Path(context_dir)) as context:
-                logger.info("Sending image to be built")
-                dockerfile = "./Dockerfile"
-                try:
-                    log_stream = await docker_client.images.build(fileobj=context, tag=repo, rm=True,
-                                                                  forcerm=True, pull=True, stream=True,
-                                                                  path_dockerfile=dockerfile,
-                                                                  encoding="application/x-tar")
-                    logger.info("Docker image building")
-                    await stream_umpire_build_log(log_stream, build_id)
-                    logger.info("Docker image Built")
-                    # if await push_image(docker_client, repo):
-                    #     return "Docker image built and pushed successfully."
-                    success = await push_image(docker_client, repo)
-                    if success:
-                        saved = await MinioApi.save_file(app_name, version)
-                        if saved is True:
-                            return True
-                            # return True, "Successfully built and pushed image"
-                        else:
-                            return False
+                logger.info("Sending build job to Docker.")
+                log_stream = await docker_client.images.build(fileobj=context, tag=repo, rm=True,
+                                                              forcerm=True, pull=True, stream=True,
+                                                              path_dockerfile="./Dockerfile",
+                                                              encoding="application/x-tar")
+                logger.info("Image building.")
+                await stream_umpire_build_log(log_stream, build_id)
+                logger.info("Image build completed.")
+                success = await push_image(docker_client, repo)
+                if success:
+                    saved = await MinioApi.save_file(app_name, version)
+                    if saved is True:
+                        return True
                     else:
                         return False
-                        # return False, "Failed to push image"
-                except Exception as e:
+                else:
                     return False
-                    # return False, str(e)
 
     @staticmethod
     async def list_files(app_name, version):
@@ -134,9 +153,9 @@ class MinioApi:
         try:
             minio_client.put_object("apps-bucket", abs_path, file_data, file_size)
             r = minio_client.stat_object("apps-bucket", abs_path)
-            return True, str(r)
-        except Exception as e:
-            return False, str(e)
+            return True, vars(r)
+        except (TypeError, ValueError, InvalidArgumentError) as e:
+            return False, f"Failed to update file: {e}"
 
     @staticmethod
     async def save_file(app_name, version):
@@ -165,7 +184,7 @@ class MinioApi:
                 with open(str(p_dst), 'wb+') as file_data:
                     for d in data.stream(size):
                         file_data.write(d)
-                #TODO: Make this more secure, don't just base it off of requirements.txt
+                # TODO: Make this more secure, don't just base it off of requirements.txt
                 owner_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_uid
                 group_id = stat(f"apps/{app_name}/{version}/requirements.txt").st_gid
                 os.chown(p_dst, owner_id, group_id)
