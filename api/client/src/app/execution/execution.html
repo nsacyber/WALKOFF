@@ -33,14 +33,18 @@
 		[rows]="displayWorkflowStatuses" [sorts]="[{prop: 'started_at', dir: 'desc'}]" [sortType]="'multi'"
 		[headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
 		<!-- Column Templates -->
-		<ngx-datatable-column name="Name" prop="name" [flexGrow]="1">
+		<ngx-datatable-column name="Workflow" prop="name" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				<a href="#" (click)="openNodeStatusModal($event, row)" placement="bottom-left"
 					ngbTooltip="View Action Results">{{row.name}}</a>
+				<br>
+				<span class="text-muted cursor-pointer" ngxClipboard [cbContent]="row.execution_id" 
+				[container]="workflowStatusTable.element" ngbTooltip="Copy Execution ID"> 
+					{{ row.execution_id }}
+				</span>
 			</ng-template>
 		</ngx-datatable-column>
-		<ngx-datatable-column name="ID" prop="execution_id" [flexGrow]="3"></ngx-datatable-column>
-		<ngx-datatable-column name="User" prop="user" [flexGrow]="1"></ngx-datatable-column>
+		<ngx-datatable-column name="Started By" prop="user" [flexGrow]="1"></ngx-datatable-column>
 		<ngx-datatable-column name="Started At" prop="started_at" [comparator]="dateComparator" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				<span ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
@@ -56,17 +60,12 @@
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Status" prop="status" [flexGrow]="1"></ngx-datatable-column>
-		<ngx-datatable-column name="Current App / Action" prop="displayAppAction" [comparator]="appNameComparator" [flexGrow]="2">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{ row.displayAppAction }}
-			</ng-template>
-		</ngx-datatable-column>
-		<ngx-datatable-column name="Current Node" prop="displayLabel" [comparator]="actionNameComparator"
-			[flexGrow]="2">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{ row.displayLabel }}
-			</ng-template>
-		</ngx-datatable-column>
+		<ngx-datatable-column name="Current Action" prop="displayLabel" [flexGrow]="2">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                {{ row.displayLabel }}
+                <br><span class="text-muted">{{ row.displayAppAction }}</span>
+            </ng-template>
+        </ngx-datatable-column>
 		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				<button *ngIf="row.status.toLowerCase() === 'paused'"
@@ -84,6 +83,11 @@
 					ngbTooltip="Abort Scheduled Task" class="btn btn-danger mx-1">
 					<i class="fa fa-stop"></i>
 				</button>
+				<!-- <button
+					(click)="openNodeStatusModal($event, row)"
+					ngbTooltip="View Action Results" class="btn btn-primary mx-1">
+					<i class="fa fa-list"></i>
+				</button> -->
 			</ng-template>
 		</ngx-datatable-column>
 	</ngx-datatable>

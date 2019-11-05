@@ -1,18 +1,3 @@
-import { Type, Exclude } from 'class-transformer';
-
-import { Argument } from '../playbook/argument';
-
-export enum NodeStatuses {
-	  //PAUSED = "PAUSED",
-    AWAITING_DATA = "AWAITING_DATA",
-    //PENDING = "PENDING",
-    //COMPLETED = "COMPLETED",
-    //ABORTED = "ABORTED",
-    EXECUTING = "EXECUTING",
-    SUCCESS = "SUCCESS",
-    FAILURE = "FAILURE",
-}
-
 export class NodeStatus {
 
 	execution_id: string;
@@ -27,10 +12,7 @@ export class NodeStatus {
 
 	name: string;
 
-	/**
-	 * Type of action result. executing, success, failure
-	 */
-	status: string;
+	status: NodeStatuses;
 
 	result?: any;
 
@@ -48,4 +30,11 @@ export class NodeStatus {
 		
 		return (output) ? output : 'N/A'
 	}
+}
+
+export enum NodeStatuses {
+  AWAITING_DATA = "AWAITING_DATA",
+  EXECUTING = "EXECUTING",
+  SUCCESS = "SUCCESS",
+  FAILURE = "FAILURE",
 }

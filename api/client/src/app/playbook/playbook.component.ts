@@ -14,21 +14,19 @@ import { UtilitiesService } from '../utilities.service';
 import { GlobalsService } from '../globals/globals.service';
 import { SettingsService } from '../settings/settings.service';
 import { Workflow } from '../models/playbook/workflow';
-import { WorkflowStatuses } from '../models/execution/workflowStatus';
+import { WorkflowStatuses, WorkflowStatus } from '../models/execution/workflowStatus';
 import { MetadataModalComponent } from './metadata.modal.component';
 import { ImportModalComponent } from './import.modal.component';
-import { WorkflowStatusEvent } from '../models/execution/workflowStatusEvent';
 
 @Component({
 	selector: 'playbook-component',
 	templateUrl: './playbook.html',
-	styleUrls: [
-		'./playbook.scss',
-	],
+	styleUrls: [ './playbook.scss' ],
 	encapsulation: ViewEncapsulation.None,
 	providers: [AuthService, GlobalsService, SettingsService],
 })
 export class PlaybookComponent implements OnInit, OnDestroy {
+	workflowStatusSocket: SocketIOClient.Socket;
 	workflowsLoaded: boolean = false;
 	workflows: Workflow[] = [];
 	eventSource: any;
@@ -58,26 +56,27 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 	 * Closes our SSEs on component destroy.
 	 */
 	ngOnDestroy(): void {
-		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
+		if (this.workflowStatusSocket && this.workflowStatusSocket.close) {
+			this.workflowStatusSocket.close();
+		}
 	}
 
 	///------------------------------------------------------------------------------------------------------
 	/// Playbook CRUD etc functions
 	///------------------------------------------------------------------------------------------------------
 	/**
-	 * Sets up the EventStream for receiving stream actions from the server. Binds various events to the event handler.
+	 * Sets up the Socket for receiving stream actions from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getWorkflowStatusSSE(executionId: string) {
-		if (this.eventSource) this.eventSource.close();
+	createWorkflowSocket(executionId: string) {
+		if (this.workflowStatusSocket) this.workflowStatusSocket.close();
+		this.workflowStatusSocket = this.utils.createSocket('/workflowStatus', executionId);
 
-		return this.authService.getEventSource(`api/streams/workflowqueue/workflow_status`)
-			.then(eventSource => {
-				this.eventSource = eventSource;
-				this.eventSource.onerror = (e: any) => this.eventSource.close();
-				Object.values(WorkflowStatuses)
-					  .forEach(status => this.eventSource.addEventListener(status, (e: any) => this.workflowStatusEventHandler(e, executionId)));
-			})
+		this.workflowStatusSocket.on('log', (data: any) => {
+			const event = plainToClass(WorkflowStatus, data);
+			console.log(event);
+			this.workflowStatusEventHandler(event, executionId)
+		});
 	}
 
 	/**
@@ -85,19 +84,17 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 	 * Updates existing workflow statuses for status updates or adds new ones to the list for display.
 	 * @param message EventSource message for workflow status
 	 */
-	workflowStatusEventHandler(message: any, executionId: string): void {
-		const workflowStatusEvent = plainToClass(WorkflowStatusEvent, (JSON.parse(message.data) as object));
+	workflowStatusEventHandler(workflowStatus: WorkflowStatus, executionId: string): void {
+		if (executionId != workflowStatus.execution_id) return;
 
-		if (executionId != workflowStatusEvent.execution_id) return;
-
-		switch (workflowStatusEvent.status) {
+		switch (workflowStatus.status) {
 			case WorkflowStatuses.COMPLETED:
-				this.eventSource.close();
-				this.toastrService.success(`<b>${workflowStatusEvent.name}</b> completed`);
+				this.workflowStatusSocket.close();
+				this.toastrService.success(`<b>${workflowStatus.name}</b> completed`);
 				break;
 			case WorkflowStatuses.ABORTED:
-				this.eventSource.close();
-				this.toastrService.warning(`<b>${workflowStatusEvent.name}</b> aborted`)
+				this.workflowStatusSocket.close();
+				this.toastrService.warning(`<b>${workflowStatus.name}</b> aborted`)
 				break;
 		}
 	}
@@ -108,7 +105,7 @@ export class PlaybookComponent implements OnInit, OnDestroy {
 	async executeWorkflow(workflow: Workflow): Promise<void> {
 		try {
 			const executionId = UUID.UUID();
-			await this.getWorkflowStatusSSE(executionId);
+			await this.createWorkflowSocket(executionId);
 			await this.playbookService.addWorkflowToQueue(workflow.id, executionId);
 			this.toastrService.success(`Starting <b>${workflow.name}</b>`)
 		}

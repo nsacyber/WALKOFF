@@ -1,12 +1,5 @@
 import { WalkoffEvent } from "./walkoffEvent";
 
-export enum NodeStatuses {
-  AWAITING_DATA = "AWAITING_DATA",
-  EXECUTING = "EXECUTING",
-  SUCCESS = "SUCCESS",
-  FAILURE = "FAILURE",
-}
-
 export class NodeStatusEvent implements WalkoffEvent {
 	execution_id: string;
 
@@ -34,3 +27,10 @@ export class NodeStatusEvent implements WalkoffEvent {
 		return ['all', this.execution_id, this.node_id];
 	}
 }
+
+export enum NodeStatuses {
+	AWAITING_DATA = "AWAITING_DATA",
+	EXECUTING = "EXECUTING",
+	SUCCESS = "SUCCESS",
+	FAILURE = "FAILURE",
+}  

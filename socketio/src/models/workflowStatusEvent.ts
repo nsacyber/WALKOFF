@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import { WalkoffEvent } from './walkoffEvent';
+import { NodeStatusEvent } from './nodeStatusEvent';
 
 export class WorkflowStatusEvent implements WalkoffEvent {
 	execution_id: string;
@@ -22,8 +23,8 @@ export class WorkflowStatusEvent implements WalkoffEvent {
 
 	status: WorkflowStatuses;
 
-	@Type(() => NodeStatusSummary)
-	node_status?: NodeStatusSummary;
+	@Type(() => NodeStatusEvent)
+	node_statuses?: NodeStatusEvent[];
 
 	get channels() : string[] {
 		return ['all', this.execution_id, this.workflow_id];
@@ -37,12 +38,4 @@ export enum WorkflowStatuses {
     COMPLETED = "COMPLETED",
     ABORTED = "ABORTED",
     EXECUTING = "EXECUTING",
-}
-
-export class NodeStatusSummary {
-	node_id: string;
-	execution_id: string;
-	label: string;
-	name: string;
-	app_name: string;
 }

@@ -14,16 +14,13 @@ import { AuthService } from '../auth/auth.service';
 import { UtilitiesService } from '../utilities.service';
 
 import { WorkflowStatus, WorkflowStatuses } from '../models/execution/workflowStatus';
-import { WorkflowStatusEvent } from '../models/execution/workflowStatusEvent';
 import { Workflow } from '../models/playbook/workflow';
-import { NodeStatusEvent } from '../models/execution/nodeStatusEvent';
 import { Argument } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
 import { NodeStatus, NodeStatuses } from '../models/execution/nodeStatus';
 
 import { ExecutionVariableModalComponent } from './execution.variable.modal.component';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
-import { NodeStatusSummary } from '../models/execution/nodeStatusSummary';
 import { Router } from '@angular/router';
 import * as moment from 'moment';
 import { ResultsModalComponent } from './results.modal.component';
@@ -146,12 +143,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.workflowStatuses = this.workflowStatuses.slice();
 
 		this.displayWorkflowStatuses = this.workflowStatuses.filter((s) => {
-			return s.name.toLocaleLowerCase().includes(searchFilter) ||
-				s.status.toLocaleLowerCase().includes(searchFilter) ||
-				(s.node_status &&
-					(s.node_status.name.toLocaleLowerCase().includes(searchFilter) ||
-					s.node_status.label.toLocaleLowerCase().includes(searchFilter) ||
-					s.node_status.app_name.toLocaleLowerCase().includes(searchFilter)));
+			return [ 
+				s.id, s.execution_id, s.name, s.status, s.action_name, s.app_name, s.label
+			].some(x => x && x.toLocaleLowerCase().includes(searchFilter));
 		});
 
 		this.workflowStatusTable.recalculate();
@@ -175,12 +169,12 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.workflowStatusSocket = this.utils.createSocket('/workflowStatus');
 
 		this.workflowStatusSocket.on('connected', (data: any[]) => {
-			const events = plainToClass(WorkflowStatusEvent, data);
+			const events = plainToClass(WorkflowStatus, data);
 			events.forEach(event => this.workflowStatusEventHandler(event));
 		});
 
 		this.workflowStatusSocket.on('log', (data: any) => {
-			const event = plainToClass(WorkflowStatusEvent, data);
+			const event = plainToClass(WorkflowStatus, data);
 			console.log(event);
 			this.workflowStatusEventHandler(event)
 		});
@@ -191,44 +185,40 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Updates existing workflow statuses for status updates or adds new ones to the list for display.
 	 * @param message Socket message for workflow status
 	 */
-	workflowStatusEventHandler(workflowStatusEvent: WorkflowStatusEvent): void {
-		const matchingWorkflowStatus = this.workflowStatuses.find(ws => ws.execution_id === workflowStatusEvent.execution_id);
+	workflowStatusEventHandler(workflowStatus: WorkflowStatus): void {
+		const matchingWorkflowStatus = this.workflowStatuses.find(ws => ws.execution_id === workflowStatus.execution_id);
 
 		if (matchingWorkflowStatus) {
-			matchingWorkflowStatus.status = workflowStatusEvent.status;
+			matchingWorkflowStatus.status = workflowStatus.status;
+			matchingWorkflowStatus.node_statuses = workflowStatus.node_statuses;
 
-			switch (workflowStatusEvent.status) {
+			switch (workflowStatus.status) {
 				case WorkflowStatuses.PENDING:
-					delete matchingWorkflowStatus.node_status;
 					break;
 				case WorkflowStatuses.EXECUTING:
 					if (!matchingWorkflowStatus.started_at) {
-						matchingWorkflowStatus.started_at = workflowStatusEvent.started_at;
+						matchingWorkflowStatus.started_at = workflowStatus.started_at;
 					}
-					matchingWorkflowStatus.user = workflowStatusEvent.user;
-					matchingWorkflowStatus.app_name = workflowStatusEvent.app_name;
-					matchingWorkflowStatus.action_name = workflowStatusEvent.action_name;
-					matchingWorkflowStatus.label = workflowStatusEvent.label;
-					matchingWorkflowStatus.node_status = workflowStatusEvent.node_status;
+					matchingWorkflowStatus.user = workflowStatus.user;
+					matchingWorkflowStatus.app_name = workflowStatus.app_name;
+					matchingWorkflowStatus.action_name = workflowStatus.action_name;
+					matchingWorkflowStatus.label = workflowStatus.label;
 					break;
 				case WorkflowStatuses.PAUSED:
 				case WorkflowStatuses.AWAITING_DATA:
-					matchingWorkflowStatus.node_status = workflowStatusEvent.node_status;
 					break;
 				case WorkflowStatuses.COMPLETED:
-					matchingWorkflowStatus.completed_at = workflowStatusEvent.completed_at;
-					delete matchingWorkflowStatus.node_status;
+					matchingWorkflowStatus.completed_at = workflowStatus.completed_at;
 					break;
 				case WorkflowStatuses.ABORTED:
-					matchingWorkflowStatus.completed_at = workflowStatusEvent.completed_at;
+					matchingWorkflowStatus.completed_at = workflowStatus.completed_at;
 					break;
 				default:
-					this.toastrService.warning(`Unknown Workflow Status Type: ${workflowStatusEvent.status}.`);
+					this.toastrService.warning(`Unknown Workflow Status Type: ${workflowStatus.status}.`);
 					break;
 			}
 		} else {
-			const newWorkflowStatus = workflowStatusEvent.toNewWorkflowStatus();
-			this.workflowStatuses.push(newWorkflowStatus);
+			this.workflowStatuses.push(workflowStatus);
 		}
 
 		this.filterWorkflowStatuses();
@@ -242,12 +232,12 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.nodeStatusSocket = this.utils.createSocket('/nodeStatus');
 
 		this.nodeStatusSocket.on('connected', (data: any[]) => {
-			const events = plainToClass(NodeStatusEvent, data);
+			const events = plainToClass(NodeStatus, data);
 			events.forEach(event => this.nodeStatusEventHandler(event));
 		});
 
 		this.nodeStatusSocket.on('log', (data: any) => {
-			const event = plainToClass(NodeStatusEvent, data);
+			const event = plainToClass(NodeStatus, data);
 			console.log(event);
 			this.nodeStatusEventHandler(event)
 		});
@@ -259,48 +249,33 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Will add/update action statuses for display if the parent workflow execution is 'loaded' in the modal.
 	 * @param message Socket message for action status
 	 */
-	nodeStatusEventHandler(nodeStatusEvent: NodeStatusEvent): void {
-		// if we have a matching workflow status, update the current app/action info.
-		const matchingWorkflowStatus = this.workflowStatuses
-			.find(ws => ws.execution_id === nodeStatusEvent.execution_id);
-
-		if (matchingWorkflowStatus) {
-			matchingWorkflowStatus.node_status = plainToClass(NodeStatusSummary, {
-				execution_id: nodeStatusEvent.execution_id,
-				id: nodeStatusEvent.node_id,
-				name: nodeStatusEvent.name,
-				app_name: nodeStatusEvent.app_name,
-				label: nodeStatusEvent.label,
-			});
-		}
-
-		// also add this to the modal if possible, or update the existing data.
-		if (this.loadedWorkflowStatus && this.loadedWorkflowStatus.execution_id === nodeStatusEvent.execution_id) {
+	nodeStatusEventHandler(nodeStatus: NodeStatus): void {
+		// add this to the modal if possible, or update the existing data.
+		if (this.loadedWorkflowStatus && this.loadedWorkflowStatus.execution_id === nodeStatus.execution_id) {
 			const matchingNodeStatus = this.loadedWorkflowStatus.node_statuses
-				.find(r => r.combined_id === nodeStatusEvent.combined_id);
+				.find(r => r.combined_id === nodeStatus.combined_id);
 
 			if (matchingNodeStatus) {
-				matchingNodeStatus.status = nodeStatusEvent.status;
+				matchingNodeStatus.status = nodeStatus.status;
 
-				switch (nodeStatusEvent.status) {
+				switch (nodeStatus.status) {
 					case NodeStatuses.EXECUTING:
-						matchingNodeStatus.started_at = nodeStatusEvent.started_at;
+						matchingNodeStatus.started_at = nodeStatus.started_at;
 						break;
 					case NodeStatuses.SUCCESS:
 					case NodeStatuses.FAILURE:
-						matchingNodeStatus.completed_at = nodeStatusEvent.completed_at;
-						matchingNodeStatus.result = nodeStatusEvent.result;
+						matchingNodeStatus.completed_at = nodeStatus.completed_at;
+						matchingNodeStatus.result = nodeStatus.result;
 						break;
 					case NodeStatuses.AWAITING_DATA:
 						// don't think anything needs to happen here
 						break;
 					default:
-						this.toastrService.warning(`Unknown Action Status Type: ${ nodeStatusEvent.status }.`);
+						this.toastrService.warning(`Unknown Action Status Type: ${ nodeStatus.status }.`);
 						break;
 				}
 			} else {
-				const newNodeStatus = nodeStatusEvent.toNewNodeStatus();
-				this.loadedWorkflowStatus.node_statuses.push(newNodeStatus);
+				this.loadedWorkflowStatus.node_statuses.push(nodeStatus);
 				// Induce change detection by slicing array
 				this.loadedWorkflowStatus.node_statuses = this.loadedWorkflowStatus.node_statuses.slice();
 			}
@@ -404,63 +379,17 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 			modalRef.componentInstance.loadedWorkflowStatus = this.loadedWorkflowStatus;
 		});
 	}
-	
-	/**
-	 * Gets the app name from a current node object or returns N/A if undefined.
-	 * @param nodeStatusSummary NodeStatusSummary to use as input
-	 */
-	getAppName(nodeStatusSummary: NodeStatusSummary): string {
-		if (!nodeStatusSummary) { return'N/A'; }
-		return nodeStatusSummary.app_name;
-	}
-
-	/**
-	 * Gets the action name from a current node object or returns N/A if undefined.
-	 * @param nodeStatusSummary NodeStatusSummary to use as input
-	 */
-	getActionName(nodeStatusSummary: NodeStatusSummary): string {
-		if (!nodeStatusSummary) { return'N/A'; }
-		let output = nodeStatusSummary.label;
-		if (output !== nodeStatusSummary.name) { output = `${output} (${nodeStatusSummary.name})`; }
-		return output;
-	}
-
-	/**
-	 * Simple comparator function for the datatable sort on the app name column.
-	 * @param propA Left side NodeStatusSummary
-	 * @param propB Right side NodeStatusSummary
-	 */
-	appNameComparator(propA: NodeStatusSummary, propB: NodeStatusSummary) {
-		if (!propA) { return 1; }
-		if (!propB) { return -1; }
-
-		if (propA.app_name.toLowerCase() < propB.app_name.toLowerCase()) { return -1; }
-		if (propA.app_name.toLowerCase() > propB.app_name.toLowerCase()) { return 1; }
-	}
 
 	/**
 	 * Simple comparator function for the datatable sort on a date column.
-	 * @param propA Left side NodeStatusSummary
-	 * @param propB Right side NodeStatusSummary
+	 * @param propA Left side date
+	 * @param propB Right side date
 	 */
 	dateComparator(propA, propB) {
 		if (!propA && !propB) return 0;
 		if (!propA) return 1;
 		if (!propB) return -1;
 		return moment(propA).diff(moment(propB));
-	}
-
-	/**
-	 * Simple comparator function for the datatable sort on the action name column.
-	 * @param propA Left side NodeStatusSummary
-	 * @param propB Right side NodeStatusSummary
-	 */
-	actionNameComparator(propA: NodeStatusSummary, propB: NodeStatusSummary) {
-		if (!propA) { return 1; }
-		if (!propB) { return -1; }
-
-		if (propA.name.toLowerCase() < propB.name.toLowerCase()) { return -1; }
-		if (propA.name.toLowerCase() > propB.name.toLowerCase()) { return 1; }
 	}
 
 	getClipboard(results) {

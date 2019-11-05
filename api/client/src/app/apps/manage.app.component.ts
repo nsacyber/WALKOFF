@@ -17,7 +17,6 @@ import { Workflow } from '../models/playbook/workflow';
 import { WorkflowStatuses } from '../models/execution/workflowStatus';
 import { MetadataModalComponent } from '../playbook/metadata.modal.component';
 import { ImportModalComponent } from '../playbook/import.modal.component';
-import { WorkflowStatusEvent } from '../models/execution/workflowStatusEvent';
 import { AppService } from './app.service';
 import { AppApi } from '../models/api/appApi';
 import * as CodeMirror from 'codemirror'
