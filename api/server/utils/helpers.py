@@ -1,10 +1,9 @@
 import json
 import logging
 import os
-from typing import Union
 from datetime import datetime
-from uuid import uuid4, UUID
 from inspect import signature as getsignature
+from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 

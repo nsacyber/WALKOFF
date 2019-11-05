@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 from api.server.fastapi_config import FastApiConfig
 
-
 NUMBER_OF_PRUNE_OPERATIONS = 0
 
 

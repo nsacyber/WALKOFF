@@ -1,10 +1,8 @@
-import json
 import logging
+from http import HTTPStatus
 
 from fastapi.exceptions import HTTPException
 from starlette.responses import JSONResponse
-
-from http import HTTPStatus
 
 logger = logging.getLogger(__name__)
 

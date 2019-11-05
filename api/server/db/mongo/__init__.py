@@ -1,8 +1,8 @@
-from starlette.requests import Request
 import motor.motor_asyncio
 import pymongo
+from starlette.requests import Request
 
-from common.config import config, static
+from common.config import config
 from common.helpers import preset_uuid
 
 

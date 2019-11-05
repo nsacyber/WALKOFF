@@ -1,19 +1,18 @@
-from starlette.requests import Request
-from fastapi import APIRouter, Depends
-from http import HTTPStatus
 import logging
+from http import HTTPStatus
 
+from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+from starlette.requests import Request
 
+from api.server.db.mongo import get_mongo_d
+from api.server.db.tokens import revoke_token, AuthModel, TokenModel
+from api.server.db.user import UserModel
+from api.server.fastapi_config import FastApiConfig
 from api.server.security import (create_access_token, create_refresh_token, get_jwt_identity,
                                  get_raw_jwt, decode_token, verify_jwt_refresh_token_in_request,
                                  verify_token_in_decoded, verify_token_not_blacklisted)
-from api.server.fastapi_config import FastApiConfig
-from api.server.db.mongo import get_mongo_d
-from api.server.db.user import UserModel
-from api.server.db.tokens import revoke_token, AuthModel, TokenModel
 from api.server.utils.problems import ProblemException
-
 from common import async_mongo_helpers as mongo_helpers
 
 token_problem_title = 'Could not grant access token.'

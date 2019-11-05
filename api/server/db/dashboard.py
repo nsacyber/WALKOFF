@@ -1,13 +1,8 @@
 import logging
-from typing import List, Union
-from uuid import uuid4, UUID
+from typing import List
+from uuid import UUID
 
-from motor.motor_asyncio import AsyncIOMotorCollection
-from pydantic import BaseModel
-
-from common.helpers import validate_uuid
 from api.server.db import IDBaseModel
-
 
 logger = logging.getLogger(__name__)
 

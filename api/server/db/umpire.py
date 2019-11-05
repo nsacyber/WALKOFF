@@ -1,6 +1,6 @@
 import logging
 
-from pydantic import BaseModel, ValidationError, validator
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 

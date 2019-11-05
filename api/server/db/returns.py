@@ -1,7 +1,6 @@
 import logging
-from uuid import uuid4, UUID
 from typing import Union
-from pydantic import BaseModel
+from uuid import UUID
 
 # from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 # from sqlalchemy.dialects.postgresql import UUID

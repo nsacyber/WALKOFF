@@ -1,7 +1,6 @@
 import logging
-from uuid import uuid4, UUID
 from typing import List
-from pydantic import BaseModel, ValidationError, validator
+from uuid import UUID
 
 from api.server.db import IDBaseModel
 

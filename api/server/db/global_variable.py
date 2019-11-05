@@ -1,11 +1,8 @@
 import logging
-from uuid import uuid4, UUID
-
-from pydantic import BaseModel, Schema
+from uuid import UUID
 
 from api.server.db import IDBaseModel
 from api.server.db.permissions import PermissionsModel
-
 
 logger = logging.getLogger(__name__)
 

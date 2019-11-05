@@ -1,22 +1,18 @@
 import base64
 import logging
-from typing import List, Union
-
-from motor.motor_asyncio import AsyncIOMotorCollection
 from copy import deepcopy
+from typing import List
 from uuid import UUID
-from http import HTTPStatus
-from fastapi import APIRouter, Depends, HTTPException
+
+from fastapi import APIRouter, Depends
+from motor.motor_asyncio import AsyncIOMotorCollection
 from starlette.requests import Request
 
 from api.server.db.global_variable import GlobalVariable
-
 from api.server.db.mongo import get_mongo_c, get_mongo_d
-
-from api.server.security import get_jwt_identity
-
 from api.server.db.permissions import auth_check, default_permissions, creator_only_permissions, AccessLevel, \
     append_super_and_internal
+from api.server.security import get_jwt_identity
 from api.server.utils.problems import UniquenessException, UnauthorizedException, DoesNotExistException
 from common import async_mongo_helpers as mongo_helpers
 from common.config import config

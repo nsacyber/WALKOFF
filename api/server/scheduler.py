@@ -1,14 +1,13 @@
 import logging
 from uuid import UUID
 
-from starlette.requests import Request
-
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.base import JobLookupError
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from starlette.requests import Request
 
 from api.server.utils.problems import InvalidInputException
 

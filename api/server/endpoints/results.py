@@ -4,15 +4,14 @@ import re
 import traceback
 
 import jsonpatch
-
 from fastapi import APIRouter
 
 from api.server.db.mongo import mongo
+from api.server.db.workflowresults import WorkflowStatus, UpdateMessage
 from api.server.utils.socketio import sio
-from api.server.db.workflowresults import WorkflowStatus, NodeStatus, UpdateMessage
-from common.redis_helpers import connect_to_aioredis_pool
-from common.config import config, static
 from common import async_mongo_helpers as mongo_helpers
+from common.config import config, static
+from common.redis_helpers import connect_to_aioredis_pool
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from enum import Enum
 from typing import List
 from uuid import UUID
 
@@ -8,8 +7,8 @@ import pymongo
 from passlib.hash import pbkdf2_sha512
 from pydantic import BaseModel, validator
 
-from api.server.db.mongo import mongo
 from api.server.db import IDBaseModel
+from api.server.db.mongo import mongo
 
 logger = logging.getLogger(__name__)
 

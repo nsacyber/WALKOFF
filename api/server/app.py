@@ -1,29 +1,28 @@
 import asyncio
 import logging
-from http import HTTPStatus
 import os
+from http import HTTPStatus
 from pathlib import Path
 
+import pymongo
 from fastapi import FastAPI, Depends
 from fastapi.openapi.utils import get_openapi
-from starlette.staticfiles import StaticFiles
+from minio import Minio
 from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse
-from minio import Minio
-import pymongo
+from starlette.staticfiles import StaticFiles
 
-from api.server.endpoints import (appapi, auth, console, dashboards, global_variables, results, roles, scheduler,
-                                  settings, umpire, users, workflowqueue, workflows)
 from api.server.db.mongo import mongo, get_mongo_c
-from api.server.scheduler import Scheduler, get_scheduler
+from api.server.endpoints import (appapi, auth, dashboards, global_variables, results, roles, scheduler,
+                                  settings, umpire, users, workflowqueue, workflows)
+from api.server.scheduler import Scheduler
+from api.server.security import (get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted,
+                                 user_has_correct_roles, get_roles_by_resource_permission)
 from api.server.utils.problems import ProblemException
 from api.server.utils.socketio import sio
-from api.server.security import get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted, \
-    user_has_correct_roles, \
-    get_roles_by_resource_permission
-
 from common.config import static, config
 
+logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger(__name__)
 
 _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -258,16 +257,6 @@ _walkoff.include_router(roles.router,
 _walkoff.include_router(appapi.router,
                         prefix="/apps",
                         tags=["apps"],
-                        dependencies=[Depends(get_mongo_c)])
-
-_walkoff.include_router(results.router,
-                        prefix="/streams/workflowqueue",
-                        tags=["results"],
-                        dependencies=[Depends(get_mongo_c)])
-
-_walkoff.include_router(console.router,
-                        prefix="/streams/console",
-                        tags=["console"],
                         dependencies=[Depends(get_mongo_c)])
 
 _walkoff.include_router(scheduler.router,

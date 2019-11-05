@@ -1,7 +1,7 @@
+from typing import List
 from uuid import UUID
 
-from pydantic import BaseModel, validator
-from typing import List
+from pydantic import BaseModel
 
 from api.server.db import IDBaseModel
 from api.server.db.resource import ResourceModel

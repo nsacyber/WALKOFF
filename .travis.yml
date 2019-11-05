@@ -32,7 +32,7 @@ before_script:
 
 # command to run tests
 script:
-  - coverage run -m pytest testing/api/ --omit ~/virtualenv/*
+  - coverage run --omit ~/virtualenv/* -m pytest testing/api/
   #- coverage combine
   - coverage report
 

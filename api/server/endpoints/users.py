@@ -4,17 +4,17 @@ from typing import List, Union
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from starlette.requests import Request
 from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+from starlette.requests import Request
 
 from api.server.db.mongo import get_mongo_c, get_mongo_d
+from api.server.db.role import RoleModel
+from api.server.db.user import UserModel, EditUser, EditPersonalUser
 from api.server.db.user_init import DefaultUserUUID as DUsers, DefaultRoleUUID as DRoles, DefaultUserUUID, \
     DefaultRoleUUID
-from api.server.db.user import UserModel, EditUser, EditPersonalUser
-from api.server.db.role import RoleModel
+from api.server.security import get_jwt_identity
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, InvalidInputException,
                                        DoesNotExistException)
-from api.server.security import get_jwt_identity
 from common import async_mongo_helpers as mongo_helpers
 
 logger = logging.getLogger(__name__)

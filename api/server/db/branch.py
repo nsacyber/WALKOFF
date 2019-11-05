@@ -1,10 +1,7 @@
 import logging
-from uuid import uuid4, UUID
-
-from pydantic import BaseModel
+from uuid import UUID
 
 from api.server.db import IDBaseModel
-
 
 logger = logging.getLogger(__name__)
 

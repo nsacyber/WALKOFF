@@ -1,12 +1,11 @@
 import logging
-from uuid import uuid4, UUID
-from enum import Enum
 from typing import Union
-
-from common.workflow_types import ParameterVariant
+from uuid import UUID
 
 from api.server.db import IDBaseModel
 from api.server.utils.helpers import JSONOrString
+from common.workflow_types import ParameterVariant
+
 # from jsonschema import Draft4Validator, SchemaError, ValidationError as JSONSchemaValidationError
 #
 # from sqlalchemy import Column, ForeignKey, String, JSON, Enum, Boolean

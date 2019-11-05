@@ -1,20 +1,17 @@
 import logging
-import time
-from uuid import UUID
-from http import HTTPStatus
 from typing import Union, List
+from uuid import UUID
 
-from fastapi import APIRouter, Depends
-from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 # from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers import SchedulerAlreadyRunningError, SchedulerNotRunningError
+from fastapi import APIRouter, Depends
+from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
-from api.server.utils.problems import InvalidInputException, DoesNotExistException
-from api.server.scheduler import Scheduler, get_scheduler, construct_trigger
-from api.server.db.mongo import get_mongo_c, get_mongo_d
-from api.server.db.workflow import WorkflowModel
-from api.server.db.scheduledtasks import ScheduledTask, SchedulerStatus, SchedulerStatusResp, NewStatusState
+from api.server.db.mongo import get_mongo_d
+from api.server.db.scheduledtasks import ScheduledTask, SchedulerStatusResp, NewStatusState
 from api.server.endpoints.workflowqueue import execute_workflow_helper
+from api.server.scheduler import Scheduler, get_scheduler
+from api.server.utils.problems import InvalidInputException, DoesNotExistException
 from common import async_mongo_helpers as mongo_helpers
 
 logger = logging.getLogger(__name__)

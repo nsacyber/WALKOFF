@@ -1,14 +1,9 @@
 import logging
-from uuid import uuid4, UUID
 from typing import List
-import jsonschema
-
-from pydantic import BaseModel, ValidationError, validator
-
-from common.helpers import validate_uuid
+from uuid import UUID
 
 from api.server.db import IDBaseModel
-from api.server.db.parameter import ParameterApiModel, ParameterModel, ParameterVariant  # ParameterApiSchema, Parameter, ParameterSchema,
+from api.server.db.parameter import ParameterApiModel, ParameterModel  # ParameterApiSchema, Parameter, ParameterSchema,
 from api.server.db.returns import ReturnApiModel  # ReturnApiSchema,
 
 logger = logging.getLogger(__name__)

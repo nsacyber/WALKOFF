@@ -1,5 +1,5 @@
 import logging
-from uuid import uuid4, UUID
+from uuid import UUID
 
 from api.server.db import IDBaseModel
 from api.server.utils.helpers import JSONOrString

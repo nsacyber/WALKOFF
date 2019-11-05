@@ -1,17 +1,13 @@
-import json
-import uuid
 import asyncio
+import uuid
 from typing import List
 
-import requests
-from minio import Minio
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from api.server.db.umpire import UploadFile
 from api.server.utils.problems import InvalidInputException
-from common.config import static
-from common.minio_helper import MinioApi
 from common.config import config
+from common.minio_helper import MinioApi
 from common.redis_helpers import connect_to_aioredis_pool
 
 BUILD_STATUS_GLOB = "umpire_api_build"

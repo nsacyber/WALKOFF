@@ -1,7 +1,7 @@
-import socketio
 import logging
 from uuid import UUID
 
+import socketio
 from pydantic import BaseModel
 
 logging.getLogger('socketio.client').setLevel(logging.WARNING)

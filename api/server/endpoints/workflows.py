@@ -1,24 +1,23 @@
 import json
 import logging
-
-from io import BytesIO
 from copy import deepcopy
+from io import BytesIO
 from typing import List, Union
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, UploadFile, HTTPException, File
+from fastapi import APIRouter, Depends, UploadFile, File
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from starlette.requests import Request
 from starlette.responses import StreamingResponse
 
-from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
-
-from api.server.security import get_jwt_identity
-from api.server.db.mongo import get_mongo_c, get_mongo_d
-from api.server.db.workflow import WorkflowModel, CopyWorkflowModel
+from api.server.db.mongo import get_mongo_d
 from api.server.db.permissions import AccessLevel, auth_check, creator_only_permissions, \
     default_permissions, append_super_and_internal
+from api.server.db.workflow import WorkflowModel, CopyWorkflowModel
+from api.server.security import get_jwt_identity
 from api.server.utils.helpers import regenerate_workflow_ids
-from api.server.utils.problems import UniquenessException, DoesNotExistException, UnauthorizedException, InvalidInputException
+from api.server.utils.problems import UniquenessException, DoesNotExistException, UnauthorizedException, \
+    InvalidInputException
 from common import async_mongo_helpers as mongo_helpers
 
 router = APIRouter()

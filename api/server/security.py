@@ -1,24 +1,23 @@
-from datetime import datetime, timedelta
 import logging
 import uuid
+from datetime import datetime, timedelta
 from http import HTTPStatus
-from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
 
 import jwt
-from starlette.requests import Request
 from fastapi import FastAPI
 from fastapi.security import OAuth2PasswordBearer
+from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorDatabase
+from starlette.requests import Request
 
-from api.server.fastapi_config import FastApiConfig
-from api.server.db.tokens import is_token_revoked
-from api.server.db.user import UserModel
 from api.server.db.role import RoleModel
 from api.server.db.settings import SettingsModel
+from api.server.db.tokens import is_token_revoked
+from api.server.db.user import UserModel
+from api.server.fastapi_config import FastApiConfig
 from api.server.utils.problems import ProblemException
-from common.config import config
 from common import async_mongo_helpers as mongo_helpers
+from common.config import config
 from common.helpers import preset_uuid
-
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")

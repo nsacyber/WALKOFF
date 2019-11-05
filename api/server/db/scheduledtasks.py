@@ -1,11 +1,11 @@
-import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
-from uuid import UUID
 from typing import List, Union
+from uuid import UUID
 
 from pydantic import BaseModel
+
 from api.server.db import IDBaseModel
 
 logger = logging.getLogger(__name__)

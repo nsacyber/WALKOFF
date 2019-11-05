@@ -1,13 +1,12 @@
 import logging
-from copy import deepcopy
-from typing import List
 from enum import Enum
+from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from api.server.db.user_init import DefaultRoleUUID
 from api.server.db.user import UserModel
+from api.server.db.user_init import DefaultRoleUUID
 from common import async_mongo_helpers as mongo_helpers
 
 logger = logging.getLogger(__name__)

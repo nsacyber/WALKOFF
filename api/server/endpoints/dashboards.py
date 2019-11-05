@@ -1,14 +1,12 @@
 import logging
 from typing import List, Union
-from http import HTTPStatus
 from uuid import UUID
+
 from fastapi import APIRouter, Depends
 from motor.motor_asyncio import AsyncIOMotorCollection
 
-from api.server.db.mongo import get_mongo_c
 from api.server.db.dashboard import DashboardModel
-from api.server.utils.problems import DoesNotExistException
-
+from api.server.db.mongo import get_mongo_c
 from common import async_mongo_helpers as mongo_helpers
 
 logger = logging.getLogger(__name__)

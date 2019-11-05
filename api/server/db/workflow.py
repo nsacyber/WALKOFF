@@ -1,26 +1,24 @@
 import logging
-from uuid import uuid4, UUID
-from typing import List, Set
+from typing import List
+from uuid import UUID
 
 import jsonschema
-from pydantic import BaseModel, ValidationError, validator
+from pydantic import BaseModel
 
-from api.server.db.appapi import AppApiModel
-from api.server.db.condition import ConditionModel
-from api.server.db.transform import TransformModel
-from api.server.db.branch import BranchModel
-from api.server.db.workflow_variable import WorkflowVariableModel
-from api.server.db.global_variable import GlobalVariable
-from api.server.db.action import ActionModel, ActionApiModel
-from api.server.db.trigger import TriggerModel
-from api.server.db.permissions import PermissionsModel
-from api.server.db.mongo import mongo
 from api.server.db import IDBaseModel
-
+from api.server.db.action import ActionModel, ActionApiModel
+from api.server.db.appapi import AppApiModel
+from api.server.db.branch import BranchModel
+from api.server.db.condition import ConditionModel
+from api.server.db.global_variable import GlobalVariable
+from api.server.db.mongo import mongo
+from api.server.db.permissions import PermissionsModel
+from api.server.db.transform import TransformModel
+from api.server.db.trigger import TriggerModel
+from api.server.db.workflow_variable import WorkflowVariableModel
 from common import mongo_helpers
 from common.helpers import validate_uuid
 from common.workflow_types import ParameterVariant
-
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +37,11 @@ class WorkflowModel(IDBaseModel):
     tags: List[str] = []
     walkoff_type_: str = "workflow"
     permissions: PermissionsModel
+    actions: List[ActionModel]
     conditions: List[ConditionModel] = []
     transforms: List[TransformModel] = []
     workflow_variables: List[WorkflowVariableModel] = []
     triggers: List[TriggerModel] = []
-    actions: List[ActionModel]
     branches: List[BranchModel] = []
     start: UUID
 
@@ -82,7 +80,8 @@ class WorkflowModel(IDBaseModel):
                 continue
 
             # Validate that action exists
-            action_api: ActionApiModel = next((action_api for action_api in app_api.actions if action_api.name == action.name), None)
+            action_api: ActionApiModel = next(
+                (action_api for action_api in app_api.actions if action_api.name == action.name), None)
             if not action_api:
                 self.errors.append(f"Action {action.app_name}.{action.name} does not exist")
                 continue
@@ -157,6 +156,119 @@ class WorkflowModel(IDBaseModel):
             action.errors = errors
             action.is_valid = False
 
+    class Config:
+        schema_extra = {
+            'example': [
+                {
+                    "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "name": "string",
+                    "start": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    "permissions": {
+                        "access_level": 2,
+                        "creator": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                        "role_permissions": [
+                            {
+                                "role": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                                "permissions": [
+                                    "read",
+                                    "update",
+                                    "delete"
+                                ]
+                            }
+                        ]
+                    },
+                    "actions": [
+                        {
+                            "app_name": "hello_world",
+                            "app_version": "1.0.0",
+                            "name": "hello_world",
+                            "label": "string",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "errors": [
+                                "string"
+                            ],
+                            "is_valid": True,
+                            "position": {},
+                            "priority": 0,
+                            "parallelized": False,
+                            "parameters": [
+                                {
+                                    "name": "string",
+                                    "variant": "STATIC_VALUE",
+                                    "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                                    "value": {},
+                                    "parallelized": False
+                                }
+                            ]
+                        }
+                    ],
+                    "errors": [
+                        "string"
+                    ],
+                    "is_valid": False,
+                    "description": "string",
+                    "tags": [
+                        "string"
+                    ],
+                    "branches": [
+                        {
+                            "source_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "destination_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                        }
+                    ],
+                    "conditions": [
+                        {
+                            "app_name": "string",
+                            "app_version": "string",
+                            "name": "string",
+                            "label": "string",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "errors": [
+                                "string"
+                            ],
+                            "is_valid": True,
+                            "position": {}
+                        }
+                    ],
+                    "transforms": [
+                        {
+                            "app_name": "string",
+                            "app_version": "string",
+                            "name": "string",
+                            "label": "string",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "errors": [
+                                "string"
+                            ],
+                            "is_valid": True,
+                            "position": {}
+                        }
+                    ],
+                    "workflow_variables": [
+                        {
+                            "name": "string",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "description": "string"
+                        }
+                    ],
+                    "triggers": [
+                        {
+                            "app_name": "string",
+                            "app_version": "string",
+                            "name": "string",
+                            "label": "string",
+                            "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                            "errors": [
+                                "string"
+                            ],
+                            "is_valid": True,
+                            "position": {}
+                        }
+                    ]
+                }
+            ]
+        }
 
 # @validator('is_valid')
 # def clear_invalid_state(cls, value, values):
@@ -203,119 +315,6 @@ class WorkflowModel(IDBaseModel):
 #     else:
 #         return value
 #
-# class Config:
-#     schema_extra = {
-#         'example': [
-#             {
-#                 "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                 "name": "string",
-#                 "start": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                 "permissions": {
-#                     "access_level": 2,
-#                     "creator": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                     "role_permissions": [
-#                         {
-#                             "role": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                             "permissions": [
-#                                 "read",
-#                                 "update",
-#                                 "delete"
-#                             ]
-#                         }
-#                     ]
-#                 },
-#                 "actions": [
-#                     {
-#                         "app_name": "hello_world",
-#                         "app_version": "1.0.0",
-#                         "name": "hello_world",
-#                         "label": "string",
-#                         "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                         "errors": [
-#                             "string"
-#                         ],
-#                         "is_valid": True,
-#                         "position": {},
-#                         "priority": 0,
-#                         "parallelized": False,
-#                         "parameters": [
-#                             {
-#                                 "name": "string",
-#                                 "variant": "STATIC_VALUE",
-#                                 "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                                 "value": {},
-#                                 "parallelized": False
-#                             }
-#                         ]
-#                     }
-#                 ],
-#                 "errors": [
-#                     "string"
-#                 ],
-#                 "is_valid": False,
-#                 "description": "string",
-#                 "tags": [
-#                     "string"
-#                 ],
-#                 "branches": [
-#                     {
-#                         "source_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                         "destination_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                         "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-#                     }
-#                 ],
-#                 "conditions": [
-#                     {
-#                         "app_name": "string",
-#                         "app_version": "string",
-#                         "name": "string",
-#                         "label": "string",
-#                         "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                         "errors": [
-#                             "string"
-#                         ],
-#                         "is_valid": True,
-#                         "position": {}
-#                     }
-#                 ],
-#                 "transforms": [
-#                     {
-#                         "app_name": "string",
-#                         "app_version": "string",
-#                         "name": "string",
-#                         "label": "string",
-#                         "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                         "errors": [
-#                             "string"
-#                         ],
-#                         "is_valid": True,
-#                         "position": {}
-#                     }
-#                 ],
-#                 "workflow_variables": [
-#                     {
-#                         "name": "string",
-#                         "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                         "description": "string"
-#                     }
-#                 ],
-#                 "triggers": [
-#                     {
-#                         "app_name": "string",
-#                         "app_version": "string",
-#                         "name": "string",
-#                         "label": "string",
-#                         "id_": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-#                         "errors": [
-#                             "string"
-#                         ],
-#                         "is_valid": True,
-#                         "position": {}
-#                     }
-#                 ]
-#             }
-#         ]
-#     }
 
 
 # class Workflow(Base):

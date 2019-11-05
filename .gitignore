@@ -50,3 +50,5 @@ venv/
 tmp-compose.yml
 .pytest_cache
 .python-version
+.coverage
+temp_apps/

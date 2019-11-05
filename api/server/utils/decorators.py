@@ -1,6 +1,5 @@
-from uuid import UUID
-from itertools import islice
 from inspect import getfullargspec
+from uuid import UUID
 
 
 def get_id_str(ids):
