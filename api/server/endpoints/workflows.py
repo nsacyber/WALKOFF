@@ -21,7 +21,7 @@ from api.server.utils.problems import UniquenessException, DoesNotExistException
 from common import async_mongo_helpers as mongo_helpers
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 async def set_permissions(new_workflow: WorkflowModel, curr_user_id: UUID, walkoff_db: AsyncIOMotorDatabase):

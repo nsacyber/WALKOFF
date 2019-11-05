@@ -8,7 +8,7 @@ from pydantic import BaseModel, validator, UrlStr, EmailStr
 from api.server.db import IDBaseModel
 from api.server.db.action import ActionApiModel  # ActionApiSchema,
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class AppApiContactModel(BaseModel):

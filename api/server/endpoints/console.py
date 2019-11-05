@@ -14,7 +14,7 @@ from common.redis_helpers import connect_to_aioredis_pool
 console_stream_subs = set()
 USERS = []
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 router = APIRouter()
 
 CONSOLE_STREAM_GLOB = "console_stream"

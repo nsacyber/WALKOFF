@@ -21,7 +21,7 @@ from common.helpers import preset_uuid
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 async def load_secret_key():

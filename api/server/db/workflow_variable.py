@@ -4,7 +4,7 @@ from uuid import UUID
 from api.server.db import IDBaseModel
 from api.server.utils.helpers import JSONOrString
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class WorkflowVariableModel(IDBaseModel):

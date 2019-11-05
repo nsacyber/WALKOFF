@@ -10,7 +10,7 @@ from pydantic import BaseModel, validator
 from api.server.db import IDBaseModel
 from api.server.db.mongo import mongo
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class EditUser(BaseModel):

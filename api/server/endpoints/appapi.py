@@ -10,7 +10,7 @@ from api.server.db.appapi import AppApiModel
 from api.server.db.mongo import get_mongo_c
 from common import async_mongo_helpers as mongo_helpers
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 router = APIRouter()
 
 

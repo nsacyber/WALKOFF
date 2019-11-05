@@ -4,7 +4,7 @@ from http import HTTPStatus
 from fastapi.exceptions import HTTPException
 from starlette.responses import JSONResponse
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class ProblemException(HTTPException):

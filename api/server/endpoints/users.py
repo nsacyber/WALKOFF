@@ -17,7 +17,7 @@ from api.server.utils.problems import (UnauthorizedException, UniquenessExceptio
                                        DoesNotExistException)
 from common import async_mongo_helpers as mongo_helpers
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 router = APIRouter()
 ignore_password = {"password": False}
 

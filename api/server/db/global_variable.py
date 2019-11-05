@@ -4,7 +4,7 @@ from uuid import UUID
 from api.server.db import IDBaseModel
 from api.server.db.permissions import PermissionsModel
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class GlobalVariable(IDBaseModel):

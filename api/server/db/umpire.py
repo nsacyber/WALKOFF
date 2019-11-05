@@ -2,7 +2,7 @@ import logging
 
 from pydantic import BaseModel
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class UploadFile(BaseModel):

@@ -18,7 +18,7 @@ from common import async_mongo_helpers as mongo_helpers
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 router = APIRouter()
 

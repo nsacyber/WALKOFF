@@ -30,7 +30,7 @@ user_deactivated_problem = ProblemException(
 )
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 @router.post("/login",

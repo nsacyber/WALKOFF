@@ -22,7 +22,7 @@ from api.server.utils.problems import ProblemException
 from api.server.utils.socketio import sio
 from common.config import static, config
 
-logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
+logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger(__name__)
 
 _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)

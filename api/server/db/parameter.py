@@ -19,7 +19,7 @@ from common.workflow_types import ParameterVariant
 #
 # from common.workflow_types import ParameterVariant
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class ParameterApiModel(IDBaseModel):

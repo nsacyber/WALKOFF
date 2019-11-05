@@ -9,7 +9,7 @@ from api.server.db.user import UserModel
 from api.server.db.user_init import DefaultRoleUUID
 from common import async_mongo_helpers as mongo_helpers
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class AccessLevel(int, Enum):

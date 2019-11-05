@@ -5,7 +5,7 @@ from datetime import datetime
 from inspect import signature as getsignature
 from uuid import uuid4
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 def __list_valid_directories(path):

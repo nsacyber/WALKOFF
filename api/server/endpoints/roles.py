@@ -10,7 +10,7 @@ from api.server.db.user_init import default_resource_permissions_admin, DefaultR
 from api.server.utils.problems import (UnauthorizedException, UniquenessException, DoesNotExistException)
 from common import async_mongo_helpers as mongo_helpers
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 router = APIRouter()
 
 hidden_roles = [

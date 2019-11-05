@@ -20,7 +20,7 @@ from common import mongo_helpers
 from common.helpers import validate_uuid
 from common.workflow_types import ParameterVariant
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class CopyWorkflowModel(BaseModel):

@@ -6,7 +6,7 @@ from api.server.db import IDBaseModel
 from api.server.db.parameter import ParameterApiModel, ParameterModel  # ParameterApiSchema, Parameter, ParameterSchema,
 from api.server.db.returns import ReturnApiModel  # ReturnApiSchema,
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class ActionApiModel(IDBaseModel):

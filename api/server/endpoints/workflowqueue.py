@@ -25,7 +25,7 @@ from common.message_types import StatusEnum, message_dumps
 from common.redis_helpers import connect_to_aioredis_pool
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 # def workflow_status_getter(execution_id, app_api_col: AsyncIOMotorCollection):

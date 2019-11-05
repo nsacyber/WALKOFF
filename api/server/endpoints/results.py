@@ -13,7 +13,7 @@ from common import async_mongo_helpers as mongo_helpers
 from common.config import config, static
 from common.redis_helpers import connect_to_aioredis_pool
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 router = APIRouter()
 
 WORKFLOW_STREAM_GLOB = "workflow_stream"

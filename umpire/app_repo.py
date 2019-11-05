@@ -14,7 +14,7 @@ from common.config import config
 from common.docker_helpers import get_project
 from common.helpers import get_walkoff_auth_header
 
-logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
+logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("AppRepo")
 
 compose_logger = logging.getLogger("compose.config.config")

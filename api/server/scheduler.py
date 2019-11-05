@@ -11,7 +11,7 @@ from starlette.requests import Request
 
 from api.server.utils.problems import InvalidInputException
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("API")
 
 
 class InvalidTriggerArgs(Exception):

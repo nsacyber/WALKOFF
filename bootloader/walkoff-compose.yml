@@ -51,6 +51,7 @@ services:
     depends_on:
       - resource_redis
       - resource_mongo
+      - core_socketio
     volumes:
       - ./apps:/app/apps
       - ./api/client/dist:/app/api/client/dist
@@ -74,8 +75,6 @@ services:
       # - walkoff_redis_key
     configs:
       - common_env.yml
-    depends_on:
-      - core_api
     # volumes:
     #   - ./api/client/dist:/app/api/client/dist
 
