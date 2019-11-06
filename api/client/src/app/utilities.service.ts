@@ -152,9 +152,11 @@ export class UtilitiesService {
 	}
 
 	createSocket(namespace: string, channel: string = 'all'): SocketIOClient.Socket {
+		console.log('socket', namespace, channel);
 		const socket =  io(namespace, {
 			query: { channel },
 			reconnectionAttempts: 5,
+			forceNew: true,
 			path: '/walkoff/sockets/socket.io'
 		});
 

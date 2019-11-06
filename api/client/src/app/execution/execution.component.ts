@@ -144,7 +144,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		this.displayWorkflowStatuses = this.workflowStatuses.filter((s) => {
 			return [ 
-				s.id, s.execution_id, s.name, s.status, s.action_name, s.app_name, s.label
+				s.workflow_id, s.execution_id, s.name, s.status, s.action_name, s.app_name, s.label
 			].some(x => x && x.toLocaleLowerCase().includes(searchFilter));
 		});
 

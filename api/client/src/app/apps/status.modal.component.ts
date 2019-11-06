@@ -68,7 +68,7 @@ export class StatusModalComponent implements OnInit, OnDestroy {
 
     createBuildStatusSocket() {
 		if (this.buildStatusSocket) this.buildStatusSocket.close();
-		this.buildStatusSocket = this.utils.createSocket('/nodeStatus', this.buildId);
+		this.buildStatusSocket = this.utils.createSocket('/buildStatus', this.buildId);
 
 		this.buildStatusSocket.on('connected', (data) => {
 			(data as any[]).forEach(event => this.statusEventHandler(event));
@@ -79,9 +79,8 @@ export class StatusModalComponent implements OnInit, OnDestroy {
 		});
 	}
 
-    statusEventHandler(data: any): void {
-        console.log('build', data);
-        const consoleEvent = JSON.parse(data);
+    statusEventHandler(consoleEvent: any): void {
+        console.log('build', consoleEvent);
 
         switch (consoleEvent.build_status) {
             case 'building':
@@ -91,7 +90,7 @@ export class StatusModalComponent implements OnInit, OnDestroy {
                 this.consoleLog.push(consoleEvent);
                 this.completedStatus = { success: false, message: `<b class="text-capitalize">${this.appApi.name}</b> rebuild failed`};
                 break;
-            case 'Success':
+            case 'success':
                 this.completedStatus = { success: true, message: `<b class="text-capitalize">${this.appApi.name}</b> rebuild successful`};
         }
         this.statusObserver.next(this.consoleContent);

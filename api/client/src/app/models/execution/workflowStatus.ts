@@ -3,8 +3,6 @@ import { NodeStatus } from './nodeStatus';
 
 export class WorkflowStatus {
 
-	id?: string;
-
 	execution_id: string;
 
 	workflow_id: string;
