@@ -1,0 +1,44 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+branches:
+  only:
+    - master
+    - travis
+
+environment:
+  CONFIG_PATH: data/local_config.yml
+
+  matrix:
+    - PYTHON: "C:\\Python37"
+      PYTHON_VERSION: "3.7.x"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: "3.7.x"
+      PYTHON_ARCH: "64"
+
+install:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - python --version
+  - python -m pip install -U pip
+  - python -m pip install -U pytest
+  - python -m pip install -r requirements.txt
+  - python -m pip install -r api/requirements.txt
+  - python -m pip install -r testing/requirements.txt
+  - docker-compose --version
+  - docker --version
+
+services:
+  - mongodb
+
+before_build:
+  - docker swarm init --advertise-addr 127.0.0.1
+
+build_script:
+  - ps: .\walkoff.ps1 up -bdy
+  - docker service ls
+
+test_script:
+  - python -m pytest testing\api\
+
+
