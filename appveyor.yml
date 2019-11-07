@@ -1,9 +1,5 @@
 version: 1.0.{build}
-image: Visual Studio 2019
-branches:
-  only:
-    - master
-    - travis
+image: Visual Studio 2017
 
 environment:
   CONFIG_PATH: data/local_config.yml
@@ -27,13 +23,13 @@ install:
   - python -m pip install -r testing/requirements.txt
 
 before_build:
-  - ipconfig
-  - docker swarm init --advertise-addr 10.0.0.6
-  - ./walkoff.sh up -bdy
+  - docker swarm init --advertise-addr 127.0.0.1
+
+build_script:
+  - ps: .\walkoff.ps1 up -bdy
+  - docker service ls
 
 test_script:
-  - python -m pytest testing/api/
+  - python -m pytest testing\api\
 
-after_build:
-  - ./walkoff.sh down -cy
 
