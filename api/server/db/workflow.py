@@ -2,7 +2,9 @@ import logging
 from typing import List
 from uuid import UUID
 
+from fastapi.exceptions import RequestValidationError
 import jsonschema
+import pydantic
 from pydantic import BaseModel
 
 from api.server.db import IDBaseModel
@@ -46,8 +48,11 @@ class WorkflowModel(IDBaseModel):
     start: UUID
 
     def __init__(self, **kwargs):
-        super(WorkflowModel, self).__init__(**kwargs)
-        self.validate_workflow()
+        try:
+            super(WorkflowModel, self).__init__(**kwargs)
+            self.validate_workflow()
+        except pydantic.error_wrappers.ValidationError as e:
+            raise RequestValidationError(e.raw_errors)
 
     def validate_workflow(self):
         """Validates the object"""
