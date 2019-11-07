@@ -1,9 +1,5 @@
 version: 1.0.{build}
 image: Visual Studio 2017
-branches:
-  only:
-    - master
-    - travis
 
 environment:
   CONFIG_PATH: data/local_config.yml
