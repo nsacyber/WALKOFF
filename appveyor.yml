@@ -25,17 +25,14 @@ install:
   - ps: docker --version
 
 before_build:
-  - ps: ipconfig
   - ps: $ifIndex = Get-NetIPInterface | Where-Object -FilterScript { $_.InterfaceAlias -Eq "Ethernet 7" -And $_.AddressFamily -Eq "IPv4"} | Select-Object -ExpandProperty ifIndex
   - ps: $ipAddr = Get-NetIPAddress -InterfaceIndex $ifIndex | Where-Object -FilterScript {$_.AddressFamily -Eq "IPv4"} | Select-Object -ExpandProperty IPAddress
   - ps: docker swarm init --advertise-addr $ipAddr
-  - ps: ipconfig
 
 build_script:
-  - ps: ipconfig
-  - ps: .\walkoff.ps1 up -bdyr
-  - ps: docker service ls
-  - ps: ipconfig
+  - ps: docker build -t walkoff_bootloader -f bootloader/Dockerfile .
+  - ps: .\test.ps1
+  - ps: docker images
 
 test_script:
   - ps: python -m pytest testing\api\
