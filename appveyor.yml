@@ -24,9 +24,6 @@ install:
   - docker-compose --version
   - docker --version
 
-services:
-  - mongodb
-
 before_build:
   - docker swarm init --advertise-addr 127.0.0.1
 
