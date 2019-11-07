@@ -21,23 +21,23 @@ install:
   - python -m pip install -r requirements.txt
   - python -m pip install -r api/requirements.txt
   - python -m pip install -r testing/requirements.txt
-  - docker-compose --version
-  - docker --version
+  - ps: docker-compose --version
+  - ps: docker --version
 
 before_build:
-  - ipconfig
-  - $ifIndex = Get-NetIPInterface | Where-Object -FilterScript { $_.InterfaceAlias -Eq "Ethernet 7" -And $_.AddressFamily -Eq "IPv4"} | Select-Object -ExpandProperty ifIndex
-  - $ipAddr = Get-NetIPAddress -InterfaceIndex $ifIndex | Where-Object -FilterScript {$_.AddressFamily -Eq "IPv4"} | Select-Object -ExpandProperty IPAddress
-  - docker swarm init --advertise-addr $ipAddr
-  - ipconfig
+  - ps: ipconfig
+  - ps: $ifIndex = Get-NetIPInterface | Where-Object -FilterScript { $_.InterfaceAlias -Eq "Ethernet 7" -And $_.AddressFamily -Eq "IPv4"} | Select-Object -ExpandProperty ifIndex
+  - ps: $ipAddr = Get-NetIPAddress -InterfaceIndex $ifIndex | Where-Object -FilterScript {$_.AddressFamily -Eq "IPv4"} | Select-Object -ExpandProperty IPAddress
+  - ps: docker swarm init --advertise-addr $ipAddr
+  - ps: ipconfig
 
 build_script:
-  - ipconfig
+  - ps: ipconfig
   - ps: .\walkoff.ps1 up -bdyr
-  - docker service ls
-  - ipconfig
+  - ps: docker service ls
+  - ps: ipconfig
 
 test_script:
-  - python -m pytest testing\api\
+  - ps: python -m pytest testing\api\
 
 

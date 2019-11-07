@@ -1,3 +1,5 @@
+$ErrorActionPreference = "Stop";
+
 $BUILDARG="^-[a-zA-Z]*b|--build"
 if ($args[0] -eq "up") {
     foreach ($arg in $args) {
