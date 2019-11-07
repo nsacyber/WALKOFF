@@ -26,7 +26,9 @@ install:
 
 before_build:
   - ipconfig
-  - docker swarm init --advertise-addr 10.0.0.2
+  - $ifIndex = Get-NetIPInterface | Where-Object -FilterScript { $_.InterfaceAlias -Eq "Ethernet 7" -And $_.AddressFamily -Eq "IPv4"} | Select-Object -ExpandProperty ifIndex
+  - $ipAddr = Get-NetIPAddress -InterfaceIndex $ifIndex | Where-Object -FilterScript {$_.AddressFamily -Eq "IPv4"} | Select-Object -ExpandProperty IPAddress
+  - docker swarm init --advertise-addr $ipAddr
   - ipconfig
 
 build_script:
