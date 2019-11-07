@@ -36,17 +36,6 @@ def token_is_revoked_loader():
     return json.dumps({'error': 'Token is revoked'}), HTTPStatus.UNAUTHORIZED
 
 
-def admin_required(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        if user_has_correct_roles({1}, all_required=True):
-            return fn(*args, **kwargs)
-        else:
-            return "Unauthorized View", HTTPStatus.FORBIDDEN
-
-    return wrapper
-
-
 def permissions_accepted_for_resources(*resource_permissions):
     return _permissions_decorator(resource_permissions)
 

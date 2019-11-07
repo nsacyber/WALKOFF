@@ -8,4 +8,6 @@ setup(name='walkoff_app_sdk',
       author_email='',
       license='',
       packages=find_packages(),
-      install_requires=["aiohttp", "aioredis", "pyyaml"])
+      install_requires=["aiohttp", "pyyaml", "asteval", "cryptography", "six",
+                        "tenacity", "python-socketio", "requests", "websocket-client"]
+)

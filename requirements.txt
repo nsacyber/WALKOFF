@@ -2,11 +2,11 @@
 aiodocker
 aiohttp
 aioredis
+redis
 #cchardet
 docker
 docker-compose
 pyyaml
-sqlalchemy
 cryptography
 sphinxcontrib-openapi
 m2r

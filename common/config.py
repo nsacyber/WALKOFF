@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 import os
+import socket
 
 import yaml
 
@@ -31,23 +32,43 @@ class Static:
     """Common location for static values"""
 
     # Common statics
-    CONTAINER_ID = os.getenv("HOSTNAME")
+    CONTAINER_ID = os.getenv("HOSTNAME", socket.gethostname())
 
-    # Service names
-    CORE_PREFIX = "walkoff_core"
-    RESOURCE_PREFIX = "walkoff_resource"
-    APP_PREFIX = "walkoff_app"
+    # Prefixes
+    STACK_PREFIX = "walkoff"
+    CORE_PREFIX = f"{STACK_PREFIX}_core"
+    RESOURCE_PREFIX = f"{STACK_PREFIX}_resource"
+    APP_PREFIX = f"{STACK_PREFIX}_app"
 
-    API_GATEWAY_SERVICE = f"{CORE_PREFIX}_api_gateway"
+    # Core services
+    API_SERVICE = f"{CORE_PREFIX}_api"
     UMPIRE_SERVICE = f"{CORE_PREFIX}_umpire"
     WORKER_SERVICE = f"{CORE_PREFIX}_worker"
+    SOCKETIO_SERVICE = f"{CORE_PREFIX}_socketio"
 
+    # Resource services
     REDIS_SERVICE = f"{RESOURCE_PREFIX}_redis"
     POSTGRES_SERVICE = f"{RESOURCE_PREFIX}_postgres"
     NGINX_SERVICE = f"{RESOURCE_PREFIX}_nginx"
     PORTAINER_SERVICE = f"{RESOURCE_PREFIX}_portainer"
     REGISTRY_SERVICE = f"{RESOURCE_PREFIX}_registry"
     MINIO_SERVICE = f"{RESOURCE_PREFIX}_minio"
+    MONGO_SERVICE = f"{RESOURCE_PREFIX}_mongo"
+
+    # Volume names
+    REGISTRY_VOLUME = f"{REGISTRY_SERVICE}_volume"
+    MINIO_VOLUME = f"{MINIO_SERVICE}_volume"
+    PORTAINER_VOLUME = f"{PORTAINER_SERVICE}_volume"
+    MONGO_VOLUME = f"{MONGO_SERVICE}_volume"
+
+    # Secret names
+    ENCRYPTION_KEY = f"{STACK_PREFIX}_encryption_key"
+    INTERNAL_KEY = f"{STACK_PREFIX}_internal_key"
+    POSTGRES_KEY = f"{STACK_PREFIX}_postgres_key"
+    MINIO_ACCESS_KEY = f"{STACK_PREFIX}_minio_access_key"
+    MINIO_SECRET_KEY = f"{STACK_PREFIX}_minio_secret_key"
+    REDIS_KEY = f"{STACK_PREFIX}_redis_key"
+    MONGO_KEY = f"{STACK_PREFIX}_mongo_key"
 
     # Redis options
     REDIS_EXECUTING_WORKFLOWS = "executing-workflows"
@@ -61,18 +82,20 @@ class Static:
     REDIS_WORKFLOW_TRIGGERS_GROUP = "workflow-triggers-group"
     REDIS_WORKFLOW_CONTROL = "workflow-control"
     REDIS_WORKFLOW_CONTROL_GROUP = "workflow-control-group"
+    REDIS_RESULTS_QUEUE = "results-queue"
 
     # File paths
-    API_PATH = Path("api_gateway") / "api"
-    CLIENT_PATH = Path("api_gateway") / "client"
-
-    REDIS_DATA_PATH = Path("data") / "redis" / "red_data"
-    POSTGRES_DATA_PATH = Path("data") / "postgres" / "pg_data"
-    PORTAINER_DATA_PATH = Path("data") / "portainer" / "prt_data"
-    REGISTRY_DATA_PATH = Path("data") / "registry" / "reg_data"
-    MINIO_DATA_PATH = Path("data") / "minio" / "min_data"
-
+    # API_PATH = Path("api") / "api"
+    CLIENT_PATH = Path("api") / "client"
+    TEMPLATE_PATH = Path("api") / "server" / "templates"
     SECRET_BASE_PATH = Path("/") / "run" / "secrets"
+
+    SOCKETIO_PATH = "/walkoff/sockets/socket.io"
+    SIO_NS_CONSOLE = "/console"
+    SIO_NS_NODE = "/nodeStatus"
+    SIO_NS_WORKFLOW = "/workflowStatus"
+    SIO_NS_BUILD = "/buildStatus"
+    SIO_EVENT_LOG = "log"
 
     SWAGGER_URL = "/walkoff/api/docs"
 
@@ -90,16 +113,19 @@ class Config:
     """
 
     # Common options
-    API_GATEWAY_URI = os.getenv("API_GATEWAY_URI", f"http://{Static.API_GATEWAY_SERVICE}:8080")
+    API_URI = os.getenv("API_URI", f"http://{Static.API_SERVICE}:8080")
     REDIS_URI = os.getenv("REDIS_URI", f"redis://{Static.REDIS_SERVICE}:6379")
     MINIO = os.getenv("MINIO", f"{Static.MINIO_SERVICE}:9000")
+    SOCKETIO_URI = os.getenv("SOCKETIO_URI", f"http://{Static.SOCKETIO_SERVICE}:3000")
 
     # Key locations
-    ENCRYPTION_KEY_PATH = os.getenv("ENCRYPTION_KEY_PATH", Static.SECRET_BASE_PATH / "walkoff_encryption_key")
-    INTERNAL_KEY_PATH = os.getenv("INTERNAL_KEY_PATH", Static.SECRET_BASE_PATH / "walkoff_internal_key")
-    POSTGRES_KEY_PATH = os.getenv("POSTGRES_KEY_PATH", Static.SECRET_BASE_PATH / "walkoff_postgres_key")
-    MINIO_ACCESS_KEY_PATH = os.getenv("MINIO_SECRET_KEY_PATH", Static.SECRET_BASE_PATH / "walkoff_minio_access_key")
-    MINIO_SECRET_KEY_PATH = os.getenv("MINIO_SECRET_KEY_PATH", Static.SECRET_BASE_PATH / "walkoff_minio_secret_key")
+    ENCRYPTION_KEY_PATH = os.getenv("ENCRYPTION_KEY_PATH", Static.SECRET_BASE_PATH / Static.ENCRYPTION_KEY)
+    INTERNAL_KEY_PATH = os.getenv("INTERNAL_KEY_PATH", Static.SECRET_BASE_PATH / Static.INTERNAL_KEY)
+    POSTGRES_KEY_PATH = os.getenv("POSTGRES_KEY_PATH", Static.SECRET_BASE_PATH / Static.POSTGRES_KEY)
+    REDIS_KEY_PATH = os.getenv("REDIS_KEY_PATH", Static.SECRET_BASE_PATH / Static.REDIS_KEY)
+    MINIO_ACCESS_KEY_PATH = os.getenv("MINIO_SECRET_KEY_PATH", Static.SECRET_BASE_PATH / Static.MINIO_ACCESS_KEY)
+    MINIO_SECRET_KEY_PATH = os.getenv("MINIO_SECRET_KEY_PATH", Static.SECRET_BASE_PATH / Static.MINIO_SECRET_KEY)
+    MONGO_KEY_PATH = os.getenv("MONGO_KEY_PATH", Static.SECRET_BASE_PATH / Static.MONGO_KEY)
 
     # Worker options
     MAX_WORKER_REPLICAS = os.getenv("MAX_WORKER_REPLICAS", "10")
@@ -109,16 +135,17 @@ class Config:
     # Umpire options
     APPS_PATH = os.getenv("APPS_PATH", "./apps")
     APP_REFRESH = os.getenv("APP_REFRESH", "60")
-    SWARM_NETWORK = os.getenv("SWARM_NETWORK", "walkoff_default")
+    SWARM_NETWORK = os.getenv("SWARM_NETWORK", "walkoff_network")
     DOCKER_REGISTRY = os.getenv("DOCKER_REGISTRY", "127.0.0.1:5000")
     UMPIRE_HEARTBEAT = os.getenv("UMPIRE_HEARTBEAT", "1")
 
     # API Gateway options
     DB_TYPE = os.getenv("DB_TYPE", "postgres")
     DB_HOST = os.getenv("DB_HOST", Static.POSTGRES_SERVICE)
+    MONGO_HOST = os.getenv("MONGO_HOST", Static.MONGO_SERVICE)
     SERVER_DB_NAME = os.getenv("SERVER_DB", "walkoff")
     EXECUTION_DB_NAME = os.getenv("EXECUTION_DB", "execution")
-    DB_USERNAME = os.getenv("DB_USERNAME", "")
+    DB_USERNAME = os.getenv("DB_USERNAME", "walkoff")
 
     # Bootloader options
     BASE_COMPOSE = os.getenv("BASE_COMPOSE", "./bootloader/base-compose.yml")
@@ -143,12 +170,16 @@ class Config:
         return sfloat(getattr(self, key), default)
 
     def load_config(self):
-        with open(CONFIG_PATH) as f:
-            y = yaml.safe_load(f)
+        try:
+            with open(CONFIG_PATH) as f:
+                y = yaml.safe_load(f)
 
-        for key, value in y.items():
-            if hasattr(self, key.upper()) and not os.getenv(key.upper()):
-                setattr(self, key.upper(), value)
+            for key, value in y.items():
+                if hasattr(self, key.upper()) and not os.getenv(key.upper()):
+                    setattr(self, key.upper(), value)
+        except IOError:
+            logger.warning(f"No config file found at {CONFIG_PATH}, using defaults.\n"
+                           f"Set the CONFIG_PATH environment variable to point to a config file to override.")
 
     def dump_config(self, file):
         with open(file, 'w') as f:

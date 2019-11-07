@@ -144,18 +144,6 @@ async def update_service(client, service_id, *, version=None, image=None, rollba
     return resp
 
 
-async def remove_volume(client: aiodocker.Docker, volume: str):
-    try:
-        vol = aiodocker.docker.DockerVolume(client, volume)
-        await vol.delete()
-        logger.info(f"Deleted volume {volume}.")
-    except aiodocker.exceptions.DockerError as e:
-        if e.status == 404:
-            logger.info(f"Skipping removal of {volume}, it doesn't exist.")
-        else:
-            raise e
-
-
 async def get_secret(client: aiodocker.Docker, secret_id):
     resp = await client._query(f"secrets/{secret_id}")
     return await resp.json()
@@ -166,7 +154,7 @@ async def delete_secret(client: aiodocker.Docker, secret_id):
 
 
 async def disconnect_from_network(client: aiodocker.Docker):
-    await client._query(f"networks/walkoff_default/disconnect", "POST")
+    await client._query(f"networks/walkoff_network/disconnect", "POST")
 
 
 async def get_network(client: aiodocker.Docker, network_id):
@@ -240,6 +228,7 @@ async def get_containers(docker_client, service, short_ids=False):
     :param service: The docker id of the service
     :return: a set of the running containers
     """
+
     def get_container_id(task_spec):
         return task_spec["Status"]["ContainerStatus"]["ContainerID"]
 
@@ -290,6 +279,7 @@ async def load_secrets(docker_client, project):
             secret_references.append(SecretReference(secret_id=secret_id, secret_name=secret.source,
                                                      uid=secret.uid, gid=secret.gid, mode=secret.mode))
     return secret_references
+
 
 def connect_to_docker():
     client = docker.from_env(environment=load_docker_env())

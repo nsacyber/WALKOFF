@@ -16,20 +16,20 @@ actions:
       - name: timeout
         description: Timeout on the request (in seconds)
         required: true
-        schema:
+        json_schema:
           type: number
       - name: username
         required: true
         description: username
-        schema:
+        json_schema:
           type: string
       - name: password
         required: true
         description: password
-        schema:
+        json_schema:
           type: string
     returns:
-      schema:
+      json_schema:
         type: string
       example: "Success"
   - name: disconnect
@@ -37,16 +37,16 @@ actions:
     parameters:
       - name: timeout
         description: Timeout on the request (in seconds)
-        schema:
+        json_schema:
           type: number
         required: true
       - name: refresh_token
         description: refresh token
         required: true
-        schema:
+        json_schema:
           type: string
     returns:
-      schema:
+      json_schema:
         type: string
       example: "Success"
   - name: get_all_users
@@ -54,16 +54,16 @@ actions:
     parameters:
       - name: timeout
         description: Timeout on the request (in seconds)
-        schema:
+        json_schema:
           type: number
         required: true
       - name: access_token
         description: Access Token
-        schema:
+        json_schema:
           type: string
         required: true
     returns:
-      schema:
+      json_schema:
         type: string
       example: "Success"
   - name: get_all_workflows
@@ -71,16 +71,16 @@ actions:
     parameters:
       - name: timeout
         description: Timeout on the request (in seconds)
-        schema:
+        json_schema:
           type: number
         required: true
       - name: access_token
         description: Access Token
-        schema:
+        json_schema:
           type: string
         required: true
     returns:
-      schema:
+      json_schema:
         type: string
       example: "Success"
   - name: execute_workflow
@@ -88,21 +88,21 @@ actions:
     parameters:
       - name: workflow_id
         description: ID of the workflow
-        schema:
+        json_schema:
           type: string
         required: true
       - name: timeout
         description: Timeout on the request (in seconds)
-        schema:
+        json_schema:
           type: number
         required: true
       - name: access_token
         description: Access Token
-        schema:
+        json_schema:
           type: string
         required: true
     returns:
-      schema:
+      json_schema:
         type: string
       example: "Success"
   # - name: get_workflow_status
@@ -110,21 +110,21 @@ actions:
   #   parameters:
   #     - name: execution_id
   #       description: ID of the workflow
-  #       schema:
+  #       json_schema:
   #         type: string
   #       required: true
   #     - name: timeout
   #       description: Timeout on the request (in seconds)
-  #       schema:
+  #       json_schema:
   #         type: number
   #       required: true
   #     - name: access_token
   #       description: Access Token
-  #       schema:
+  #       json_schema:
   #         type: string
   #       required: true
   #   returns:
-  #     schema:
+  #     json_schema:
   #       type: string
   #     example: "Success"
   - name: shutdown
@@ -132,15 +132,15 @@ actions:
     parameters:
       - name: refresh_token
         description: refresh Token
-        schema:
+        json_schema:
           type: string
         required: true
       - name: timeout
         description: Timeout on the request (in seconds)
-        schema:
+        json_schema:
           type: number
         required: true
     returns:
-      schema:
+      json_schema:
         type: string
       example: "Success"

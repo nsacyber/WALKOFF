@@ -15,46 +15,46 @@ actions:
     parameters:
       - name: url
         description: URL of TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: api_key
         description: API key to access TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: title
         description: Title of the case
-        schema:
+        json_schema:
           type: string
         required: true
       - name: description
         description: Description of the case
-        schema:
+        json_schema:
           type: string
       - name: tlp
         description: "New TLP (0: white; 1: green; 2: amber; 3: red)"
         placeholder: 2
-        schema:
+        json_schema:
           type: integer
           minimum: 0
           maximum: 3
       - name: severity
         description: "New Severity (1: low; 2: medium; 3: high)"
         placeholder: 1
-        schema:
+        json_schema:
           type: integer
           minimum: 0
           maximum: 3
       - name: tags
         description: Tags on the case
-        schema:
+        json_schema:
           type: array
           items:
             type: string
     returns:
       description: "Created Case ID"
-      schema:
+      json_schema:
         type: string
 
   - name: update_case
@@ -62,56 +62,56 @@ actions:
     parameters:
       - name: case_id
         description: case_id to update. Can be referenced from the action output of create_case
-        schema:
+        json_schema:
           type: string
         required: true
       - name: url
         description: URL of TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: api_key
         description: API key to access TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: title
         description: New title of the case
-        schema:
+        json_schema:
           type: string
       - name: description
         description: New description of the case
-        schema:
+        json_schema:
           type: string
       - name: tlp
         description: "New TLP (0: white; 1: green; 2: amber; 3: red)"
         placeholder: 2
-        schema:
+        json_schema:
           type: integer
           minimum: 0
           maximum: 3
       - name: severity
         description: "New Severity (1: low; 2: medium; 3: high)"
         placeholder: 1
-        schema:
+        json_schema:
           type: integer
           minimum: 0
           maximum: 3
       - name: tags
         description: New tags on the case
-        schema:
+        json_schema:
           type: array
           items:
             type: string
       - name: tags_mode
         description: Whether to append or replace the list of tags on the case
-        schema:
+        json_schema:
           type: string
           enum: ['append', 'replace']
         required: true
     returns:
       description: "Updated Case ID"
-      schema:
+      json_schema:
         type: string
 
   - name: close_case
@@ -119,51 +119,51 @@ actions:
     parameters:
       - name: case_id
         description: ID of case to close
-        schema:
+        json_schema:
           type: string
         required: true
       - name: url
         description: URL of TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: api_key
         description: API key to access TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: resolution_status
         description: Resolution status of the case to close.
-        schema:
+        json_schema:
           type: string
           enum: ['TruePositive', 'FalsePositive', 'Indeterminate']
         required: true
       - name: impact_status
         description: Impact status of the case to close. The impact status is only captured when resolution status is TruePositive
-        schema:
+        json_schema:
           type: string
           enum: ['NoImpact', 'WithImpact']
         required: true
       - name: summary
         description: Explanation of why the case was closed.
-        schema:
+        json_schema:
           type: string
         required: true
       - name: tags
         description: Tags on the case
-        schema:
+        json_schema:
           type: array
           items:
             type: string
       - name: tags_mode
         description: Whether to append or replace the list of tags on the case
-        schema:
+        json_schema:
           type: string
           enum: ['append', 'replace']
         required: true
     returns:
       description: "Closed Case ID"
-      schema:
+      json_schema:
         type: string
 
   - name: create_case_task
@@ -171,34 +171,34 @@ actions:
     parameters:
       - name: case_id
         description: case_id to add the task to. Can be referenced from the action output of create_case
-        schema:
+        json_schema:
           type: string
         required: true
       - name: url
         description: URL of TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: api_key
         description: API key to access TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: data
         description: List of titles and descriptions of the task
         parallelizable: true
-        schema:
+        json_schema:
           type: array
           items:
             type: object
-            schema:
+            json_schema:
               title:
                 type: string
               description:
                 type: string
     returns:
       description: "Created Case Task ID"
-      schema:
+      json_schema:
         type: string
 
   - name: create_case_observable
@@ -206,23 +206,23 @@ actions:
     parameters:
       - name: case_id
         description: case_id to add the observable to. Can be referenced from the action output of create_case
-        schema:
+        json_schema:
           type: string
         required: true
       - name: url
         description: URL of TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: api_key
         description: API key to access TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: data_type
         description: Type of observable
         placeholder: other
-        schema:
+        json_schema:
           type: string
           enum:
             - autonomous-system
@@ -242,38 +242,38 @@ actions:
             - user-agent
       - name: data
         description: content of the observable
-        schema:
+        json_schema:
           type: array
           items:
             type: string
       - name: description
         description: description of the observable
-        schema:
+        json_schema:
           type: string
       - name: tlp
         description: "New TLP (0: white; 1: green; 2: amber; 3: red)"
         placeholder: 0
-        schema:
+        json_schema:
           type: integer
           minimum: 0
           maximum: 3
       - name: is_ioc
         description: Is this observable an indicator of compromise?
-        schema:
+        json_schema:
           type: boolean
       - name: is_sighted
         description: Has this observable been sighted in the system?
-        schema:
+        json_schema:
           type: boolean
       - name: tags
         description: New tags on the observable
-        schema:
+        json_schema:
           type: array
           items:
             type: string
     returns:
       description: "Created Case Observable ID"
-      schema:
+      json_schema:
         type: string
 
   - name: update_case_task
@@ -281,39 +281,39 @@ actions:
     parameters:
       - name: url
         description: URL of TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: api_key
         description: API key to access TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: task_id
         description: task_id to update
-        schema:
+        json_schema:
           type: string
         required: true
       - name: title
         description: Title of the task
-        schema:
+        json_schema:
           type: string
       - name: description
         description: Description of the task
-        schema:
+        json_schema:
           type: string
       - name: status
         description: Status of the task
-        schema:
+        json_schema:
           type: string
           enum: ["Waiting", "InProgress", "Completed", "Cancel"]
       - name: flag
         description: whether to flag the task
-        schema:
+        json_schema:
           type: boolean
     returns:
       description: "Updated Case Task ID"
-      schema:
+      json_schema:
         type: string
 
   - name: update_case_observable
@@ -321,58 +321,58 @@ actions:
     parameters:
       - name: url
         description: URL of TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: api_key
         description: API key to access TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: case_id
         description: case_id the observable belongs to
-        schema:
+        json_schema:
           type: string
         required: true
       - name: obs_id
         description: obs_id to update
-        schema:
+        json_schema:
           type: string
         required: true
       - name: description
         description: description of the observable
-        schema:
+        json_schema:
           type: string
       - name: tlp
         description: "New TLP (0: white; 1: green; 2: amber; 3: red)"
         placeholder: 0
-        schema:
+        json_schema:
           type: integer
           minimum: 0
           maximum: 3
       - name: is_ioc
         description: Is this observable an indicator of compromise?
-        schema:
+        json_schema:
           type: boolean
       - name: is_sighted
         description: Has this observable been sighted in the system?
-        schema:
+        json_schema:
           type: boolean
       - name: tags
         description: New tags on the observable
-        schema:
+        json_schema:
           type: array
           items:
             type: string
       - name: tags_mode
         description: Whether to append or replace the list of tags on the case
-        schema:
+        json_schema:
           type: string
           enum: ['append', 'replace']
         required: true
     returns:
       description: "Updated Case Task ID"
-      schema:
+      json_schema:
         type: string
 
   - name: lock_hive_user
@@ -380,23 +380,23 @@ actions:
     parameters:
       - name: url
         description: URL of TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: api_key
         description: API key to access TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: users
-        schema:
+        json_schema:
           type: array
           items:
             type: string
         description: User IDs
         required: true
     returns:
-      schema:
+      json_schema:
         type: object
 
   - name: unlock_hive_user
@@ -404,16 +404,16 @@ actions:
     parameters:
       - name: url
         description: URL of TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: api_key
         description: API key to access TheHive
-        schema:
+        json_schema:
           type: string
         required: true
       - name: users
-        schema:
+        json_schema:
           type: array
           items:
             type: string
@@ -421,5 +421,5 @@ actions:
         parallelizable: true
         required: true
     returns:
-      schema:
+      json_schema:
         type: object

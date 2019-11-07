@@ -14,8 +14,8 @@ class SSH(AppBase):
     __version__ = "1.0.0"
     app_name = "ssh"
 
-    def __init__(self, redis, logger, console_logger=None):
-        super().__init__(redis, logger, console_logger)
+    def __init__(self, redis, logger):
+        super().__init__(redis, logger)
 
     async def exec_local_command(self, command):
         proc = await asyncio.create_subprocess_shell(command, stdout=asyncio.subprocess.PIPE,

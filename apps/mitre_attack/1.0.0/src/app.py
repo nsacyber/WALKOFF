@@ -27,8 +27,8 @@ class MitreAttack(AppBase):
     __version__ = "1.0.0"
     app_name = "mitre_attack"
 
-    def __init__(self, redis, logger, console_logger=None):
-        super().__init__(redis, logger, console_logger)
+    def __init__(self, redis, logger):
+        super().__init__(redis, logger)
 
     async def set_timestamp(self):
         timestamp = '{:%Y-%m-%d_%H-%M-%S}'.format(datetime.datetime.now())

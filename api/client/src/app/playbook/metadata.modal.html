@@ -1,0 +1,114 @@
+<div class="modal-header">
+    <h4 class="modal-title">{{ existing ? 'Edit Workflow' : 'Create Workflow' }}</h4>
+</div>
+<div class="modal-body">
+    <form #myForm="ngForm" novalidate (ngSubmit)="submit()">
+        <button type="submit" class="d-none"></button>
+        <div class="form-group" *ngIf="existing && workflow.id">
+            <h6>Workflow ID</h6>
+            <input type="text" readonly class="form-control-plaintext px-2" [value]="workflow.id">
+        </div>
+        <div class="form-group">
+            <h6>Enter a Workflow Name</h6>
+            <input name="name" type="text" [(ngModel)]="workflow.name" class="form-control" placeholder="Workflow Name"
+                ngbAutoFocus #workflowName="ngModel" [class.is-invalid]="workflowName.touched && workflowName.invalid">
+            <div class="invalid-feedback">
+                <span *ngIf="workflowName.hasError('unique')">
+                    Workflow with name already exists.
+                </span>
+                <span *ngIf="workflowName.hasError('required')">
+                    Please enter a unique workflow name.
+                </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <h6>Enter a Description (Optional)</h6>
+            <textarea name="description" rows="3" [(ngModel)]="workflow.description" class="form-control"
+                placeholder="Description (Optional)"></textarea>
+        </div>
+        <div class="form-group">
+            <h6>Add Tags (Optional)</h6>
+            <select2 [data]="currentTags" [value]="workflow.tags" [options]="tagSelectOptions"
+                (valueChanged)="tagsChanged($event)"></select2>
+        </div>
+        <div class="card">
+            <div class="card-header h6">
+                Permissions
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <h6>Who can access workflow?</h6>
+                    <select class="form-control" name="access_level" [(ngModel)]="workflow.permissions.access_level">
+                        <option [ngValue]="1" label="Everyone">Everyone</option>
+                        <option [ngValue]="2" label="Role Based">Role Based</option>
+                        <option [ngValue]="0" label="Only Me">Only Me</option>
+                    </select>
+                    <small class="form-text text-muted pl-1">
+                        <span *ngIf="workflow.permissions.access_level == 0">
+                            Only you have access to this workflow.
+                        </span>
+                        <span *ngIf="workflow.permissions.access_level == 1">
+                            By default everyone whose role has valid workflow permissions will have access to this
+                            workflow.
+                        </span>
+                        <span *ngIf="workflow.permissions.access_level == 2">
+                            Only users of the roles specified below will have access to this workflow.
+                        </span>
+                    </small>
+                </div>
+                <div *ngIf="workflow.permissions.access_level == 2" class="form-group">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">Role</th>
+                                <th scope="col">Permission</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let p of workflow.permissions.permissions">
+                                <td>{{ getRoleName(p)  }}</td>
+                                <td>{{ getPermissionDescription(p) }}</td>
+                                <td><button type="button" (click)="deletePermission(p)"
+                                        class="btn btn-sm btn-danger mx-1" ngbTooltip="Remove"><i
+                                            class="fa fa-times"></i></button></td>
+                            </tr>
+                            <tr *ngIf="workflow.permissions.permissions.length == 0">
+                                <td class="text-center text-muted" colspan="3">No Role Based Permissions
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="form-group row">
+                        <div class="col">
+                            <select class="form-control" name="new-role" [(ngModel)]="newPermission.role">
+                                <option [ngValue]="''">Role...</option>
+                                <option *ngFor="let r of systemRoles" [ngValue]="r.id" [label]="r.name">
+                                    {{r.name}}</option>
+                            </select>
+                        </div>
+                        <div class="col pl-0 mr-3">
+                            <select class="form-control" name="new-permission" [(ngModel)]="newPermission.permissions">
+                                <option [ngValue]="''">Permission...</option>
+                                <option *ngFor="let p of permissionOptions" [ngValue]="p.crud" [label]="p.description">
+                                    {{ p.description }}</option>
+                            </select>
+                        </div>
+                        <div class="col-1">
+                            <button type="button" ngbTooltip="Add New" class="btn btn-primary pull-right"
+                                (click)="addPermission()">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="submit()">{{ existing ? 'Save' : 'Continue' }}</button>
+</div>

@@ -1,0 +1,6 @@
+{
+    "username": "test",
+    "password": "123",
+    "roles": ["00000000-0000-8766-5f6f-705f726f6c65"],
+    "active": true
+}

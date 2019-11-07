@@ -1,0 +1,25 @@
+APscheduler >= 3.0.0
+pyyaml >= 3.0
+passlib >= 1.7.0
+semver
+jsonschema == 2.6.0
+redis
+aioredis
+requests
+jsonpatch
+asteval
+cryptography
+tenacity
+uvicorn
+fastapi
+email-validator
+motor
+aiofiles
+python-multipart
+pyjwt
+python-socketio
+websocket-client
+minio
+aiodocker == 0.14.0
+docker
+

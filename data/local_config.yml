@@ -7,13 +7,18 @@
 API_GATEWAY_URI: "http://localhost:8081"
 REDIS_URI: "redis://localhost:6379"
 MINIO: "localhost:9001"
+MONGO_HOST: "localhost"
+SOCKETIO_URI: "http://localhost:3000"
+
 
 # Key locations
-ENCRYPTION_KEY_PATH: "/run/secrets/walkoff_encryption_key"
-INTERNAL_KEY_PATH: "/run/secrets/walkoff_internal_key"
-POSTGRES_KEY_PATH: "/run/secrets/walkoff_postgres_key"
-MINIO_ACCESS_KEY_PATH: "/run/secrets/walkoff_minio_access_key"
-MINIO_SECRET_KEY_PATH: "/run/secrets/walkoff_minio_secret_key"
+REDIS_KEY_PATH: "data/local_key"
+ENCRYPTION_KEY_PATH: "data/local_global_key"
+INTERNAL_KEY_PATH: "data/local_key"
+POSTGRES_KEY_PATH: "data/local_key"
+MINIO_ACCESS_KEY_PATH: "data/local_key"
+MINIO_SECRET_KEY_PATH: "data/local_key"
+MONGO_KEY_PATH: "data/local_key"
 
 # Worker options
 MAX_WORKER_REPLICAS: "10"

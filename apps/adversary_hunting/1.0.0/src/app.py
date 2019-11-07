@@ -27,8 +27,8 @@ class AdversaryHunting(AppBase):
     __version__ = "1.0.0"
     app_name = "adversary_hunting"
 
-    def __init__(self, redis, logger, console_logger=None):
-        super().__init__(redis, logger, console_logger)
+    def __init__(self, redis, logger):
+        super().__init__(redis, logger)
 
     async def set_timestamp(self):
         timestamp = '{:%Y-%m-%d_%H-%M-%S}'.format(datetime.datetime.now())
@@ -284,7 +284,7 @@ class AdversaryHunting(AppBase):
         return results
 
     async def get_memory_kansa(self, hosts, username, password, transport, server_cert_validation,
-                           message_encryption):
+                               message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -316,7 +316,7 @@ class AdversaryHunting(AppBase):
         return results
 
     async def get_dns_cache_kansa(self, hosts, username, password, transport, server_cert_validation,
-                           message_encryption):
+                                  message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -348,7 +348,7 @@ class AdversaryHunting(AppBase):
         return results
 
     async def get_netstat_kansa(self, hosts, username, password, transport, server_cert_validation,
-                           message_encryption):
+                                message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -378,9 +378,9 @@ class AdversaryHunting(AppBase):
                 results[host] = {"stdout": "", "stderr": f"{e}"}
 
         return results
-      
+
     async def get_arp_kansa(self, hosts, username, password, transport, server_cert_validation,
-                           message_encryption):
+                            message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -412,7 +412,7 @@ class AdversaryHunting(AppBase):
         return results
 
     async def get_proc_dump_kansa(self, hosts, username, password, transport, server_cert_validation,
-                           message_encryption):
+                                  message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -442,9 +442,9 @@ class AdversaryHunting(AppBase):
                 results[host] = {"stdout": "", "stderr": f"{e}"}
 
         return results
-      
+
     async def get_procs_n_modules_kansa(self, hosts, username, password, transport, server_cert_validation,
-                           message_encryption):
+                                        message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on
@@ -474,9 +474,9 @@ class AdversaryHunting(AppBase):
                 results[host] = {"stdout": "", "stderr": f"{e}"}
 
         return results
-      
+
     async def get_procs_wmi_kansa(self, hosts, username, password, transport, server_cert_validation,
-                           message_encryption):
+                                  message_encryption):
         """
         Execute a list of remote commands on a list of hosts.
         :param hosts: List of host ips to run command on

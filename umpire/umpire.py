@@ -13,7 +13,7 @@ from aiodocker.exceptions import DockerError
 
 from common.config import config, static
 from common.helpers import send_status_update, UUID_GLOB
-from common.redis_helpers import connect_to_redis_pool, xlen, xdel
+from common.redis_helpers import connect_to_aioredis_pool, xlen, xdel
 from common.message_types import WorkflowStatusMessage
 from common.workflow_types import workflow_loads
 from common.docker_helpers import (ServiceKwargs, DockerBuildError, docker_context, stream_docker_log, get_containers,
@@ -68,7 +68,7 @@ class Umpire:
 
     @staticmethod
     async def run(autoscale_worker, autoscale_app, autoheal_worker, autoheal_apps):
-        async with connect_to_redis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session, \
+        async with connect_to_aioredis_pool(config.REDIS_URI) as redis, aiohttp.ClientSession() as session, \
                 connect_to_aiodocker() as docker_client:
             ump = await Umpire.init(docker_client=docker_client, redis=redis, session=session,
                                     autoscale_worker=autoscale_worker, autoscale_app=autoscale_app,
@@ -79,8 +79,9 @@ class Umpire:
             for signame in {'SIGINT', 'SIGTERM'}:
                 loop.add_signal_handler(getattr(signal, signame), lambda: asyncio.ensure_future(ump.shutdown()))
 
-            logger.info("Bringing up Umpire API...")
-            os.system("uvicorn umpire_api:app --host 0.0.0.0 &")
+            # logger.info("Bringing up Umpire API...")
+            # Use --reload when you want to run locally
+            # os.system("uvicorn umpire.umpire_api:app --host 0.0.0.0 --port 8000 --lifespan on &")
 
             logger.info("Umpire is initialized!")
             await asyncio.gather(asyncio.create_task(ump.workflow_control_listener()),
@@ -301,7 +302,7 @@ class Umpire:
 
             if executing_workflows[0] < 1:
                 status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
-                await send_status_update(self.session, execution_id, status)
+                await send_status_update(self.session, execution_id, workflow.id_, status)
             else:
                 # Kill worker
                 try:
@@ -324,7 +325,7 @@ class Umpire:
                     await self.redis.delete(stream)
 
                     status = WorkflowStatusMessage.execution_aborted(execution_id, workflow.id_, workflow.name)
-                    await send_status_update(self.session, execution_id, status)
+                    await send_status_update(self.session, execution_id, workflow.id_, status)
 
                     if executing_apps is None:
                         break

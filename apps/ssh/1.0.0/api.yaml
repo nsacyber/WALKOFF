@@ -15,12 +15,12 @@ actions:
     parameters:
       - name: hosts
         parallelizable: true
-        schema:
+        json_schema:
           type: array
         description: hosts or hostnames of the remote server
         required: true
       - name: port
-        schema:
+        json_schema:
           type: integer
           minimum: 1
           maximum: 65535
@@ -28,135 +28,135 @@ actions:
         required: true
       - name: args
         required: true
-        schema:
+        json_schema:
           type: array
         description: json array of arguments
       - name: username
-        schema:
+        json_schema:
           type: string
         description: username to login with
         required: true
       - name: password
-        schema:
+        json_schema:
           type: string
         description: password to login with
         required: true
     returns:
-      schema:
+      json_schema:
         type: string
   - name: exec_local_command
     description: Run a local bash command on the container
     parameters:
       - name: command
         required: true
-        schema:
+        json_schema:
           type: string
         description: ssh command to run on local WALKOFF app container
     returns:
-      schema:
+      json_schema:
         type: string
   - name: sftp_copy
     description: Copy remote directory or files to remote host using sftp
     parameters:
       - name: src_path
         required: true
-        schema:
+        json_schema:
           type: string
         description: source path of the file(s) or directory to copy from. You may specify a specific pattern of files or directories to copy using glob pattern match.
       - name: dest_path
         required: true
-        schema:
+        json_schema:
           type: string
         description: remote path of the file(s) or directory destination
       - name: src_host
-        schema:
+        json_schema:
           type: string
         description: host or hostname of the remote server to copy from
         required: true
       - name: src_port
-        schema:
+        json_schema:
           type: integer
           minimum: 1
           maximum: 65535
         description: port number for the src_host
         required: true
       - name: src_username
-        schema:
+        json_schema:
           type: string
         description: username to login with for the src_host
         required: true
       - name: src_password
-        schema:
+        json_schema:
           type: string
         description: password to login with for the src_host
         required: true
       - name: dest_host
-        schema:
+        json_schema:
           type: string
         description: host or hostname of the remote server you would like to copy to
         required: true
       - name: dest_port
-        schema:
+        json_schema:
           type: integer
           minimum: 1
           maximum: 65535
         description: port number for the dst_host
         required: true
       - name: dest_username
-        schema:
+        json_schema:
           type: string
         description: username to login with
         required: true
       - name: dest_password
-        schema:
+        json_schema:
           type: string
         description: password to login with
         required: true
     returns:
-      schema:
+      json_schema:
         type: string
   - name: sftp_copy_from_json
     description: Copy remote file to remote host using sftp
     parameters:
       - name: input
         required: true
-        schema:
+        json_schema:
           type: object
         description: source path of the file to copy
     returns:
-      schema:
+      json_schema:
         type: string
   - name: run_shell_script_file
     description: runs the specified shell script on the remote server(s)
     parameters:
       - name: local_file_name
         required: true
-        schema:
+        json_schema:
           type: string
         description: local path of the shell script to run
       - name: hosts
-        schema:
+        json_schema:
           type: array
         description: hosts of the remote server
         required: true
       - name: port
-        schema:
+        json_schema:
           type: integer
           minimum: 1
           maximum: 65535
         description: port number
         required: true
       - name: username
-        schema:
+        json_schema:
           type: string
         description: username to login with
         required: true
       - name: password
-        schema:
+        json_schema:
           type: string
         description: password to login with
         required: true
     returns:
-      schema:
+      json_schema:
         type: string
 

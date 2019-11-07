@@ -13,7 +13,7 @@ actions:
   - name: set_timestamp
     description: Outputs the timestamp at the time of this action's execution
     returns:
-      schema:
+      json_schema:
         type: string
       example: "2019-06-19_10-46-11"
   - name: cidr_to_array
@@ -22,10 +22,10 @@ actions:
       - name: ip_array
         description: list of hosts to execute on
         required: true
-        schema:
+        json_schema:
           type: array
     returns:
-      schema:
+      json_schema:
         type: array
 
 
@@ -38,38 +38,38 @@ actions:
 #      - name: platform
 #        description: Whether to execute using Windows PowerShell or PowerShell Core
 #        required: true
-#        schema:
+#        json_schema:
 #          type: string
 #          enum: ["PowerShell.exe (Windows)", "PowerShell Core (Cross-Platform)"]
 #      - name: mode
 #        description: Whether to execute the following commands as cmdlets or script files
 #        required: true
-#        schema:
+#        json_schema:
 #          type: string
 #          enum: ["-Command", "-File"]
 #      - name: commands
 #        description: List of commands or scripts to execute
 #        required: true
-#        schema:
+#        json_schema:
 #          type: array
 #      - name: output_filename
 #        description: local path to output results into
 #        required: true
-#        schema:
+#        json_schema:
 #          type: string
 #    returns:
-#      schema:
+#      json_schema:
 #        type: string
 
 
 #      - name: host
 #        description: IP address or hostname of remote host
 #        required: true
-#        schema:
+#        json_schema:
 #          type: string
 #      - name: port
 #        description: WinRM port of remote host
-#        schema:
+#        json_schema:
 #          type: integer
 #          minimum: 1
 #          maximum: 65355
@@ -116,17 +116,17 @@ actions:
 #    returns:
 #      Success:
 #        description: List of result outputs
-#        schema:
+#        json_schema:
 #          type: string
 #      ScriptError:
 #        description: The script encountered an error while running.
 #        failure: true
-#        schema:
+#        json_schema:
 #          type: string
 #      FileError:
 #        description: The specified script could not be read, or output file could not be written.
 #        failure: true
-#        schema:
+#        json_schema:
 #          type: string
 
 
@@ -136,7 +136,7 @@ actions:
 #    description: Execute the local script on the list of remote hosts.
 #    parameters:
 #    - name: hosts
-#      schema:
+#      json_schema:
 #        type: array
 #        items:
 #          type: string
@@ -157,17 +157,17 @@ actions:
 #    returns:
 #      Success:
 #        description: List of result outputs
-#        schema:
+#        json_schema:
 #          type: string
 #      ScriptError:
 #        description: The script encountered an error while running.
 #        failure: true
-#        schema:
+#        json_schema:
 #          type: string
 #      FileError:
 #        description: The specified script could not be read, or output file could not be written.
 #        failure: true
-#        schema:
+#        json_schema:
 #          type: string
 #  Find Missing KBs:
 #    run: app.PowerShell.compare_kbs
@@ -187,5 +187,5 @@ actions:
 #    returns:
 #      Success:
 #        description: A dict with the key as the IP address, and the value as a list of missing KBs
-#        schema:
+#        json_schema:
 #          type: object

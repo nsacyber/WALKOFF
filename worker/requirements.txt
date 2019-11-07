@@ -5,7 +5,9 @@ aiohttp
 docker
 docker-compose
 pyyaml
-sqlalchemy
 asteval
 six
 tenacity
+python-socketio
+requests
+websocket-client

@@ -1,0 +1,29 @@
+{
+    "name": "example_global",
+    "permissions": {
+        "access_level": 2,
+        "role_permissions": [
+            {
+                "role": "00000069-6e74-6572-6e61-6c5f726f6c65",
+                "permissions": [
+                    "create",
+                    "read",
+                    "update",
+                    "delete"
+                ]
+            },
+            {
+                "role": "00000000-0073-6164-6d69-6e5f726f6c65",
+                "permissions": [
+                    "create",
+                    "read",
+                    "update",
+                    "delete"
+                ]
+            }
+        ]
+    },
+    "value": "value_example",
+    "id_": "3b1e48e4-cfff-49db-b79d-aec6e2c93bec",
+    "description": "This global is only accessible by super_admin, internal user, and creator"
+}

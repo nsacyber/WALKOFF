@@ -32,11 +32,11 @@ class HelloWorld(AppBase):
     """
     __version__ = "1.0.0"
 
-    def __init__(self, redis, logger, console_logger=None):
+    def __init__(self, redis, logger):
         """
         Each app should make a call to super().__init__ to set up Redis and logging.
         """
-        super().__init__(redis, logger, console_logger)
+        super().__init__(redis, logger)
     
     # Define all desired functions as asyncio couroutines using the "async" keyword
     async def hello_world(self):
@@ -47,9 +47,6 @@ class HelloWorld(AppBase):
 
         # This logs to the docker or local log
         self.logger.info(message)
-
-        # This sends a log message to the frontend
-        await self.console_logger.info(message)
         
         # Returns the message as an action result to the frontend
         return message

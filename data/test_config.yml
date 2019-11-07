@@ -1,0 +1,38 @@
+# This config is used for the testing container on Windows or Mac. This will not work on Linux as it does not expose the "host.docker.internal" hostname.
+
+API_GATEWAY_URI: "http://localhost:8081"
+REDIS_URI: "redis://host.docker.internal:6379"
+MINIO: "host.docker.internal:9001"
+MONGO_HOST: "host.docker.internal"
+SOCKETIO_URI: "http://host.docker.internal:3000"
+
+# Key locations
+REDIS_KEY_PATH: "/app/data/local_key"
+ENCRYPTION_KEY_PATH: "/app/data/local_global_key"
+INTERNAL_KEY_PATH: "/app/data/local_key"
+POSTGRES_KEY_PATH: "/app/data/local_key"
+MINIO_ACCESS_KEY_PATH: "/app/data/local_key"
+MINIO_SECRET_KEY_PATH: "/app/data/local_key"
+MONGO_KEY_PATH: "/app/data/local_key"
+
+# Worker options
+MAX_WORKER_REPLICAS: "10"
+WORKER_TIMEOUT: "30"
+WALKOFF_USERNAME: "internal_user"
+
+# Umpire options
+APPS_PATH: "./apps"
+APP_REFRESH: "60"
+SWARM_NETWORK: "walkoff_default"
+DOCKER_REGISTRY: "host.docker.internal:5000"
+UMPIRE_HEARTBEAT: "2"
+
+# API Gateway options
+DB_TYPE: "postgresql"
+DB_HOST: "localhost"
+SERVER_DB_NAME: "walkoff"
+EXECUTION_DB_NAME: "execution"
+DB_USERNAME: "walkoff"
+
+# App options
+MAX_APP_REPLICAS: "2"

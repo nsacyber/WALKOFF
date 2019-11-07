@@ -15,8 +15,8 @@ class Hive(AppBase):
     __version__ = "1.0.0"
     app_name = "hive"
 
-    def __init__(self, redis, logger, console_logger=None):
-        super().__init__(redis, logger, console_logger)
+    def __init__(self, redis, logger):
+        super().__init__(redis, logger)
 
     async def create_case(self, url, api_key, title, description="", tlp=2, severity=1, tags=None):
         tags = tags if tags else []
@@ -110,7 +110,7 @@ class Hive(AppBase):
                 else:
                     raise IOError(r.text)
             except Exception as e:
-                self.console_logger.info(f"Failed to create task with input {item} because: {e}")
+                self.logger.info(f"Failed to create task with input {item} because: {e}")
 
         return results
 

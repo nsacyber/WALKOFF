@@ -1,24 +1,39 @@
-echo "Preparing Walkoff Bootloader..."
-docker build -t walkoff_bootloader -f bootloader/Dockerfile .
+$BUILDARG="^-[a-zA-Z]*b|--build"
+if ($args[0] -eq "up") {
+    foreach ($arg in $args) {
+        if ($arg -match $BUILDARG) {
+            Write-Host "Preparing WALKOFF Bootloader..."
+            docker build -t walkoff_bootloader -f bootloader/Dockerfile .
+            break
+        }
+    }
+}
 
-echo "Creating walkoff_default network..."
-docker network create --attachable=True --driver=overlay walkoff_default
+Write-Host "Starting WALKOFF Bootloader..."
 
-echo "Running bootloader..."
-# Ip Address from Docker NAT
-$ip = $(docker network inspect bridge --format "{{json .IPAM.Config}}" | ConvertFrom-JSON | %{$_.Gateway})
+$r = docker network inspect walkoff_network 2>$null
+if ($r -eq "[]") {
+    Write-Host -NoNewLine "Creating walkoff_network network: "
+    docker network create --attachable=True --driver=overlay walkoff_network
+}
 
-# Working Directory + data\config
-$dc = "/" + $(Get-Location | Select-Object -ExpandProperty Path | %{ $_ -replace "\\", "/" -replace ":", ""} | %{$_.ToLower().Trim("/")} ) + "/data/config.yml"
+$unixified_wd = "/" + $(Get-Location | Select-Object -ExpandProperty Path | %{ $_ -replace "\\", "/" -replace ":", ""} | %{$_.ToLower().Trim("/")} )
 
-# Working Directory
-$wd = "/" + $(Get-Location | Select-Object -ExpandProperty Path | %{ $_ -replace "\\", "/" -replace ":", ""} | %{$_.ToLower().Trim("/")} )
-
-docker run --rm -it --network walkoff_default --name walkoff_bootloader `
+docker run --rm -it --network walkoff_network --name walkoff_bootloader `
     --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock `
-    --mount type=bind,source=$wd,target=$wd `
-    --mount type=bind,source=$dc,target=/common_env.yml `
+    --mount type=bind,source=$unixified_wd,target=$unixified_wd `
+    --mount type=bind,source=$unixified_wd/data/config.yml,target=/common_env.yml `
     -e DOCKER_HOST=unix:///var/run/docker.sock `
-    -e DOCKER_HOST_IP=$ip `
-    --workdir=$wd `
+    -w $unixified_wd `
     walkoff_bootloader $args
+
+$CLEANARG="^-[a-zA-Z]*c|--clean"
+if ($args[0] -eq "down") {
+    foreach ($arg in $args) {
+        if ($arg -match $CLEANARG) {
+            Write-Host -NoNewLine "Removing walkoff_network network: "
+            docker network rm walkoff_network
+            break
+        }
+    }
+}

@@ -1,0 +1,19 @@
+# For running tests with Docker-Compose. Does not appear to be as fast as running it in a standalone container.
+version: "3.5"
+services:
+  walkoff_tester:
+    image: walkoff_tester
+    networks:
+      - walkoff_network
+    environment:
+      - DOCKER_HOST=/var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  walkoff_network:
+    external: true
+
+configs:
+  common_env.yml:
+    file: ./data/config.yml
