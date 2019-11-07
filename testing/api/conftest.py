@@ -6,6 +6,7 @@ from starlette.testclient import TestClient
 from distutils.dir_util import copy_tree
 
 import api.server.app as app
+from common.minio_helper import push_all_apps_to_minio, remove_all_apps_from_minio
 
 path = pathlib.Path("./apps")
 temp_path = pathlib.Path("./temp_apps")
@@ -31,7 +32,9 @@ def api():
     app.mongo.erase_db()
     app.mongo.init_db()
     write_app_to_temp()
+    push_all_apps_to_minio()
     yield TestClient(app.app)
+    remove_all_apps_from_minio()
     write_temp_to_apps()
     app.mongo.erase_db()
     app.mongo.init_db()

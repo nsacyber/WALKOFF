@@ -1,4 +1,3 @@
-starlette
 pytest
 semver
 pytest

@@ -3,7 +3,5 @@
 venv
 api/client/node_modules
 socketio/node_modules
-docs
-testing
 __pycache__
 **/__pycache__

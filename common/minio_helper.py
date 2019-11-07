@@ -127,11 +127,11 @@ class MinioApi:
         abs_path = f"apps/{app_name}/{version}/{path}"
         try:
             data = minio_client.get_object('apps-bucket', abs_path)
-            return data.read()
-        except NoSuchKey as n:
-            return "No Such Key"
+            return True, data.read()
+        except NoSuchKey:
+            return False, None
         except ResponseError as e:
-            return "Response Error"
+            return False, e
 
     @staticmethod
     async def update_file(app_name, version, path, file_data, file_size):
@@ -192,3 +192,38 @@ class MinioApi:
             return False
         else:
             return True
+
+
+def push_all_apps_to_minio():
+    minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                         secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
+    bucket_exists = False
+    try:
+        buckets = minio_client.list_buckets()
+        for bucket in buckets:
+            if bucket.name == "apps-bucket":
+                bucket_exists = True
+    except Exception as e:
+        logger.info("Bucket doesn't exist.")
+
+    if not bucket_exists:
+        minio_client.make_bucket("apps-bucket", location="us-east-1")
+
+    files_to_upload = [x for x in Path('./apps').glob('**/*') if x.is_file()]
+    for file in files_to_upload:
+        path_to_file = str(file).replace("\\", "/")
+        with open(path_to_file, "rb") as file_data:
+            file_stat = os.stat(path_to_file)
+            minio_client.put_object("apps-bucket", path_to_file, file_data, file_stat.st_size)
+
+    logger.info("Apps Pushed to Minio")
+
+
+def remove_all_apps_from_minio():
+    minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
+                         secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
+
+    try:
+        minio_client.remove_bucket("apps-bucket")
+    except Exception as e:
+        logger.info("Bucket doesn't exist.")

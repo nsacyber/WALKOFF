@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter
 
 from api.server.db.umpire import UploadFile
-from api.server.utils.problems import InvalidInputException
+from api.server.utils.problems import InvalidInputException, DoesNotExistException
 from common.config import config
 from common.minio_helper import MinioApi
 from common.redis_helpers import connect_to_aioredis_pool
@@ -18,14 +18,21 @@ router = APIRouter()
 @router.get("/files/{app_name}/{app_version}",
             response_model=List[str], response_description="List of file names in specified app")
 async def list_all_files(app_name: str, app_version: str):
-
     return await MinioApi.list_files(app_name, app_version)
 
 
 @router.get("/file/{app_name}/{app_version}",
             response_model=str, response_description="Contents of the specified file.")
 async def get_file_contents(app_name: str, app_version: str, file_path: str):
-    return await MinioApi.get_file(app_name, app_version, file_path)
+    full_path = f"{app_name}/{app_version}/{file_path}"
+    success, contents = await MinioApi.get_file(app_name, app_version, file_path)
+    if success:
+        return contents
+    else:
+        if contents is None:
+            raise DoesNotExistException("read", "file", full_path)
+        else:
+            raise InvalidInputException("read", "file", full_path, errors={"error": contents})
 
 
 @router.post("/file_upload")

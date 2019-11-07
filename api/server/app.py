@@ -19,7 +19,8 @@ from api.server.scheduler import Scheduler
 from api.server.security import (get_raw_jwt, verify_token_in_decoded, verify_token_not_blacklisted,
                                  user_has_correct_roles, get_roles_by_resource_permission)
 from api.server.utils.problems import ProblemException
-from api.server.utils.socketio import sio
+from api.server.utils.socketio import sio, init_sio
+from common.minio_helper import push_all_apps_to_minio
 from common.config import static, config
 
 logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
@@ -28,7 +29,6 @@ logger = logging.getLogger(__name__)
 _app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 _walkoff = FastAPI(openapi_prefix="/walkoff/api")
 _scheduler = Scheduler()
-p = Path('./apps').glob('**/*')
 
 _app.mount("/walkoff/api", _walkoff)
 _app.mount("/walkoff/client", StaticFiles(directory=static.CLIENT_PATH), name="static")
@@ -63,36 +63,12 @@ async def start_banner():
 
 @_app.on_event("startup")
 async def connect_to_socketio():
-    logger.info("Connecting to Socket.IO server.")
-    await sio.connect(config.SOCKETIO_URI, socketio_path=static.SOCKETIO_PATH, namespaces=[static.SIO_NS_NODE,
-                                                                                           static.SIO_NS_WORKFLOW,
-                                                                                           static.SIO_NS_BUILD])
+    await init_sio()
 
 
 @_app.on_event("startup")
 async def push_to_minio():
-    minio_client = Minio(config.MINIO, access_key=config.get_from_file(config.MINIO_ACCESS_KEY_PATH),
-                         secret_key=config.get_from_file(config.MINIO_SECRET_KEY_PATH), secure=False)
-    bucket_exists = False
-    try:
-        buckets = minio_client.list_buckets()
-        for bucket in buckets:
-            if bucket.name == "apps-bucket":
-                bucket_exists = True
-    except Exception as e:
-        logger.info("Bucket doesn't exist.")
-
-    if not bucket_exists:
-        minio_client.make_bucket("apps-bucket", location="us-east-1")
-
-    files_to_upload = [x for x in p if x.is_file()]
-    for file in files_to_upload:
-        path_to_file = str(file).replace("\\", "/")
-        with open(path_to_file, "rb") as file_data:
-            file_stat = os.stat(path_to_file)
-            minio_client.put_object("apps-bucket", path_to_file, file_data, file_stat.st_size)
-
-    logger.info("Apps Pushed to Minio")
+    push_all_apps_to_minio()
 
 
 @_app.on_event("startup")

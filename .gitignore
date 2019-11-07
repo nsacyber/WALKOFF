@@ -52,3 +52,4 @@ tmp-compose.yml
 .python-version
 .coverage
 temp_apps/
+rebuilt_apps/
