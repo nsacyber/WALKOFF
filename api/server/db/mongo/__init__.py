@@ -10,11 +10,13 @@ class MongoManager(object):
     def __init__(self):
         self.async_client = motor.motor_asyncio.AsyncIOMotorClient(username=config.DB_USERNAME,
                                                                    password=config.get_from_file(config.MONGO_KEY_PATH),
-                                                                   host=config.MONGO_HOST)
+                                                                   host=config.MONGO_HOST,
+                                                                   port=config.MONGO_PORT)
 
         self.reg_client = pymongo.MongoClient(username=config.DB_USERNAME,
                                               password=config.get_from_file(config.MONGO_KEY_PATH),
-                                              host=config.MONGO_HOST)
+                                              host=config.MONGO_HOST,
+                                              port=config.MONGO_PORT)
 
         self.init_db()
 
