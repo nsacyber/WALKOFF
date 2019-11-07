@@ -1,0 +1,63 @@
+<div id="main" class="reportsMain" [ngClass]="{ customReport: !report }" #reportsMain>
+	<!-- report iframe goes here -->
+	<div *ngIf="report">
+		<div class="pl-3">
+			<h1 class="mb-0">
+				{{ report.name }}
+				<div class="float-right d-print-none" data-html2canvas-ignore>
+					<a *hasPermission="['editReports']" class="btn btn-primary btn-sm mr-1" [routerLink]="['/report', reportId, 'edit']">Edit</a>
+					<button class="btn btn-primary btn-sm" (click)="savePDF()">Save as PDF</button>
+				</div>
+			</h1>
+		</div>
+		<div class="row">
+			<div class="col-12">
+				<div id="grid" class="gridster-container m-auto" [style.width]="getGridWidth()" [style.height]="getGridHeight()">
+					<gridster class="displayGrid" [options]="options">
+						<gridster-item [item]="item" *ngFor="let item of report.widgets" class="p-3">
+							<!-- your content here -->
+							<div class="widget">
+								<div *ngIf="item.name" class="widget-header">
+									<h3 class="text-center">{{ item.name }}</h3>
+								</div>
+
+								<div class="widget-content" *ngIf="item.metadata; let metadata">
+
+									<ng-container *ngIf="item.type == 'bar'">
+										<canvas baseChart [datasets]="metadata.chartData" [labels]="metadata.chartLabels" [options]="item.chartOptions" [legend]="item.showLegend"
+										[chartType]="'bar'">
+										</canvas>
+									</ng-container>
+
+									<ng-container *ngIf="item.type == 'line'">
+										<canvas baseChart [datasets]="metadata.chartData" [labels]="metadata.chartLabels" [options]="item.chartOptions" [legend]="item.showLegend"
+										[chartType]="'line'">
+										</canvas>
+									</ng-container>
+
+									<ng-container *ngIf="item.type == 'pie'">
+										<canvas baseChart [data]="metadata.chartData" [labels]="metadata.chartLabels" [chartType]="'pie'" [legend]="item.showLegend">
+										</canvas>
+									</ng-container>
+
+									<ng-container *ngIf="item.type == 'text'">
+										<p *ngIf="item.options.text">{{ item.options.text }}</p>
+									</ng-container>
+
+									<ng-container *ngIf="item.type == 'table'">
+										<ngx-datatable class="material widget-fullscreen" headerHeight="45" rowHeight="45" [columnMode]="'force'" [rows]="metadata.rows" [columns]="metadata.columns"></ngx-datatable>
+									</ng-container>
+
+									<ng-container *ngIf="item.type == 'kibana'">
+										<iframe class="widget-fullscreen" [src]="item.options.embedUrl | safeEmbed"></iframe>
+									</ng-container>
+
+								</div>
+							</div>	
+						</gridster-item>
+					</gridster>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

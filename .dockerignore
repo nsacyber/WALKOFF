@@ -1,12 +1,7 @@
 .git
 .idea
-api_gateway/client/node_modules
-docs
-data/registry/
-data/postgres/
-data/redis/
-data/portainer/
-data/minio/
-testing
+venv
+api/client/node_modules
+socketio/node_modules
 __pycache__
 **/__pycache__

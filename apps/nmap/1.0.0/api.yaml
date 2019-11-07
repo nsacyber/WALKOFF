@@ -1,7 +1,7 @@
 walkoff_version: 1.0.0
 app_version: 1.0.0
 name: nmap
-description: A simple app to interact with map
+description: A simple app to interact with nmap
 contact_info:
   name: Walkoff Team
   url: https://github.com/nsacyber/walkoff
@@ -17,15 +17,15 @@ actions:
         description: The target(s) to scan, comma separated values. Can be used with output of ip_addr_utils's cidr_to_array, in order to specify ip's more easily.
         parallelizable: true
         required: true
-        schema:
+        json_schema:
           type: array
       - name: options
         description: see nmap manpage -- some options require root
         required: true
-        schema:
+        json_schema:
           type: string
     returns:
-      schema:
+      json_schema:
         type: array
       description: xml string on nmap output
   - name: get_hosts_from_scan
@@ -33,16 +33,16 @@ actions:
     parameters:
       - name: targets
         required: true
-        schema:
+        json_schema:
           type: array
         description: The target(s) to scan, if you would like to process multiple targets, take a look at ip_addr_util's cidr_to_array action.
       - name: options
         description: see nmap manpage -- some options require root
         required: true
-        schema:
+        json_schema:
           type: string
     returns:
-      schema:
+      json_schema:
         type: string
       description: xml string on nmap output
   - name: parse_xml_for_linux
@@ -50,11 +50,11 @@ actions:
     parameters:
       - name: nmap_arr
         required: true
-        schema:
+        json_schema:
           type: array
         description: nmap output as an array of xml strings
     returns:
-      schema:
+      json_schema:
         type: array
       description: Returns an array of hosts that are Linux machines
   - name: parse_xml_for_windows
@@ -62,11 +62,11 @@ actions:
     parameters:
       - name: nmap_arr
         required: true
-        schema:
+        json_schema:
           type: array
         description: nmap output as an array of xml strings
     returns:
-      schema:
+      json_schema:
         type: array
       description: Returns an array of hosts that are Windows machines
   - name: parse_xml_for_linux_from_file
@@ -74,11 +74,11 @@ actions:
     parameters:
       - name: nmap_file
         required: true
-        schema:
+        json_schema:
           type: string
         description: Filename containing nmap output as an xml
     returns:
-      schema:
+      json_schema:
         type: array
       description: Returns an array of hosts that are Linux machines
   - name: parse_xml_for_windows_from_file
@@ -86,11 +86,11 @@ actions:
     parameters:
       - name: nmap_file
         required: true
-        schema:
+        json_schema:
           type: string
         description: Filename containing nmap output as an xml
     returns:
-      schema:
+      json_schema:
         type: array
       description: Returns an array of hosts that are Windows machines
   - name: xml_to_json
@@ -98,16 +98,16 @@ actions:
     parameters:
       - name: nmap_out
         required: true
-        schema:
+        json_schema:
           type: string
         description: nmap output either as xml filename or string
       - name: is_file
         required: true
-        schema:
+        json_schema:
           type: boolean
         description: True if nmap_out is being passed in as a file, or False if xml is being passed in as a string such as if it's passed in from a run_scan.
     returns:
-      schema:
+      json_schema:
         type: string
       description: json formatting for xml string from nmap output
   - name: ports_and_hosts_from_json
@@ -116,15 +116,15 @@ actions:
       - name: nmap_json
         required: true
         description: json string or filename
-        schema:
+        json_schema:
           type: string
       - name: is_file
         required: true
         description: True if nmap_out is being passed in as a file, or False if xml is being passed in as a string such as if it's passed in from a run_scan.
-        schema:
+        json_schema:
           type: boolean
         placeholder: false
     returns:
-      schema:
+      json_schema:
         type: string
       description: Returns a dictionary of ports and hosts

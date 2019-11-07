@@ -1,10 +1,12 @@
 import logging
+import json
+from uuid import UUID
 
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from common.config import config
-from common.message_types import(message_dumps, NodeStatusMessage, WorkflowStatusMessage,
-                                 StatusEnum, JSONPatch, JSONPatchOps)
+from common.config import config, static
+from common.message_types import (message_dumps, NodeStatusMessage, WorkflowStatusMessage,
+                                  StatusEnum, JSONPatch, JSONPatchOps)
 
 logger = logging.getLogger("WALKOFF")
 
@@ -32,13 +34,13 @@ def sfloat(value, default):
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10))
-async def get_walkoff_auth_header(session, token=None, timeout=5*60):
-    url = config.API_GATEWAY_URI.rstrip('/') + '/walkoff/api'
+async def get_walkoff_auth_header(session, token=None, timeout=5 * 60):
+    url = config.API_URI.rstrip('/') + '/walkoff/api'
     logger.debug("Attempting to refresh WALKOFF JWT")
     if token is None:
         key = config.get_from_file(config.INTERNAL_KEY_PATH)
-        async with session.post(url + "/auth", json={"username": config.WALKOFF_USERNAME,
-                                                     "password": key}, timeout=timeout) as resp:
+        async with session.post(url + "/auth/login", json={"username": config.WALKOFF_USERNAME,
+                                                           "password": key}, timeout=timeout) as resp:
             resp_json = await resp.json()
             token = resp_json["refresh_token"]
             logger.debug("Successfully logged into WALKOFF")
@@ -99,40 +101,58 @@ def get_patches(message):
     return patches
 
 
-async def send_status_update(session, execution_id, message, headers=None):
-    import aiohttp
+async def send_status_update(redis, execution_id, workflow_id, message):
     """ Forms and sends a JSONPatch message to the api_gateway to update the status of an action or workflow """
 
     if message is None:
         return None
-
-    patches = get_patches(message)
-
-    if len(patches) < 1:
-        raise ValueError(f"Attempting to send improper message type: {type(message)}")
-
-    params = {"event": message.status.value}
-    url = f"{config.API_GATEWAY_URI}/walkoff/api/internal/workflowstatus/{execution_id}"
-    headers, token = await get_walkoff_auth_header(session)
-    headers["content-type"] = "application/json"
-
-    try:
-        async with session.patch(url, data=message_dumps(patches), params=params, headers=headers, timeout=5) as resp:
-            if resp.content_type == "application/json":
-                results = await resp.json()
-                logger.debug(f"API-Gateway status update response: {results}")
-                return results
-    except aiohttp.ClientConnectionError as e:
-        logger.error(f"Could not send status message to {url}: {e!r}")
-    except Exception as e:
-        logger.error(f"Unknown error while sending message to {url}: {e!r}")
+    patches = {
+        "execution_id": execution_id,
+        "workflow_id": workflow_id,
+        "message": message_dumps(get_patches(message)),
+        "type": "workflow" if type(message) is WorkflowStatusMessage else "node"
+    }
+    # try:
+    logger.info(f"Sending result {patches}")
+    await redis.lpush(static.REDIS_RESULTS_QUEUE, json.dumps(patches))
+    # except ConnectionError as e:
+    #     logger.error(f"Could not send event to {config.SOCKETIO_URI}: {e!r}")
+    # except TimeoutError as e:
+    #     logger.error(f"Timed out sending event to {config.SOCKETIO_URI}: {e!r}")
 
 
 def fernet_encrypt(key, string):
     from cryptography.fernet import Fernet
-    return Fernet(key).encrypt(string.encode()).decode()
+
+    if type(string) is not str:
+        to_enc = json.dumps(string)
+    else:
+        to_enc = string
+
+    return Fernet(key).encrypt(to_enc.encode()).decode()
 
 
 def fernet_decrypt(key, string):
     from cryptography.fernet import Fernet
-    return Fernet(key).decrypt(string.encode()).decode()
+    s = Fernet(key).decrypt(string.encode()).decode()
+    try:
+        r = json.loads(s)
+    except (TypeError, json.decoder.JSONDecodeError):
+        r = s
+
+    return r
+
+
+def validate_uuid(id_, stringify=False):
+    try:
+        uuid_ = id_
+        if not isinstance(uuid_, UUID):
+            uuid_ = UUID(str(uuid_))
+        return uuid_ if not stringify else id_
+    except (ValueError, TypeError):
+        return None
+
+
+def preset_uuid(s: str):
+    """Generates a UUID from string (deterministic)"""
+    return UUID(bytes=s.encode().rjust(16, b'\0'))

@@ -99,16 +99,16 @@ class JSONPatch:
         self.from_ = from_
 
 
-class JSONPatchOps(enum.Enum):
-    TEST = "TEST"
-    REMOVE = "REMOVE"
-    ADD = "ADD"
-    REPLACE = "REPLACE"
-    MOVE = "MOVE"
-    COPY = "COPY"
+class JSONPatchOps(str, enum.Enum):
+    TEST = "test"
+    REMOVE = "remove"
+    ADD = "add"
+    REPLACE = "replace"
+    MOVE = "move"
+    COPY = "copy"
 
 
-class StatusEnum(enum.Enum):
+class StatusEnum(str, enum.Enum):
     """ Holds statuses used for Workflow and Action status messages """
     PAUSED = "PAUSED"  # not currently implemented but may be if we see a use case
     AWAITING_DATA = "AWAITING_DATA"  # possibly for triggers?

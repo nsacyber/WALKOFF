@@ -1,7 +1,11 @@
+import base64
+
 from flask import current_app, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_claims
 from sqlalchemy.exc import IntegrityError, StatementError
 from copy import deepcopy
+from uuid import uuid4
+
 
 from common.config import config
 from common.helpers import fernet_encrypt, fernet_decrypt
@@ -52,7 +56,7 @@ def read_all_globals():
     username = get_jwt_claims().get('username', None)
     curr_user_id = (db.session.query(User).filter(User.username == username).first()).id
 
-    key = config.get_from_file(config.ENCRYPTION_KEY_PATH)
+    key = config.get_from_file(config.ENCRYPTION_KEY_PATH) #, 'rb')
     ret = []
     query = current_app.running_context.execution_db.session.query(GlobalVariable).order_by(GlobalVariable.name).all()
 
@@ -84,7 +88,7 @@ def read_global(global_var):
         if request.args.get('to_decrypt') == "false":
             return jsonify(global_json), HTTPStatus.OK
         else:
-            key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+            key = config.get_from_file(config.ENCRYPTION_KEY_PATH)#, 'rb')
             return jsonify(fernet_decrypt(key, global_json['value'])), HTTPStatus.OK
     else:
         return None, HTTPStatus.FORBIDDEN
@@ -112,14 +116,14 @@ def delete_global(global_var):
 @permissions_accepted_for_resources(ResourcePermissions("global_variables", ["create"]))
 def create_global():
     data = request.get_json()
-    global_id = data['id_']
+    global_id = data.get('id_', str(uuid4()))
 
     username = get_jwt_claims().get('username', None)
     curr_user = db.session.query(User).filter(User.username == username).first()
     data.update({'creator': curr_user.id})
 
-    new_permissions = data['permissions']
-    access_level = data['access_level']
+    new_permissions = data.get('permissions', None)
+    access_level = data.get('access_level', 1)
 
     # creator only
     if access_level == 0:
@@ -139,7 +143,7 @@ def create_global():
     #     default_permissions("global_variables", global_id, data=data, creator=curr_user.id)
 
     try:
-        key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+        key = config.get_from_file(config.ENCRYPTION_KEY_PATH)#, 'rb')
         data['value'] = fernet_encrypt(key, data['value'])
         global_variable = global_variable_schema.load(data)
         current_app.running_context.execution_db.session.add(global_variable)
@@ -176,7 +180,7 @@ def update_global(global_var):
         # else:
         #     default_permissions("global_variables", global_id, data=data)
         try:
-            key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+            key = config.get_from_file(config.ENCRYPTION_KEY_PATH)#, 'rb')
             data['value'] = fernet_encrypt(key, data['value'])
             global_variable_schema.load(data, instance=global_var)
             current_app.running_context.execution_db.session.commit()

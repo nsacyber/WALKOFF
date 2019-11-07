@@ -1,0 +1,599 @@
+<div [hidden]="!loadedWorkflow" id="main" class="workflowEditorMain">
+
+    <div *ngIf="false" class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol id="playbookBreadcrumbs" class="breadcrumb">
+                <li class="breadcrumb-item"><a href="" (click)="returnToWorkflows()">Workflows</a></li>
+                <li class="breadcrumb-item">{{ loadedWorkflow?.name }}
+                    <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" class="my-auto"
+                        id="currentWorkflowText">(Incomplete)</label>
+                </li>
+            </ol>
+        </nav>
+        <div class="my-1 my-lg-none ml-auto pr-0">
+            <button class="btn btn-primary" [disabled]="!loadedWorkflow" (click)="save()">Save Workflow</button>
+            <!-- <input class="form-control" [formControl]="filterQuery" placeholder="Filter Workflows..." /> -->
+        </div>
+    </div>
+
+    <!-- Graph editor toolbar -->
+    <div id="playbookToolbar" class="btn-toolbar d-flex align-items-center" role=toolbar>
+        <!-- <div class="btn-group" role="group">
+            <button id="new-button" type="button" class="btn btn-default" data-toggle="tooltip" title="New Workflow"
+                (click)="newWorkflowModal()">
+                <i class="fa fa-file-o"></i>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="load-button" type="button" class="btn btn-default" data-toggle="modal" data-target="#workflowsModal"
+                title="Load Workflow">
+                <i class="fa fa-folder-open-o"></i>
+            </button>
+        </div> -->
+        <div class="btn-group" role="group">
+            <button id="save-button" type="button" class="btn btn-default" placement="bottom-left"
+                ngbTooltip="Save Workflow" [disabled]="!loadedWorkflow" (click)="save()">
+                <i class="fa fa-save"></i>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="undo-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Undo"
+                [disabled]="!loadedWorkflow || (ur && ur.isUndoStackEmpty())" (click)="ur.undo()">
+                <i class="fa fa-undo"></i>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="redo-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Redo"
+                [disabled]="!loadedWorkflow || (ur && ur.isRedoStackEmpty())" (click)="ur.redo()">
+                <i class="fa fa-repeat"></i>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="remove-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Delete"
+                [disabled]="!loadedWorkflow" (click)="removeSelectedNodes()">
+                <i class="fa fa-trash-o"></i>
+            </button>
+        </div>
+        <!-- <div class="btn-group" role="group">
+            <button id="cut-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Cut" [disabled]="!loadedWorkflow"
+                (click)="cut()">
+                <span class="fa fa-cut" style="transform: rotate(-90deg);"></span>
+            </button>
+        </div> -->
+        <div class="btn-group" role="group">
+            <button id="copy-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Copy"
+                [disabled]="!loadedWorkflow" (click)="copy()">
+                <i class="fa fa-copy"></i>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="paste-button" type="button" class="btn btn-default" placement="bottom-left" ngbTooltip="Paste"
+                [disabled]="!loadedWorkflow" (click)="paste()">
+                <i class="fa fa-paste"></i>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="execute-button" type="button" class="btn btn-default" placement="bottom-left"
+                ngbTooltip="Execute Workflow" [disabled]="!loadedWorkflow || !loadedWorkflow.is_valid"
+                (click)="executeWorkflow()">
+                <i class="fa fa-play-circle"></i>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="clear-execution-highlighting-button" type="button" class="btn btn-default"
+                placement="bottom-left" ngbTooltip="Clear Execution Results"
+                [disabled]="!loadedWorkflow || !loadedWorkflow.is_valid" (click)="clearExecutionResults()">
+                <i class="fa fa-eraser"></i>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="copy-button" type="button" class="btn btn-default" placement="bottom-left"
+                ngbTooltip="Edit Description" [disabled]="!loadedWorkflow" (click)="editDescription()">
+                <i class="fa fa-info-circle"></i>
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button id="variable-button" type="button" class="btn btn-default" placement="bottom-left"
+                ngbTooltip="Create Variable" [disabled]="!loadedWorkflow" (click)="workflowVariablesModal()">
+                <i class="fa fa-code"></i>
+            </button>
+        </div>
+        <nav class="ml-auto" aria-label="breadcrumb">
+            <ol id="playbookBreadcrumbs" class="workflow-editor breadcrumb py-0 px-3 d-flex align-items-center">
+                <li class="breadcrumb-item"><a href="" (click)="returnToWorkflows()">Workflows</a></li>
+                <li class="breadcrumb-item d-flex align-items-center">
+                    <span>{{ loadedWorkflow?.name }}</span>
+                    <label *ngIf="!loadedWorkflow?.id" class="" id="currentWorkflowText">
+                        [New]</label>
+                    <label *ngIf="loadedWorkflow?.id && !loadedWorkflow?.is_valid" class="" id="currentWorkflowText">
+                        [Incomplete]</label>
+                    <span *ngIf="loadedWorkflow?.id && workflowChanged">*</span>
+                    <a id="copy-button" class="ml-1" href="" placement="bottom-right" ngbTooltip="Edit Settings"
+                        (click)="editDescription()">
+                        <i class="fa fa-info-circle"></i>
+                    </a>
+                </li>
+            </ol>
+        </nav>
+    </div>
+    <!-- Graph editor -->
+    <div class="row graphEditorRow" [class.show-console]="showConsole">
+        <!-- Column for app/action display for drag and drop -->
+        <div class="col-md-2 graphEditorColumn graphEditorActionPanel">
+            <div class="panel-group" id="accordion" #accordion [hidden]="!loadedWorkflow">
+                <div class="card my-1">
+                    <input class="form-control" placeholder="Filter Actions..." [formControl]="actionFilterControl" />
+                </div>
+                <div *ngFor="let app of getAppsWithActions()" class="card card-default my-1">
+                    <div class="card-heading playbook-heading collapsed p-2" data-toggle="collapse"
+                        [attr.data-target]="'#actionsCollapse-' + app.id"
+                        [title]="app.info ? app.info.description : ''">
+                        <h5 class="card-title my-auto">{{app.name}}</h5>
+                        <small class="form-text text-muted">{{ app.description }}</small>
+                    </div>
+                    <div id="actionsCollapse-{{app.id}}" class="card-collapse collapse action-panel">
+                        <div class="card-body my-auto p-3">
+                            <div *ngFor="let actionApi of app.getFilteredActionApis(actionFilter)"
+                                class="card card-default actionPanel my-1" dnd-draggable [dragEnabled]="true"
+                                [dragData]="{ appName: app.name, actionApi: actionApi }"
+                                (dblclick)="handleDoubleClickEvent(actionApi)" [title]="actionApi.description">
+                                <div class="card-body my-auto p-2">
+                                    <span>{{actionApi.name}}</span>
+                                    <small class="form-text text-muted">{{ actionApi.description }}</small>
+                                    <!-- <i class="fa fa-bars pull-right" aria-hidden="true"></i> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actual cytoscape graph editor -->
+        <div class="graphEditorColumn graphArea px-0 col">
+            <div id="cy" #cyRef dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow"
+                tabindex="0"></div>
+        </div>
+
+        <!-- Parameter editors -->
+        <div [class.col-md-3]="selectedAction" class="graphEditorColumn shadow">
+            <div *ngIf="!waitingOnData && selectedAction" class="parametersEditor">
+                <div class="d-flex justify-content-between my-2">
+                    <h4 class="mb-0">Action Settings</h4>
+                    <div>
+                        <button [disabled]="selectedAction.id === loadedWorkflow.start"
+                            class="btn btn-sm btn-primary mr-2" (click)="setStartNode(selectedAction.id)">Set Start
+                            Action</button>
+                        <button class="btn btn-sm btn-danger" (click)="closeActionSettingMenu()"
+                            ngbTooltip="Close Settings">
+                            <i class="fa fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="col-12 col-xl-6">
+                        <div class="input-group input-group-sm mb-3" placement="bottom"
+                            [ngbTooltip]="selectedAction.app_name">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text text-white bg-primary">App</span>
+                            </div>
+                            <input type="text" disabled class="form-control" [value]="selectedAction.app_name">
+                        </div>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <div class="input-group input-group-sm mb-3" placement="bottom"
+                            [ngbTooltip]="selectedAction.action_name">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text text-white bg-primary">Action</span>
+                            </div>
+                            <input type="text" disabled class="form-control" [value]="selectedAction.action_name">
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="card border-0 flex-grow-1">
+                        <div class="card-body p-1">
+                            <p class="card-text">{{ selectedActionApi.description }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label class="h5" for="id">ID</label>
+                    <input type="text" readonly class="form-control-plaintext px-2" [value]="selectedAction.id"
+                        name="id">
+                </div>
+
+                <div class="form-group mt-3">
+                    <label class="h5" for="name">Name<i class="fa fa-asterisk required"
+                            title="This field is required."></i></label>
+                    <input type="text" class="form-control" [(ngModel)]="selectedAction.name" name="name" required>
+                </div>
+                <!-- <div *ngIf="!selectedActionApi.global" class="form-group globalArgument">
+                    <label for="global_id">Global
+                        <i class="fa fa-asterisk required" title="This field is required."></i>
+                    </label>
+                    <playbook-argument-component [loadedWorkflow]="loadedWorkflow" [argument]="selectedAction.global_id"
+                        [id]="id" [users]="users" [roles]="roles" [globals]="relevantGlobals"></playbook-argument-component>
+                </div> -->
+                <!-- Inputs -->
+
+                <div *ngIf="selectedActionApi.parameters.length">
+                    <h5>Arguments</h5>
+                    <playbook-argument-component
+                        *ngFor="let parameterApi of selectedActionApi.parameters; let id = index"
+                        [selectedAction]="selectedAction" [loadedWorkflow]="loadedWorkflow"
+                        [argument]="getActionArgument(parameterApi)" [globals]="globals" [parameterApi]="parameterApi"
+                        [id]="id" [users]="users" [roles]="roles" (createVariable)="onCreateVariable($event)">
+                    </playbook-argument-component>
+                </div>
+
+                <ng-template #conditionalTooltip>
+                    <pre>
+if input_1.result > input_2.result:
+    selected_node = output_1
+else:
+    selected_node = output_2</pre>
+                </ng-template>
+                <div *ngIf="selectedActionApi.node_type == actionTypes.CONDITION" class="form-group mt-3">
+                    <label class="h5" for="name">Conditional
+                        <i class="fa fa-info-circle" [autoClose]="'outside'" [ngbPopover]="conditionalTooltip"
+                            popoverTitle="Example Conditional" container="body"></i>
+                        <i class="fa fa-asterisk required" title="This field is required."></i>
+                    </label>
+                    <ngx-codemirror [(ngModel)]="selectedAction.conditional" [options]="conditionalOptions">
+                    </ngx-codemirror>
+                </div>
+
+                <ng-template #transformTooltip>
+                    <pre>result = input.result.get("key")</pre>
+                </ng-template>
+                <div *ngIf="selectedActionApi.node_type == actionTypes.TRANSFORM" class="form-group mt-3">
+                    <label class="h5" for="name">Transform
+                        <i class="fa fa-info-circle" [autoClose]="'outside'" [ngbPopover]="transformTooltip"
+                            popoverTitle="Example Transform" container="body"></i>
+                        <i class="fa fa-asterisk required" title="This field is required."></i>
+                    </label>
+                    <ngx-codemirror [(ngModel)]="selectedAction.transform" [options]="transformOptions">
+                    </ngx-codemirror>
+                </div>
+
+                <div *ngIf="selectedActionApi.canRunInParallel" class="form-group mt-3">
+                    <h5>Run In Parallel</h5>
+                    <div class="form-group row">
+                        <label for="parallel_parameter" class="col-sm-4 col-form-label">Parallelization:</label>
+                        <div class="col-sm-8">
+                            <select class="form-control" name="parallel_parameter"
+                                [(ngModel)]="selectedAction.parallel_parameter"
+                                (change)="updateParallelizedNode(selectedAction)">
+                                <option [value]="null">No Parallelization</option>
+                                <option *ngFor="let parameterApi of selectedActionApi.parallelParameters"
+                                    [value]="parameterApi.name" [label]="'Parallelize on  ' + parameterApi.name">
+                                    Parallize on <b>{{ parameterApi.name }}</b></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    *ngIf="selectedActionApi?.returns?.schema?.type || selectedActionApi?.returns?.example || selectedActionResults">
+                    <div class="form-group mt-3">
+                        <label class="h5">
+                            Returns: <span
+                                *ngIf="selectedActionApi?.returns?.schema?.type">({{ selectedActionApi?.returns?.schema?.type }})</span>
+                        </label>
+                        <ngb-tabset justify="fill"
+                            [activeId]="selectedActionResults ? 'returns-results-tab' : 'returns-example-tab'">
+                            <ngb-tab id="returns-example-tab" title="Example"
+                                [disabled]="!selectedActionApi?.returns?.example">
+                                <ng-template ngbTabContent>
+                                    <div class="d-flex m-2" *ngIf="selectedActionApi?.returns?.example">
+                                        <div class="card bg-light flex-grow-1">
+                                            <div class="card-body">
+                                                <pre class="card-text">{{ selectedActionApi.returns.example }}</pre>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </ngb-tab>
+                            <ngb-tab id="returns-results-tab" title="Execution Result"
+                                [disabled]="!selectedActionResults">
+                                <ng-template ngbTabContent>
+                                    <!-- <div class="d-flex m-2" *ngIf="selectedActionResults">
+                                        <div class="card bg-light flex-grow-1">
+                                            <div class="card-body">
+                                                {{ selectedActionResults }}
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                    <div class="d-flex flex-column align-items-center m-2"
+                                        *ngIf="selectedActionResults">
+                                        <div class="card bg-light flex-grow-1 w-100">
+                                            <div class="card-body p-2">
+                                                <pre
+                                                    class="card-text code-block code-block-xl">{{ selectedActionResults.format(selectedActionResults.result) }}</pre>
+                                            </div>
+                                        </div>
+                                        <a class="m-2" href="#"
+                                            (click)="resultsModal(selectedActionResults.result)">
+                                            View Full <i class="fa fa-external-link"></i>
+                                        </a>
+                                    </div>
+                                </ng-template>
+                            </ngb-tab>
+                        </ngb-tabset>
+                    </div>
+                </div>
+                <!-- Triggers -->
+                <div *ngIf="false">
+                    <div class="row">
+                        <div class="col-6">
+                            <h4>Trigger Condition</h4>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <button *ngIf="!selectedAction.trigger" class="btn btn-primary pull-right"
+                                    (click)="specifyTrigger(selectedAction)">
+                                    <i class="fa fa-plus"></i>Specify Trigger Condition
+                                </button>
+                                <button *ngIf="selectedAction.trigger" class="btn btn-danger pull-right"
+                                    (click)="removeTrigger(selectedAction)">
+                                    <i class="fa fa-close"></i>Remove Trigger Condition
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <playbook-conditional-expression-component *ngIf="selectedAction.trigger"
+                        [conditionalExpression]="selectedAction.trigger" [appApis]="appApis"
+                        [selectedAppName]="selectedAction.app_name" [loadedWorkflow]="loadedWorkflow"
+                        (createVariable)="onCreateVariable($event)"></playbook-conditional-expression-component>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-panel fixed-bottom mb-1 pt-1 border-top" [class.show-console]="showConsole">
+        <ngb-tabset destoryOnHide="false" activeId="console-tab" (tabChange)="switchConsoleTabs($event)">
+            <ngb-tab id="menu-tab">
+                <ng-template ngbTabTitle>
+                    <div class="console-tab" (click)="toggleConsole()"
+                        [ngbTooltip]="(showConsole ? 'Hide' : 'Show') + ' Console'">
+                        <i class="fa fa-bars" aria-hidden="true"></i>
+                    </div>
+                </ng-template>
+                <ng-template ngbTabContent>
+                </ng-template>
+            </ngb-tab>
+            <ngb-tab id="console-tab">
+                <ng-template ngbTabTitle>
+                    <div class="console-tab" (click)="toggleConsole()">Console
+                        <span *ngIf="consoleLog.length > 0"
+                            class="badge badge-pill badge-primary">{{ consoleLog.length }}</span>
+                    </div>
+                </ng-template>
+                <ng-template ngbTabContent>
+                    <ngx-codemirror #consoleArea [(ngModel)]="consoleContent" [options]="{
+                        lineNumbers: true,
+                        mode: 'shell',
+                        theme: 'darcula',
+                        readOnly: true
+                    }"></ngx-codemirror>
+                </ng-template>
+            </ngb-tab>
+
+            <ngb-tab *ngIf="loadedWorkflow?.id && !loadedWorkflow?.has_errors" id="execution-tab">
+                <ng-template ngbTabTitle>
+                    <div class="console-tab" (click)="toggleConsole()">Results
+                        <span *ngIf="nodeStatuses.length > 0"
+                            class="badge badge-pill badge-primary">{{ nodeStatuses.length }}</span>
+                    </div>
+                </ng-template>
+                <ng-template ngbTabContent>
+                    <div id="executionResultsModal">
+                        <div #workflowResultsContainer>
+                            <ngx-datatable #workflowResultsTable class='material ' [columnMode]="'flex'"
+                                [rows]="nodeStatuses" [sortType]="'multi'" [headerHeight]="35" [footerHeight]="25"
+                                [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]" [limit]="10">
+                                <!-- Column Templates -->
+                                <ngx-datatable-column name="Name" prop="label" [flexGrow]="2">
+                                    <ng-template let-row="row" ngx-datatable-cell-template>
+                                        {{ row.label }}
+                                        <i class="fa fa-clipboard cursor-pointer" ngxClipboard [cbContent]="row.node_id"
+                                            container="body" ngbTooltip="Copy ID ({{ row.node_id }})"></i><br>
+                                        <span class="text-muted">{{row.app_name}} / {{row.name}}</span>
+                                    </ng-template>
+                                </ngx-datatable-column>
+                                <ngx-datatable-column name="Status" prop="started_at" [flexGrow]="2">
+                                    <ng-template let-row="row" ngx-datatable-cell-template>
+                                        <ng-container *ngIf="row.status == NodeStatuses.EXECUTING">
+                                            <b class="text-muted">Started</b>
+                                            <span
+                                                ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                                {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}...
+                                            </span>
+                                        </ng-container>
+                                        <ng-container *ngIf="row.status == NodeStatuses.SUCCESS">
+                                            <b class="text-muted">Started</b>
+                                            <span
+                                                ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                                {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}...
+                                            </span><br>
+                                            <b class="text-success">Success</b>
+                                            <span
+                                                ngbTooltip="{{ row.completed_at ? (row.completed_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                                {{ row.completed_at ? (row.completed_at | amFromUtc | amTimeAgo ) : 'N/A' }}
+                                            </span>
+                                        </ng-container>
+                                        <ng-container *ngIf="row.status == NodeStatuses.FAILURE">
+                                            <b class="text-muted">Started</b>
+                                            <span
+                                                ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                                {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}...
+                                            </span><br>
+                                            <b class="text-danger">Failed</b>
+                                            <span
+                                                ngbTooltip="{{ row.completed_at ? (row.completed_at | amFromUtc | amLocal ) : 'N/A' }}">
+                                                {{ row.completed_at ? (row.completed_at | amFromUtc | amTimeAgo ) : 'N/A' }}
+                                            </span>
+                                        </ng-container>
+                                    </ng-template>
+                                </ngx-datatable-column>
+                                <ngx-datatable-column name="Parameters" [sortable]="false" [flexGrow]="3">
+                                    <ng-template let-row="row" ngx-datatable-cell-template>
+                                        <div class="d-flex align-items-baseline">
+                                            <div class="card bg-light flex-grow-1">
+                                                <div class="card-body p-2">
+                                                    <pre
+                                                        class="card-text code-block code-block-sm">{{ row.format(row.parameters) }}</pre>
+                                                </div>
+                                            </div>
+                                            <a href="#" (click)="resultsModal(row.parameters)">
+                                                <i class="fa fa-external-link cursor-pointer h5 mt-1 p-1"
+                                                    ngbTooltip="View Full"></i>
+                                            </a>
+                                        </div>
+                                    </ng-template>
+                                </ngx-datatable-column>
+                                <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="3">
+                                    <ng-template let-row="row" ngx-datatable-cell-template>
+                                        <div class="d-flex align-items-baseline">
+                                            <div class="card bg-light flex-grow-1">
+                                                <div class="card-body p-2">
+                                                    <pre class="card-text code-block code-block-sm"
+                                                        [class.text-danger]="row.status == NodeStatuses.FAILURE">{{ row.format(row.result) }}</pre>
+                                                </div>
+                                            </div>
+                                            <a href="#" (click)="resultsModal(row.result)">
+                                                <i class="fa fa-external-link cursor-pointer h5 mt-1 p-1"
+                                                    ngbTooltip="View Full"></i>
+                                            </a>
+                                        </div>
+                                    </ng-template>
+                                </ngx-datatable-column>
+                            </ngx-datatable>
+                        </div>
+                    </div>
+                </ng-template>
+            </ngb-tab>
+
+            <ngb-tab *ngIf="loadedWorkflow?.has_errors" id="error-tab">
+                <ng-template ngbTabTitle>
+                    <div class="console-tab" (click)="toggleConsole()">Errors <span
+                            class="badge badge-pill badge-danger">{{ loadedWorkflow?.all_errors.length }}</span>
+                    </div>
+                </ng-template>
+                <ng-template ngbTabContent>
+                    <ngx-datatable #errorLogTable class='material expandable' [columnMode]="'flex'" [rows]="getErrors()"
+                        [sortType]="'multi'" [headerHeight]="35" [footerHeight]="25" [rowHeight]="undefined"
+                        [sorts]="[]" [limit]="10">
+                        <ngx-datatable-column name="Error" prop="error" [sortable]="false" [flexGrow]="1">
+                        </ngx-datatable-column>
+                    </ngx-datatable>
+                </ng-template>
+            </ngb-tab>
+
+            <ngb-tab id="variable-tab">
+                <ng-template ngbTabTitle>
+                    <div class="console-tab" (click)="toggleConsole()">Locals</div>
+                </ng-template>
+                <ng-template ngbTabContent>
+                    <div class="p-2">
+                        <div class="d-flex">
+                            <h4 class="mx-2 mb-0">Local Variables</h4>
+                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                (click)="workflowVariablesModal()">
+                                Create New
+                            </button>
+                        </div>
+                        <small class="mx-2 form-text text-muted">
+                            Local Variables are unique to this workflow.
+                            They are reusable in multiple actions and the value can be overridden on each run from the
+                            execution page.
+                        </small>
+                    </div>
+                    <ngx-datatable #environmentVariableTable class='material expandable' [columnMode]="'flex'"
+                        [rows]="getVariables()" [sortType]="'multi'" [headerHeight]="35" [footerHeight]="25"
+                        [rowHeight]="undefined" [sorts]="[]" [limit]="10">
+                        <ngx-datatable-column name="Name" prop="name" [sortable]="false" [flexGrow]="2">
+                        </ngx-datatable-column>
+                        <ngx-datatable-column name="ID" prop="id" [sortable]="false" [flexGrow]="2">
+                        </ngx-datatable-column>
+                        <ngx-datatable-column name="Default Value" prop="value" [sortable]="false" [flexGrow]="2">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <div class="d-flex align-items-center">
+                                    <span>{{ row.value | json }}</span>
+                                </div>
+                            </ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column name="Description" prop="description" [sortable]="false" [flexGrow]="3">
+                        </ngx-datatable-column>
+                        <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false"
+                            [flexGrow]="1">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <button (click)="editVariableModal(row)" class="btn btn-primary mx-1"
+                                    title="Edit Variable"><i class="fa fa-edit"></i></button>
+                                <button (click)="deleteVariable(row)" class="btn btn-danger mx-1"
+                                    title="Delete Variable"><i class="fa fa-times"></i></button>
+                            </ng-template>
+                        </ngx-datatable-column>
+                    </ngx-datatable>
+                </ng-template>
+            </ngb-tab>
+
+            <ngb-tab id="global-tab">
+                <ng-template ngbTabTitle>
+                    <div class="console-tab" (click)="toggleConsole()">Globals</div>
+                </ng-template>
+                <ng-template ngbTabContent>
+                    <div class="p-2">
+                        <div class="d-flex">
+                            <h4 class="mx-2 mb-0">Global Variables</h4>
+                            <button *hasPermission="['editGlobals']" type="button"
+                                class="btn btn-sm btn-outline-primary" (click)="addGlobal()">
+                                Create New
+                            </button>
+                        </div>
+                        <small class="mx-2 form-text text-muted">
+                            Global Variables are system-wide encrypted variables ideal for sharing authentication and
+                            configuration settings between multiple workflows.
+                        </small>
+                    </div>
+                    <ngx-datatable #globalTable class='material expandable' [columnMode]="'flex'" [rows]="globals"
+                        [sortType]="'multi'" [headerHeight]="35" [footerHeight]="25" [rowHeight]="undefined"
+                        [limit]="25">
+                        <!-- Column Templates -->
+                        <ngx-datatable-column name="Name" prop="name" [flexGrow]="2"></ngx-datatable-column>
+                        <ngx-datatable-column name="ID" prop="id" [flexGrow]="2"></ngx-datatable-column>
+                        <ngx-datatable-column name="Value" prop="value" [flexGrow]="3" [sortable]="false">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <div class="d-flex align-items-center">
+                                    <span [class.pt-2]="row.isHidden">
+                                        {{ row.isHidden ? '********************' : row.value | json }}
+                                    </span>
+                                    <button (click)="row.isHidden = !row.isHidden" class="btn btn-link mx-1 p-0">
+                                        <i class="fa" [class.fa-eye]="row.isHidden" [class.fa-eye-slash]="!row.isHidden"
+                                            [ngbTooltip]="row.isHidden ? 'Show Value' : 'Hide Value'"></i>
+                                    </button>
+                                </div>
+                            </ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column name="Description" prop="description" [flexGrow]="3">
+                        </ngx-datatable-column>
+                        <ngx-datatable-column *hasPermission="['editGlobals']" name="Actions" [resizeable]="false"
+                            [sortable]="false" [draggable]="false" [flexGrow]="1">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                <button (click)="editGlobal(row)" class="btn btn-primary mx-1" ngbTooltip="Edit"><i
+                                        class="fa fa-edit"></i></button>
+                                <button (click)="deleteGlobal(row)" class="btn btn-danger mx-1" ngbTooltip="Delete"><i
+                                        class="fa fa-times"></i></button>
+                            </ng-template>
+                        </ngx-datatable-column>
+                    </ngx-datatable>
+                </ng-template>
+            </ngb-tab>
+
+        </ngb-tabset>
+    </div>
+
+</div>

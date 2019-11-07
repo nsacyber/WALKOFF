@@ -1,0 +1,18 @@
+<div class="modal-header">
+    <h4 class="modal-title">Upload File</h4>
+</div>
+<div class="modal-body">
+    <form #myForm="ngForm" [class.was-validated]="submitted" novalidate>
+        <div class="form-group">
+            <h6>Select File:</h6>
+            <input name="file" type="file" class="form-control-file" (change)="onImportSelectChange($event)" required>
+            <div class="invalid-feedback">
+                Please select file
+            </div>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" ngbTooltip="Upload File" class="btn btn-secondary" (click)="activeModal.dismiss()">Cancel</button>
+    <button ngbAutofocus type="button" class="btn btn-primary" (click)="submit()">Upload</button>
+</div>

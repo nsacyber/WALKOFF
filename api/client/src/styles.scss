@@ -1,0 +1,101 @@
+/* You can add global styles to this file, and also import other style files */
+
+// Import global CSS packages
+@import 'variables';
+@import '~font-awesome/scss/font-awesome';
+@import '~bootstrap/scss/bootstrap';
+
+@import 'bootstrap4-switch';
+
+@import "~codemirror/lib/codemirror.css";
+@import "~codemirror/theme/darcula.css";
+@import "~codemirror/theme/mdn-like.css";
+@import "~codemirror/theme/neo.css";
+@import "~codemirror/theme/ttcn.css";
+@import "~codemirror/theme/xq-light.css";
+
+@import '@swimlane/ngx-datatable/release/index.css';
+@import '@swimlane/ngx-datatable/release/themes/material.css';
+@import '@swimlane/ngx-datatable/release/assets/icons.css';
+@import 'select2/dist/css/select2.min.css';
+@import 'ngx-toastr/toastr.css';
+@import '~jsoneditor/dist/jsoneditor.min.css';
+
+@import '~jquery.fancytree/dist/skin-lion/ui.fancytree.min.css';
+
+/* Hack along for modal animations in ng-bootstrap */
+@keyframes modal-b-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.5;
+    }
+}
+
+@keyframes modal-fade {
+    from {
+        top: -100px;
+        opacity: 0;
+    }
+    to {
+        top: 0;
+        opacity: 1;
+    }
+}
+
+.modal-backdrop {
+    opacity: 0.5;
+    animation: ease-in-out .25s modal-b-fade;
+    transition: all .25s ease-in-out;
+}
+
+.modal {
+    top: -100px;
+    animation: ease-in-out .25s modal-fade;
+    transition: all .25s ease-in-out;
+
+    &.show {
+        top: 0;
+    }
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: theme-color('primary')
+}
+
+.bootbox-body {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+div.jsoneditor {
+    border: thin solid #DDD;
+
+    a.jsoneditor-poweredBy {
+        display: none;
+    }
+}
+
+div.jsoneditor-menu {
+    background-color: #3c8dbc;
+    border-bottom: 1px solid #3c8dbc;
+}
+
+div.jsoneditor-contextmenu .jsoneditor-menu li button.jsoneditor-selected,
+div.jsoneditor-contextmenu .jsoneditor-menu li button.jsoneditor-selected:focus, 
+div.jsoneditor-contextmenu .jsoneditor-menu li button.jsoneditor-selected:hover {
+    background-color: #aecbdc;
+}
+
+#playbookBreadcrumbs {
+	background-color: unset;
+	margin-block-end: unset;
+	padding-inline-start: unset;
+	font-weight: bold;
+	font-size: 2rem;
+
+	a {
+		text-decoration: none;
+	}
+}

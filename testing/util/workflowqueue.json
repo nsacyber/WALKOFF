@@ -1,33 +1,7 @@
 {
-    "workflow_id": "<string>",
-    "execution_id": "<string>",
-    "start": "<string>",
-    "parameters": [
-        {
-            "name": "<string>12",
-            "variant": "<string>",
-            "id_": "<string>",
-            "value": "schema type not provided"
-        },
-        {
-            "name": "<string>123",
-            "variant": "<string>",
-            "id_": "<string>",
-            "value": "schema type not provided"
-        }
-    ],
-    "workflow_variables": [
-        {
-            "value": "<string>",
-            "id_": "<string>",
-            "name": "<string>dsd",
-            "description": "<string>"
-        },
-        {
-            "value": "<string>",
-            "id_": "<string>",
-            "name": "<string>",
-            "description": "<string>"
-        }
-    ]
+  "workflow_id": "e8c7840a-bd3e-4cfd-b9be-e07269b10c89",
+  "execution_id": "bd8c031a-b87e-4530-bf19-e0a08414f46f",
+  "start": "239d47a9-323e-a920-d1ae-d9bfa75cbeb0",
+  "parameters": [],
+  "workflow_variables": []
 }

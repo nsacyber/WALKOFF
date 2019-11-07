@@ -36,14 +36,14 @@ If you do not already have a Docker Swarm initialized or joined, run the followi
 
     **Note:** If you have multiple NICs you will need to use --advertise-addr to pick an address from which the swarm will be accessible.
 
-Deploying WALKOFF in a Unix environment
+Deploying WALKOFF
 ---------------------------------------
 
 #. Open a terminal and clone WALKOFF:
 
     .. code-block:: console
 
-       git clone https://github.com/nsacyber/WALKOFF.git
+       git clone -b development https://github.com/nsacyber/WALKOFF.git
 
 #. Move into the WALKOFF directory:
 
@@ -51,99 +51,51 @@ Deploying WALKOFF in a Unix environment
 
        cd WALKOFF
 
-#. Build WALKOFF's bootloader container, which handles management of the WALKOFF stack:
-
-   * Creating Docker secrets, configs, networks, volumes, etc.
-   * Building and pushing component images to WALKOFF's internal registry.
-   * Deploying and removing the Docker Stack.
+#. Launch WALKOFF with the bootloader, building components as well. If you are on Windows, be sure to use PowerShell and not Command Prompt.
 
     .. code-block:: console
 
-       ./build_bootloader.sh
+       # Windows PowerShell
+       .\walkoff.ps1 up --build
 
-#. Launch WALKOFF with the bootloader, building components as well:
+       # If verbose output is desired:
+       .\walkoff.ps1 up --build --debug
+
 
     .. code-block:: console
-    
+
+       # Unix shell
        ./walkoff.sh up --build
 
        # If verbose output is desired:
        ./walkoff.sh up --build --debug
 
-#. Navigate to the default IP and port. The default IP and the port can be changed by altering the port NGINX is exposed on (the right-hand port) in the top-level `docker-compose.yml`. Note that you should use HTTPS, and allow the self-signed certificate when prompted.
+#. Navigate to the default IP and port. The default port can be changed by altering the port NGINX is exposed on (the right-hand port) in `bootloader/walkoff-compose.yml`. Note that you should use HTTPS, and allow the self-signed certificate when prompted.
 
     .. code-block:: console
 
        https://127.0.0.1:8080
 
-#. The default username is "admin" and password is "admin." These can and should be changed upon initial login.
+#. The default username is "admin" and password is "admin". These can and should be changed upon initial login.
 
 
 #. To stop WALKOFF, use the bootloader:
 
     .. code-block:: console
 
-       ./walkoff.sh down
-
-       # If removing encryption key (and persistent data), stored images, and verbose output is desired:
-       ./walkoff.sh down --key --registry --debug
-
-
-Deploying WALKOFF in a Windows environment
-------------------------------------------
-
-#. Open PowerShell and clone WALKOFF:
-
-    .. code-block:: console
-
-       git clone https://github.com/nsacyber/WALKOFF.git
-
-#. Move into the WALKOFF directory:
-
-    .. code-block:: console
-
-       cd WALKOFF
-
-#. Use the provided `walkoff.ps1` script to initialize Walkoff's required components:
-
-    .. code-block:: console
-
-       # Create Docker volumes, secrets
-       .\walkoff.ps1 init
-
-       # Build and Push WALKOFF component images
-       .\walkoff.ps1 build
-
-#. Launch WALKOFF with `walkoff.ps1`:
-
-    .. code-block:: console
-
-       # Deploy WALKOFF stack
-       .\walkoff.ps1 up
-
-       # Check WALKOFF stack services
-       .\walkoff.ps1 status
-
-#. Navigate to the default IP and port. The default IP and the port can be changed by altering the port NGINX is exposed on (the right-hand port) in the top-level `docker-compose.yml`. Note that you should use HTTPS, and allow the self-signed certificate when prompted.
-
-    .. code-block:: console
-
-       https://127.0.0.1:8080
-
-#. The default username is "admin" and password is "admin." These can and should be changed upon initial login.
-
-
-#. To stop WALKOFF, use the bootloader:
-
-    .. code-block:: console
-
-
-       .\walkoff.ps1 stop
-
-       # If removing encryption key, persistent data, stored images is desired:
+       # Windows PowerShell
        .\walkoff.ps1 down
 
+       # If removing encryption key, stored images, verbose output, and postgres volume is desired:
+       .\walkoff.ps1 down --key --registry --debug --volume
 
+    .. code-block:: console
+
+       # Unix shell
+       ./walkoff.sh down
+
+       # If removing encryption key, stored images, verbose output, and postgres volume is desired:
+       ./walkoff.sh down --key --registry --debug --volume
 
 
 |br|

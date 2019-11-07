@@ -2,6 +2,72 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [1.0.0-rc.2] 
+
+This update includes a rewrite of the API Gateway from Flask to FastAPI to leverage Python Asyncio functionality. Server-Sent Events used for streaming data to the UI was also replaced by Socket.IO which should be easier to maintain and be more robust. UI improvements for interacting with JSON data were also included. 
+
+We would have liked to go for a full 1.0.0 release within the month, but due to factors outside of our control, the development team will be pausing work on WALKOFF. We hope to be back within the next couple weeks.
+
+### Added 
+* Docker logs are now streamed to the UI when rebuilding apps for better feedback on errors.
+* JSON editor/viewer throughout UI where JSON can be accepted (e.g. local/global variables, action results, etc.).  
+* RBAC for App Editor.
+* Upload file capability in App Editor.
+* Moved certain items in navigation menu to sub-menu.
+* End-to-end testing suite for API.
+* Travis CI testing reimplemented (Appveyor in progress).
+
+### Changed 
+* Flask framework replaced with FastAPI async framework.
+* Using Pydantic models for (de)serialization and validation to/from MongoDB.
+* Server-Sent Events replaced with Socket.IO.
+* PostgreSQL database replaced with MongoDB.
+* Internal HTTP communication removed in favor of Redis and Socket.IO.
+* All passwords for resources now randomly generated upon first run/build and stored in Docker Secrets.
+
+### Fixed 
+* UI should no longer intermittently fail to read from database (including authentication issues).
+* Workflow status now correctly reports current app/action executing.
+
+
+## [1.0.0-rc.1] 
+
+This update includes a number of bugfixes, particularly to role-based permissions and the workflow scheduler.  
+
+### Added 
+
+* Minio data from the WALKOFF application editor is now persistent after bringing WALKOFF down. 
+* Personal user settings have been added to the drop-down menu under a user profile. This new feature allows for all users to change their own username and password.  
+* ``mitre_attack`` and ``adversary_hunting`` applications have been added to WALKOFF’s default applications. These two apps have pre-configured actions that run Powershell scripts that may be useful to blue teams/threat hunting.  
+* Added subcommand to bootloader for rebuilding and updating specific services. 
+* Added a three-tier level role permissions system for Global Variable and Workflow creation. A user can choose between “only-me,” “everyone,” and “role-based” options for their access restriction level.  
+* Added a close button to Action Settings menu during workflow creation. 
+* Added ``sample_report_data`` action to ``basics`` application. This app generates sample CSV data to be imported into the ``Reports`` tab.  
+* Added Unsaved Changes warning on Workflow and Application editor pages.
+* Added ability to create/edit Global Variables from the workflow editor.
+
+### Changed 
+
+* Top bar navigation has been reworked to include a “Settings” drop-down menu. Global variable creation, user settings, workflow scheduler creation, and link to Portainer have been moved to this menu.  
+* Changed ``Workflow Variables`` to ``Local Variables`` and always display them in the workflow editor.
+* Renamed ``hello_world`` application to``basics`` 
+
+### Security 
+
+* File access in apps is now handled with a context manager. 
+
+### Fixed 
+
+* Workflow abortion in the execution tab is now functional and properly ends the workflow stream. 
+* The unpacking zipped apps on startup was reimplemented with bootloader changes. 
+* The execution tab now returns ``started_at`` time for each ``NodeStatusMessage`` for a ``WorkflowStatusMessage``. Likewise, ``current_app`` and ``current_action`` are now live updated during Workflow processing.  
+* Workflow scheduler’s tasks can now be updated with new variables, descriptions, and titles. Interval scheduled tasks no longer become stuck in ``PENDING``. 
+* Fixed the ability undo/redo the deletion of an action on the workflow editor.
+
+### Removed 
+* Individual tasks can no longer be toggled between pause and start in the scheduler. 
+
+
 ## [1.0.0-beta.1]
 
 This update introduces a number of new features, including an App Editor in the UI, more granular role-based permissions, 

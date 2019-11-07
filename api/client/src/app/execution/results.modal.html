@@ -1,0 +1,80 @@
+<div class="modal-header">
+    <h5 class="modal-title" id="nodeStatusModalTitle">Action Results</h5>
+    <button type="button" class="close" (click)="activeModal.dismiss()" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div ngbAutofocus #nodeStatusContainer class="modal-body m-3 resultsContainer">
+    <ngx-datatable #nodeStatusTable class='material expandable' [columnMode]="'flex'"
+        [rows]="loadedWorkflowStatus.node_statuses" [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50"
+        [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'asc'}]" [limit]="10">
+        <!-- Column Templates -->
+        <ngx-datatable-column name="Name" prop="label" [flexGrow]="2">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                {{ row.label }}
+                <i class="fa fa-clipboard cursor-pointer" ngxClipboard [cbContent]="row.node_id" [container]="nodeStatusContainer.nativeElement"
+                    ngbTooltip="Copy ID ({{ row.node_id }})"></i><br>
+                <span class="text-muted">{{row.app_name}} / {{row.name}}</span>
+            </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="Status" prop="started_at" [flexGrow]="2">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                <ng-container *ngIf="row.status == NodeStatuses.EXECUTING">
+                    <b class="text-muted">Started</b>
+                    <span ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+                        {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}...
+                    </span>
+                </ng-container>
+                <ng-container *ngIf="row.status == NodeStatuses.SUCCESS">
+                    <b class="text-muted">Started</b>
+                    <span ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+                        {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}...
+                    </span><br>
+                    <b class="text-success">Success</b>
+                    <span ngbTooltip="{{ row.completed_at ? (row.completed_at | amFromUtc | amLocal ) : 'N/A' }}">
+                        {{ row.completed_at ? (row.completed_at | amFromUtc | amTimeAgo ) : 'N/A' }}
+                    </span>
+                </ng-container>
+                <ng-container *ngIf="row.status == NodeStatuses.FAILURE">
+                    <b class="text-muted">Started</b>
+                    <span ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+                        {{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}...
+                    </span><br>
+                    <b class="text-danger">Failed</b>
+                    <span ngbTooltip="{{ row.completed_at ? (row.completed_at | amFromUtc | amLocal ) : 'N/A' }}">
+                        {{ row.completed_at ? (row.completed_at | amFromUtc | amTimeAgo ) : 'N/A' }}
+                    </span>
+                </ng-container>
+            </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="Parameters" [sortable]="false" [flexGrow]="3">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                <div class="d-flex align-items-baseline">
+                    <div class="card bg-light flex-grow-1">
+                        <div class="card-body p-2">
+                            <pre class="card-text code-block">{{ row.format(row.parameters) }}</pre>
+                        </div>
+                    </div>
+                    <a href="#" (click)="resultsModal(row.parameters)">
+                        <i class="fa fa-external-link cursor-pointer h5 mt-1 p-1" ngbTooltip="View Full" container="body"></i>
+                    </a>
+                </div>
+            </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="3">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                <div class="d-flex align-items-baseline">
+                    <div class="card bg-light flex-grow-1">
+                        <div class="card-body p-2">
+                            <pre class="card-text code-block"
+                                [class.text-danger]="row.status == NodeStatuses.FAILURE">{{ row.format(row.result) }}</pre>
+                        </div>
+                    </div>
+                    <a href="#" (click)="resultsModal(row.result)">
+                        <i class="fa fa-external-link cursor-pointer h5 mt-1 p-1" ngbTooltip="View Full" container="body"></i>
+                    </a>
+                </div>
+            </ng-template>
+        </ngx-datatable-column>
+    </ngx-datatable>
+</div>

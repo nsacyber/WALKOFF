@@ -1,0 +1,48 @@
+<div id="main" class="globalsMain">
+    <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol id="playbookBreadcrumbs" class="breadcrumb">
+                <li class="breadcrumb-item">Global Variables</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row align-items-center mb-3">
+        <div class="col">
+            <button (click)="addGlobal()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add Global</button>
+        </div>
+        <div class="col-4">
+            <!-- <select2 [data]="availableApps" [options]="appSelectConfig" (valueChanged)="appSelectChange($event)"></select2> -->
+        </div>
+        <div class="col-4">
+            <input class="form-control" placeholder="Filter Globals..." [formControl]="filterQuery" />
+        </div>
+    </div>
+
+    <ngx-datatable #globalTable class='material expandable' [columnMode]="'flex'" [rows]="filteredGlobals"
+        [sortType]="'multi'" [headerHeight]="50" [footerHeight]="25" [rowHeight]="undefined" [limit]="25">
+        <!-- Column Templates -->
+        <ngx-datatable-column name="Name" prop="name" [flexGrow]="2"></ngx-datatable-column>
+        <ngx-datatable-column name="ID" prop="id" [flexGrow]="2"></ngx-datatable-column>
+        <ngx-datatable-column name="Value" prop="value" [flexGrow]="3" [sortable]="false">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                <div class="d-flex align-items-center">
+                    <span [class.pt-2]="row.isHidden">{{ row.isHidden ? '********************' : row.value | json }}</span>
+                    <button (click)="row.isHidden = !row.isHidden" class="btn btn-link mx-1 p-0">
+                        <i class="fa" [class.fa-eye]="row.isHidden" [class.fa-eye-slash]="!row.isHidden"
+                            [ngbTooltip]="row.isHidden ? 'Show Value' : 'Hide Value'"></i>
+                    </button>
+                </div>
+            </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="Description" prop="description" [flexGrow]="3"></ngx-datatable-column>
+        <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                <button (click)="editGlobal(row)" class="btn btn-primary mx-1" ngbTooltip="Edit"><i
+                        class="fa fa-edit"></i></button>
+                <button (click)="deleteGlobal(row)" class="btn btn-danger mx-1" ngbTooltip="Delete"><i
+                        class="fa fa-times"></i></button>
+            </ng-template>
+        </ngx-datatable-column>
+    </ngx-datatable>
+</div>

@@ -1,0 +1,12 @@
+<div class="modal-body m-3 resultsContainer">
+    <json-editor #jsonEditor [options]="editorOptionsData" [data]="results"></json-editor>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-outline-primary" (click)="downloadResults()">
+        <i class="fa fa-download"></i> Download
+    </button>
+    <button type="button" class="btn btn-outline-primary" ngxClipboard [cbContent]="getClipboard()">
+        <i class="fa fa-clipboard"></i> Copy
+    </button>
+    <button type="button" class="btn btn-primary" (click)="activeModal.dismiss()">Close</button>
+</div>

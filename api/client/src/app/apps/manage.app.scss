@@ -1,0 +1,260 @@
+/* @import '/client/node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css';
+@import '/client/node_modules/ng2-dnd/bundles/style.css'; */
+
+#main.appsMain {
+	padding: 10px 15px 0 15px;
+	position: relative;
+}
+
+.appsMain .parametersEditor .failure {
+    color: crimson;
+}
+
+.instruction-container {
+	height: 500px;
+	width: 100%;
+
+	> .card {
+		max-width: 50%;
+	}
+}
+
+.workflow-card {
+	height: 100%;
+	max-height: 300px;
+
+	.card-body {
+		overflow: hidden;
+	}
+
+	.card-text {
+		min-height: 0;
+		overflow: hidden;
+  		text-overflow: ellipsis;
+	}
+}
+
+#playbookToolbar {
+	background-color: #aecbdc;
+	margin-left: 0;
+	margin-bottom: 5px;
+	border: 1px solid #8b9aa3;
+	border-radius: 5px;
+}
+
+#playbookToolbar .btn-default {
+	background-color: #aecbdc;
+	border-color: #aecbdc;
+}
+
+#playbookToolbar .btn-default:hover {
+	background-color: #eaf2f6;
+	border-color: #eaf2f6;
+	margin: 0;
+	border-radius: 0;
+}
+
+#playbookToolbar .btn-group {
+	border-right: 1px solid #8b9aa3;
+}
+
+#playbookToolbar .btn-group>.btn:first-child {
+	margin: 0;
+	padding: 10px;
+}
+
+#playbookToolbar .btn-toolbar>.btn, .btn-toolbar>.btn-group, .btn-toolbar>.input-group {
+	margin-left: 0;
+}
+
+#playbookToolbar .form-control.workflowNameInput {
+	display: inline-block;
+	width: auto;
+}
+
+#currentWorkflowText {
+	margin-top: 10px;
+	font-size: 18px;
+}
+
+.consoleRow {
+    padding:10px;
+}
+
+/* Console Row = 200px */
+.appsMain .graphEditorRow, .appsMain .graphEditorColumn {
+	height: calc(100vh - 310px);
+	overflow: auto;
+}
+
+.appsMain .panel-heading.playbook-heading {
+	cursor: pointer;
+}
+
+.workflow-menu {
+	cursor: pointer;
+	padding: unset;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+
+	.workflow-menu-link::after {
+		content: none;
+	}
+}
+
+#playbookEditorTabs {
+	display: inline-block;
+	vertical-align: top;
+	height: 100%;
+	width:100%;
+	position: inherit;
+	background: transparent;
+}
+
+#cy {
+	/* display: inline-block; */
+	/* vertical-align: top; */
+	width: 100%;
+	height: 100%;
+}
+
+/* Need to do this else panzoom appears above modals */
+#cy .cy-panzoom {
+	z-index: 10;
+}
+
+#cy-instructions {
+	padding: 20px;
+	font-size: 25px;
+}
+
+#cy-json-data {
+	background-color: white;
+	color: black;
+	font-weight: normal;
+	height: 630px;
+	width: 500px;
+	resize: none;
+}
+
+.appsMain #accordion .card-heading .card-title:after {
+	/* symbol for "opening" panels */
+	font: normal normal normal 14px/1 FontAwesome;
+	font-size: inherit;
+	text-rendering: auto;
+	content: "\f078";    /* adjust as needed, taken from bootstrap.css */
+	float: right;        /* adjust as needed */
+	color: grey;         /* adjust as needed */
+}
+
+.no-transition {
+    transition: none !important;
+}
+
+.appsMain #accordion .card-heading.collapsed .card-title:after {
+	/* symbol for "collapsed" panels */
+	content: "\f054";    /* adjust as needed, taken from bootstrap.css */
+}
+
+.appsMain .card-default > .card-heading {
+	background-color: #eaf2f6;
+	font-weight: bolder;
+}
+
+.appsMain .parametersEditor input[type=checkbox].form-control {
+	width: 34px;
+	margin: 0 5px;
+}
+
+.appsMain .parametersEditor .form-group.argument {
+	margin-bottom: 5px;
+	padding: 5px;
+}
+
+.appsMain .parametersEditor .form-group.argument.odd {
+	background-color: #EEE;
+}
+
+.appsMain .parametersEditor .indent {
+	border-left: 3px solid #DDD;
+	border-top: 1px solid #DDD;
+	border-bottom: 1px solid #DDD;
+	padding: 5px 0 5px 15px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.appsMain .parametersEditor .addBar {
+	margin-bottom: 10px;
+}
+
+.appsMain .parametersEditor .addBar button {
+	margin-top: 25px;
+}
+
+.appsMain .parametersEditor .propertyHeader {
+	margin-bottom: 5px;
+}
+
+.appsMain .parametersEditor .required {
+	color: crimson;
+	margin-left: 5px;
+}
+
+.appsMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
+	white-space: initial;
+}
+
+#workflowsModal .workflowPanel a {
+	cursor: pointer;
+}
+
+#workflowsModal .card-heading h4 {
+	min-height: 30px;
+}
+
+#workflowsModal .importContainer {
+	margin-bottom: 5px;
+}
+
+#workflowsModal .importContainer h5 {
+	display: inline-block;
+}
+
+#workflowsModal .importPlaybookInput {
+	display: inline-block;
+}
+
+#workflowsModal > .modal-dialog {
+	max-width: 600px;
+}
+
+#workflowsModal .modal-title,
+#executionResultsModal .modal-title,
+#playbookAndWorkflowActionModal .modal-title {
+	display: inline-block;
+}
+
+#executionResultsModal > .modal-dialog {
+	max-width: 95%;
+}
+
+.appEditorContainer .CodeMirror {
+    min-height: 725px;
+    border: 1px solid #dee2e6 !important
+}
+
+#tree {
+	position: absolute;
+	width: 100%;
+}
+
+.fancytree-container {
+	height: 100%;
+	overflow-y: auto;
+
+	&:focus {
+		outline: none;
+	}
+}

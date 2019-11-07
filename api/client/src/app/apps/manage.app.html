@@ -1,0 +1,63 @@
+<div id="main" class="appsMain">
+    <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol id="playbookBreadcrumbs" class="breadcrumb">
+                <li *ngIf="filesLoaded" class="breadcrumb-item">
+                    Manage Application - <span class="">{{ currentApp.name }}</span>
+                    <button type="button" class="btn btn-sm btn-primary ml-3" (click)="buildImage()">Rebuild Image</button>
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div id="tree" class="h-100 pr-4"></div>
+        </div>
+
+        <div *ngIf="filesLoaded" class="col-md-9 appEditorContainer">
+            <!-- Graph editor toolbar -->
+            <div id="playbookToolbar" class="btn-toolbar d-flex align-items-center" role=toolbar>
+                <div class="btn-group" role="group">
+                    <button id="save-button" type="button" class="btn btn-default" placement="bottom-left"
+                        ngbTooltip="Save" [disabled]="!fileChanged" (click)="saveFile()">
+                        <i class="fa fa-save"></i>
+                    </button>
+                </div>
+                <div class="btn-group" role="group">
+                    <button id="undo-button" type="button" class="btn btn-default" placement="bottom-left"
+                        ngbTooltip="Undo" [disabled]="!currentFile"
+                        (click)="undo()">
+                        <i class="fa fa-undo"></i>
+                    </button>
+                </div>
+                <div class="btn-group" role="group">
+                    <button id="redo-button" type="button" class="btn btn-default" placement="bottom-left"
+                        ngbTooltip="Redo" [disabled]="!currentFile"
+                        (click)="redo()">
+                        <i class="fa fa-repeat"></i>
+                    </button>
+                </div>
+                <!-- <div class="btn-group" role="group">
+                    <button id="copy-button" type="button" class="btn btn-default" placement="bottom-left"
+                        ngbTooltip="Copy" [disabled]="!loadedWorkflow" (click)="copy()">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                </div>
+                <div class="btn-group" role="group">
+                    <button id="paste-button" type="button" class="btn btn-default" placement="bottom-left"
+                        ngbTooltip="Paste" [disabled]="!loadedWorkflow" (click)="paste()">
+                        <i class="fa fa-paste"></i>
+                    </button>
+                </div> -->
+                <nav class="ml-auto" aria-label="breadcrumb">
+                    <ol id="playbookBreadcrumbs" class="breadcrumb py-0 px-3 d-flex align-items-center">
+                        <li class="breadcrumb-item text-secondary">{{ currentFile }}<span *ngIf="fileChanged">*</span></li>
+                    </ol>
+                </nav>
+            </div>
+            <ngx-codemirror #editorArea [(ngModel)]="content" [options]="options"></ngx-codemirror>
+        </div>
+    </div>
+
+</div>

@@ -23,7 +23,7 @@ COPY ./app_sdk /app/app_sdk
 COPY ./worker /app/worker
 COPY ./common /app/common
 COPY ./umpire /app/umpire
-COPY ./umpire/umpire_api.py /app
+#COPY ./umpire/umpire_api.py /app
 
 WORKDIR /app
 

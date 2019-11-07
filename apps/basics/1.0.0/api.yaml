@@ -13,13 +13,13 @@ actions:
   - name: hello_world
     description: Returns Hello World from the hostname the action is run on
     returns:
-      schema:
+      json_schema:
         type: string
       example: HELLO WORLD FROM host.name
   - name: random_number
     description: Returns a random float between 0.0 and 1.0
     returns:
-      schema:
+      json_schema:
         type: number
   - name: string_to_json
     description: returns the string output from trigger data if it's in Json format.
@@ -27,10 +27,10 @@ actions:
       - name: call
         description: string to be converted to json
         required: true
-        schema:
+        json_schema:
           type: string
     returns:
-      schema:
+      json_schema:
         type: object
       example: '{"Walkoff":"Running"}'
   - name: echo_string
@@ -39,10 +39,10 @@ actions:
       - name: call
         description: message to repeat
         required: true
-        schema:
+        json_schema:
           type: string
     returns:
-      schema:
+      json_schema:
         type: string
       example: "REPEATING: Hello world"
   - name: return_plus_one
@@ -51,11 +51,11 @@ actions:
       - name: number
         description: number to increment
         required: true
-        schema:
+        json_schema:
           type: number
         placeholder: 1
     returns:
-      schema:
+      json_schema:
         type: number
       example: 2
   - name: pause
@@ -64,7 +64,7 @@ actions:
       - name: seconds
         description: seconds to pause for
         required: true
-        schema:
+        json_schema:
           type: number
   - name: echo_array
     description: Echo the data parameter
@@ -73,10 +73,10 @@ actions:
         description: array to echo
         parallelizable: true
         required: true
-        schema:
+        json_schema:
           type: array
     returns:
-      schema:
+      json_schema:
         type: array
   - name: echo_json
     description: echos the given JSON object
@@ -84,13 +84,13 @@ actions:
       - name: data
         description: The data to echo
         required: true
-        schema:
+        json_schema:
           type: object
     returns:
-      schema:
+      json_schema:
         type: object
   - name: sample_report_data
     description: Outputs a string in the correct formatting that reports expects.
-    returns:
-      schema:
+    returns: 
+      json_schema:
         type: string

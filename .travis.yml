@@ -1,0 +1,41 @@
+# ref: https://docs.travis-ci.com/user/languages/python
+sudo: required
+os:
+  - linux
+language: python
+python:
+  - "3.7"
+  - "3.8"
+
+services:
+  - docker
+
+env:
+  - CONFIG_PATH=data/local_config.yml
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-compose
+  - pip install -U pip
+  - pip install -U pytest
+  - pip install -U coverage
+
+# command to install dependencies
+install:
+  - pip install -r requirements.txt
+  - pip install -r api/requirements.txt
+  - pip install -r testing/requirements.txt
+
+before_script:
+  - docker swarm init
+  - ./walkoff.sh up -bdyr
+
+# command to run tests
+script:
+  - pytest --cov=api testing/api
+  #- coverage combine
+  - coverage report
+
+after_script:
+  - ./walkoff.sh down -cdy

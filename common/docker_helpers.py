@@ -5,6 +5,7 @@ import json
 import copy
 import base64
 import tarfile
+import requests
 import time
 from io import BytesIO
 from pathlib import Path
@@ -141,24 +142,6 @@ async def update_service(client, service_id, *, version=None, image=None, rollba
         params=params,
     )
     return resp
-    
-async def remove_volume(volume: str, wait: bool = False):
-        client = docker.from_env()
-        if wait:
-            bl = client.containers.list(filters={"name": "walkoff_bootloader"})
-            list = set(client.containers.list()) - set(bl)
-            while len(list):
-                list = set(client.containers.list()) - set(bl)
-                print("Waiting for containers to close:", list)
-                time.sleep(1)
-                continue
-
-        #Brief pause to allow for cleanup
-        time.sleep(1)
-        client.volumes.get(volume).remove()
-
-
-
 
 
 async def get_secret(client: aiodocker.Docker, secret_id):
@@ -171,7 +154,7 @@ async def delete_secret(client: aiodocker.Docker, secret_id):
 
 
 async def disconnect_from_network(client: aiodocker.Docker):
-    await client._query(f"networks/walkoff_default/disconnect", "POST")
+    await client._query(f"networks/walkoff_network/disconnect", "POST")
 
 
 async def get_network(client: aiodocker.Docker, network_id):
@@ -245,6 +228,7 @@ async def get_containers(docker_client, service, short_ids=False):
     :param service: The docker id of the service
     :return: a set of the running containers
     """
+
     def get_container_id(task_spec):
         return task_spec["Status"]["ContainerStatus"]["ContainerID"]
 
@@ -295,6 +279,7 @@ async def load_secrets(docker_client, project):
             secret_references.append(SecretReference(secret_id=secret_id, secret_name=secret.source,
                                                      uid=secret.uid, gid=secret.gid, mode=secret.mode))
     return secret_references
+
 
 def connect_to_docker():
     client = docker.from_env(environment=load_docker_env())
@@ -368,3 +353,28 @@ async def stream_docker_log(log_stream):
         elif "error" in line:
             logger.error(line["error"].strip())
             raise DockerBuildError
+
+
+async def stream_umpire_build_log(log_stream, build_id):
+    async for line in log_stream:
+        url = f"{config.API_GATEWAY_URI}/walkoff/api/streams/build/build_logger"
+        if "stream" in line and line["stream"].strip():
+            data = line["stream"].strip()
+            body = {"stream": data, "build_status": "building"}
+            params = {"build_id": build_id}
+            requests.post(url, json=body, params=params)
+        elif "status" in line:
+            data = line["status"].strip()
+            body = {"stream": data, "build_status": "building"}
+            params = {"build_id": build_id}
+            requests.post(url, json=body, params=params)
+        elif "error" in line:
+            data = line["error"].strip()
+            body = {"stream": data, "build_status": "failure"}
+            params = {"build_id": build_id}
+            requests.post(url, json=body, params=params)
+            raise DockerBuildError
+    body = {"stream": " ", "build_status": "Success"}
+    params = {"build_id": build_id}
+    requests.post(url, json=body, params=params)
+

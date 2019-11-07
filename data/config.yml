@@ -1,7 +1,7 @@
 # This config file manages paths and values that can be adjusted to adapt Walkoff to your environment.
 
 # Common options
-API_GATEWAY_URI: "http://core_api_gateway:8080"
+API_URI: "http://core_api:8080"
 REDIS_URI: "redis://resource_redis:6379"
 MINIO: "resource_minio:9000"
 

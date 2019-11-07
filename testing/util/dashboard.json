@@ -1,0 +1,30 @@
+{
+  "widgets": [
+    {
+      "x": 2,
+      "y": 0,
+      "cols": 4,
+      "rows": 4,
+      "type_": "text",
+      "name": "Dashboard Title",
+      "options": {
+        "text": "Dashboard Text"
+      }
+    },
+    {
+      "x": 0,
+      "y": 4,
+      "cols": 4,
+      "rows": 4,
+      "type_": "bar",
+      "name": "Dashboard Bar Graph",
+      "options": {
+        "workflow": "8d3e5d36-51d4-0112-a284-ee27269224be",
+        "execution": "latest",
+        "action": "16a68714-db58-40a2-6cfa-7498b306df0f"
+      }
+    }
+  ],
+  "id_": "8fb6f895-362a-5dc3-ce6c-f380035b2dcc",
+  "name": "Sample Report Name"
+}

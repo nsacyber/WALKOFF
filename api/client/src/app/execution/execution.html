@@ -1,0 +1,94 @@
+<div id="main" class="executionMain">
+	<div class="d-flex align-items-center">
+		<nav aria-label="breadcrumb">
+			<ol id="playbookBreadcrumbs" class="breadcrumb">
+				<li class="breadcrumb-item">Execution</li>
+			</ol>
+		</nav>
+	</div>
+
+	<div class="row align-items-center mb-3">
+		<div class="col-lg-4 my-1 my-lg-none">
+			<select2 [data]="availableWorkflows" [options]="workflowSelectConfig"
+				(valueChanged)="workflowSelectChange($event)"></select2>
+		</div>
+		<div class="col-lg-auto mr-auto my-1 my-lg-none">
+			<button *ngIf="selectedWorkflow" (click)="executeSelectedWorkflow()" title="Execute Workflow"
+				class="btn btn-outline-primary mx-1">
+				<i class="fa fa-play"></i>
+				Execute Workflow
+			</button>
+			<button *ngIf="selectedWorkflow && selectedWorkflow.referenced_variables.length > 0"
+				(click)="openVariableModal()" title="Edit Local Variables" class="btn btn-outline-primary mx-1">
+				<i class="fa fa-play-circle-o"></i>
+				Override Local Variables
+			</button>
+		</div>
+		<div class="col col-lg-4 my-1 my-lg-none">
+			<input class="form-control" placeholder="Filter Results..." [formControl]="filterQuery" />
+		</div>
+	</div>
+
+	<ngx-datatable #workflowStatusTable class='material expandable workflowStatusTable' [columnMode]="'flex'"
+		[rows]="displayWorkflowStatuses" [sorts]="[{prop: 'started_at', dir: 'desc'}]" [sortType]="'multi'"
+		[headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
+		<!-- Column Templates -->
+		<ngx-datatable-column name="Workflow" prop="name" [flexGrow]="2">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				<a href="#" (click)="openNodeStatusModal($event, row)" placement="bottom-left"
+					ngbTooltip="View Action Results">{{row.name}}</a>
+				<br>
+				<span class="text-muted cursor-pointer" ngxClipboard [cbContent]="row.execution_id" 
+				[container]="workflowStatusTable.element" ngbTooltip="Copy Execution ID"> 
+					{{ row.execution_id }}
+				</span>
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Started By" prop="user" [flexGrow]="1"></ngx-datatable-column>
+		<ngx-datatable-column name="Started At" prop="started_at" [comparator]="dateComparator" [flexGrow]="1">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				<span ngbTooltip="{{ row.started_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+					{{ row.started_at ? (row.started_at | amFromUtc | amTimeAgo ) : 'N/A' }}
+				</span>
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Completed At" prop="completed_at" [comparator]="dateComparator" [flexGrow]="1">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				<span ngbTooltip="{{ row.completed_at ? (row.started_at | amFromUtc | amLocal ) : 'N/A' }}">
+					{{ row.completed_at ? (row.completed_at | amFromUtc | amTimeAgo ) : 'N/A' }}
+				</span>
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Status" prop="status" [flexGrow]="1"></ngx-datatable-column>
+		<ngx-datatable-column name="Current Action" prop="displayLabel" [flexGrow]="2">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                {{ row.displayLabel }}
+                <br><span class="text-muted">{{ row.displayAppAction }}</span>
+            </ng-template>
+        </ngx-datatable-column>
+		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				<button *ngIf="row.status.toLowerCase() === 'paused'"
+					(click)="performWorkflowStatusAction(row, workflowStatusActions.resume)"
+					ngbTooltip="Start Scheduled Task" class="btn btn-primary mx-1">
+					<i class="fa fa-play"></i>
+				</button>
+				<button *ngIf="row.status.toLowerCase() === 'running'"
+					(click)="performWorkflowStatusAction(row, workflowStatusActions.pause)"
+					ngbTooltip="Pause Scheduled Task" class="btn btn-warning mx-1">
+					<i class="fa fa-pause"></i>
+				</button>
+				<button *ngIf="!(row.status.toLowerCase() === 'completed' || row.status.toLowerCase() === 'aborted')"
+					(click)="performWorkflowStatusAction(row, workflowStatusActions.abort)"
+					ngbTooltip="Abort Scheduled Task" class="btn btn-danger mx-1">
+					<i class="fa fa-stop"></i>
+				</button>
+				<!-- <button
+					(click)="openNodeStatusModal($event, row)"
+					ngbTooltip="View Action Results" class="btn btn-primary mx-1">
+					<i class="fa fa-list"></i>
+				</button> -->
+			</ng-template>
+		</ngx-datatable-column>
+	</ngx-datatable>
+</div>

@@ -1,0 +1,144 @@
+{
+  "id_": "ed3cce3a-a7a7-0377-0784-8c49bd7ff8f7",
+  "name": "Workflow with Trigger",
+  "permissions": {
+    "access_level": 1,
+    "creator": "00000000-0000-6164-6d69-6e5f75736572",
+    "role_permissions": [
+      {
+        "role": "00000069-6e74-6572-6e61-6c5f726f6c65",
+        "permissions": [
+          "create",
+          "read",
+          "update",
+          "delete",
+          "execute"
+        ]
+      },
+      {
+        "role": "00000000-0073-6164-6d69-6e5f726f6c65",
+        "permissions": [
+          "create",
+          "read",
+          "update",
+          "delete",
+          "execute"
+        ]
+      },
+      {
+        "role": "00000000-0000-6164-6d69-6e5f726f6c65",
+        "permissions": [
+          "create",
+          "read",
+          "update",
+          "delete",
+          "execute"
+        ]
+      },
+      {
+        "role": "00000000-6170-705f-6465-765f726f6c65",
+        "permissions": [
+          "create",
+          "read",
+          "update",
+          "delete",
+          "execute"
+        ]
+      },
+      {
+        "role": "00000000-0077-665f-6465-765f726f6c65",
+        "permissions": [
+          "create",
+          "read",
+          "update",
+          "delete",
+          "execute"
+        ]
+      },
+      {
+        "role": "00000000-0000-7766-5f6f-705f726f6c65",
+        "permissions": [
+          "read",
+          "execute"
+        ]
+      }
+    ],
+    "walkoff_type_": "permissions"
+  },
+  "actions": [
+    {
+      "app_name": "basics",
+      "app_version": "1.0.0",
+      "name": "hello_world",
+      "label": "hello_world",
+      "id_": "a6bd7e3a-5888-1e38-e4f0-26a6bf509d53",
+      "errors": [],
+      "is_valid": true,
+      "position": {
+        "x": 390,
+        "y": 150
+      },
+      "priority": 3,
+      "parallelized": false,
+      "walkoff_type_": "action",
+      "parameters": []
+    },
+    {
+      "app_name": "basics",
+      "app_version": "1.0.0",
+      "name": "random_number",
+      "label": "random_number",
+      "id_": "08314cce-75fa-1e07-1315-fe07958e63a8",
+      "errors": [],
+      "is_valid": true,
+      "position": {
+        "x": 390,
+        "y": 350
+      },
+      "priority": 3,
+      "parallelized": false,
+      "walkoff_type_": "action",
+      "parameters": []
+    }
+  ],
+  "start": "a6bd7e3a-5888-1e38-e4f0-26a6bf509d53",
+  "execution_id": null,
+  "errors": [],
+  "is_valid": true,
+  "description": "",
+  "tags": [],
+  "walkoff_type_": "workflow",
+  "conditions": [],
+  "transforms": [],
+  "workflow_variables": [],
+  "triggers": [
+    {
+      "app_name": "Builtin",
+      "name": "Trigger",
+      "label": "Trigger",
+      "id_": "73a7ffd4-c02c-b70a-0355-7ba5e81e96b7",
+      "errors": [],
+      "is_valid": true,
+      "app_version": "1.0.0",
+      "position": {
+        "x": 390,
+        "y": 250
+      },
+      "walkoff_type_": "trigger"
+    }
+  ],
+  "branches": [
+    {
+      "source_id": "a6bd7e3a-5888-1e38-e4f0-26a6bf509d53",
+      "destination_id": "73a7ffd4-c02c-b70a-0355-7ba5e81e96b7",
+      "id_": "97cc4175-0ab6-fec1-a6b6-b4689d80db1f",
+      "walkoff_type_": "branch"
+    },
+    {
+      "source_id": "73a7ffd4-c02c-b70a-0355-7ba5e81e96b7",
+      "destination_id": "08314cce-75fa-1e07-1315-fe07958e63a8",
+      "id_": "e3bd0056-f957-16d1-a50e-80dd591c75ac",
+      "walkoff_type_": "branch"
+    }
+  ]
+}

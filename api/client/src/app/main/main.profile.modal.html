@@ -1,0 +1,82 @@
+<div class="modal-header">
+	<h4 class="modal-title">Edit Profile</h4>
+</div>
+<div id="userModalBody" class="modal-body">
+	<div class="container-fluid">
+		<form #userForm="ngForm" (ngSubmit)="submit()">
+			<button type=“submit” style="display: none;"></button>
+			<div *ngIf="user" class="row">
+				<div class="col">
+					<p class="h5 text-center">{{ editPersonalUser.old_username }}</p>
+					<div class="form-group justify-content-around d-flex">
+						<button type="button" class="btn btn-link btn-sm mr-3 p-0"
+							(click)="changeType = 'username'">Change Username</button>
+						<button type="button" class="btn btn-link btn-sm p-0" (click)="changeType = 'password'">Change
+							Password</button>
+					</div>
+					<ng-container *ngIf="changeType == 'username'">
+						<div class="form-group">
+							<label for="username">
+								New Username
+							</label>
+							<input type="text" class="form-control"
+								[class.is-invalid]="username.touched && username.invalid"
+								[(ngModel)]="editPersonalUser.new_username" name="username" #username="ngModel"
+								required>
+							<div class="invalid-feedback">
+								Username is required.
+							</div>
+						</div>
+					</ng-container>
+					<ng-container *ngIf="changeType == 'password'">
+						<div class="form-group">
+							<label for="newPassword">
+								New Password
+								<i *ngIf="!this.user.id" class="fa fa-asterisk required"
+									title="This field is required."></i>
+							</label>
+							<input type="password" class="form-control" [(ngModel)]="editPersonalUser.password"
+								#newPassword="ngModel" name="newPassword">
+							<div *ngIf="(!user.id || user.currentPassword) && (newPassword.dirty || newPassword.touched) && !newPassword.value"
+								class="alert alert-danger">
+								Password is required.
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="confirmNewPassword">
+								Confirm New Password
+								<i *ngIf="!this.user.id" class="fa fa-asterisk required"
+									title="This field is required."></i>
+							</label>
+							<input type="password" class="form-control" [(ngModel)]="passwordConfirm"
+								#confirmNewPassword="ngModel" name="confirmNewPassword">
+							<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && confirmNewPassword.value && newPassword.value !== confirmNewPassword.value"
+								class="alert alert-danger">
+								Passwords do not match.
+							</div>
+							<div *ngIf="confirmNewPassword.dirty && confirmNewPassword.touched && !confirmNewPassword.value"
+								class="alert alert-danger">
+								You must re-enter the new password to confirm.
+							</div>
+						</div>
+					</ng-container>
+					<div class="form-group" *ngIf="user.id && changeType">
+						<label for="currentPassword">Current Password</label>
+						<input type="password" class="form-control" [(ngModel)]="editPersonalUser.old_password"
+							#currentPassword="ngModel" name="currentPassword">
+						<div *ngIf="currentPassword.errors && (currentPassword.dirty || currentPassword.touched)"
+							class="alert alert-danger">
+							<div [hidden]="!currentPassword.errors.required">
+								Password is required.
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Close</button>
+	<button type="button" class="btn btn-primary ml-2" *ngIf="user?.id && changeType" (click)="submit()">Save</button>
+</div>

@@ -21,15 +21,18 @@ install:
   - python -m pip install -r requirements.txt
   - python -m pip install -r api/requirements.txt
   - python -m pip install -r testing/requirements.txt
+  - ps: docker-compose --version
+  - ps: docker --version
 
 before_build:
-  - docker swarm init --advertise-addr 127.0.0.1
+  - ps: $ifIndex = Get-NetIPInterface | Where-Object -FilterScript { $_.InterfaceAlias -Eq "Ethernet 7" -And $_.AddressFamily -Eq "IPv4"} | Select-Object -ExpandProperty ifIndex
+  - ps: $ipAddr = Get-NetIPAddress -InterfaceIndex $ifIndex | Where-Object -FilterScript {$_.AddressFamily -Eq "IPv4"} | Select-Object -ExpandProperty IPAddress
+  - ps: docker swarm init --advertise-addr $ipAddr
 
 build_script:
-  - ps: .\walkoff.ps1 up -bdy
-  - docker service ls
+  - ps: docker build -t walkoff_bootloader -f bootloader/Dockerfile .
+  - ps: .\test.ps1
+  - ps: docker images
 
 test_script:
-  - python -m pytest testing\api\
-
-
+  - ps: python -m pytest testing\api\

@@ -1,0 +1,82 @@
+<div id="main" class="playbookMain">
+    <!-- <h1 *ngIf="false" class="d-flex mt-2 mb-4">
+        <span class="mr-3">Workflows</span>
+        <div class="d-flex align-items-center">
+            <button (click)="createWorkflow()" class="btn btn-outline-primary mr-2">Create New</button>
+            <button (click)="importWorkflow()" class="btn btn-outline-primary">Import Workflow</button>
+        </div>
+        <div *ngIf="workflows.length > 0" class="col-4 my-1 my-lg-none ml-auto pr-0">
+                <input class="form-control" [formControl]="filterQuery" placeholder="Filter Workflows..." />
+            </div>
+    </h1> -->
+    <div class="d-flex align-items-center">
+        <nav aria-label="breadcrumb">
+            <ol id="playbookBreadcrumbs" class="breadcrumb">
+                <li class="breadcrumb-item">Workflows</li>
+                <li *hasPermission="['editWorkflows']" class="breadcrumb-item d-flex align-items-center">
+                    <a routerLink="" (click)="createWorkflow()">Create New</a>
+                    <button (click)="importWorkflow()" class="ml-3 btn btn-sm btn-outline-primary">Import Workflow</button>
+                </li>
+            </ol>
+        </nav>
+        <div *ngIf="workflows.length > 0" class="col-4 my-1 my-lg-none ml-auto pr-0">
+            <input class="form-control" [formControl]="filterQuery" placeholder="Filter Workflows..." />
+        </div>
+    </div>
+
+    <div *ngIf="workflows.length > 0" class="row">
+
+        <div *ngFor="let w of filteredWorkflows" class="col-md-6 col-lg-4 col-xl-3 my-4">
+            <div class="card workflow-card shadow">
+                <div *hasPermission="['editWorkflows']" ngbDropdown placement="bottom-right" class="d-inline-block workflow-menu mt-3">
+                    <a class="workflow-menu-link text-muted h2 px-3" ngbDropdownToggle><i
+                            class="fa fa-ellipsis-v"></i></a>
+                    <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+                        <button class="dropdown-item" (click)="editDescription(w)">Edit Settings...</button>
+                        <button class="dropdown-item" (click)="duplicateWorkflow(w)">Duplicate</button>
+                        <button class="dropdown-item" (click)="exportWorkflow(w)">Export</button>
+                        <button class="dropdown-item" (click)="deleteWorkflow(w)">Delete</button>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column">
+
+                    <h5 class="card-title">
+                        {{ w.name }}
+                        <div *ngIf="w.tags?.length > 0" class="small mt-1">
+                            <span *ngFor="let tag of w.tags" class="badge badge-pill badge-primary small mr-1">
+                                {{ tag }} </span>
+                        </div>
+                    </h5>
+
+                    <p class="card-text flex-grow-1">{{ w.description }}</p>
+                    <div *hasPermission="['executeWorkflows', 'editWorkflows']" class="d-flex justify-content-around">
+                        <button *hasPermission="['editWorkflows']" class="btn btn-outline-primary mr-1" (click)="routeToWorkflow(w)"><i
+                                class="fa fa-sitemap"></i> Workflow Editor</button>
+                        <button *hasPermission="['executeWorkflows']" class="btn btn-outline-primary" (click)="executeWorkflow(w)" [disabled]="!w.is_valid"><i
+                                class="fa fa-play-circle"></i> Execute Workflow</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div *ngIf="workflowsLoaded && workflows.length == 0" class="instruction-container d-flex justify-content-center align-items-center">
+        <div class="card bg-light shadow-lg">
+            <div class="card-body">
+                <h4 class="mb-3">Welcome to WALKOFF</h4>
+                <p>
+                    <b>WALKOFF</b> is a flexible, easy to use,
+                    automation framework allowing users to integrate their capabilities and devices to cut through the
+                    repetitive,
+                    tedious tasks slowing them down.
+                </p>
+                <p>
+                    Use the <b>Create New</b> link above to create your first workflow or
+                    visit the <a href="https://walkoff.readthedocs.io" target="_blank"><b>website</b></a> for additional
+                    documentation.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

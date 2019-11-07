@@ -56,6 +56,7 @@ def create_user():
     from api_gateway.serverdb import add_user, User, Role, initialize_default_resources_admin, \
         initialize_default_resources_internal_user, \
         initialize_default_resources_workflow_developer, \
+        initialize_default_resources_app_developer, \
         initialize_default_resources_workflow_operator, initialize_default_resources_super_admin
     from sqlalchemy_utils import database_exists, create_database
 
@@ -76,6 +77,7 @@ def create_user():
     initialize_default_resources_internal_user()
     initialize_default_resources_super_admin()
     initialize_default_resources_admin()
+    initialize_default_resources_app_developer()
     initialize_default_resources_workflow_developer()
     initialize_default_resources_workflow_operator()
 

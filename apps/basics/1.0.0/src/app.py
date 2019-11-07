@@ -15,14 +15,13 @@ class Basics(AppBase):
     __version__ = "1.0.0"
     app_name = "basics"  # this needs to match "name" in api.yaml
 
-    def __init__(self, redis, logger, console_logger=None):
+    def __init__(self, redis, logger):
         """
         Each app should have this __init__ to set up Redis and logging.
         :param redis:
         :param logger:
-        :param console_logger:
         """
-        super().__init__(redis, logger, console_logger)
+        super().__init__(redis, logger)
 
     async def hello_world(self):
         """
@@ -31,11 +30,8 @@ class Basics(AppBase):
         """
         message = f"Hello World from {socket.gethostname()} in workflow {self.current_execution_id}!"
 
-        # This logs to the docker logs
+        # This logs to both the container's stdout and to the UI console in the workflow editor
         self.logger.info(message)
-
-        # This sends a log message to the frontend workflow editor
-        await self.console_logger.info(message)
 
         return message
 
@@ -58,19 +54,17 @@ class Basics(AppBase):
 
     async def echo_array(self, data):
         self.logger.info(f"Echoing array: {data}")
-        await self.console_logger.info(f"Echoing array: {data}")
         return data
 
     async def echo_json(self, data):
         self.logger.info(f"Echoing JSON: {data}")
-        await self.console_logger.info(f"Echoing JSON: {data}")
         return data
 
     async def sample_report_data(self):
         message = f"Alpha,Beta,Charlie\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6\n1,2,3\n4,5,6"
         self.logger.info(message)
-        await self.console_logger.info(message)
         return message
 
+
 if __name__ == "__main__":
-    asyncio.run(Basics.run(), debug=True)
+    asyncio.run(Basics.run())

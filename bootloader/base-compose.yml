@@ -3,13 +3,12 @@ services:
   resource_registry:
     image: registry:2
     networks:
-      - walkoff_default
+      - walkoff_network
     deploy:
       placement:
         constraints: [node.role==manager]
     ports:
       - 5000:5000
-
 #    The commented lines are needed to enable auth on the custom registry
 #    environment:
 #      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
@@ -18,83 +17,130 @@ services:
 #      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
 #      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
     volumes:
-      - ./data/registry/reg_data:/var/lib/registry
+      - walkoff_resource_registry_volume:/var/lib/registry
 #      - ./data/config.yml:/etc/docker/registry/config.yml
 #      - /var/lib/boot2docker:/certs
 #      - /var/lib/boot2docker/auth:/auth
 
   resource_redis:
-    image: "redis"
+    image: bitnami/redis:5.0
     networks:
-      - walkoff_default
+      - walkoff_network
     ports:
       - "6379:6379"
-    command: redis-server --port 6379
+    environment:
+#      - REDIS_REPLICATION_MODE=master
+      - REDIS_MASTER_PASSWORD_FILE=/run/secrets/walkoff_redis_key
+      - REDIS_PASSWORD_FILE=run/secrets/walkoff_redis_key
 #    volumes:
-#      - /path/to/persistent/dir/redis:/data
+#      - walkoff_resource_redis_volume:/bitnami
+    secrets:
+      - walkoff_redis_key
+
+#  resource_redis_replicas:
+#    image: bitnami/redis:latest
+##    ports:
+##      - "6379:6379"
+#    depends_on:
+#      - resource_redis_master
+#    deploy:
+#      replicas: 3
+#    environment:
+#      - REDIS_REPLICATION_MODE=slave
+#      - REDIS_MASTER_HOST=resource_redis_master
+#      - REDIS_MASTER_PORT_NUMBER=6379
+#      - REDIS_MASTER_PASSWORD_FILE=/run/secrets/walkoff_redis_key
+#      - REDIS_PASSWORD_FILE=/run/secrets/walkoff_redis_key
+#    secrets:
+#      - walkoff_redis_key
 
   resource_minio:
-    image: minio/minio
+    image: bitnami/minio:2019-debian-9
     networks:
-      - walkoff_default
-#    ports:
-#      - "9001:9000"
+      - walkoff_network
+    ports:
+      - "9001:9000"
     volumes:
-      - ./data/minio/min_data:/data
-      - /var/run/docker.sock:/var/run/docker.sock
+      - walkoff_resource_minio_volume:/data
       - ./apps:/app/apps
+      - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       placement:
         constraints: [node.role==manager]
     environment:
-      - "MINIO_ACCESS_KEY_FILE=walkoff_minio_access_key"
-      - "MINIO_SECRET_KEY_FILE=walkoff_minio_secret_key"
-    command: server /data
+      - MINIO_ACCESS_KEY_FILE=/run/secrets/walkoff_minio_access_key
+      - MINIO_SECRET_KEY_FILE=/run/secrets/walkoff_minio_secret_key
     secrets:
       - walkoff_minio_access_key
       - walkoff_minio_secret_key
 
-  resource_postgres:
-    image: "postgres"
+  resource_mongo:
+    image: mongo:4
     networks:
-      - walkoff_default
+      - walkoff_network
+    ports:
+      - 27016:27016
     environment:
-      - "POSTGRES_USER=walkoff"
-      - "POSTGRES_PASSWORD_FILE=/run/secrets/walkoff_postgres_key"
-    deploy:
-      placement:
-        constraints: [node.role==manager]
+      - MONGO_INITDB_ROOT_USERNAME=walkoff
+      - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/walkoff_mongo_key
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - walkoff_resource_mongo_volume:/data/db
     secrets:
-      - walkoff_postgres_key
+      - walkoff_mongo_key
+    command: --port 27016
+
+  debug_mongo_express:
+    image: mongo-express:latest
+    networks:
+      - walkoff_network
+    ports:
+      - 27018:8081
+    environment:
+      - ME_CONFIG_MONGODB_PORT=27016
+      - ME_CONFIG_MONGODB_SERVER=resource_mongo
+      - ME_CONFIG_SITE_BASEURL=/mongo/
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=walkoff
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=walkoff123456
+    secrets:
+      - walkoff_mongo_key
 
   resource_portainer:
-    image: "portainer/portainer"
+    image: portainer/portainer:latest
     networks:
-      - walkoff_default
+      - walkoff_network
     deploy:
       placement:
         constraints: [node.role==manager]
     volumes:
+      - walkoff_resource_portainer_volume:/data
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data/portainer/prt_data:/data
 
 configs:
   common_env.yml:
     file: ./data/config.yml
 
 secrets:
-  walkoff_postgres_key:
+  walkoff_mongo_key:
     external: true
   walkoff_minio_access_key:
     external: true
   walkoff_minio_secret_key:
     external: true
+  walkoff_redis_key:
+    external: true
 
 networks:
-  walkoff_default:
+  walkoff_network:
     external: true
 
 volumes:
-  postgres-data:
+  walkoff_resource_registry_volume:
+    external: true
+  walkoff_resource_minio_volume:
+    external: true
+  walkoff_resource_mongo_volume:
+    external: true
+  walkoff_resource_portainer_volume:
+    external: true
+#  walkoff_resource_redis_volume:
+#    external: true

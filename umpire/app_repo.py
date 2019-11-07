@@ -14,7 +14,7 @@ from common.config import config
 from common.docker_helpers import get_project
 from common.helpers import get_walkoff_auth_header
 
-logging.basicConfig(level=logging.info, format="{asctime} - {name} - {levelname}:{message}", style='{')
+logging.basicConfig(level=logging.INFO, format="{asctime} - {name} - {levelname}:{message}", style='{')
 logger = logging.getLogger("AppRepo")
 
 compose_logger = logging.getLogger("compose.config.config")
@@ -51,7 +51,7 @@ class AppRepo:
         return inst
 
     async def get_loaded_apis(self):
-        url = f"{config.API_GATEWAY_URI}/walkoff/api/apps/apis"
+        url = f"{config.API_URI}/walkoff/api/apps/apis/"
         timeout = 0.25
         while True:
             try:
@@ -69,11 +69,11 @@ class AppRepo:
                 await asyncio.sleep(timeout)
 
     async def store_api(self, api):
-        url = f"{config.API_GATEWAY_URI}/walkoff/api/apps/apis"
+        url = f"{config.API_URI}/walkoff/api/apps/apis/"
         try:
             headers, self.token = await get_walkoff_auth_header(self.session, self.token)
             if api.get("name") in self.loaded_apis:
-                async with self.session.put(url + f"/{api['name']}", json=api, headers=headers) as resp:
+                async with self.session.put(url + f"{api['name']}", json=api, headers=headers) as resp:
                     if resp.status == 200:
                         results = await resp.json()
                         self.loaded_apis[results["name"]] = results
@@ -83,7 +83,7 @@ class AppRepo:
                         results = await resp.json()
 
                         # it's invalid so toast any old versions from the db
-                        await self.session.delete(url + f"/{api['name']}", headers=headers)
+                        await self.session.delete(url + f"{api['name']}", headers=headers)
                         logger.error(f"App api {api.get('name')} is invalid. {results.get('detail')}")
             else:
                 async with self.session.post(url, json=api, headers=headers) as resp:
@@ -101,7 +101,7 @@ class AppRepo:
 
     # TODO: Maybe set an API to inactive instead of deletion
     async def delete_unused_apps_and_apis(self):
-        url = f"{config.API_GATEWAY_URI}/walkoff/api/apps/apis"
+        url = f"{config.API_URI}/walkoff/api/apps/apis/"
         appnames = {key for key, value in self.apps.items()}
         appnames.add('Builtin')
         unused_apis = set(self.loaded_apis.keys()).difference(appnames)
@@ -112,7 +112,7 @@ class AppRepo:
 
         try:
             headers, self.token = await get_walkoff_auth_header(self.session, self.token)
-            [await self.session.delete(f"{url}/{api}", headers=headers) for api in unused_apis]
+            [await self.session.delete(f"{url}{api}", headers=headers) for api in unused_apis]
 
         except (asyncio.TimeoutError, aiohttp.ClientConnectionError) as e:
             logger.error(f"Could not get app apis from {url}: {e!r}")

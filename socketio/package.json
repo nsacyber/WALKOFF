@@ -1,0 +1,28 @@
+{
+  "name": "socketio",
+  "version": "1.0.0",
+  "description": "Socket.io websocket server for WALKOFF",
+  "repository": "github:nsacyber/WALKOFF",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch-ts": "tsc -w",
+    "watch-node": "nodemon dist/server.js",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript, Node\" -c \"yello.bold, cyan.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
+    "start": "node --max_old_space_size=8192 dist/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.1",
+    "@types/socket.io": "^2.1.4",
+    "class-transformer": "^0.2.3",
+    "concurrently": "^5.0.0",
+    "express": "^4.17.1",
+    "nodemon": "^1.19.3",
+    "reflect-metadata": "^0.1.13",
+    "socket.io": "^2.3.0",
+    "typescript": "^3.6.3"
+  }
+}

@@ -1,0 +1,36 @@
+<div class="modal-header">
+    <h4 class="modal-title">{{ existing ? 'Edit' : 'Add' }} Local Variable</h4>
+</div>
+<div class="modal-body">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input name="name" type="text" [(ngModel)]="variable.name" class="form-control">
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group">
+                    <label for="value">Default Value</label>
+                    <json-editor #jsonEditor [options]="editorOptionsData" [data]="initialValue"></json-editor>
+                    <small class="form-text text-info pl-1">
+                        <i class="fa fa-exclamation-circle pr-1" aria-hidden="true"></i>
+                        If JSON is invalid, results will be saved as a string
+                    </small>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group">
+                    <label for="description">Description (optional)</label>
+                    <textarea name="description" rows="3" [(ngModel)]="variable.description"
+                        class="form-control"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Close</button>
+    <button type="button" class="btn btn-primary" (click)="activeModal.close(variable)">Save</button>
+</div>
