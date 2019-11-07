@@ -4,19 +4,30 @@
 
 ## [1.0.0-rc.2] 
 
-This update includes a rewrite of the API Gateway from Flask to FastAPI to leverage Python Asyncio functionality. Server-Sent Events used for streaming data to the UI was also replaced by Socket.IO which should be easier to maintain and be more robust.
+This update includes a rewrite of the API Gateway from Flask to FastAPI to leverage Python Asyncio functionality. Server-Sent Events used for streaming data to the UI was also replaced by Socket.IO which should be easier to maintain and be more robust. UI improvements for interacting with JSON data were also included. 
+
+We would have liked to go for a full 1.0.0 release within the month, but due to factors outside of our control, the development team will be pausing work on WALKOFF. We hope to be back within the next couple weeks.
 
 ### Added 
-* Docker logs are now streamed to the UI when rebuilding apps for better feedback on errors
+* Docker logs are now streamed to the UI when rebuilding apps for better feedback on errors.
+* JSON editor/viewer throughout UI where JSON can be accepted (e.g. local/global variables, action results, etc.).  
+* RBAC for App Editor.
+* Upload file capability in App Editor.
+* Moved certain items in navigation menu to sub-menu.
+* End-to-end testing suite for API.
+* Travis CI testing reimplemented (Appveyor in progress).
 
 ### Changed 
-* Flask framework replaced with FastAPI async framework
-* Server-Sent Events replaced with Socket.IO
+* Flask framework replaced with FastAPI async framework.
+* Using Pydantic models for (de)serialization and validation to/from MongoDB.
+* Server-Sent Events replaced with Socket.IO.
+* PostgreSQL database replaced with MongoDB.
+* Internal HTTP communication removed in favor of Redis and Socket.IO.
+* All passwords for resources now randomly generated upon first run/build and stored in Docker Secrets.
 
 ### Fixed 
-*  
-
-### Removed 
+* UI should no longer intermittently fail to read from database (including authentication issues).
+* Workflow status now correctly reports current app/action executing.
 
 
 ## [1.0.0-rc.1] 
