@@ -36,5 +36,3 @@ build_script:
 
 test_script:
   - ps: python -m pytest testing\api\
-
-
