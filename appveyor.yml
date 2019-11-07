@@ -26,7 +26,7 @@ install:
 
 before_build:
   - ipconfig
-  - docker swarm init --advertise-addr 127.0.0.1
+  - docker swarm init --advertise-addr 10.0.0.2
   - ipconfig
 
 build_script:
