@@ -26,11 +26,12 @@ install:
 
 before_build:
   - docker swarm init --advertise-addr 127.0.0.1
-  - ps: .\walkoff.ps1 up -bdy
+
+build_script:
+  - ipconfig
+  - ps: .\walkoff.ps1 up -bdyr
   - docker service ls
-
-#build_script:
-
+  - ipconfig
 
 test_script:
   - python -m pytest testing\api\
