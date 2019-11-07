@@ -164,10 +164,10 @@ class Config:
     # DOCKER_TLS_VERIFY = os.getenv("DOCKER_TLS_VERIFY", "1")
     # DOCKER_CERT_PATH = os.getenv("DOCKER_CERT_PATH", "/Path/to/certs/for/remote/docker/daemon")
 
-    def get_int(self, key, default):
+    def get_int(self, key, default=None):
         return sint(getattr(self, key), default)
 
-    def get_float(self, key, default):
+    def get_float(self, key, default=None):
         return sfloat(getattr(self, key), default)
 
     def load_config(self):
