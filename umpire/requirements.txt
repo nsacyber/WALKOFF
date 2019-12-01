@@ -1,3 +1,4 @@
+pydantic == 0.32.2
 docker
 docker-compose
 minio
@@ -10,5 +11,4 @@ six
 redis
 uvicorn
 tenacity
-pydantic
 email-validator
