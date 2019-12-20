@@ -28,9 +28,9 @@ RUN apt-get update \
 
 COPY --from=builder /install /usr/local
 #COPY ./.dockerignore /app/.dockerignore
-#COPY ./bootloader/ /app/bootloader
+COPY bootloader/bootloader.py /app/bootloader.py
 #COPY ./common /app/common
-#WORKDIR /app
+WORKDIR /app
 
 ENTRYPOINT ["python", "-m", "bootloader.bootloader"]
 
