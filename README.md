@@ -9,7 +9,7 @@ WALKOFF is a flexible, easy to use, automation framework allowing users to integ
 
 **WHAT WE OFFER**
  - *Easy-to-use:* Drag-and-drop workflow editor. Sharable apps and workflows.
- - *Flexbility:* Deployable on Windows or Linux.
+ - *Flexibility:* Deployable on Windows or Linux.
  - *Modular:* Plug and play integration of almost anything with easy-to-develop applications.
  - *Visual Analytics:* Send workflow data to custom dashboards (and soon, Elasticsearch & Kibana!)
 
