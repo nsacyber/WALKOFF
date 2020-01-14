@@ -1,0 +1,22 @@
+settings:
+  logging: info ## Log verbosity <debug, info (default), warn, error>
+  tags: ## List of tags you want to appear in notifications for identification purposes
+    - practice
+
+events: ## The Docker event types that you want to trigger alerts for
+  service:
+    - create
+    - remove
+
+integrations: ## Available integrations
+  apirequest:
+    enabled: True
+    key: print me please !
+  sparkpost:
+    enabled: False
+    url: https://api.sparkpost.com/api/v1/transmissions
+    key: ddf35a1e62b975148b59ac26ef7bdfe9920baaa1
+    from: sandbox@sparkpostbox.com
+    subject: Docker Event Monitor worked!
+    recipients:
+      - rodas_emilio@bah.com

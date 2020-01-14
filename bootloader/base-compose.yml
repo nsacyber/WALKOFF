@@ -115,6 +115,20 @@ services:
       - walkoff_resource_portainer_volume:/data
       - /var/run/docker.sock:/var/run/docker.sock
 
+  resource_dem:
+    image: quaide/dem:latest
+    networks:
+      - walkoff_network
+    deploy:
+      placement:
+        constraints: [node.role==manager]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./conf.yml:/app/conf.yml
+      - ./apirequest.py:/app/apirequest.py
+      - ./main.py:/app/main.py
+
+
 configs:
   common_env.yml:
     file: ./data/config.yml
