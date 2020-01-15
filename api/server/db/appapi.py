@@ -3,7 +3,7 @@ from typing import List
 from uuid import UUID
 
 import semver
-from pydantic import BaseModel, validator, AnyUrl, EmailStr
+from pydantic import BaseModel, validator, UrlStr, EmailStr
 
 from api.server.db import IDBaseModel
 from api.server.db.action import ActionApiModel  # ActionApiSchema,
@@ -13,18 +13,18 @@ logger = logging.getLogger("API")
 
 class AppApiContactModel(BaseModel):
     name: str = ""
-    url: AnyUrl = None
+    url: UrlStr = None
     email: EmailStr = None
 
 
 class AppApiLicenseModel(BaseModel):
     name: str = ""
-    url: AnyUrl = None
+    url: UrlStr = None
 
 
 class AppExternalDocModel(BaseModel):
     description: str = ""
-    url: AnyUrl = None
+    url: UrlStr = None
 
 
 class AppApiModel(IDBaseModel):

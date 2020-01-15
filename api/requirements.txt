@@ -19,7 +19,8 @@ python-multipart
 pyjwt
 python-socketio
 websocket-client
+pydantic==0.32.2
 minio
-aiodocker == 0.14.0
+aiodocker==0.14.0
 docker
 
