@@ -10,5 +10,5 @@ six
 redis
 uvicorn
 tenacity
-pydantic
+pydantic == 0.32.2
 email-validator

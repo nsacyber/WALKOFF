@@ -22,4 +22,4 @@ websocket-client
 minio
 aiodocker == 0.14.0
 docker
-
+pydantic == 0.32.2
