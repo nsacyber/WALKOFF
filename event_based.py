@@ -40,6 +40,9 @@ def task_listener(status, service_id, task_id):
             status = task[0]["Status"]["State"]
             pprint(task_id + ": " + status)
             pprint("HEY" + status_code)
+            if status_code == 1:
+                client.services.get(service_id).remove()
+
         time.sleep(1)
     else:
         if task_id in tasks:

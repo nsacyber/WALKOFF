@@ -139,13 +139,13 @@ def generate_app_composes():
 
 async def are_you_sure(prompt):
     try:
-        resp = input(f"{prompt}\n\nAre you sure? (yes/no): ")
-        while resp.lower() not in ("yes", "no"):
+        resp = input(f"{prompt}\n\nAre you sure? (y/n): ")
+        while resp.lower() not in ("yes", "no", "y", "n"):
             resp = input("Please answer 'yes' or 'no': ")
     except KeyboardInterrupt:
         return False
 
-    if resp.lower() == "yes":
+    if resp.lower() == "yes" or resp.lower() == "y":
         return True
     else:
         return False
