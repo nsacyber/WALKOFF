@@ -4,7 +4,7 @@ FROM python:3.7.4-slim-buster as base
 FROM base as builder
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends git autoconf g++ \
+ && apt-get install -y --no-install-recommends git autoconf g++ libffi-dev libssl-dev\
  && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /install
