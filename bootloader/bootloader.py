@@ -265,7 +265,6 @@ async def build_image(docker_client, repo, dockerfile, context_dir, dockerignore
 
     await stream_docker_log(log_stream)
 
-
 async def pull_image(docker_client, repo):
     logger.info(f"Pulling image {repo}")
 
@@ -290,6 +289,14 @@ async def push_image(docker_client, repo):
         logger.exception(f"Failed to push image: {e}")
         return False
 
+async def image_exists(docker_client, repo):
+    try:
+        await docker_client.images.inspect(repo)
+        logger.info(f"Image exists {repo}.")
+        return True
+    except aiodocker.exceptions.DockerError as e:
+        logger.info(f"Image doesnt exist {repo}.")
+        return False
 
 async def force_service_update(docker_client, service_name, image):
     logger.info(f"Forcing service update for {service_name}...")
@@ -388,6 +395,8 @@ class Bootloader:
                             help="Skips all verification questions.")
         parser.add_argument("-r", "--resources", action="store_true",
                             help="Only runs the resource services.")
+        parser.add_argument("-o", "--offline", action="store_true",
+                            help="Runs WALKOFF offline")
 
         # Parse out the command
         args = parser.parse_args(sys.argv[2:])
@@ -430,10 +439,12 @@ class Bootloader:
         base_compose = parse_yaml(config.BASE_COMPOSE)
 
         for service_name, service in base_compose["services"].items():
-            if not await pull_image(self.docker_client, service["image"]):
-                logger.info("Failed to pull requisite images, aborting deployment. "
-                            "Please use the 'down' command to clean up. ")
-                return
+            if args.offline:
+                if not await image_exists(self.docker_client, service["image"]):
+                    if not await pull_image(self.docker_client, service["image"]):
+                        logger.info("Failed to pull requisite images, aborting deployment. "
+                                    "Please use the 'down' command to clean up. ")
+                        return
 
         logger.info("Deploying base services (registry, minio, mongo, portainer, redis)...")
         await deploy_compose(base_compose)
