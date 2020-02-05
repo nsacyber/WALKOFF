@@ -13,8 +13,9 @@ if ($args[0] -eq "up") {
 
 Write-Host "Starting WALKOFF Bootloader..."
 
-$r = docker network inspect walkoff_network 2>$null
-if ($r -eq "[]") {
+try {
+    docker network inspect walkoff_network 2>$null
+} catch {
     Write-Host -NoNewLine "Creating walkoff_network network: "
     docker network create --attachable=True --driver=overlay walkoff_network
 }
