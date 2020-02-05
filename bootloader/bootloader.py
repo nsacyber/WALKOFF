@@ -445,6 +445,11 @@ class Bootloader:
                         logger.info("Failed to pull requisite images, aborting deployment. "
                                     "Please use the 'down' command to clean up. ")
                         return
+            else:
+                if not await pull_image(self.docker_client, service["image"]):
+                    logger.info("Failed to pull requisite images, aborting deployment. "
+                                "Please use the 'down' command to clean up. ")
+                    return
 
         logger.info("Deploying base services (registry, minio, mongo, portainer, redis)...")
         await deploy_compose(base_compose)
