@@ -15,3 +15,6 @@ services:
       restart_policy:
         condition: none
     restart: "no"
+    volumes:
+      - data/shared:/app/scripts
+

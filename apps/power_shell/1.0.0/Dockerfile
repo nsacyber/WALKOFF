@@ -26,13 +26,7 @@ COPY --from=127.0.0.1:5000/walkoff_app_sdk /app /app
 COPY --from=builder /install /usr/local
 COPY src /app
 
-# Install any OS packages dependencies needed in the final image for our app to run
-# Removing package cache reduces final image size since we won't apt-get install anything else in this stage
-
-#RUN apt-get update \
-# && apt-get install -y --no-install-recommends my_binary_dependency \
-# && rm -rf /var/lib/apt/lists/*
-
 # Finally, set the working directory and how our app will run.
 WORKDIR /app
+RUN mkdir scripts
 CMD python app.py --log-level DEBUG
