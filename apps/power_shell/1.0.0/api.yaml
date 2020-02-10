@@ -191,3 +191,62 @@ actions:
     returns:
       json_schema:
         type: string
+  - name: exec_powershell_script_dependencies
+    description: Copies specified folder to remote machine, executes script then deletes folder.
+    parameters:
+      - name: hosts
+        description: list of hosts to execute on
+        parallelizable: true
+        required: true
+        json_schema:
+          type: array
+      - name: shell_type
+        description: Type of shell you want to execute, type "powershell" if you want to execute a powershell script
+        required: true
+        json_schema:
+          type: string
+      - name: arguments
+        description: script in the form of array commands
+        required: true
+        json_schema:
+          type: array
+      - name: dependency_folder
+        description: Specifies the local folder to copy
+        required: true
+        json_schema:
+          type: string
+      - name: destination_folder
+        description: Specifies the destination folder to copy/delete
+        required: true
+        json_schema:
+          type: string
+      - name: username
+        description: Username for remote host
+        required: true
+        json_schema:
+          type: string
+      - name: password
+        description: Password for remote host user
+        required: true
+        json_schema:
+          type: string
+      - name: transport
+        description: transport type
+        json_schema:
+          type: string
+          enum: ["plaintext", "kerberos", "ssl", "ntlm", "credssp"]
+        required: true
+      - name: server_cert_validation
+        description: whether server certificate should be validated
+        json_schema:
+          type: boolean
+        required: true
+      - name: message_encryption
+        description: Will encrypt the WinRM messages if set to True and the transport auth supports message encryption
+        json_schema:
+          type: string
+          enum: ["auto", "always", "never"]
+        required: true
+    returns:
+      json_schema:
+        type: string
