@@ -16,3 +16,4 @@ data/log
 apps/
 walkoff/
 data/
+venv/
