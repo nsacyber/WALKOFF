@@ -28,12 +28,18 @@ router = APIRouter()
             response_description="List of all Global Variables currently loaded in WALKOFF",
             status_code=200)
 async def read_all_globals(request: Request, to_decrypt: str = False,
-                           global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+                           global_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                           page: int = 1):
     """
     Returns a list of all Global Variables currently loaded in WALKOFF.
+    Pagination is currently not supported.
     """
     walkoff_db = get_mongo_d(request)
     curr_user_id = await get_jwt_identity(request)
+
+    # Pagination is currently not supported.
+    if page > 1:
+        return []
 
     key = config.get_from_file(config.ENCRYPTION_KEY_PATH) #, 'rb')
     # for testing
