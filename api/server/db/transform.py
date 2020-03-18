@@ -15,6 +15,7 @@ class TransformModel(IDBaseModel):
     app_version: str = None
     name: str
     label: str
+    transform: str = ""
     position: dict = {"x": 0, "y": 0, "walkoff_type_": "position"}
     walkoff_type_: str = "transform"
 
