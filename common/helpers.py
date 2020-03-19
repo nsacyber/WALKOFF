@@ -122,7 +122,7 @@ async def send_status_update(redis, execution_id, workflow_id, message):
     #     logger.error(f"Timed out sending event to {config.SOCKETIO_URI}: {e!r}")
 
 
-def fernet_encrypt(key, string):
+def fernet_encrypt(key: bytes, string: str):
     from cryptography.fernet import Fernet
 
     if type(string) is not str:
@@ -133,7 +133,7 @@ def fernet_encrypt(key, string):
     return Fernet(b64encode(key)).encrypt(to_enc.encode()).decode()
 
 
-def fernet_decrypt(key, string):
+def fernet_decrypt(key: bytes, string: str):
     from cryptography.fernet import Fernet
     s = Fernet(b64encode(key)).decrypt(string.encode()).decode()
     try:
