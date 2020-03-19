@@ -160,19 +160,20 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
     to_update = await auth_check(old_global, curr_user_id, "update", walkoff_db)
     if to_update:
         if access_level == AccessLevel.CREATOR_ONLY:
-            updated_global.permissions = creator_only_permissions(curr_user_id)
+            updated_global.permissions = await creator_only_permissions(curr_user_id)
         elif access_level == AccessLevel.EVERYONE:
-            updated_global.permissions = default_permissions(curr_user_id, walkoff_db, "global_variables")
+            updated_global.permissions = await default_permissions(curr_user_id, walkoff_db, "global_variables")
         elif access_level == AccessLevel.ROLE_BASED:
             await append_super_and_internal(updated_global.permissions)
             updated_global.permissions.creator = curr_user_id
 
-        try:
-            key = config.get_from_file(config.ENCRYPTION_KEY_PATH, mode='rb')
-            updated_global.value = fernet_encrypt(key, updated_global.value)
-            return await mongo_helpers.update_item(global_col, GlobalVariable, global_id, updated_global)
-        except:
-            raise UniquenessException("global_variable", "update", updated_global.name)
+        # try:
+        key = config.get_from_file(config.ENCRYPTION_KEY_PATH, mode='rb')
+        updated_global.value = fernet_encrypt(key, updated_global.value)
+        return await mongo_helpers.update_item(global_col, GlobalVariable, global_id, updated_global)
+        # except Exception as e:
+        #     logger.info(e)
+        #     raise UniquenessException("global_variable", "update", updated_global.name)
     else:
         raise UnauthorizedException("update data for", "Global Variable", old_global.name)
 
