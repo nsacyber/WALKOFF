@@ -64,8 +64,8 @@ async def get_all_workflow_status(*, walkoff_db: AsyncIOMotorDatabase = Depends(
 
     ret = []
     for wf_status in wf_statuses:
-        wf = await mongo_helpers.get_item(workflow_col, WorkflowModel, wf_status.workflow_id)
-        if await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db):
+        wf = await mongo_helpers.get_item(workflow_col, WorkflowModel, wf_status.workflow_id, raise_exc=False)
+        if wf and await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db):
             ret.append(wf_status)
 
     return ret
