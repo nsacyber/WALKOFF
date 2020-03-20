@@ -28,20 +28,20 @@ router = APIRouter()
             response_description="List of all Global Variables currently loaded in WALKOFF",
             status_code=200)
 async def read_all_globals(request: Request, to_decrypt: str = False,
-                           global_col: AsyncIOMotorCollection = Depends(get_mongo_c)):
+                           global_col: AsyncIOMotorCollection = Depends(get_mongo_c),
+                           page: int = 1):
     """
     Returns a list of all Global Variables currently loaded in WALKOFF.
+    Pagination is currently not supported.
     """
     walkoff_db = get_mongo_d(request)
     curr_user_id = await get_jwt_identity(request)
 
-    key = config.get_from_file(config.ENCRYPTION_KEY_PATH) #, 'rb')
-    # for testing
-    try:
-        key = key.encode('utf-8')
-        key = base64.b64encode(key)
-    except:
-        key = key
+    # Pagination is currently not supported.
+    if page > 1:
+        return []
+
+    key = config.get_from_file(config.ENCRYPTION_KEY_PATH, mode='rb')
     query = await mongo_helpers.get_all_items(global_col, GlobalVariable)
 
     ret = []
@@ -77,13 +77,7 @@ async def read_global(request: Request, global_var: UUID, to_decrypt: str = "fal
         if to_decrypt == "false":
             return global_variable.value
         else:
-            key = config.get_from_file(config.ENCRYPTION_KEY_PATH)#, 'rb')
-            # for testing
-            try:
-                key = key.encode('utf-8')
-                key = base64.b64encode(key)
-            except:
-                key = key
+            key = config.get_from_file(config.ENCRYPTION_KEY_PATH, mode='rb')
             return fernet_decrypt(key, global_variable.value)
     else:
         raise UnauthorizedException("read data for", "Global Variable", global_variable.name)
@@ -135,13 +129,7 @@ async def create_global(request: Request, new_global: GlobalVariable,
         await append_super_and_internal(new_global.permissions)
         new_global.permissions.creator = curr_user_id
     try:
-        key = config.get_from_file(config.ENCRYPTION_KEY_PATH) #, 'rb')
-        # for testing
-        try:
-            key = key.encode('utf-8')
-            key = base64.b64encode(key)
-        except:
-            key = key
+        key = config.get_from_file(config.ENCRYPTION_KEY_PATH, mode='rb')
         new_global.value = fernet_encrypt(key, new_global.value)
         return await mongo_helpers.create_item(global_col, GlobalVariable, new_global)
     except Exception as e:
@@ -172,25 +160,20 @@ async def update_global(request: Request, updated_global: GlobalVariable, global
     to_update = await auth_check(old_global, curr_user_id, "update", walkoff_db)
     if to_update:
         if access_level == AccessLevel.CREATOR_ONLY:
-            updated_global.permissions = creator_only_permissions(curr_user_id)
+            updated_global.permissions = await creator_only_permissions(curr_user_id)
         elif access_level == AccessLevel.EVERYONE:
-            updated_global.permissions = default_permissions(curr_user_id, walkoff_db, "global_variables")
+            updated_global.permissions = await default_permissions(curr_user_id, walkoff_db, "global_variables")
         elif access_level == AccessLevel.ROLE_BASED:
             await append_super_and_internal(updated_global.permissions)
             updated_global.permissions.creator = curr_user_id
 
-        try:
-            key = config.get_from_file(config.ENCRYPTION_KEY_PATH)#, 'rb')
-            # for testing
-            try:
-                key = key.encode('utf-8')
-                key = base64.b64encode(key)
-            except:
-                key = key
-            updated_global.value = fernet_encrypt(key, updated_global.value)
-            return await mongo_helpers.update_item(global_col, GlobalVariable, global_id, updated_global)
-        except:
-            raise UniquenessException("global_variable", "update", updated_global.name)
+        # try:
+        key = config.get_from_file(config.ENCRYPTION_KEY_PATH, mode='rb')
+        updated_global.value = fernet_encrypt(key, updated_global.value)
+        return await mongo_helpers.update_item(global_col, GlobalVariable, global_id, updated_global)
+        # except Exception as e:
+        #     logger.info(e)
+        #     raise UniquenessException("global_variable", "update", updated_global.name)
     else:
         raise UnauthorizedException("update data for", "Global Variable", old_global.name)
 

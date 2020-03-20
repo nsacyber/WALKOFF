@@ -133,7 +133,7 @@ class AppBase:
                         params = {}
                         for p in action.parameters:
                             if p.variant == ParameterVariant.GLOBAL:
-                                key = config.get_from_file(config.ENCRYPTION_KEY_PATH, 'rb')
+                                key = config.get_from_file(config.ENCRYPTION_KEY_PATH, mode='rb')
                                 params[p.name] = fernet_decrypt(key, p.value)
                             else:
                                 params[p.name] = p.value

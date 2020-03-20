@@ -40,7 +40,7 @@ export class GlobalsService {
 	 * Asynchronously returns an array of existing globals from the server.
 	 */
 	getGlobals(page: number = 1): Promise<Variable[]> {
-		return this.http.get(`api/globals?page=${ page }`)
+		return this.http.get(`api/globals/?page=${ page }`)
 			.toPromise()
 			.then((data) => plainToClass(Variable, data))
 			.catch(this.utils.handleResponseError);
@@ -51,7 +51,7 @@ export class GlobalsService {
 	 * @param global Global to add
 	 */
 	addGlobal(global: Variable): Promise<Variable> {
-		return this.http.post('api/globals', classToPlain(global))
+		return this.http.post('api/globals/', classToPlain(global))
 			.toPromise()
 			.then((data) => this.emitChange(data))
 			.then((data) => plainToClass(Variable, data))

@@ -1,5 +1,6 @@
 import logging
 import json
+from base64 import b64encode
 from uuid import UUID
 
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -121,7 +122,7 @@ async def send_status_update(redis, execution_id, workflow_id, message):
     #     logger.error(f"Timed out sending event to {config.SOCKETIO_URI}: {e!r}")
 
 
-def fernet_encrypt(key, string):
+def fernet_encrypt(key: bytes, string: str):
     from cryptography.fernet import Fernet
 
     if type(string) is not str:
@@ -129,12 +130,12 @@ def fernet_encrypt(key, string):
     else:
         to_enc = string
 
-    return Fernet(key).encrypt(to_enc.encode()).decode()
+    return Fernet(b64encode(key)).encrypt(to_enc.encode()).decode()
 
 
-def fernet_decrypt(key, string):
+def fernet_decrypt(key: bytes, string: str):
     from cryptography.fernet import Fernet
-    s = Fernet(key).decrypt(string.encode()).decode()
+    s = Fernet(b64encode(key)).decrypt(string.encode()).decode()
     try:
         r = json.loads(s)
     except (TypeError, json.decoder.JSONDecodeError):
