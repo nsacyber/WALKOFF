@@ -65,8 +65,9 @@ async def get_all_workflow_status(*, walkoff_db: AsyncIOMotorDatabase = Depends(
     ret = []
     for wf_status in wf_statuses:
         wf = await mongo_helpers.get_item(workflow_col, WorkflowModel, wf_status.workflow_id, raise_exc=False)
-        if wf and await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db):
+        if not wf or await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db):
             ret.append(wf_status)
+
 
     return ret
 
@@ -84,8 +85,8 @@ async def get_workflow_status(*, walkoff_db: AsyncIOMotorDatabase = Depends(get_
     wfq_col = walkoff_db.workflowqueue
     curr_user_id = await get_jwt_identity(request)
     wf_status: WorkflowStatus = await mongo_helpers.get_item(wfq_col, WorkflowStatus, execution, id_key="execution_id")
-    wf = await mongo_helpers.get_item(workflow_col, WorkflowModel, wf_status.workflow_id)
-    if await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db):
+    wf = await mongo_helpers.get_item(workflow_col, WorkflowModel, wf_status.workflow_id, raise_exc=False)
+    if not wf or await auth_check(wf, curr_user_id, "read", walkoff_db=walkoff_db):
         wf_status.to_response()
         return wf_status
     else:
