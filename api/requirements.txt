@@ -12,7 +12,7 @@ asteval
 cryptography
 tenacity
 uvicorn
-fastapi
+fastapi == 0.60.2
 email-validator
 motor
 aiofiles
@@ -23,4 +23,3 @@ websocket-client
 minio
 aiodocker == 0.14.0
 docker
-pydantic == 0.32.2
