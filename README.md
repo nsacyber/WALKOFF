@@ -1,3 +1,8 @@
+Join us for a WALKOFF community virtual event on September 23rd! 
+---------------------------------------------------------------------------------
+https://www.eventbrite.com/e/walkoff-consortium-automating-at-the-speed-of-operations-registration-118693482401
+
+
 Welcome to WALKOFF's documentation!
 ===================================
 This documentation is intended as a reference for app and workflow developers as well as project contributors and operators.
