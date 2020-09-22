@@ -2,6 +2,10 @@ Join us for a WALKOFF community virtual event on September 23rd!
 ---------------------------------------------------------------------------------
 https://www.eventbrite.com/e/walkoff-consortium-automating-at-the-speed-of-operations-registration-118693482401
 
+Check out the WALKOFF community subreddit! 
+--------------------------------------------------------------------------------
+https://www.reddit.com/r/walkoffcommunity/
+
 
 Welcome to WALKOFF's documentation!
 ===================================
