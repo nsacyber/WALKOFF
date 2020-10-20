@@ -51,29 +51,25 @@ Deploying WALKOFF in a Unix environment
 
        cd WALKOFF
 
-3. Build WALKOFF's bootloader container, which handles management of the WALKOFF stack:
-   
-       ./build_bootloader.sh
-       
-   The bootloader performs the following tasks: 
-   * Creating Docker secrets, configs, networks, volumes, etc.
-   * Building and pushing component images to WALKOFF's internal registry.
-   * Deploying and removing the Docker Stack.
-   
-4. Launch WALKOFF with the bootloader, building components as well:
+3. Launch WALKOFF with the bootloader, building components as well:
 
        ./walkoff.sh up --build
 
        # If verbose output is desired:
        ./walkoff.sh up --build --debug
 
-5. Navigate to the default IP and port. The default IP and the port can be changed by altering the port NGINX is exposed on (the right-hand port) in the top-level `docker-compose.yml`. Note that you should use HTTPS, and allow the self-signed certificate when prompted.
+   The bootloader performs the following tasks:
+   * Creating Docker secrets, configs, networks, volumes, etc.
+   * Building and pushing component images to WALKOFF's internal registry.
+   * Deploying and removing the Docker Stack.
+
+4. Navigate to the default IP and port. The default IP and the port can be changed by altering the port NGINX is exposed on (the right-hand port) in the top-level `docker-compose.yml`. Note that you should use HTTPS, and allow the self-signed certificate when prompted.
 
        https://127.0.0.1:8080
 
-6. The default username is "admin" and password is "admin." These can and should be changed upon initial login.
+5. The default username is "admin" and password is "admin." These can and should be changed upon initial login.
 
-7. To stop WALKOFF, use the bootloader:
+6. To stop WALKOFF, use the bootloader:
 
        ./walkoff.sh down
 
