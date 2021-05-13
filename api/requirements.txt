@@ -1,5 +1,5 @@
 APscheduler >= 3.0.0
-pydantic == 0.32.2
+pydantic == 1.6.2
 pyyaml >= 3.0
 passlib >= 1.7.0
 semver
@@ -23,4 +23,4 @@ websocket-client
 minio
 aiodocker == 0.14.0
 docker
-pydantic == 0.32.2
+pydantic == 1.6.2
