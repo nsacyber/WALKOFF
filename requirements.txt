@@ -1,4 +1,4 @@
-pydantic == 0.32.2
+pydantic == 1.6.2
 #aiodns
 aiodocker
 aiohttp
