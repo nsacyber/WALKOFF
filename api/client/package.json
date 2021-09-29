@@ -66,7 +66,7 @@
     "jquery-migrate": "~3.0.0",
     "jquery.fancytree": "^2.31.0",
     "jqueryui": "~1.11.1",
-    "jsoneditor": "^7.0.4",
+    "jsoneditor": "^9.5.6",
     "jspdf": "^1.5.3",
     "jstree": "^3.3.8",
     "moment": "~2.20.1",
