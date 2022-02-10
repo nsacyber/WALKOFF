@@ -78,7 +78,7 @@
     "ngx-cookie-service": "^2.2.0",
     "ngx-moment": "^3.4.0",
     "ngx-toastr": "^10.0.4",
-    "node-sass": "^4.12.0",
+    "node-sass": "^7.0.0",
     "rxjs": "~6.5.3",
     "rxjs-compat": "^6.5.3",
     "select2": "^4.0.8",
