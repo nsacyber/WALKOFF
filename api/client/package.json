@@ -69,7 +69,7 @@
     "jsoneditor": "^7.0.4",
     "jspdf": "^1.5.3",
     "jstree": "^3.3.8",
-    "moment": "~2.20.1",
+    "moment": "~2.29.4",
     "ng-pick-datetime": "~4.3.2",
     "ng2-charts": "^1.6.0",
     "ng2-dnd": "^5.0.2",
